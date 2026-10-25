@@ -1,0 +1,42 @@
+# Nunca embutir a pasta de dados na imagem Docker (montada via volume em /app/data)
+data/
+data/*
+
+# Arquivos pesados legados do R
+data/*.rds
+data/*.xlsx
+data/*.csv
+data/*.pptx
+data/cache_aurora.json
+data/df_indicadores_empilhados.rds
+data/shared_iniciativas.rds
+data/pernambuco_sf.rds
+data/pe_limits.rds
+
+# Arquivos de rotas, interface e scripts legados em R
+api.R
+routers/
+ui_modules/
+helpers/
+build_ui.R
+pacotes/
+_legado/
+*.R
+**/*.R
+**/*.rds
+**/*.RData
+
+# Arquivos e pastas desnecessários no build Docker
+.Rproj.user
+*.Rproj
+.Rhistory
+*.log
+*.md
+*.qmd
+_site/
+.quarto/
+.git/
+.gitignore
+*.exe
+repomix*.txt
+lista.txt

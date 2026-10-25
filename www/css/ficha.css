@@ -1,0 +1,640 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   TABELA FICHA MUNICIPAL
+========================================================================== */
+
+#tabela_ficha_indicadores {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  background-color: transparent !important;
+}
+
+#tabela_ficha_indicadores thead th {
+  border-top: 2px solid #000000 !important;
+  border-bottom: 2px solid #000000 !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
+  font-size: 14px !important;
+  text-transform: uppercase;
+  padding: 18px 10px !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+#tabela_ficha_indicadores tbody tr {
+  background-color: #ffffff !important;
+}
+
+#tabela_ficha_indicadores tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+.clean-cell {
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 16px 10px !important;
+  vertical-align: middle !important;
+}
+
+table.dataTable.stripe > tbody > tr.odd > *, 
+table.dataTable.display > tbody > tr.odd > * {
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+table.dataTable.stripe > tbody > tr.even > *, 
+table.dataTable.display > tbody > tr.even > * {
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+/* ==========================================================================
+   FORMATAÇÃO ESTILO "CARDS" PARA TABELAS
+========================================================================== */
+
+#ficha_tabela_iniciativas, #ficha_tabela_convenios, #ficha_tabela_emendas { 
+  font-size: 0.8rem !important; 
+  width: 100% !important; 
+  margin-top: 10px !important; 
+  border-collapse: separate !important; 
+  border-spacing: 0 8px !important; 
+}
+
+#ficha_tabela_iniciativas th, #ficha_tabela_convenios th, #ficha_tabela_emendas th { 
+  padding: 10px 18px !important; 
+  vertical-align: middle !important; 
+  border-bottom: 2px solid #eaedf1 !important; 
+  color: #000; 
+  font-weight: 900 !important;
+  white-space: nowrap; 
+}
+
+#ficha_tabela_iniciativas td, #ficha_tabela_convenios td, #ficha_tabela_emendas td { 
+  padding: 0 4px !important; 
+  vertical-align: middle !important; 
+  border: none !important; 
+  background: transparent !important; 
+}
+
+.dt-cell-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  min-height: 90px; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  transition: all 0.2s ease;
+}
+
+#ficha_tabela_iniciativas tr:hover .dt-cell-card, 
+#ficha_tabela_convenios tr:hover .dt-cell-card, 
+#ficha_tabela_emendas tr:hover .dt-cell-card {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* ==========================================================================
+   WIDGET DE NAVEGAÇÃO FLUTUANTE (MENOR E ARRASTÁVEL)
+========================================================================== */
+
+.btn-nav-topbar {
+  background: transparent;
+  border: none;
+  color: #64748B;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.btn-nav-topbar:hover {
+  background-color: #0C2856;
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.ficha-nav-divider {
+  width: 16px;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.2);
+  margin: 1px 0;
+}
+/* ==========================================================================
+   CONFIGURAÇÃO DE PÁGINA (PAISAGEM FORÇADA NO PDF)
+========================================================================== */
+@page {
+  size: landscape;
+  margin: 6mm;
+}
+
+/* ==========================================================================
+   AJUSTES DE IMPRESSÃO (PDF) - KPIS EXPANDIDOS E DESCONPRESSOS
+========================================================================== */
+@media print {
+  /* Reseta a largura útil do documento para 100% da folha A4 em Paisagem */
+  html, body, #aba_ficha, .container-fluid {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Força as divs de grid (Tailwind / Bootstrap) a agirem como Flexbox de 4 Colunas iguais */
+  #aba_ficha .grid {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      justify-content: flex-start !important; /* Alinha os cards à esquerda quando houver menos de 4 */
+      gap: 10px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    
+/* Cada card mantém a largura fixa exata equivalente a 1/4 da linha */
+  #aba_ficha .kpi-modern-card {
+    flex: 0 0 calc(25% - 8px) !important; /* Mantém a largura exata do card de 4 colunas */
+    width: calc(25% - 8px) !important;
+    max-width: calc(25% - 8px) !important;
+    min-width: 0 !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    padding: 8px 10px !important;
+    min-height: 90px !important;
+    box-sizing: border-box !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Título no Canto Superior Esquerdo */
+  #aba_ficha .kpi-modern-header {
+    text-align: left !important;
+    font-size: 0.62rem !important;
+    line-height: 1.1 !important;
+    white-space: normal !important;
+    padding-right: 24px !important; /* Espaço para o ícone */
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Ícone no Canto Superior Direito */
+  #aba_ficha .kpi-modern-body {
+    position: static !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    margin: 2px 0 !important;
+  }
+
+  #aba_ficha .kpi-modern-icon {
+    position: absolute !important;
+    top: 6px !important;
+    right: 8px !important;
+    font-size: 0.8rem !important;
+    padding: 3px !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  /* Número Alinhado à Esquerda */
+  #aba_ficha .kpi-modern-number {
+    text-align: left !important;
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    margin: 2px 0 !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Rodapé Alinhado à Esquerda */
+  #aba_ficha .kpi-modern-footer {
+    text-align: left !important;
+    font-size: 0.55rem !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 3px !important;
+    width: 100% !important;
+  }
+
+  /* Badge de Ranking PE */
+  #aba_ficha .kpi-modern-footer .badge {
+    font-size: 0.48rem !important;
+    padding: 1px 3px !important;
+    margin-left: 2px !important;
+  }
+
+/* ==========================================================================
+     QUEBRAS DE PÁGINA (SEÇÕES E SUBSEÇÕES)
+  ========================================================================== */
+
+/* 1. Seções Principais */
+  #sec_caracterizacao,
+  #sec_resumo_executivo,
+  #sec_diagnostico_regional,
+  #sec_indicadores_sociais,
+  #sec_fiscal,
+  #sec_iniciativas_regionais,
+  #sec_emendas_parlamentares {
+    break-before: page !important;
+    page-break-before: always !important;
+    padding-top: 10px !important;
+  }
+
+/* Exceção: Impede página em branco entre a Capa e a Caracterização */
+  #sec_caracterizacao {
+    break-before: auto !important;
+    page-break-before: auto !important;
+  }
+
+/* 2. Subseções de Indicadores Sociais (Educação, Saúde, Água e Resíduos) */
+  .subsecao-print-break {
+    break-before: page !important;
+    page-break-before: always !important;
+    display: block !important;
+    width: 100% !important;
+    padding-top: 10px !important;
+  }
+  
+  /* Garante que o bloco de gráficos/KPIs da subseção não se separe do seu respectivo subtítulo */
+  #sec_indicadores_sociais h5[class*="mt-8"] + div {
+    break-before: avoid !important;
+    page-break-before: avoid !important;
+  }
+
+  /* Preservação dos Gráficos e Tabelas */
+  #aba_ficha .col-md-6, 
+  #aba_ficha .col-md-4, 
+  #aba_ficha .col-md-12,
+  #aba_ficha .bg-white {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    overflow: visible !important;
+  }
+
+  #ficha_chart_iniciativas_sec,
+  #ficha_chart_valor_sec,
+  #ficha_chart_eme_parlamentares,
+  #ficha_chart_eme_partidos,
+  #ficha_chart_eme_temas {
+    height: 220px !important;
+    width: 100% !important;
+    display: block !important;
+  }
+
+  #ficha_tabela_iniciativas tr,
+  #ficha_tabela_convenios tr,
+  #ficha_tabela_emendas tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Box do Quociente Locacional (QL) nos Cards de VAB em Impressão */
+  #aba_ficha .kpi-ql-badge-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    margin: 2px 0 !important;
+    padding-top: 2px !important;
+    border-top: 1px solid #f1f5f9 !important;
+  }
+
+  #aba_ficha .kpi-ql-badge-row span,
+  #aba_ficha .kpi-ql-badge-row strong {
+    font-size: 0.58rem !important;
+  }
+
+  #aba_ficha .kpi-ql-badge-row .badge {
+    font-size: 0.48rem !important;
+    padding: 1px 3px !important;
+  }
+
+  /* Modo de Impressão: Resumo Executivo (Apenas Caracterização, Resumo Integrado e Diagnóstico Regional) */
+  body.print-resumo-executivo #ficha_bloco_secoes_detalhadas,
+  body.print-resumo-executivo .ficha-secoes-detalhadas,
+  body.print-resumo-executivo #sec_demografia,
+  body.print-resumo-executivo #sec_indicadores_sociais,
+  body.print-resumo-executivo #sec_vulnerabilidade_social,
+  body.print-resumo-executivo #sec_indicadores_economicos,
+  body.print-resumo-executivo #sec_fiscal,
+  body.print-resumo-executivo #sec_iniciativas_regionais,
+  body.print-resumo-executivo #sec_emendas_parlamentares {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   BOX DE QUOCIENTE LOCACIONAL (QL) NOS CARDS DE VAB
+========================================================================== */
+.kpi-ql-badge-row {
+  width: 100%;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.badge-polaridade {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  font-size: 0.58rem !important;
+  font-weight: 700 !important;
+  padding: 1px 6px !important;
+  border-radius: 20px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.02em !important;
+  margin-left: 4px !important;
+}
+
+.badge-polaridade-alta {
+  background-color: #ECFDF5 !important;
+  color: #047857 !important;
+  border: 1px solid #A7F3D0 !important;
+}
+
+.badge-polaridade-baixa {
+  background-color: #F0F9FF !important;
+  color: #0369A1 !important;
+  border: 1px solid #BAE6FD !important;
+}
+
+.badge-polaridade-neutra {
+  background-color: #F1F5F9 !important;
+  color: #475569 !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+/* ==========================================================================
+   RESUMO EXECUTIVO (5 DIMENSÕES) E DIAGNÓSTICO REGIONAL
+========================================================================== */
+
+.resumo-exec-banner {
+  background: linear-gradient(135deg, #0C2856 0%, #1e3a8a 100%);
+  color: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(12, 40, 86, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.resumo-dim-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.resumo-dim-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+.diag-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.diag-card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+  border-color: #94a3b8;
+}
+
+.diag-box-paradigma {
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.diag-box-reorientacao {
+  background-color: #f0fdf4;
+  border: 1px solid #dcfce7;
+  border-left: 4px solid #16a34a;
+  border-radius: 0.75rem;
+  padding: 0.95rem 1.1rem;
+  margin-bottom: 0.85rem;
+}
+
+.diag-fonte-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  border-radius: 0.5rem;
+  background-color: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.diag-fonte-badge:hover {
+  background-color: #0c2856;
+  color: #ffffff;
+  border-color: #0c2856;
+  transform: scale(1.05);
+}
+
+#ficha_navbar_metrics {
+  animation: fadeInDown 0.3s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   SELETOR DE MUNICÍPIO COM BUSCA (BOOTSTRAP-SELECT)
+========================================================================== */
+#controles_ficha_municipal .bootstrap-select {
+  width: 210px !important;
+}
+
+#controles_ficha_municipal .bootstrap-select > .dropdown-toggle {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+  color: #1e293b !important;
+  padding: 0 4px !important;
+  line-height: 1.5 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+#controles_ficha_municipal .bootstrap-select > .dropdown-toggle:hover,
+#controles_ficha_municipal .bootstrap-select > .dropdown-toggle:focus {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #0c2856 !important;
+}
+
+#controles_ficha_municipal .bootstrap-select .filter-option {
+  text-align: left !important;
+}
+
+/* Estilo do Dropdown Menu de Busca */
+.bootstrap-select .dropdown-menu {
+  border-radius: 0.75rem !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  padding: 6px 4px !important;
+  z-index: 10050 !important;
+}
+
+.bootstrap-select .bs-searchbox {
+  padding: 6px 8px !important;
+}
+
+.bootstrap-select .bs-searchbox .form-control {
+  font-size: 0.82rem !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid #cbd5e1 !important;
+  padding: 6px 10px !important;
+  outline: none !important;
+}
+
+.bootstrap-select .bs-searchbox .form-control:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+
+.bootstrap-select .dropdown-menu .inner li a {
+  border-radius: 0.375rem !important;
+  padding: 6px 12px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+}
+
+.bootstrap-select .dropdown-menu .inner li a:hover,
+.bootstrap-select .dropdown-menu .inner li a.active,
+.bootstrap-select .dropdown-menu .inner li.selected a {
+  background-color: #0c2856 !important;
+  color: #ffffff !important;
+}
+
+/* --- BADGES E PALETA OFICIAL CAPAG (MODELO OBJETO 1) --- */
+.badge-capag-a      { background-color: #92D050 !important; color: #ffffff !important; }
+.badge-capag-aplus  { background-color: #70AD47 !important; color: #ffffff !important; }
+.badge-capag-b      { background-color: #00A8A8 !important; color: #ffffff !important; }
+.badge-capag-bplus  { background-color: #00B0B9 !important; color: #ffffff !important; }
+.badge-capag-c      { background-color: #C55A11 !important; color: #ffffff !important; }
+.badge-capag-d      { background-color: #843C0C !important; color: #ffffff !important; }
+.badge-capag-nd     { background-color: #595959 !important; color: #ffffff !important; }
+.badge-capag-ne     { background-color: #404040 !important; color: #ffffff !important; }
+
+/* Subabas de Municípios */
+#pills_municipios_subtabs .nav-link {
+  transition: all 0.2s ease-in-out;
+}
+#pills_municipios_subtabs .nav-link.active {
+  background-color: #0C2856 !important;
+  color: #ffffff !important;
+}
+#pills_municipios_subtabs .nav-link:not(.active):hover {
+  background-color: #e2e8f0;
+  color: #0f172a;
+}
+
+
+/* Botões de Ação nos KPIs (Metadados e Série Histórica) */
+.kpi-actions-container {
+  display: flex !important;
+  gap: 4px !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+.kpi-actions-container button {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  border-radius: 6px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.kpi-actions-container button:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  transform: translateY(-1px) !important;
+}
+
+.kpi-header-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+  line-height: 1.25;
+  word-break: break-word;
+  max-width: calc(100% - 56px);
+  min-height: 2.5em;
+  max-height: 2.5em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+#aba_ficha .kpi-modern-header {
+  white-space: normal;
+  line-height: 1.25;
+  min-height: 2.6rem;
+  align-items: flex-start !important;
+}

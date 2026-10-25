@@ -1,0 +1,21 @@
+# Dados e Junctions (Regra de Ouro: Dados montados externamente)
+data/
+**/data/
+
+# Binarios e temporarios Go
+server
+*.exe
+*.dll
+*.so
+*.dylib
+
+# R / RStudio
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Arquivos de Sistema e Logs
+.DS_Store
+*.log
+repomix*.txt

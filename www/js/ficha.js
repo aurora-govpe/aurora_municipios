@@ -1,0 +1,4958 @@
+// www/js/ficha.js
+
+/* ==========================================================================
+   1. ESTADO GLOBAL E INSTÂNCIAS
+   ========================================================================== */
+var mapFicha = null;
+var mapDemografiaFicha = null;
+var mapSociaisFicha = null;
+var mapEducacaoFicha = null;
+var mapSaudeFicha = null;
+var mapCadUnicoFicha = null;
+var mapSaneamentoFicha = null;
+// var mapTransfFicha = null;
+var mapInovacaoFicha = null;
+var mapComercioFicha = null;
+var mapConectividadeFicha = null;
+var mapTrabalhoFicha = null;
+
+var dadosBrutosFicha = [];
+var dtFichaIniciativas = null;
+var dtFichaConvenios = null;
+var dtFichaEmendas = null;
+var dtMetadados = null;
+
+window.dadosMetadados = [];
+window.diagnosticoRegional = null;
+window.fontesReferenciaRegional = null;
+
+// Dicionário canônico de classificação populacional de todos os 185 municípios de PE (estimativa 2026)
+window.popRanks = {
+    "recife": 1, "jaboatão dos guararapes": 2, "petrolina": 3, "caruaru": 4, "paulista": 5, "olinda": 6, "cabo de santo agostinho": 7, "camaragibe": 8, "garanhuns": 9, "vitória de santo antão": 10, "igarassu": 11, "são lourenço da mata": 12, "ipojuca": 13, "santa cruz do capibaribe": 14, "abreu e lima": 15, "serra talhada": 16, "gravatá": 17, "araripina": 18, "goiana": 19, "belo jardim": 20, "carpina": 21, "arcoverde": 22, "ouricuri": 23, "surubim": 24, "salgueiro": 25, "pesqueira": 26, "bezerros": 27, "escada": 28, "paudalho": 29, "limoeiro": 30, "moreno": 31, "palmares": 32, "buíque": 33, "brejo da madre de deus": 34, "são bento do una": 35, "timbaúba": 36, "bom conselho": 37, "toritama": 38, "águas belas": 39, "afogados da ingazeira": 40, "santa maria da boa vista": 41, "lajedo": 42, "barreiros": 43, "custódia": 44, "são caetano": 45, "bom jardim": 46, "bonito": 47, "sirinhaém": 48, "aliança": 49, "são josé do belmonte": 50, "itambé": 51, "petrolândia": 52, "bodocó": 53, "itaíba": 54, "sertânia": 55, "exu": 56, "ribeirão": 57, "catende": 58, "são josé do egito": 59, "trindade": 60, "nazaré da mata": 61, "cabrobó": 62, "floresta": 63, "ipubi": 64, "caetés": 65, "glória do goitá": 66, "tupanatinga": 67, "itapissuma": 68, "passira": 69, "pombos": 70, "tabira": 71, "joão alfredo": 72, "ibimirim": 73, "inajá": 74, "água preta": 75, "vicência": 76, "manari": 77, "ilha de itamaracá": 78, "taquaritinga do norte": 79, "condado": 80, "canhotinho": 81, "lagoa grande": 82, "são joão": 83, "tacaratu": 84, "tamandaré": 85, "agrestina": 86, "macaparana": 87, "cupira": 88, "pedra": 89, "vertentes": 90, "panelas": 91, "orobó": 92, "feira nova": 93, "riacho das almas": 94, "chã grande": 95, "altinho": 96, "cachoeirinha": 97, "flores": 98, "são joaquim do monte": 99, "rio formoso": 100, "araçoiaba": 101, "lagoa de itaenga": 102, "carnaíba": 103, "são josé da coroa grande": 104, "afrânio": 105, "parnamirim": 106, "lagoa do carro": 107, "capoeiras": 108, "serrita": 109, "sanharó": 110, "belém do são francisco": 111, "amaraji": 112, "camocim de são félix": 113, "dormentes": 114, "correntes": 115, "venturosa": 116, "iati": 117, "quipapá": 118, "gameleira": 119, "são vicente férrer": 120, "itaquitinga": 121, "jataúba": 122, "cumaru": 123, "ferreiros": 124, "jupi": 125, "triunfo": 126, "santa maria do cambucá": 127, "mirandiba": 128, "jatobá": 129, "tracunhaém": 130, "alagoinha": 131, "primavera": 132, "tacaimbó": 133, "santa cruz": 134, "lagoa dos gatos": 135, "itapetim": 136, "orocó": 137, "saloá": 138, "frei miguelinho": 139, "jurema": 140, "buenos aires": 141, "chã de alegria": 142, "casinhas": 143, "são benedito do sul": 144, "joaquim nabuco": 145, "paranatama": 146, "carnaubeira da penha": 147, "barra de guabiraba": 148, "lagoa do ouro": 149, "santa filomena": 150, "jucati": 151, "betânia": 152, "santa cruz da baixa verde": 153, "xexéu": 154, "calçado": 155, "iguaracy": 156, "machados": 157, "sairé": 158, "cedro": 159, "moreilândia": 160, "poção": 161, "belém de maria": 162, "angelim": 163, "santa terezinha": 164, "jaqueira": 165, "cortês": 166, "verdejante": 167, "brejão": 168, "terra nova": 169, "maraial": 170, "tuparetama": 171, "brejinho": 172, "camutanga": 173, "vertente do lério": 174, "ibirajuba": 175, "granito": 176, "palmeirina": 177, "terezinha": 178, "quixaba": 179, "solidão": 180, "salgadinho": 181, "calumbi": 182, "ingazeira": 183, "itacuruba": 184, "fernando de noronha": 185
+};
+
+window.obterRankPopulacao = function(nomeMun) {
+    if (!nomeMun) return '-';
+    const norm = String(nomeMun).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    for (const k in window.popRanks) {
+        const kNorm = k.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (kNorm === norm) return window.popRanks[k];
+    }
+    return '-';
+};
+
+function configurarStickyNavbarMetrics() {
+    // Revertido a pedido: métricas de pop e pib não poluem mais a navbar
+}
+
+// Cores oficiais do CAPAG (conforme Modelo Objeto 1)
+const CAPAG_CORES = {
+    'A': '#92D050',
+    'A+': '#70AD47',
+    'B': '#00A8A8',
+    'B+': '#00B0B9',
+    'C': '#C55A11',
+    'D': '#843C0C',
+    'N.D.': '#595959',
+    'N.E.': '#404040'
+};
+
+function obterCorCapag(nota) {
+    if (!nota) return '#595959';
+    const n = String(nota).trim().toUpperCase();
+    if (CAPAG_CORES[n]) return CAPAG_CORES[n];
+    if (n.startsWith('A+')) return CAPAG_CORES['A+'];
+    if (n.startsWith('A')) return CAPAG_CORES['A'];
+    if (n.startsWith('B+')) return CAPAG_CORES['B+'];
+    if (n.startsWith('B')) return CAPAG_CORES['B'];
+    if (n.startsWith('C')) return CAPAG_CORES['C'];
+    if (n.startsWith('D')) return CAPAG_CORES['D'];
+    if (n.includes('E')) return CAPAG_CORES['N.E.'];
+    return CAPAG_CORES['N.D.'];
+}
+
+var cacheSociaisRD = {
+    geojsonRD: null,
+    demografiaRD: [],
+    indicadoresRD: [],
+    iniciativasRD: [],
+    pcpRD: [],
+    nomeMun: ''
+};
+
+var metricaDemografiaAtiva = 'rd_pop';
+var metricaSocialAtiva = 'mvi_abs';
+var metricaEducacaoAtiva = 'ideb_5ano';
+var metricaSaudeAtiva = 'pre_natal';
+var metricaCadUnicoAtiva = 'cad_pessoas';
+var metricaSaneamentoAtiva = 'pct_agua_rede';
+var metricaTrabalhoAtiva = '';
+// var metricaTransfAtiva = 'maes_qtd';
+var metricaInovacaoAtiva = '';
+var metricaComercioAtiva = '';
+var metricaConectividadeAtiva = '';
+
+// Helper universal no ficha.js para parsear GeoJSON com segurança
+function obterGeoJSONSeguro(geoInput) {
+    if (!geoInput) return null;
+    if (typeof geoInput === 'object') return geoInput;
+    try {
+        return JSON.parse(geoInput);
+    } catch (e) {
+        console.error("Erro ao parsear GeoJSON:", e);
+        return null;
+    }
+}
+
+window.renderizarBadgeDataAtualizacao = function (txtAtualizacao) {
+    var texto = Array.isArray(txtAtualizacao) ? txtAtualizacao[0] : txtAtualizacao;
+    if (!texto) return;
+
+    // Atualiza apenas o texto mantendo o card sempre visível na tela
+    $('#ficha_data_atualizacao_txt').text(texto);
+};
+
+/* ==========================================================================
+   2. FUNÇÕES HELPERS E UTILITÁRIOS
+   ========================================================================== */
+function eCoordenadaContinental(coord) {
+    if (!Array.isArray(coord) || coord.length < 2) return false;
+    return coord[0] < -34.0 && coord[1] < -7.0;
+}
+
+window.scrollToSection = function (id) {
+    if (id === 'aba_ficha' || id === 'aba_regioes' || id === 'topo') {
+        const container = document.querySelector('.aurora-content-area');
+        if (container) {
+            container.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+    }
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+function iniciarDraggableNav() {
+    // Mantido por compatibilidade funcional (Menu integrado na navbar)
+    return;
+}
+
+function obterBadgePolaridade(sigla) {
+    if (!sigla || !window.dadosMetadados) return '';
+    
+    const normKey = (str) => String(str || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const siglaNorm = normKey(sigla);
+
+    const meta = window.dadosMetadados.find(m => 
+        normKey(m.cd_indicador) === siglaNorm || normKey(m.nm_indicador) === siglaNorm
+    );
+    
+    if (!meta || !meta.referencia_analise) return '';
+    
+    const dirRaw = String(
+        meta.referencia_analise.direcao_desejavel || 
+        meta.direcao_desejavel || ''
+    ).trim();
+
+    const dir = dirRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    if (!dir || dir === '-' || dir === 'n/a') return '';
+
+    // Verifica primeiro se é um indicador estrutural / vocacional / sem polaridade
+    if (dir.includes('acompanhamento') || dir.includes('vocacao') || dir.includes('estabilidade') || dir.includes('faixa') || dir.includes('manter') || dir.includes('informativo') || dir.includes('contextual') || dir.includes('neutro')) {
+        return `<span class="badge-polaridade badge-polaridade-neutra" title="Indicador de perfil estrutural: ${dirRaw}">
+                    <i class="fas fa-circle-info"></i> Contextual
+                </span>`;
+    } 
+    // Indicadores com direção definida (Aumento)
+    else if (dir.includes('aumento') || dir.includes('maior') || dir.includes('crescimento')) {
+        return `<span class="badge-polaridade badge-polaridade-alta" title="Direção desejável: Quanto maior, melhor">
+                    <i class="fas fa-arrow-trend-up"></i> Maior melhor
+                </span>`;
+    } 
+    // Indicadores com direção definida (Redução)
+    else if (dir.includes('reducao') || dir.includes('menor') || dir.includes('queda')) {
+        return `<span class="badge-polaridade badge-polaridade-baixa" title="Direção desejável: Quanto menor, melhor">
+                    <i class="fas fa-arrow-trend-down"></i> Menor melhor
+                </span>`;
+    }
+
+    // Fallback padrão contextual para qualquer outra descrição não quantitativa
+    return `<span class="badge-polaridade badge-polaridade-neutra" title="Indicador de perfil estrutural: ${dirRaw}">
+                <i class="fas fa-circle-info"></i> Contextual
+            </span>`;
+}
+
+/* ==========================================================================
+   3. CONTROLES DE INTERFACE E ALTERNÂNCIA DE MÉTRICAS (MAPAS)
+   ========================================================================== */
+window.alternarMetricaDemografia = function (metrica) {
+    metricaDemografiaAtiva = metrica;
+    const btns = ['rd_pop', 'rd_jovem', 'rd_idosa', 'pct_pia', 'ind_envelhecimento', 'pct_longevidade', 'ind_ir_pia', 'pct_jovem', 'ind_renov_trabalho'];
+    btns.forEach(m => {
+        $(`#btn_demo_${m}`).toggleClass('btn-primary active', m === metrica).toggleClass('btn-outline-primary', m !== metrica);
+    });
+    if (cacheSociaisRD.geojsonRD) renderizarMapaDemografiaRD();
+};
+
+window.alternarMetricaSociais = function (metrica) {
+    metricaSocialAtiva = metrica;
+    const btns = ['mvi_abs', 'mvi_taxa', 'cvp_abs', 'cvp_taxa', 'feminicidio', 'tent_mvi', 'rfv', 'vcm_ameaca', 'vcm_lesao', 'vcm_vs'];
+    btns.forEach(m => {
+        $(`#btn_soc_${m}`).toggleClass('btn-primary active', m === metrica).toggleClass('btn-outline-primary', m !== metrica);
+    });
+    if (cacheSociaisRD.geojsonRD) renderizarMapaSociaisRD();
+};
+
+window.alternarMetricaEducacao = function (metrica) {
+    metricaEducacaoAtiva = metrica;
+    const btns = ['ideb_5ano', 'tdi_5ano', 'aba_5ano', 'apr_5ano', 'rep_5ano', 'ideb_9ano', 'tdi_9ano', 'aba_9ano', 'apr_9ano', 'rep_9ano', 'mat_6_10', 'mat_11_14', 'perc_mat_int', 'perc_alfabetizacao', 'atliq_creche'];
+    btns.forEach(m => {
+        $(`#btn_edu_${m}`).toggleClass('btn-primary active', m === metrica).toggleClass('btn-outline-primary', m !== metrica);
+    });
+    if (cacheSociaisRD.geojsonRD) renderizarMapaEducacaoRD();
+};
+
+window.alternarMetricaSaude = function (metrica) {
+    metricaSaudeAtiva = metrica;
+    const btns = ['pre_natal', 'razao_mm', 'tx_att', 'tx_dcnt', 'tx_evitaveis', 'tx_infancia', 'tx_infantil'];
+    btns.forEach(m => {
+        $(`#btn_sau_${m}`).toggleClass('btn-primary active', m === metrica).toggleClass('btn-outline-primary', m !== metrica);
+    });
+    if (cacheSociaisRD.geojsonRD) renderizarMapaSaudeRD();
+};
+
+window.alternarMetricaCadUnico = function (metrica) {
+    metricaCadUnicoAtiva = metrica;
+    const btns = ['cad_pessoas', 'tx_cad_pessoas', 'ivcad', 'ivcad_nc', 'ivcad_dpi', 'ivcad_dca', 'ivcad_tqa', 'ivcad_dr', 'ivcad_ch', 'maes_qtd', 'maes_val', 'pcp_qtd', 'pcp_val'];
+    btns.forEach(m => {
+        $(`#btn_cad_${m}`).toggleClass('btn-primary active', m === metrica).toggleClass('btn-outline-primary', m !== metrica);
+    });
+    if (cacheSociaisRD.geojsonRD) renderizarMapaCadUnicoRD();
+};
+
+window.alternarMetricaSaneamento = function (metrica) {
+    metricaSaneamentoAtiva = metrica;
+    const btns = ['pct_agua_rede', 'pct_esgoto_rede'];
+    btns.forEach(m => {
+        $(`#btn_san_${m}`).toggleClass('btn-primary active', m === metrica).toggleClass('btn-outline-primary', m !== metrica);
+    });
+    if (cacheSociaisRD.geojsonRD) renderizarMapaSaneamentoRD();
+};
+
+window.alternarMetricaInovacao = function (metrica) {
+    metricaInovacaoAtiva = metrica;
+    $('#ficha_btns_metrica_inovacao button').each(function () {
+        const m = $(this).attr('data-metrica');
+        $(this).toggleClass('btn-primary active', m === metrica).toggleClass('btn-outline-primary', m !== metrica);
+    });
+    if (cacheSociaisRD.geojsonRD) renderizarMapaInovacaoRD();
+};
+
+window.alternarMetricaComercio = function (metrica) {
+    metricaComercioAtiva = metrica;
+    $('#ficha_btns_metrica_comercio button').each(function () {
+        const m = $(this).attr('data-metrica');
+        $(this).toggleClass('btn-primary active', m === metrica).toggleClass('btn-outline-primary', m !== metrica);
+    });
+    if (cacheSociaisRD.geojsonRD) renderizarMapaComercioRD();
+};
+
+window.alternarMetricaConectividade = function (metrica) {
+    metricaConectividadeAtiva = metrica;
+    $('#ficha_btns_metrica_conectividade button').each(function () {
+        const m = $(this).attr('data-metrica');
+        $(this).toggleClass('btn-primary active', m === metrica).toggleClass('btn-outline-primary', m !== metrica);
+    });
+    if (cacheSociaisRD.geojsonRD) renderizarMapaConectividadeRD();
+};
+
+window.alternarMetricaTrabalho = function (metrica) {
+    metricaTrabalhoAtiva = metrica;
+    $('#ficha_btns_metrica_trabalho button').each(function () {
+        const m = $(this).attr('data-metrica');
+        $(this).toggleClass('btn-primary active', m === metrica).toggleClass('btn-outline-primary', m !== metrica);
+    });
+    if (cacheSociaisRD.geojsonRD) renderizarMapaTrabalhoRD();
+};
+
+/* ==========================================================================
+   3.5 RENDERIZADORES: RESUMO EXECUTIVO (5 DIMENSÕES) E DIAGNÓSTICO REGIONAL
+   ========================================================================== */
+
+function renderizarResumoExecutivo(nomeMun, demo, ind, fiscais, vocacoes, diagMun, rankPop, pibValMil, rankPib, pibFormatado) {
+    const $container = $('#ficha_container_resumo_executivo');
+    if (!$container.length) return;
+    $container.empty();
+
+    const extrairValor = (obj, key, fallback) => (obj && obj[key] && obj[key][0] !== undefined) ? obj[key][0] : fallback;
+    const extrairIndRecente = (sigla) => {
+        const itens = (ind || []).filter(i => String(i.sigla_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
+        if (!itens.length) return null;
+        itens.sort((a, b) => b.ano - a.ano);
+        return itens[0];
+    };
+    const extrairNumInd = (sigla, fallback = 0) => {
+        const it = extrairIndRecente(sigla);
+        if (!it) return fallback;
+        const val = parseFloat(String(it.indicador).replace(',', '.'));
+        return isNaN(val) ? fallback : val;
+    };
+
+    const formatarMoedaCompacta = (v) => {
+        const num = parseFloat(v) || 0;
+        if (num === 0) return 'R$ 0';
+        const abs = Math.abs(num);
+        const sinal = num < 0 ? '-' : '';
+        if (abs >= 1e9) return `${sinal}R$ ${(abs / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Bi`;
+        if (abs >= 1e6) return `${sinal}R$ ${(abs / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Mi`;
+        if (abs >= 1e3) return `${sinal}R$ ${(abs / 1e3).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mil`;
+        return `${sinal}R$ ${abs.toLocaleString('pt-BR')}`;
+    };
+
+    // 1. DIMENSÃO DEMOGRAFIA
+    const popVal = parseFloat(extrairValor(demo, 'pop_2026', 0)) || 0;
+    const areaVal = parseFloat(extrairValor(demo, 'area_km2', 0)) || 0;
+    const densidade = areaVal > 0 ? (popVal / areaVal).toFixed(1) : '-';
+    const pctUrb = extrairNumInd('perc_pop_urb', 0);
+    const pctPia = extrairNumInd('pct_pia', 0);
+    const indEnvelhecimento = extrairNumInd('ind_envelhecimento', 0);
+    const rdPop = extrairNumInd('rd_pop', 0);
+
+    let perfilUrbano = 'equilibrado entre campo e cidade';
+    if (pctUrb >= 80) perfilUrbano = 'fortemente urbanizado';
+    else if (pctUrb >= 50) perfilUrbano = 'predominantemente urbano';
+    else perfilUrbano = 'com expressiva presença rural';
+
+    let estagioDemografico = 'bônus demográfico em maturação';
+    if (indEnvelhecimento > 70) estagioDemografico = 'transição demográfica acelerada com envelhecimento populacional';
+    else if (pctPia > 65) estagioDemografico = 'janela de oportunidade demográfica favorável (alta PIA)';
+
+    const textoDemografia = `Com população estimada em <strong>${popVal.toLocaleString('pt-BR')} habitantes</strong> (${rankPop}º maior contingente de Pernambuco) e densidade de <strong>${densidade} hab/km²</strong>, o município apresenta perfil <em>${perfilUrbano}</em> (${pctUrb.toFixed(1)}% urbana). Sua estrutura etária revela <strong>${pctPia.toFixed(1)}%</strong> da população em idade produtiva (PIA) e índice de envelhecimento de <strong>${indEnvelhecimento.toFixed(1)}</strong>, caracterizando ${estagioDemografico}.`;
+
+    // 2. DIMENSÃO ECONOMIA
+    const pibpcVal = extrairNumInd('pibpc', 0);
+    const pibPctVal = extrairNumInd('pib_pct', 0);
+    const rankPibpc = extrairIndRecente('pibpc')?.rank_pe || '-';
+
+    const vabAgro = extrairNumInd('vab_agro', 0);
+    const vabInd = extrairNumInd('vab_ind', 0);
+    const vabServ = extrairNumInd('vab_serv', 0);
+    const vabAdm = extrairNumInd('vab_adm', 0);
+    const totalVab = (vabAgro + vabInd + vabServ + vabAdm) || 1;
+    const pctVabAgro = ((vabAgro / totalVab) * 100).toFixed(1);
+    const pctVabInd = ((vabInd / totalVab) * 100).toFixed(1);
+    const pctVabServ = ((vabServ / totalVab) * 100).toFixed(1);
+    const pctVabAdm = ((vabAdm / totalVab) * 100).toFixed(1);
+
+    let setorLider = 'Serviços';
+    let maxVab = vabServ;
+    if (vabInd > maxVab) { setorLider = 'Indústria'; maxVab = vabInd; }
+    if (vabAgro > maxVab) { setorLider = 'Agropecuária'; maxVab = vabAgro; }
+    if (vabAdm > maxVab) { setorLider = 'Administração Pública'; maxVab = vabAdm; }
+
+    const vocacoesTexto = (vocacoes && vocacoes.length > 0)
+        ? vocacoes.slice(0, 3).map(v => v.nm_vocacao || v.nm_cnae_divisao).filter(Boolean).join(', ')
+        : (extrairValor(demo, 'arranjos_produtivos_locais', '') || 'Comércio e serviços');
+
+    // Quociente Locacional da Indústria (QL Ind padrão - média PE = 10.672%)
+    const qlIndVal = (parseFloat(pctVabInd) / 10.672);
+    const qlIndFmt = isNaN(qlIndVal) ? '-' : qlIndVal.toFixed(2);
+    const isQLEspecializado = !isNaN(qlIndVal) && qlIndVal >= 1.0;
+
+    // Qualificação do tipo de serviços (Infocom / alto valor vs Varejo / consumo vs Adm Pública)
+    const cnaesInfocom = [62, 63, 64, 72];
+    const temInfocomVoc = (vocacoes || []).some(v => cnaesInfocom.includes(Number(v.cnae_divisao)));
+    const numEmpTi = (diagMun && diagMun.empresas_ti_infocom !== undefined) ? diagMun.empresas_ti_infocom : extrairNumInd('total_emp_infocom', 0);
+    
+    let perfilServico = '';
+    let rotuloServico = 'Comércio / Varejo';
+    if (numEmpTi > 15 || temInfocomVoc) {
+        rotuloServico = 'Infocom / Conhecimento';
+        perfilServico = `serviços especializados e intensivos em tecnologia (Infocom, pesquisa e serviços corporativos, contando com ${numEmpTi > 0 ? numEmpTi + ' estabelecimentos do segmento' : 'polo regional ativo'})`;
+    } else if (parseFloat(pctVabAdm) > 45) {
+        rotuloServico = 'Adm. Pública';
+        perfilServico = `terciário dependente do setor público (Administração Pública respondendo por expressivos ${pctVabAdm}% do VAB), com comércio e serviços locais de menor valor agregado`;
+    } else {
+        rotuloServico = 'Comércio / Varejo';
+        perfilServico = `comércio varejista tradicional e serviços locais voltados ao abastecimento imediato e consumo das famílias`;
+    }
+
+    const textoEconomia = `A economia municipal movimenta um PIB de <strong>${pibFormatado}</strong> (${rankPib}º no ranking estadual), correspondendo a <strong>${pibPctVal.toFixed(2)}%</strong> da riqueza de Pernambuco, com PIB per capita de <strong>R$ ${pibpcVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> (${rankPibpc}º em PE). O Valor Adicionado Bruto tem liderança de <strong>${setorLider}</strong> (Serviços: ${pctVabServ}%, Adm. Pública: ${pctVabAdm}%, Indústria: ${pctVabInd}%, Agropecuária: ${pctVabAgro}%). Na indústria, apresenta Quociente Locacional de <strong>QL Ind. = ${qlIndFmt}</strong> (${isQLEspecializado ? 'especialização acima da média do Estado' : 'sem especialização industrial relativa'}). No setor terciário, diferencia-se por <em>${perfilServico}</em>, com vocações locais em: <em>${vocacoesTexto}</em>.`;
+
+    // 3. DIMENSÃO SOCIAL
+    const idhmVal = extrairNumInd('idhm', 0);
+    const rankIdhm = extrairIndRecente('idhm')?.rank_pe || '-';
+    let faixaIdhm = 'Médio';
+    if (idhmVal >= 0.8) faixaIdhm = 'Muito Alto';
+    else if (idhmVal >= 0.7) faixaIdhm = 'Alto';
+    else if (idhmVal >= 0.6) faixaIdhm = 'Médio';
+    else if (idhmVal > 0) faixaIdhm = 'Baixo';
+
+    // Taxa de pessoas no CadÚnico e dependência de recursos (IVCAD-DR)
+    const itemTxCad = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'tx_cad_pessoas');
+    let txCadVal = itemTxCad ? parseFloat(String(itemTxCad.indicador).replace(',', '.')) : 0;
+    if (txCadVal === 0) {
+        const itemPessoas = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'cad_pessoas');
+        if (itemPessoas && popVal > 0) {
+            txCadVal = (parseFloat(String(itemPessoas.indicador).replace(',', '.')) / popVal) * 100;
+        }
+    }
+
+    const itemDr = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'ivcad_dr');
+    let drVal = itemDr ? parseFloat(String(itemDr.indicador).replace(',', '.')) : 0;
+    if (drVal === 0) {
+        drVal = extrairNumInd('ivcad_taxa', 0);
+    }
+    const drPctStr = drVal > 1 ? drVal.toFixed(1) + '%' : (drVal * 100).toFixed(1) + '%';
+
+    const idebVal = extrairNumInd('ideb_5ano', 0);
+    const aguaVal = extrairNumInd('pct_agua_rede', 0);
+
+    let textoSocial = `O Índice de Desenvolvimento Humano Municipal (IDHM) registra <strong>${idhmVal.toFixed(3)}</strong> (Faixa ${faixaIdhm}, ${rankIdhm}º em PE). `;
+    if (txCadVal > 0) {
+        textoSocial += `No panorama de vulnerabilidade social, <strong>${txCadVal.toFixed(1)}% da população</strong> encontra-se cadastrada no CadÚnico. `;
+    }
+    if (drVal > 0) {
+        textoSocial += `A dimensão de Disponibilidade de Recursos (IVCAD-DR) situa-se em <strong>${drPctStr}</strong>, evidenciando expressiva necessidade de recursos e forte dependência de transferências de renda governamentais (como Bolsa Família, Mães de Pernambuco e BPC) para manutenção do poder de compra e subsistência das famílias. `;
+    }
+    if (aguaVal > 0) {
+        textoSocial += `O abastecimento de água pela rede geral atende <strong>${aguaVal.toFixed(1)}%</strong> dos domicílios. `;
+    }
+    if (idebVal > 0) {
+        textoSocial += `Na educação básica, a proficiência no IDEB (Anos Iniciais) alcança nota <strong>${idebVal.toFixed(1)}</strong>.`;
+    }
+
+    // 4. DIMENSÃO FISCAL
+    let capagNota = '-';
+    const itemCapag = (ind || []).find(i => {
+        const s = String(i.sigla_indicador || '').toLowerCase().trim();
+        const nm = String(i.nm_indicador || '').toLowerCase().trim();
+        return s === 'capag' || nm === 'capag';
+    });
+    if (itemCapag && itemCapag.indicador && String(itemCapag.indicador).trim() !== '' && String(itemCapag.indicador).trim() !== 'NA') {
+        capagNota = String(itemCapag.indicador).trim().toUpperCase();
+    } else if (demo && (demo.capag || demo.CAPAG) && String(demo.capag || demo.CAPAG).trim() !== 'n.d.') {
+        capagNota = String(demo.capag || demo.CAPAG).trim().toUpperCase();
+    } else if (diagMun && diagMun.capacidade_fiscal_capag) {
+        capagNota = String(diagMun.capacidade_fiscal_capag).trim().toUpperCase();
+    }
+
+    // Dados de investimento e serviço da dívida (fiscais)
+    let maxExFisc = 0;
+    (fiscais || []).forEach(f => {
+        const ex = parseInt(f.exercicio) || 0;
+        if (ex > maxExFisc) maxExFisc = ex;
+    });
+    const fiscaisRecentes = (fiscais || []).filter(f => parseInt(f.exercicio) === maxExFisc);
+
+    const obterValorFiscal = (nomeInd) => {
+        const itens = fiscaisRecentes.filter(f => String(f.indicador || '').toLowerCase().trim() === nomeInd.toLowerCase().trim());
+        if (!itens.length) return 0;
+        itens.sort((a, b) => (parseInt(b.periodo) || 0) - (parseInt(a.periodo) || 0));
+        return parseFloat(itens[0].valor) || 0;
+    };
+
+    const amortizacao = obterValorFiscal('Amortização da Dívida - Liq.');
+    const jurosDivida = obterValorFiscal('Juros e Encargos - Liq.');
+    const totalDespesaDivida = amortizacao + jurosDivida;
+    const despInvestimento = obterValorFiscal('Investimentos - Liq.') || obterValorFiscal('Despesas de Capital - Emp.');
+    const recInvestimento = obterValorFiscal('Receitas de Capital');
+
+    const dividaFmt = formatarMoedaCompacta(totalDespesaDivida);
+    const despInvestFmt = formatarMoedaCompacta(despInvestimento);
+    const recInvestFmt = formatarMoedaCompacta(recInvestimento);
+
+    let textoFiscal = `A gestão fiscal do município apresenta classificação <strong>CAPAG ${capagNota}</strong> junto à Secretaria do Tesouro Nacional (STN)`;
+    if (capagNota.startsWith('A') || capagNota.startsWith('B')) {
+        textoFiscal += `, indicando boa capacidade de pagamento, saúde financeira equilibrada e aptidão para operações de crédito com garantia da União. `;
+    } else if (capagNota.startsWith('C') || capagNota.startsWith('D')) {
+        textoFiscal += `, sinalizando restrições na liquidez e endividamento, demandando rigor no custeio e foco na ampliação de receitas próprias. `;
+    } else {
+        textoFiscal += `, exigindo acompanhamento contínuo dos indicadores da LRF, resultado primário e transferências constitucionais. `;
+    }
+    if (maxExFisc > 0 && (despInvestimento > 0 || recInvestimento > 0 || totalDespesaDivida > 0)) {
+        textoFiscal += `No exercício recente (${maxExFisc}), registrou <strong>${despInvestFmt}</strong> em investimentos liquidados e <strong>${recInvestFmt}</strong> em receitas de capital, destinando <strong>${dividaFmt}</strong> ao serviço da dívida (amortização e encargos).`;
+    }
+
+    // 5. DIMENSÃO TECNOLOGIA & INOVAÇÃO (INFOCOM EM RELAÇÃO A SERVIÇOS)
+    const fibraVal = extrairNumInd('cob_fibra', 0);
+    const fibraPct = fibraVal <= 1 && fibraVal > 0 ? (fibraVal * 100).toFixed(1) : fibraVal.toFixed(1);
+
+    const pctVabInfocomServ = extrairNumInd('pct_vab_infocom_serv', 0);
+    const pctEstabInfocomServ = extrairNumInd('pct_estab_infocom_serv', 0);
+    const pctEmpInfocomServ = extrairNumInd('pct_emp_infocom_serv', 0);
+    const qlInfocomServ = extrairNumInd('ql_infocom_serv', 0);
+    const estabInfocomTot = extrairNumInd('estab_infocom', 0);
+    const empInfocomTot = extrairNumInd('emp_infocom', 0);
+    const rankVabInfocom = extrairIndRecente('pct_vab_infocom_serv')?.rank_pe || '-';
+    const isQlInfocomEspec = qlInfocomServ >= 1.0;
+
+    let empresasTi = estabInfocomTot;
+    if (empresasTi === 0 && diagMun && diagMun.empresas_ti_infocom !== undefined) {
+        empresasTi = diagMun.empresas_ti_infocom;
+    }
+
+    let textoTech = `No eixo de inovação, as atividades de Informação e Comunicação (InfoCom) representam <strong>${pctVabInfocomServ.toFixed(2)}% do VAB de Serviços</strong> (${rankVabInfocom}º em PE), concentrando <strong>${pctEstabInfocomServ.toFixed(2)}% dos estabelecimentos</strong> (${empresasTi} empresas) e <strong>${pctEmpInfocomServ.toFixed(2)}% dos empregados formais</strong> (${empInfocomTot} vínculos) do setor terciário, com Quociente Locacional de <strong>QL = ${qlInfocomServ.toFixed(2)}</strong> (${isQlInfocomEspec ? 'especialização acima da média estadual' : 'sem especialização relativa em PE'}). Cobertura por fibra óptica em <strong>${fibraPct}%</strong>.`;
+
+    // Extração de dados de PIB per capita e IVCAD para a Síntese Executiva
+    const ivcadVal = extrairNumInd('ivcad', 0);
+    const rankIvcad = extrairIndRecente('ivcad')?.rank_pe || '-';
+    const pibpcFmt = pibpcVal > 0 ? `R$ ${pibpcVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+    const ivcadFmt = ivcadVal > 0 ? ivcadVal.toFixed(3) : '-';
+
+    const htmlResumo = `
+        <div class="resumo-exec-banner mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-white text-blue-900 font-bold px-3 py-1.5 rounded-pill uppercase tracking-wider text-xs shadow-xs">
+                        <i class="fas fa-file-signature me-1 text-blue-600"></i> Síntese Estratégica Executiva
+                    </span>
+                    <span class="text-blue-100 font-semibold text-xs">${nomeMun} &bull; Região de Desenvolvimento ${extrairValor(demo, 'regiao_de_desenvolvimento', '-')}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge bg-blue-900/60 text-blue-100 border border-blue-400/30 rounded-pill px-3 py-1 text-xs">
+                        <i class="fas fa-users me-1 text-cyan-300"></i> Pop: ${popVal.toLocaleString('pt-BR')} (${rankPop}º PE)
+                    </span>
+                    <span class="badge bg-blue-900/60 text-blue-100 border border-blue-400/30 rounded-pill px-3 py-1 text-xs">
+                        <i class="fas fa-sack-dollar me-1 text-emerald-300"></i> PIB: ${pibFormatado} (${rankPib}º PE)
+                    </span>
+                    <span class="badge bg-blue-900/60 text-blue-100 border border-blue-400/30 rounded-pill px-3 py-1 text-xs">
+                        <i class="fas fa-user-tag me-1 text-amber-300"></i> PIB pc: ${pibpcFmt} (${rankPibpc}º PE)
+                    </span>
+                    <span class="badge bg-blue-900/60 text-blue-100 border border-blue-400/30 rounded-pill px-3 py-1 text-xs">
+                        <i class="fas fa-shield-heart me-1 text-purple-300"></i> IVCAD: ${ivcadFmt} (${rankIvcad}º PE)
+                    </span>
+                </div>
+            </div>
+            <p class="text-sm text-blue-50 leading-relaxed mb-0 font-medium" style="text-align: justify;">
+                ${nomeMun} consolida-se como a <strong>${rankPop}ª maior população</strong> e o <strong>${rankPib}º maior PIB</strong> de Pernambuco, com PIB per capita de <strong>${pibpcFmt}</strong> (${rankPibpc}º no Estado) e forte inserção na RD ${extrairValor(demo, 'regiao_de_desenvolvimento', '-')}. Apresenta matriz produtiva com liderança de <strong>${setorLider}</strong>, IDHM de <strong>${idhmVal.toFixed(3)}</strong> (${faixaIdhm}), vulnerabilidade social aferida pelo IVCAD em <strong>${ivcadFmt}</strong> (${rankIvcad}º em PE), capacidade fiscal classificada como <strong>CAPAG ${capagNota}</strong> e taxa de cobertura por fibra de <strong>${fibraPct}%</strong>.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+            <!-- 1. DEMOGRAFIA -->
+            <div class="resumo-dim-card" style="border-top: 4px solid #3B82F6;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-users text-blue-500 me-1.5"></i> Demografia</span>
+                    <span class="badge bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold rounded-pill px-2">${rankPop}º em PE</span>
+                </div>
+                <div class="space-y-1 mb-2.5">
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Pop. 2026:</span> <strong class="text-slate-800">${popVal.toLocaleString('pt-BR')}</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Densidade:</span> <strong class="text-slate-800">${densidade} hab/km²</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Urbanização:</span> <strong class="text-slate-800">${pctUrb.toFixed(1)}%</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIA (15-64):</span> <strong class="text-slate-800">${pctPia.toFixed(1)}%</strong></div>
+                </div>
+                <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                    ${textoDemografia}
+                </div>
+            </div>
+
+            <!-- 2. ECONOMIA -->
+            <div class="resumo-dim-card" style="border-top: 4px solid #10B981;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-chart-line text-emerald-500 me-1.5"></i> Economia</span>
+                    <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-pill px-2">${rankPib}º em PE</span>
+                </div>
+                <div class="space-y-1 mb-2.5">
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIB Total:</span> <strong class="text-slate-800">${pibFormatado}</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIB per Capita:</span> <strong class="text-slate-800">R$ ${pibpcVal.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">QL Indústria:</span> <strong class="text-slate-800">${qlIndFmt} <span class="text-[10px] ${isQLEspecializado ? 'text-emerald-600 font-bold' : 'text-slate-400'}">(${isQLEspecializado ? 'Espec. >1' : '< 1'})</span></strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Tipo Terciário:</span> <strong class="text-slate-800" title="${perfilServico}">${rotuloServico}</strong></div>
+                </div>
+                <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                    ${textoEconomia}
+                </div>
+            </div>
+
+            <!-- 3. SOCIAL -->
+            <div class="resumo-dim-card" style="border-top: 4px solid #F59E0B;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-hand-holding-heart text-amber-500 me-1.5"></i> Social</span>
+                    <span class="badge bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-pill px-2">IDHM: ${idhmVal.toFixed(3)}</span>
+                </div>
+                <div class="space-y-1 mb-2.5">
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">IDHM:</span> <strong class="text-slate-800">${idhmVal.toFixed(3)} (${faixaIdhm})</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Pop. no CadÚnico:</span> <strong class="text-slate-800">${txCadVal > 0 ? txCadVal.toFixed(1) + '%' : '-'}</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Dep. Recursos (DR):</span> <strong class="text-slate-800">${drVal > 0 ? drPctStr : '-'}</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Água Tratada:</span> <strong class="text-slate-800">${aguaVal > 0 ? aguaVal.toFixed(1) + '%' : '-'}</strong></div>
+                </div>
+                <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                    ${textoSocial}
+                </div>
+            </div>
+
+            <!-- 4. FISCAL -->
+            <div class="resumo-dim-card" style="border-top: 4px solid #8B5CF6;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-landmark text-purple-500 me-1.5"></i> Fiscal</span>
+                    <span class="badge text-white text-[10px] font-bold rounded-pill px-2.5 py-1" style="background-color: ${obterCorCapag(capagNota)};">CAPAG: ${capagNota}</span>
+                </div>
+                <div class="space-y-1 mb-2.5">
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">CAPAG STN:</span> <strong class="badge text-white px-2 py-0.5 rounded-pill" style="background-color: ${obterCorCapag(capagNota)}; font-size: 11px;">${capagNota}</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Desp. Investimento:</span> <strong class="text-slate-800">${despInvestFmt}</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Rec. Investimento:</span> <strong class="text-slate-800">${recInvestFmt}</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Despesa c/ Dívida:</span> <strong class="text-slate-800">${dividaFmt}</strong></div>
+                </div>
+                <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                    ${textoFiscal}
+                </div>
+            </div>
+
+            <!-- 5. TECNOLOGIA & INOVAÇÃO -->
+            <div class="resumo-dim-card" style="border-top: 4px solid #06B6D4;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-microchip text-cyan-500 me-1.5"></i> Inovação &amp; TI</span>
+                    <span class="badge ${isQlInfocomEspec ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-cyan-50 text-cyan-700 border-cyan-200'} border text-[10px] font-bold rounded-pill px-2">QL InfoCom: ${qlInfocomServ.toFixed(2)}</span>
+                </div>
+                <div class="space-y-1 mb-2.5">
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Participação de InfoCom em relação a Serviços no VAB">% InfoCom / Serv (VAB):</span> <strong class="text-slate-800">${pctVabInfocomServ.toFixed(2)}%</strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Participação de InfoCom nos Estabelecimentos de Serviços">% InfoCom / Serv (Estab.):</span> <strong class="text-slate-800">${pctEstabInfocomServ.toFixed(2)}% <span class="text-[10px] text-slate-400">(${empresasTi})</span></strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Participação de InfoCom nos Empregados de Serviços">% InfoCom / Serv (Empreg.):</span> <strong class="text-slate-800">${pctEmpInfocomServ.toFixed(2)}% <span class="text-[10px] text-slate-400">(${empInfocomTot})</span></strong></div>
+                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Quociente Locacional específico de InfoCom em relação a Serviços">QL InfoCom / Serviços:</span> <strong class="text-slate-800">${qlInfocomServ.toFixed(2)} <span class="text-[10px] ${isQlInfocomEspec ? 'text-emerald-600 font-bold' : 'text-slate-400'}">(${isQlInfocomEspec ? 'Espec. ≥1' : '< 1'})</span></strong></div>
+                </div>
+                <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                    ${textoTech}
+                </div>
+            </div>
+        </div>
+    `;
+
+    $container.html(htmlResumo);
+}
+
+function renderizarDiagnosticoRegional(nomeMun, diagMun, fontesRef) {
+    const $container = $('#ficha_container_diagnostico_regional');
+    const $headerBadges = $('#ficha_diag_badges_header');
+    if (!$container.length) return;
+    $container.empty();
+    if ($headerBadges.length) $headerBadges.empty();
+
+    if (!diagMun || !diagMun.diretrizes || !diagMun.diretrizes.length) {
+        $container.html(`
+            <div class="col-span-full bg-white p-4 rounded-xl border border-slate-200 text-center text-slate-500 text-sm">
+                <i class="fas fa-info-circle me-1"></i> Diagnóstico de desenvolvimento regional em processamento para este município.
+            </div>
+        `);
+        return;
+    }
+
+    if ($headerBadges.length) {
+        const semiaridoTxt = diagMun.semiarido ? 'Semiárido (SUDENE)' : 'Zona Úmida / Litoral';
+        const semiaridoCor = diagMun.semiarido ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-slate-100 text-slate-700 border-slate-200';
+        $headerBadges.html(`
+            <span class="badge bg-blue-100 text-blue-900 border border-blue-200 px-3 py-1.5 rounded-pill font-bold text-xs"><i class="fas fa-layer-group me-1 text-blue-600"></i> ${diagMun.rd_pe || 'RD'}</span>
+            <span class="badge bg-purple-100 text-purple-900 border border-purple-200 px-3 py-1.5 rounded-pill font-bold text-xs"><i class="fas fa-city me-1 text-purple-600"></i> REGIC: ${diagMun.tipologia_regic || '-'}</span>
+            <span class="badge bg-emerald-100 text-emerald-900 border border-emerald-200 px-3 py-1.5 rounded-pill font-bold text-xs"><i class="fas fa-route me-1 text-emerald-600"></i> Eixo: ${diagMun.eixo_rodoviario || '-'}</span>
+            <span class="badge ${semiaridoCor} border px-3 py-1.5 rounded-pill font-bold text-xs"><i class="fas fa-sun me-1"></i> ${semiaridoTxt}</span>
+        `);
+    }
+
+    const iconePorEixo = {
+        'industrialização': { icone: 'fa-industry', cor: '#0C2856', bgIcon: 'bg-blue-100 text-blue-900' },
+        'industrializacao': { icone: 'fa-industry', cor: '#0C2856', bgIcon: 'bg-blue-100 text-blue-900' },
+        'tecnologia & infocom': { icone: 'fa-microchip', cor: '#4F46E5', bgIcon: 'bg-indigo-100 text-indigo-900' },
+        'tecnologia': { icone: 'fa-microchip', cor: '#4F46E5', bgIcon: 'bg-indigo-100 text-indigo-900' },
+        'logística e redes': { icone: 'fa-network-wired', cor: '#059669', bgIcon: 'bg-emerald-100 text-emerald-900' },
+        'logistica e redes': { icone: 'fa-network-wired', cor: '#059669', bgIcon: 'bg-emerald-100 text-emerald-900' },
+        'segurança e clima': { icone: 'fa-shield-halved', cor: '#D97706', bgIcon: 'bg-amber-100 text-amber-900' },
+        'seguranca e clima': { icone: 'fa-shield-halved', cor: '#D97706', bgIcon: 'bg-amber-100 text-amber-900' }
+    };
+
+    diagMun.diretrizes.forEach(d => {
+        const eixoNorm = String(d.eixo_estruturante || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const infoEixo = iconePorEixo[eixoNorm] || { icone: 'fa-compass', cor: '#0C2856', bgIcon: 'bg-slate-100 text-slate-800' };
+
+        const badgesFontes = (d.referencias_fontes || []).map(sigla => {
+            return `<button type="button" class="diag-fonte-badge" onclick="window.abrirModalFonteReferencia('${sigla}')" title="Clique para ver detalhes da fonte ${sigla}"><i class="fas fa-book-bookmark text-blue-600"></i> ${sigla}</button>`;
+        }).join(' ');
+
+        const cardHtml = `
+            <div class="diag-card" style="border-top: 5px solid ${infoEixo.cor};">
+                <div class="d-flex align-items-center justify-content-between mb-3 border-b border-slate-100 pb-2.5">
+                    <div class="d-flex align-items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl ${infoEixo.bgIcon} d-flex align-items-center justify-content-center shadow-xs">
+                            <i class="fas ${infoEixo.icone} text-sm"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest d-block">Eixo Estruturante</span>
+                            <h5 class="font-black text-slate-800 text-sm mb-0 uppercase">${d.eixo_estruturante}</h5>
+                        </div>
+                    </div>
+                    <span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill text-[10px] px-2.5 py-1">Diretriz PPA / PE 2050</span>
+                </div>
+
+                <!-- PARADIGMA TRADICIONAL A SUPERAR -->
+                <div class="diag-box-paradigma">
+                    <div class="d-flex align-items-center gap-1.5 mb-1">
+                        <i class="fas fa-arrow-down-left-and-up-right-to-center text-amber-600 text-xs"></i>
+                        <span class="text-[11px] font-extrabold text-amber-900 uppercase tracking-wider">Paradigma Tradicional a Superar:</span>
+                    </div>
+                    <p class="text-xs text-amber-950/80 mb-0 leading-relaxed font-medium" style="text-align: justify;">
+                        ${d.paradigma_tradicional}
+                    </p>
+                </div>
+
+                <!-- REORIENTAÇÃO TÉCNICA -->
+                <div class="diag-box-reorientacao">
+                    <div class="d-flex align-items-center gap-1.5 mb-1.5">
+                        <i class="fas fa-circle-check text-emerald-600 text-xs"></i>
+                        <span class="text-[11px] font-extrabold text-emerald-900 uppercase tracking-wider">Reorientação Técnica Estrutural:</span>
+                    </div>
+                    <p class="text-xs text-slate-800 mb-0 leading-relaxed font-semibold" style="text-align: justify;">
+                        ${d.reorientacao_tecnica}
+                    </p>
+                </div>
+
+                <!-- FONTES E EVIDÊNCIAS -->
+                <div class="mt-auto pt-2.5 border-t border-slate-100 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"><i class="fas fa-graduation-cap me-1"></i> Corpus Bibliográfico:</span>
+                    <div class="d-flex flex-wrap gap-1">
+                        ${badgesFontes}
+                    </div>
+                </div>
+            </div>
+        `;
+        $container.append(cardHtml);
+    });
+}
+
+window.abrirModalFonteReferencia = function (sigla) {
+    if (!sigla) return;
+    const fontes = window.fontesReferenciaRegional || {};
+    let fonte = null;
+    for (const k in fontes) {
+        if (fontes[k].sigla === sigla) {
+            fonte = fontes[k];
+            break;
+        }
+    }
+    if (!fonte) {
+        const defaultFontes = {
+            "MATRIZ-PE": { titulo: "Matriz de Indicadores de Desenvolvimento Regional de Pernambuco", orgao: "Governo de Pernambuco / IBGE / RAIS / SNIS", tipo: "Base de Dados Operacional Municipal", arquivo: "matriz_desenvolvimento_regional.parquet" },
+            "PLP-MET": { titulo: "Planejamento Regional de Longo Prazo: Dimensões e Indicadores Operacionais", orgao: "SEPLAG / Condepe-Fidem", tipo: "Marco Metodológico de Planejamento", arquivo: "Planejamento Regional de Longo Prazo(1).html" },
+            "REGIC": { titulo: "Regiões de Influência das Cidades (REGIC) & Arranjos Populacionais", orgao: "IBGE - Instituto Brasileiro de Geografia e Estatística", tipo: "Estudo de Rede Urbana e Centralidades", arquivo: "REGIC - Livro.pdf / REGIC - NM - Metodologia.pdf" },
+            "PE-2050": { titulo: "Pernambuco em Perspectiva: Estratégias e Cenários de Desenvolvimento de Longo Prazo", orgao: "Revista Algo Mais / Ceplan Consultoria", tipo: "Planejamento Estratégico Estadual", arquivo: "Pernambuco em Perspectiva - Algo Mais.pdf" },
+            "ROTAS-BM": { titulo: "Rotas para o Nordeste: Oportunidades para o Desenvolvimento Produtivo", orgao: "Banco Mundial (World Bank Group)", tipo: "Relatório de Competitividade e Produtividade", arquivo: "RotasParaoNordeste_BancoMundial.pdf" },
+            "INFRA-LOG": { titulo: "Diretrizes de Infraestrutura de Transportes, Malha Rodoviária e Logística Multimodal", orgao: "DNIT / DER-PE / ANTT", tipo: "Planejamento Setorial de Transportes", arquivo: "skill_planejamento_des_regional-1.pdf" },
+            "MEM-AUDIT": { titulo: "Memorial Técnico-Metodológico de Auditoria e Parametrização PPA Estadual / PE 2050", orgao: "SEPLAG / PPA Estadual", tipo: "Protocolo Algorítmico de Auditoria", arquivo: "Memorial_Metodologico_Auditoria.md" },
+            "PRDNE-NIB": { titulo: "Plano Regional de Desenvolvimento do Nordeste (PRDNE 2024-2027) & Nova Indústria Brasil (NIB)", orgao: "SUDENE / Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC)", tipo: "Plano Regional e Política Industrial Nacional", arquivo: "Plano Regional de Desenvolvimento do Nordeste para o período 2024-2027-1.pdf" }
+        };
+        fonte = defaultFontes[sigla];
+    }
+    if (fonte) {
+        $('#modalFonteSigla').text(sigla);
+        $('#modalFonteTitulo').text(fonte.titulo);
+        $('#modalFonteOrgao').text(fonte.orgao);
+        $('#modalFonteTipo').text(fonte.tipo);
+        $('#modalFonteArquivo').text(fonte.arquivo);
+        const modalEl = document.getElementById('modalFonteReferencia');
+        if (modalEl && window.bootstrap) {
+            const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            bsModal.show();
+        } else {
+            $('#modalFonteReferencia').modal('show');
+        }
+    }
+};
+
+/* ==========================================================================
+   4. CICLO DE VIDA E CARREGAMENTO DE DADOS (API)
+   ========================================================================== */
+window.iniciarModuloFicha = async function () {
+    if (typeof window.mostrarCarregamento === 'function') window.mostrarCarregamento("Carregando Painel...");
+
+    try {
+        // Agora fazemos apenas UMA única chamada para a API! Muito mais amigável ao Ruscker.
+        const resMeta = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/metadados`.replace(/\/+/g, '/'));
+
+        if (resMeta && resMeta.ok) {
+            const j = await resMeta.json();
+            // Recebemos a massa consolidada perfeitamente preservada
+            window.dadosMetadados = j.indicadores_dicionario || [];
+        } else {
+            console.warn("Falha ao carregar os metadados da API.");
+        }
+
+        if (typeof window.renderizarAbaMetadados === 'function') window.renderizarAbaMetadados();
+
+    } catch (e) {
+        console.warn("Erro ao carregar metadados unificados:", e);
+    }
+
+    try {
+        const resDiag = await window.fetchSeguro(`${window.basePath || ''}/data/diagnostico_desenvolvimento_regional.json`.replace(/\/+/g, '/'));
+        if (resDiag && resDiag.ok) {
+            const jDiag = await resDiag.json();
+            window.fontesReferenciaRegional = jDiag.metadados?.fontes_referencia || {};
+            window.diagnosticoRegional = {};
+            (jDiag.municipios || []).forEach(m => {
+                if (m.municipio) {
+                    window.diagnosticoRegional[m.municipio.trim().toLowerCase()] = m;
+                }
+            });
+        }
+    } catch (e) {
+        console.warn("Diagnóstico regional será obtido via API individual:", e);
+    }
+
+    try {
+        iniciarDraggableNav();
+        configurarStickyNavbarMetrics();
+
+        const res = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/filtros`.replace(/\/+/g, '/'));
+        if (!res.ok) throw new Error("Erro ao buscar filtros da API");
+
+        const json = await res.json();
+        const $select = $('#ficha_f_municipio');
+
+        if ($select.length && json.municipios && json.municipios.length > 0) {
+            if ($select.data('selectpicker')) {
+                try { $select.selectpicker('destroy'); } catch (e) {}
+            }
+            
+            // Padrão canônico de inicialização: Recife se disponível, senão primeiro da lista
+            const defaultMun = json.municipios.includes("Recife") ? "Recife" : json.municipios[0];
+            $select.empty().html(json.municipios.map(m => `<option value="${m}" ${m === defaultMun ? 'selected' : ''}>${m}</option>`).join(''));
+            $select.val(defaultMun);
+
+            if (typeof $select.selectpicker === 'function') {
+                try {
+                    $select.selectpicker({
+                        liveSearch: true,
+                        liveSearchNormalize: true,
+                        liveSearchPlaceholder: "Buscar município...",
+                        noneResultsText: "Nenhum município encontrado",
+                        container: 'body',
+                        size: 10,
+                        style: 'btn-sm btn-light fw-bold text-slate-700 border-0 bg-transparent py-0 px-1 shadow-none',
+                        width: '230px'
+                    });
+                    $select.selectpicker('val', defaultMun);
+                    $select.selectpicker('refresh');
+                } catch (eSel) {
+                    console.warn("[Ficha] Erro ao inicializar selectpicker:", eSel);
+                    $select.val(defaultMun);
+                }
+            } else {
+                $select.val(defaultMun);
+            }
+
+            window.sincronizarBotaoFiltroMunicipio(defaultMun);
+
+            $select.off('change').on('change', function () { 
+                const val = $(this).val();
+                window.sincronizarBotaoFiltroMunicipio(val);
+                window.carregarDadosFicha(val); 
+            });
+            await window.carregarDadosFicha(defaultMun);
+        }
+    } catch (e) {
+        console.error("[Ficha] Erro na inicialização:", e);
+    } finally {
+        if (typeof window.ocultarCarregamento === 'function') window.ocultarCarregamento();
+    }
+};
+window.iniciarModuloMunicipios = window.iniciarModuloFicha;
+
+window.sincronizarBotaoFiltroMunicipio = function(nomeMun) {
+    if (!nomeMun) return;
+    const $select = $('#ficha_f_municipio');
+    if (!$select.length) return;
+
+    if ($select.val() !== nomeMun) {
+        $select.val(nomeMun);
+    }
+    if (typeof $select.selectpicker === 'function' && $select.data('selectpicker')) {
+        try {
+            $select.selectpicker('val', nomeMun);
+            $select.selectpicker('refresh');
+        } catch(e) {}
+    }
+    
+    // Atualização visual direta no elemento do botão do Bootstrap-Select
+    const $btnWrapper = $select.closest('.bootstrap-select');
+    if ($btnWrapper.length) {
+        $btnWrapper.find('.filter-option-inner-inner').text(nomeMun);
+        $btnWrapper.find('button.dropdown-toggle').attr('title', nomeMun);
+    }
+    $('#controles_ficha_municipal .bootstrap-select .filter-option-inner-inner').text(nomeMun);
+    $('#controles_ficha_municipal .bootstrap-select button.dropdown-toggle').attr('title', nomeMun);
+};
+
+window.carregarDadosFicha = async function (munParam) {
+    const $select = $('#ficha_f_municipio');
+    if (munParam && $select.val() !== munParam) {
+        if (typeof $select.selectpicker === 'function') {
+            try { $select.selectpicker('val', munParam); } catch (e) { $select.val(munParam); }
+        } else {
+            $select.val(munParam);
+        }
+    }
+    const municipio = $select.val();
+    if (!municipio) return;
+
+    if (typeof window.mostrarCarregamento === 'function') window.mostrarCarregamento("CARREGANDO ANÁLISE...");
+
+    try {
+        const res = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/data`.replace(/\/+/g, '/'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ municipio: municipio })
+        });
+
+        const json = await res.json();
+        if (json.error) throw new Error(json.details || json.error);
+
+        // Atualiza a badge com a data retornada pela rota
+        if (json.data_atualizacao) {
+            window.renderizarBadgeDataAtualizacao(json.data_atualizacao);
+        }
+
+        dadosBrutosFicha = json.indicadores || [];
+        cacheSociaisRD = {
+            geojsonRD: json.geojson_rd,
+            demografiaRD: json.demografia_rd || [],
+            indicadoresRD: json.indicadores_rd || [],
+            iniciativasRD: json.iniciativas_rd || [],
+            pcpRD: json.pcp_rd || [],
+            nomeMun: municipio
+        };
+
+        renderizarFicha(
+            municipio, 
+            json.demografia, 
+            json.indicadores, 
+            json.geojson, 
+            json.iniciativas, 
+            json.emendas, 
+            json.fiscais, 
+            json.pcp, 
+            json.vocacoes,
+            json.diagnostico,
+            json.fontes_referencia
+        );
+    } catch (e) {
+        console.error("[Ficha] Erro ao buscar dados:", e);
+    } finally {
+        if (typeof window.ocultarCarregamento === 'function') window.ocultarCarregamento();
+    }
+};
+
+/* ==========================================================================
+   5. RENDERIZADOR PRINCIPAL (FICHA MUNICIPAL)
+   ========================================================================== */
+function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, fiscais, pcp, vocacoes, diagApi, fontesApi) {
+    // Garante sincronização imediata do seletor e do label do botão na navbar
+    window.sincronizarBotaoFiltroMunicipio(nomeMun);
+
+    const extrairValor = (obj, key, fallback) => (obj && obj[key] && obj[key][0] !== undefined) ? obj[key][0] : fallback;
+    const getRankBadge = (rank) => rank ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${rank}º em PE</span>` : '';
+
+    // --- 5.1 TÍTULOS E CABEÇALHO ---
+    document.getElementById('ficha_nome_municipio').innerText = nomeMun;
+    const elCapaNome = document.getElementById('capa_nome_municipio');
+    if (elCapaNome) elCapaNome.innerText = nomeMun;
+
+    $('#topbar_nome_municipio').text(nomeMun);
+    $('#topbar_mun_badge').removeClass('d-none').show();
+
+    const rdNome = extrairValor(demo, 'regiao_de_desenvolvimento', extrairValor(demo, 'Região de Desenvolvimento', '-'));
+    $('#ficha_rd_subtitle').text(rdNome);
+    $('#ficha_apl_subtitle').text(extrairValor(demo, 'arranjos_produtivos_locais', 'Sem APL'));
+
+    const popVal = parseFloat(extrairValor(demo, 'pop_2026', 0)) || 0;
+    const areaVal = parseFloat(extrairValor(demo, 'area_km2', 0)) || 0;
+    const rankPop = extrairValor(demo, 'rank_pop', null) || window.obterRankPopulacao(nomeMun);
+
+    // Identificação do PIB Total para Navbar e Resumo
+    const itensPib = (ind || []).filter(i => String(i.sigla_indicador || '').trim().toLowerCase() === 'pib_1000');
+    let pibValMil = 0;
+    let rankPib = '-';
+    if (itensPib.length > 0) {
+        itensPib.sort((a, b) => b.ano - a.ano);
+        pibValMil = parseFloat(String(itensPib[0].indicador).replace(',', '.')) || 0;
+        rankPib = itensPib[0].rank_pe || '-';
+    }
+
+    let pibFormatado = '-';
+    if (pibValMil >= 1000000) {
+        pibFormatado = `R$ ${(pibValMil / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Bi`;
+    } else if (pibValMil >= 1000) {
+        pibFormatado = `R$ ${(pibValMil / 1e3).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Mi`;
+    } else if (pibValMil > 0) {
+        pibFormatado = `R$ ${pibValMil.toLocaleString('pt-BR')} mil`;
+    }
+
+    const popFormatada = popVal > 0 ? `${popVal.toLocaleString('pt-BR')} hab.` : '-';
+
+    $('#ficha_pop_subtitle').text(popVal > 0 ? `${popVal.toLocaleString('pt-BR')} hab. (${rankPop}º em PE - estimativa IBGE 2026)` : 'Pop: -');
+    $('#ficha_area_subtitle').text(areaVal > 0 ? `${areaVal.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} km²` : 'Área: -');
+
+    const obterPctPop = (sigla) => {
+        const item = (ind || []).find(i => String(i.sigla_indicador).trim().toLowerCase() === sigla.toLowerCase());
+        if (!item || item.indicador === undefined || item.indicador === null || item.indicador === '-') return '-';
+        let val = parseFloat(String(item.indicador).replace(',', '.'));
+        if (isNaN(val)) return '-';
+        if (val <= 1 && val > 0) val = val * 100;
+        return val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+    };
+
+    $('#ficha_pop_urb_subtitle').text(obterPctPop('perc_pop_urb') !== '-' ? `Pop. Urbana: ${obterPctPop('perc_pop_urb')} (Censo IBGE 2022)` : 'Pop. Urbana: -');
+    $('#ficha_pop_rur_subtitle').text(obterPctPop('perc_pop_rur') !== '-' ? `Pop. Rural: ${obterPctPop('perc_pop_rur')} (Censo IBGE 2022)` : 'Pop. Rural: -');
+
+    // --- 5.2 TAG DE FIBRA ÓTICA ---
+    const itensFibra = (ind || []).filter(i => String(i.sigla_indicador).trim().toLowerCase() === 'cob_fibra');
+    const $badgeCont = $('#badge_fibra_container');
+    const $iconFibra = $('#icon_fibra');
+    const $txtFibra = $('#ficha_fibra_subtitle');
+
+    $badgeCont.removeClass('text-dark text-danger text-warning text-primary text-info text-success border-danger-subtle border-warning-subtle border-primary-subtle border-info-subtle border-success-subtle');
+    $iconFibra.removeClass('text-secondary text-danger text-warning text-primary text-info text-success');
+
+    if (!itensFibra.length) {
+        $txtFibra.text("Fibra: S/ Info");
+        $badgeCont.addClass('text-dark');
+        $iconFibra.addClass('text-secondary');
+    } else {
+        itensFibra.sort((a, b) => b.ano - a.ano);
+        let valFibra = parseFloat(String(itensFibra[0].indicador).replace(',', '.'));
+
+        if (isNaN(valFibra) || valFibra === 0) {
+            $txtFibra.text("Sem Fibra Ótica");
+            $badgeCont.addClass('text-danger border-danger-subtle');
+            $iconFibra.addClass('text-danger');
+        } else {
+            let pct = (valFibra <= 1 && valFibra > 0) ? valFibra * 100 : valFibra;
+            let classe = "Alta", corClasse = "text-success", corBorda = "border-success-subtle";
+
+            if (pct <= 20) { classe = "Muito Baixa"; corClasse = "text-danger"; corBorda = "border-danger-subtle"; }
+            else if (pct <= 40) { classe = "Baixa"; corClasse = "text-warning"; corBorda = "border-warning-subtle"; }
+            else if (pct <= 60) { classe = "Média"; corClasse = "text-primary"; corBorda = "border-primary-subtle"; }
+            else if (pct <= 80) { classe = "Média Alta"; corClasse = "text-info"; corBorda = "border-info-subtle"; }
+
+            $txtFibra.text(`Fibra: ${classe} (${pct.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%)`);
+            $badgeCont.addClass(`${corClasse} ${corBorda}`);
+            $iconFibra.addClass(corClasse);
+        }
+    }
+
+    if ($badgeCont.find('.icon-metadado-fibra').length === 0) {
+        const metaFibra = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === 'cob_fibra');
+        if (metaFibra) {
+            $badgeCont.append(` <i class="fas fa-info-circle icon-metadado-fibra text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="event.stopPropagation(); window.abrirModalMetadado('cob_fibra')" title="Ver Metadados"></i>`);
+        }
+    }
+
+    // --- 5.3 KPIS DE CARACTERIZAÇÃO ---
+    const aplicarKPI = (sigla, elemBase, unidadeTag) => {
+        const itens = (ind || []).filter(i => String(i.sigla_indicador).trim().toLowerCase() === String(sigla).toLowerCase());
+        if (!itens.length) {
+            $(`#ficha_kpi_${elemBase}`).text("-");
+            $(`#ficha_ano_${elemBase}`).html(`${unidadeTag} &bull; <span style="opacity: 0.6;">Sem dados</span>`);
+            return;
+        }
+        itens.sort((a, b) => b.ano - a.ano);
+        const itemRecente = itens[0];
+        const tipoNorm = String(itemRecente.tipo || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        let val = parseFloat(String(itemRecente.indicador).replace(',', '.'));
+        let textoValor = "-";
+
+        if (!isNaN(val)) {
+            if (tipoNorm === 'percentual') textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 3 }) + "%";
+            else if (tipoNorm === 'moeda') textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            else if (tipoNorm === 'absoluto') textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+            else if (tipoNorm === 'indice') textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+            else textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+        } else {
+            textoValor = itemRecente.indicador;
+        }
+
+        $(`#ficha_kpi_${elemBase}`).text(textoValor);
+        $(`#ficha_ano_${elemBase}`).html(`${unidadeTag} &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${itemRecente.ano}</span>${getRankBadge(itemRecente.rank_pe)}${obterBadgePolaridade(sigla)}`);
+
+        const meta = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
+        window.configurarBotoesKPI(elemBase, sigla, meta ? meta.nm_indicador : null, 'socio');
+    };
+
+    const aplicarKPIVab = () => {
+        const getVal = (sigla) => {
+            const itens = (ind || []).filter(i => String(i.sigla_indicador).trim().toLowerCase() === sigla.toLowerCase());
+            if (!itens.length) return null;
+            itens.sort((a, b) => b.ano - a.ano);
+            return itens[0];
+        };
+
+        const itemAgro = getVal("vab_agro"), itemInd = getVal("vab_ind"), itemServ = getVal("vab_serv"), itemAdm = getVal("vab_adm");
+        const valAgro = itemAgro ? parseFloat(String(itemAgro.indicador).replace(',', '.')) || 0 : 0;
+        const valInd = itemInd ? parseFloat(String(itemInd.indicador).replace(',', '.')) || 0 : 0;
+        const valServ = itemServ ? parseFloat(String(itemServ.indicador).replace(',', '.')) || 0 : 0;
+        const valAdm = itemAdm ? parseFloat(String(itemAdm.indicador).replace(',', '.')) || 0 : 0;
+        const totalVab = valAgro + valInd + valServ + valAdm;
+
+        const qlMediaPE = {
+            vab_agro: 12.886,
+            vab_ind: 10.672,
+            vab_serv: 31.900,
+            vab_adm: 44.543
+        };
+
+        const renderVab = (item, val, elemBase, sigla) => {
+            if (!item || totalVab === 0) {
+                $(`#ficha_kpi_${elemBase}`).text("-");
+                $(`#ficha_ano_${elemBase}`).html(`% do VAB &bull; <span style="opacity: 0.6;">Sem dados</span>`);
+                $(`#ficha_ql_box_${elemBase}`).html(`<div class="d-flex justify-content-between align-items-center w-100"><span class="text-slate-400" style="font-size: 0.72rem;">QL Setorial:</span> <span class="text-slate-400" style="font-size: 0.75rem;">-</span></div>`);
+                return;
+            }
+            const pct = (val / totalVab) * 100;
+            $(`#ficha_kpi_${elemBase}`).text(pct.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%");
+            $(`#ficha_ano_${elemBase}`).html(`% do VAB &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${item.ano}</span>${getRankBadge(item.rank_pe)}${obterBadgePolaridade(sigla)}`);
+
+            // Cálculo e renderização do Quociente Locacional (QL)
+            const refMedia = qlMediaPE[sigla.toLowerCase()] || 0;
+            if (refMedia > 0) {
+                const qlVal = pct / refMedia;
+                const isEspec = qlVal >= 1.0;
+                const badgeHtml = isEspec
+                    ? `<span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-pill font-bold px-1.5 py-0.5" style="font-size: 0.65rem;" title="QL ≥ 1.0: Especialização relativa acima da média de Pernambuco">Espec.</span>`
+                    : `<span class="badge bg-slate-100 text-slate-500 border border-slate-200 rounded-pill font-medium px-1.5 py-0.5" style="font-size: 0.65rem;" title="QL < 1.0: Sem especialização relativa">&lt; 1</span>`;
+
+                $(`#ficha_ql_box_${elemBase}`).html(`
+                    <div class="d-flex align-items-center justify-content-between w-100">
+                        <span class="text-slate-500 fw-semibold" style="font-size: 0.72rem;" title="Quociente Locacional: razão entre a participação do setor no município e a média de Pernambuco">QL Setorial:</span>
+                        <div class="d-flex align-items-center gap-1">
+                            <strong class="text-slate-800" style="font-size: 0.78rem;">${qlVal.toFixed(2)}</strong>
+                            ${badgeHtml}
+                        </div>
+                    </div>
+                `);
+            } else {
+                $(`#ficha_ql_box_${elemBase}`).html(`<div class="d-flex justify-content-between align-items-center w-100"><span class="text-slate-400" style="font-size: 0.72rem;">QL Setorial:</span> <span class="text-slate-400" style="font-size: 0.75rem;">-</span></div>`);
+            }
+
+            const metaVab = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
+            window.configurarBotoesKPI(elemBase, sigla, metaVab ? metaVab.nm_indicador : null, 'socio');
+        };
+
+        renderVab(itemAgro, valAgro, "vab_agro", "vab_agro");
+        renderVab(itemInd, valInd, "vab_ind", "vab_ind");
+        renderVab(itemServ, valServ, "vab_serv", "vab_serv");
+        renderVab(itemAdm, valAdm, "vab_adm", "vab_adm");
+    };
+
+    aplicarKPI("pibpc", "pibpc", "R$");
+    aplicarKPI("pib_pct", "pib_pct", "%");
+    aplicarKPI("pib_1000", "pib_1000", "R$ 1.000");
+    aplicarKPI("idhm", "idhm", "ÍNDICE");
+    aplicarKPIVab();
+
+    // --- 5.4 MAPA DE CARACTERIZAÇÃO ---
+    const mapDom = document.getElementById('ficha_map_container');
+    if (mapDom && geojsonStr) {
+        const geoData = obterGeoJSONSeguro(geojsonStr);
+        if (geoData) {
+            const fitBoundsToFeature = (mapInst) => {
+                try {
+                    const bounds = new maplibregl.LngLatBounds();
+                    const processCoord = (c) => { if (eCoordenadaContinental(c)) bounds.extend(c); };
+                    let coords = null;
+                    let geomType = null;
+                    if (geoData.features && geoData.features.length > 0 && geoData.features[0].geometry) {
+                        coords = geoData.features[0].geometry.coordinates;
+                        geomType = geoData.features[0].geometry.type;
+                    } else if (geoData.geometry) {
+                        coords = geoData.geometry.coordinates;
+                        geomType = geoData.geometry.type;
+                    }
+                    if (coords) {
+                        if (geomType === 'Polygon') coords[0].forEach(processCoord);
+                        else if (geomType === 'MultiPolygon') coords.forEach(poly => poly[0].forEach(processCoord));
+                    }
+
+                    if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 30, animate: false });
+                } catch (e) {
+                    console.warn("[Ficha] Erro ao calcular limites do mapa principal:", e);
+                }
+            };
+
+            if (mapFicha && mapFicha.loaded && mapFicha.loaded() && mapFicha.getSource('mun_source')) {
+                mapFicha.getSource('mun_source').setData(geoData);
+                fitBoundsToFeature(mapFicha);
+                mapFicha.resize();
+            } else {
+                if (mapFicha) {
+                    try { mapFicha.remove(); } catch(e) {}
+                }
+                mapFicha = new maplibregl.Map({
+                    container: 'ficha_map_container',
+                    style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                    center: [parseFloat(extrairValor(demo, 'longitude', -37.8)), parseFloat(extrairValor(demo, 'latitude', -8.3))],
+                    zoom: 8, preserveDrawingBuffer: true
+                });
+                mapFicha.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+                mapFicha.on('load', () => {
+                    mapFicha.resize();
+                    mapFicha.addSource('mun_source', { type: 'geojson', data: geoData });
+                    mapFicha.addLayer({ id: 'mun_fill', type: 'fill', source: 'mun_source', paint: { 'fill-color': '#0066FF', 'fill-opacity': 0.3 } });
+                    mapFicha.addLayer({ id: 'mun_line', type: 'line', source: 'mun_source', paint: { 'line-color': '#0C2856', 'line-width': 2 } });
+                    fitBoundsToFeature(mapFicha);
+                });
+            }
+        }
+    }
+
+    // --- 5.5 CHAMADA DOS DEMAIS RENDERIZADORES ---
+    const munKey = String(nomeMun || '').trim().toLowerCase();
+    const diagMun = diagApi || (window.diagnosticoRegional ? window.diagnosticoRegional[munKey] : null);
+    const fontesRef = fontesApi || window.fontesReferenciaRegional || {};
+
+    renderizarResumoExecutivo(nomeMun, demo, ind, fiscais, vocacoes, diagMun, rankPop, pibValMil, rankPib, pibFormatado);
+    renderizarDiagnosticoRegional(nomeMun, diagMun, fontesRef);
+
+    renderizarIndicadoresSociais(demo, ind);
+    
+    renderizarVocacoes(vocacoes);
+    renderizarIndicadoresTrabalho(ind, demo);
+    renderizarIndicadoresConectividade(ind, demo);
+    renderizarIndicadoresInovacao(ind, demo);
+    renderizarIndicadoresComercio(ind, demo);
+    
+    window.dadosFiscaisMun = fiscais || [];
+    renderizarDadosFiscais(fiscais || [], ind || [], demo || {});
+
+    // $('#ficha_transf_rd_titulo').text(`Municípios da RD ${rdNome}`);
+    renderizarTransferenciasRenda(iniciativas || [], pcp || []);
+    // renderizarMapaTransfRD();
+    renderizarIniciativasFicha(iniciativas || []);
+    renderizarEmendasFicha(emendas || []);
+    
+    renderizarVocacoes(vocacoes || []);
+    renderizarIndicadoresTrabalho(ind, demo);
+
+    // Garante que TODOS os KPIs recebam o botão de série histórica e metadados
+    if (typeof window.garantirBotoesTodosKPIs === 'function') {
+        window.garantirBotoesTodosKPIs();
+    }
+}
+
+/* ==========================================================================
+   6. SUBSEÇÕES DE RENDERIZAÇÃO E MAPAS REGIONAIS
+   ========================================================================== */
+
+function renderizarMapaTrabalhoRD() {
+    const mapDom = document.getElementById('ficha_map_trabalho_container');
+    if (!mapDom || !cacheSociaisRD.geojsonRD || !metricaTrabalhoAtiva) return;
+
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    const geoData = obterGeoJSONSeguro(cacheSociaisRD.geojsonRD);
+    if (!geoData || !geoData.features) return;
+    let minVal = Infinity, maxVal = -Infinity;
+
+    geoData.features.forEach(ft => {
+        const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
+        const ibgeCode = String(ft.properties.ibge6 || ft.properties.ibge7 || ft.properties.cod_ibge || '').substring(0, 6);
+
+        const indArr = (cacheSociaisRD.indicadoresRD || []).filter(i => {
+            const matchIbge = ibgeCode && String(i.ibge6 || i.ibge7 || '').substring(0, 6) === ibgeCode;
+            const matchName = normText(i.nm_municipio).includes(normName);
+            return (matchIbge || matchName) && String(i.sigla_indicador || '').toLowerCase().trim() === metricaTrabalhoAtiva.toLowerCase().trim();
+        }).sort((a, b) => b.ano - a.ano);
+
+        let vAtiva = indArr.length ? (parseFloat(String(indArr[0].indicador).replace(',', '.')) || 0) : 0;
+        ft.properties.val_ativa = vAtiva;
+        ft.properties.is_selected = normName === normText(cacheSociaisRD.nomeMun);
+
+        if (vAtiva > 0) {
+            if (vAtiva < minVal) minVal = vAtiva;
+            if (vAtiva > maxVal) maxVal = vAtiva;
+        }
+    });
+
+    if (minVal === Infinity) minVal = 0;
+    if (maxVal === -Infinity || maxVal === minVal) maxVal = minVal + 1;
+
+    const fillColorExpression = ['interpolate', ['linear'], ['get', 'val_ativa'], minVal, '#E1F5FE', maxVal, '#0277BD'];
+    const fitMapBounds = (mapInst) => {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            const processCoord = (c) => { if (eCoordenadaContinental(c)) bounds.extend(c); };
+            geoData.features.forEach(ft => {
+                const coords = ft.geometry.coordinates;
+                if (ft.geometry.type === 'Polygon') coords[0].forEach(processCoord);
+                else if (ft.geometry.type === 'MultiPolygon') coords.forEach(poly => poly[0].forEach(processCoord));
+            });
+            if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 40, animate: false });
+        } catch (e) {}
+    };
+
+    if (mapTrabalhoFicha && mapTrabalhoFicha.getSource('rd_trabalho_source')) {
+        mapTrabalhoFicha.getSource('rd_trabalho_source').setData(geoData);
+        mapTrabalhoFicha.setPaintProperty('rd_trabalho_fill', 'fill-color', fillColorExpression);
+        fitMapBounds(mapTrabalhoFicha);
+        mapTrabalhoFicha.resize();
+        return;
+    }
+
+    if (mapTrabalhoFicha) mapTrabalhoFicha.remove();
+    mapTrabalhoFicha = new maplibregl.Map({
+        container: 'ficha_map_trabalho_container',
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
+    });
+
+    mapTrabalhoFicha.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    mapTrabalhoFicha.on('load', () => {
+        mapTrabalhoFicha.resize();
+        mapTrabalhoFicha.addSource('rd_trabalho_source', { type: 'geojson', data: geoData });
+        mapTrabalhoFicha.addLayer({ id: 'rd_trabalho_fill', type: 'fill', source: 'rd_trabalho_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
+        mapTrabalhoFicha.addLayer({ id: 'rd_trabalho_line', type: 'line', source: 'rd_trabalho_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        mapTrabalhoFicha.on('mousemove', 'rd_trabalho_fill', (e) => {
+            mapTrabalhoFicha.getCanvas().style.cursor = 'pointer';
+            if (!e.features.length) return;
+            const p = e.features[0].properties;
+
+            popup.setLngLat(e.lngLat).setHTML(`
+                <div style="font-family: Jost, sans-serif; padding: 4px;">
+                  <div style="font-weight: 800; color: #0C2856; border-bottom: 1px solid #eee; padding-bottom: 2px;">${p.municipio || p.name}</div>
+                  <div style="font-size: 11px; margin-top: 4px;"><b>Valor:</b> <span style="color:#0277BD; font-weight:800;">${Number(p.val_ativa || 0).toLocaleString('pt-BR')}</span></div>
+                </div>
+            `).addTo(mapTrabalhoFicha);
+        });
+        mapTrabalhoFicha.on('mouseleave', 'rd_trabalho_fill', () => { mapTrabalhoFicha.getCanvas().style.cursor = ''; popup.remove(); });
+        fitMapBounds(mapTrabalhoFicha);
+    });
+}
+
+/* --- 6.1 DEMOGRAFIA --- */
+function renderizarMapaDemografiaRD() {
+    const mapDom = document.getElementById('ficha_map_demografia_container');
+    const geoData = obterGeoJSONSeguro(cacheSociaisRD.geojsonRD);
+    if (!mapDom || !geoData || !geoData.features) return;
+
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    let minVal = Infinity, maxVal = -Infinity;
+
+    const siglasDemografia = ['rd_pop', 'rd_jovem', 'rd_idosa', 'pct_pia', 'ind_envelhecimento', 'pct_longevidade', 'ind_ir_pia', 'pct_jovem', 'ind_renov_trabalho'];
+
+    geoData.features.forEach(ft => {
+        const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
+
+        siglasDemografia.forEach(sig => {
+            const indArr = (cacheSociaisRD.indicadoresRD || []).filter(i => normText(i.nm_municipio).includes(normName) && String(i.sigla_indicador).toLowerCase() === sig);
+            indArr.sort((a, b) => b.ano - a.ano);
+
+            let v = indArr.length ? (parseFloat(String(indArr[0].indicador).replace(',', '.')) || 0) : 0;
+            const isPerc = ['pct_pia', 'pct_longevidade', 'pct_jovem'].includes(sig);
+            if (isPerc && v <= 1 && v > 0) v = v * 100;
+
+            ft.properties[sig] = v;
+            ft.properties[`${sig}_tipo`] = indArr.length && indArr[0].tipo ? String(indArr[0].tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : (isPerc ? 'percentual' : 'indice');
+        });
+
+        ft.properties.is_selected = normName === normText(cacheSociaisRD.nomeMun);
+        let vAtiva = ft.properties[metricaDemografiaAtiva] || 0;
+        ft.properties.val_ativa = vAtiva;
+
+        if (vAtiva > 0) {
+            if (vAtiva < minVal) minVal = vAtiva;
+            if (vAtiva > maxVal) maxVal = vAtiva;
+        }
+    });
+
+    if (minVal === Infinity) minVal = 0;
+    if (maxVal === -Infinity || maxVal === minVal) maxVal = minVal + 1;
+
+    const fillColorExpression = ['interpolate', ['linear'], ['get', 'val_ativa'], minVal, '#E3F2FD', maxVal, '#1565C0'];
+    const fitMapBounds = (mapInst) => {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            const processCoord = (c) => { if (eCoordenadaContinental(c)) bounds.extend(c); };
+            geoData.features.forEach(ft => {
+                const coords = ft.geometry.coordinates;
+                if (ft.geometry.type === 'Polygon') coords[0].forEach(processCoord);
+                else if (ft.geometry.type === 'MultiPolygon') coords.forEach(poly => poly[0].forEach(processCoord));
+            });
+            if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 40, animate: false });
+        } catch (e) {}
+    };
+
+    if (mapDemografiaFicha && mapDemografiaFicha.getSource('rd_demografia_source')) {
+        mapDemografiaFicha.getSource('rd_demografia_source').setData(geoData);
+        mapDemografiaFicha.setPaintProperty('rd_demografia_fill', 'fill-color', fillColorExpression);
+        fitMapBounds(mapDemografiaFicha);
+        mapDemografiaFicha.resize();
+        return;
+    }
+
+    if (mapDemografiaFicha) mapDemografiaFicha.remove();
+    mapDemografiaFicha = new maplibregl.Map({
+        container: 'ficha_map_demografia_container',
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
+    });
+
+    mapDemografiaFicha.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    mapDemografiaFicha.on('load', () => {
+        mapDemografiaFicha.resize();
+        mapDemografiaFicha.addSource('rd_demografia_source', { type: 'geojson', data: geoData });
+        mapDemografiaFicha.addLayer({ id: 'rd_demografia_fill', type: 'fill', source: 'rd_demografia_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
+        mapDemografiaFicha.addLayer({ id: 'rd_demografia_line', type: 'line', source: 'rd_demografia_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        mapDemografiaFicha.on('mousemove', 'rd_demografia_fill', (e) => {
+            mapDemografiaFicha.getCanvas().style.cursor = 'pointer';
+            if (!e.features.length) return;
+            const p = e.features[0].properties;
+            const labels = {
+                'rd_pop': 'Razão de Dependência Total', 'rd_jovem': 'Razão de Dependência Jovem', 'rd_idosa': 'Razão de Dependência Idosa',
+                'pct_pia': 'Pop. em Idade Ativa (PIA) %', 'ind_envelhecimento': 'Índice de Envelhecimento', 'pct_longevidade': 'Superlongevidade %',
+                'ind_ir_pia': 'Renovação da PIA', 'pct_jovem': 'Peso Relativo da Juventude %', 'ind_renov_trabalho': 'Renovação do Trabalho'
+            };
+            const tipo = p[`${metricaDemografiaAtiva}_tipo`];
+            let valFmt = (tipo === 'percentual') ? Number(p.val_ativa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%' : Number(p.val_ativa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+
+            popup.setLngLat(e.lngLat).setHTML(`
+                <div style="font-family: Jost, sans-serif; padding: 4px;">
+                  <div style="font-weight: 800; color: #0C2856; border-bottom: 1px solid #eee; padding-bottom: 2px;">${p.municipio || p.name}</div>
+                  <div style="font-size: 11px; margin-top: 4px;"><b>${labels[metricaDemografiaAtiva]}:</b> <span style="color:#1565C0; font-weight:800;">${valFmt}</span></div>
+                </div>
+            `).addTo(mapDemografiaFicha);
+        });
+        mapDemografiaFicha.on('mouseleave', 'rd_demografia_fill', () => { mapDemografiaFicha.getCanvas().style.cursor = ''; popup.remove(); });
+        fitMapBounds(mapDemografiaFicha);
+    });
+}
+
+/* --- 6.2 INDICADORES SOCIAIS (SEGURANÇA, EDUCAÇÃO, SAÚDE) --- */
+function renderizarIndicadoresSociais(demo, ind) {
+    const extrairValor = (obj, key, fallback) => (obj && obj[key] && obj[key][0] !== undefined) ? obj[key][0] : fallback;
+    const pop2025 = parseFloat(extrairValor(demo, 'pop_2026', 0)) || 0;
+
+    const obterIndicador = (sigla) => {
+        const itens = (ind || []).filter(i => String(i.sigla_indicador).trim().toLowerCase() === sigla.toLowerCase());
+        if (!itens.length) return { val: 0, str: '-', ano: '-', mes: '', rank: null, tipo: 'absoluto' };
+        itens.sort((a, b) => b.ano - a.ano);
+        const rawStr = String(itens[0].indicador).trim();
+        const val = parseFloat(rawStr.replace(',', '.'));
+        const tipoRaw = itens[0].tipo ? String(itens[0].tipo) : 'absoluto';
+        return { val: isNaN(val) ? 0 : val, str: rawStr, ano: itens[0].ano || '-', mes: itens[0].mes_referencia || '', rank: itens[0].rank_pe || null, tipo: tipoRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") };
+    };
+
+    const getRankBadge = (rank) => rank ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${rank}º em PE</span>` : '';
+
+    // Segurança
+    const mviData = obterIndicador('mvi'), cvpData = obterIndicador('cvp'), txMviData = obterIndicador('tx_mvi'), txCvpData = obterIndicador('tx_cvp');
+    const mviTaxa = pop2025 > 0 ? (mviData.val / pop2025) * 100000 : 0;
+    const cvpTaxa = pop2025 > 0 ? (cvpData.val / pop2025) * 100000 : 0;
+    const refMviFmt = (mviData.mes && mviData.mes !== '-') ? `${mviData.mes}/${mviData.ano}` : mviData.ano;
+
+    $('#ficha_kpi_mvi_abs').text(mviData.val.toLocaleString('pt-BR'));
+    $('#ficha_ano_mvi_abs').html(`Casos &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(mviData.rank)}${obterBadgePolaridade('mvi')}`);
+    $('#ficha_kpi_mvi_taxa').text(mviTaxa.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
+    $('#ficha_ano_mvi_taxa').html(`/ 100k hab. &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(txMviData.rank || mviData.rank)}${obterBadgePolaridade('tx_mvi')}`);
+    $('#ficha_kpi_cvp_abs').text(cvpData.val.toLocaleString('pt-BR'));
+    $('#ficha_ano_cvp_abs').html(`Ocorrências &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(cvpData.rank)}${obterBadgePolaridade('cvp')}`);
+    $('#ficha_kpi_cvp_taxa').text(cvpTaxa.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
+    $('#ficha_ano_cvp_taxa').html(`/ 100k hab. &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(txCvpData.rank || cvpData.rank)}${obterBadgePolaridade('tx_cvp')}`);
+
+    // Formatador Universal
+    const aplicarKPI_Universal = (sigla, elemBase, sufixo) => {
+        const item = obterIndicador(sigla);
+        let valFmt = item.str;
+
+        if (item.str !== '-') {
+            if (item.tipo === 'percentual') valFmt = item.val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%';
+            else if (item.tipo === 'absoluto') valFmt = item.val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+            else if (item.tipo === 'indice') {
+                let casas = (sigla.startsWith('ivcad')) ? 3 : (['rd_pop', 'rd_jovem', 'rd_idosa', 'ind_envelhecimento', 'ind_ir_pia', 'ind_renov_trabalho'].includes(sigla) ? 2 : 1);
+                valFmt = item.val.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+            } else valFmt = item.val.toLocaleString('pt-BR');
+        }
+
+        $(`#ficha_kpi_${elemBase}`).text(valFmt);
+        $(`#ficha_ano_${elemBase}`).html(`${sufixo} &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${item.ano}</span>${getRankBadge(item.rank)}${obterBadgePolaridade(sigla)}`);
+
+        const metaSub = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
+        window.configurarBotoesKPI(elemBase, sigla, metaSub ? metaSub.nm_indicador : null, 'socio');
+    };
+
+    // Aplicação dos KPIs
+    ['feminicidio', 'tent_mvi', 'rfv', 'vcm_ameaca', 'vcm_lesao', 'vcm_vs'].forEach(s => aplicarKPI_Universal(s, s, s === 'feminicidio' ? 'Casos' : 'Ocorrências'));
+    ['rd_pop', 'rd_jovem', 'rd_idosa', 'pct_pia', 'ind_envelhecimento', 'pct_longevidade', 'ind_ir_pia', 'pct_jovem', 'ind_renov_trabalho'].forEach(s => aplicarKPI_Universal(s, s, s.includes('pct') ? '%' : 'Índice'));
+    ['ideb_5ano', 'tdi_5ano', 'aba_5ano', 'apr_5ano', 'rep_5ano', 'ideb_9ano', 'tdi_9ano', 'aba_9ano', 'apr_9ano', 'rep_9ano', 'mat_6_10', 'mat_11_14', 'perc_mat_int', 'perc_alfabetizacao', 'atliq_creche'].forEach(s => aplicarKPI_Universal(s, s, s.includes('mat_') ? 'Alunos' : (s.includes('ideb') ? 'Índice' : '%')));
+    ['pre_natal', 'razao_mm', 'tx_att', 'tx_dcnt', 'tx_evitaveis', 'tx_infancia', 'tx_infantil'].forEach(s => aplicarKPI_Universal(s, s, s === 'pre_natal' ? '%' : 'Taxa'));
+    ['cad_pessoas', 'tx_cad_pessoas', 'ivcad', 'ivcad_nc', 'ivcad_dpi', 'ivcad_dca', 'ivcad_tqa', 'ivcad_dr', 'ivcad_ch'].forEach(s => aplicarKPI_Universal(s, s, s === 'cad_pessoas' ? 'Pessoas' : (s === 'tx_cad_pessoas' ? '%' : 'Índice')));
+    ['pct_agua_rede', 'pct_esgoto_rede'].forEach(s => aplicarKPI_Universal(s, s, '% Domicílios'));
+
+    const rdNome = extrairValor(demo, 'regiao_de_desenvolvimento', extrairValor(demo, 'Região de Desenvolvimento', '-'));
+    $('#ficha_demografia_rd_titulo, #ficha_sociais_rd_titulo, #ficha_educacao_rd_titulo, #ficha_saude_rd_titulo, #ficha_cad_unico_rd_titulo, #ficha_saneamento_rd_titulo').text(`Municípios da RD ${rdNome}`);
+
+    renderizarMapaDemografiaRD();
+    renderizarMapaSociaisRD();
+    renderizarMapaEducacaoRD();
+    renderizarMapaSaudeRD();
+    renderizarMapaCadUnicoRD();
+    renderizarMapaSaneamentoRD();
+    setTimeout(() => {
+        if (typeof window.redimensionarMapasFicha === 'function') {
+            window.redimensionarMapasFicha();
+        }
+    }, 350);
+}
+
+function renderizarMapaSociaisRD() {
+    const mapDom = document.getElementById('ficha_map_sociais_container');
+    const geoData = obterGeoJSONSeguro(cacheSociaisRD.geojsonRD);
+    if (!mapDom || !geoData || !geoData.features) return;
+
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    let minVal = Infinity, maxVal = -Infinity;
+
+    geoData.features.forEach(ft => {
+        const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
+        let pop = 0;
+        if (Array.isArray(cacheSociaisRD.demografiaRD)) {
+            const matchDemo = cacheSociaisRD.demografiaRD.find(d => normText(d.municipio) === normName);
+            if (matchDemo) pop = parseFloat(matchDemo.pop_2026) || 0;
+        }
+
+        const getIndVal = (sigla) => {
+            const arr = (cacheSociaisRD.indicadoresRD || []).filter(i => normText(i.nm_municipio).includes(normName) && String(i.sigla_indicador).toLowerCase() === sigla).sort((a, b) => b.ano - a.ano);
+            return arr.length ? (parseFloat(String(arr[0].indicador).replace(',', '.')) || 0) : 0;
+        };
+
+        const mviAbs = getIndVal('mvi');
+        const cvpAbs = getIndVal('cvp');
+
+        ft.properties.mvi_abs = mviAbs;
+        ft.properties.mvi_taxa = parseFloat((pop > 0 ? (mviAbs / pop) * 100000 : 0).toFixed(1));
+        ft.properties.cvp_abs = cvpAbs;
+        ft.properties.cvp_taxa = parseFloat((pop > 0 ? (cvpAbs / pop) * 100000 : 0).toFixed(1));
+        ft.properties.feminicidio = getIndVal('feminicidio');
+        ft.properties.tent_mvi = getIndVal('tent_mvi');
+        ft.properties.rfv = getIndVal('rfv');
+        ft.properties.vcm_ameaca = getIndVal('vcm_ameaca');
+        ft.properties.vcm_lesao = getIndVal('vcm_lesao');
+        ft.properties.vcm_vs = getIndVal('vcm_vs');
+        ft.properties.pop_2026 = pop;
+        ft.properties.is_selected = normName === normText(cacheSociaisRD.nomeMun);
+
+        let vAtiva = ft.properties[metricaSocialAtiva] || 0;
+        ft.properties.val_ativa = vAtiva;
+        if (vAtiva < minVal) minVal = vAtiva;
+        if (vAtiva > maxVal) maxVal = vAtiva;
+    });
+
+    if (minVal === Infinity) minVal = 0;
+    if (maxVal === -Infinity || maxVal === minVal) maxVal = minVal + 1;
+
+    const fillColorExpression = ['interpolate', ['linear'], ['get', 'val_ativa'], minVal, '#FEF0D9', maxVal, '#C0392B'];
+    const fitMapBounds = (mapInst) => {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            const processCoord = (c) => { if (eCoordenadaContinental(c)) bounds.extend(c); };
+            geoData.features.forEach(ft => {
+                const coords = ft.geometry.coordinates;
+                if (ft.geometry.type === 'Polygon') coords[0].forEach(processCoord);
+                else if (ft.geometry.type === 'MultiPolygon') coords.forEach(poly => poly[0].forEach(processCoord));
+            });
+            if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 40, animate: false });
+        } catch (e) {}
+    };
+
+    if (mapSociaisFicha && mapSociaisFicha.getSource('rd_sociais_source')) {
+        mapSociaisFicha.getSource('rd_sociais_source').setData(geoData);
+        mapSociaisFicha.setPaintProperty('rd_sociais_fill', 'fill-color', fillColorExpression);
+        fitMapBounds(mapSociaisFicha);
+        mapSociaisFicha.resize();
+        return;
+    }
+
+    if (mapSociaisFicha) mapSociaisFicha.remove();
+    mapSociaisFicha = new maplibregl.Map({
+        container: 'ficha_map_sociais_container',
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
+    });
+
+    mapSociaisFicha.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    mapSociaisFicha.on('load', () => {
+        mapSociaisFicha.resize();
+        mapSociaisFicha.addSource('rd_sociais_source', { type: 'geojson', data: geoData });
+        mapSociaisFicha.addLayer({ id: 'rd_sociais_fill', type: 'fill', source: 'rd_sociais_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.8 } });
+        mapSociaisFicha.addLayer({ id: 'rd_sociais_line', type: 'line', source: 'rd_sociais_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        mapSociaisFicha.on('mousemove', 'rd_sociais_fill', (e) => {
+            mapSociaisFicha.getCanvas().style.cursor = 'pointer';
+            if (!e.features.length) return;
+            const p = e.features[0].properties;
+            const labels = { 
+                'mvi_abs': 'MVI (Casos)', 
+                'mvi_taxa': 'Taxa MVI (/100k)', 
+                'cvp_abs': 'CVP (Ocorrências)', 
+                'cvp_taxa': 'Taxa CVP (/100k)',
+                'feminicidio': 'Feminicídio (Casos)',
+                'tent_mvi': 'Tentativa de MVI (Casos)',
+                'rfv': 'RFV (Ocorrências)',
+                'vcm_ameaca': 'VCM Ameaça (Ocorrências)',
+                'vcm_lesao': 'VCM Lesão Corporal (Ocorrências)',
+                'vcm_vs': 'VCM Violência Sexual (Ocorrências)'
+            };
+            popup.setLngLat(e.lngLat).setHTML(`
+                <div style="font-family: Jost, sans-serif; padding: 4px;">
+                  <div style="font-weight: 800; color: #0C2856; border-bottom: 1px solid #eee; padding-bottom: 2px;">${p.municipio || p.name}</div>
+                  <div style="font-size: 11px; margin-top: 4px;"><b>População:</b> ${Number(p.pop_2026 || 0).toLocaleString('pt-BR')}</div>
+                  <div style="font-size: 11px;"><b>${labels[metricaSocialAtiva]}:</b> <span style="color:#C0392B; font-weight:800;">${Number(p.val_ativa || 0).toLocaleString('pt-BR')}</span></div>
+                </div>
+            `).addTo(mapSociaisFicha);
+        });
+        mapSociaisFicha.on('mouseleave', 'rd_sociais_fill', () => { mapSociaisFicha.getCanvas().style.cursor = ''; popup.remove(); });
+        fitMapBounds(mapSociaisFicha);
+    });
+}
+
+function renderizarMapaEducacaoRD() {
+    const mapDom = document.getElementById('ficha_map_educacao_container');
+    const geoData = obterGeoJSONSeguro(cacheSociaisRD.geojsonRD);
+    if (!mapDom || !geoData || !geoData.features) return;
+
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    let minVal = Infinity, maxVal = -Infinity;
+    const siglasEducacao = ['ideb_5ano', 'tdi_5ano', 'aba_5ano', 'apr_5ano', 'rep_5ano', 'ideb_9ano', 'tdi_9ano', 'aba_9ano', 'apr_9ano', 'rep_9ano', 'mat_6_10', 'mat_11_14', 'perc_mat_int', 'perc_alfabetizacao', 'atliq_creche'];
+
+    geoData.features.forEach(ft => {
+        const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
+
+        siglasEducacao.forEach(sig => {
+            const indArr = (cacheSociaisRD.indicadoresRD || []).filter(i => normText(i.nm_municipio).includes(normName) && String(i.sigla_indicador).toLowerCase() === sig).sort((a, b) => b.ano - a.ano);
+            ft.properties[sig] = indArr.length ? (parseFloat(String(indArr[0].indicador).replace(',', '.')) || 0) : 0;
+            ft.properties[`${sig}_tipo`] = indArr.length && indArr[0].tipo ? String(indArr[0].tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : 'absoluto';
+        });
+
+        ft.properties.is_selected = normName === normText(cacheSociaisRD.nomeMun);
+        let vAtiva = ft.properties[metricaEducacaoAtiva] || 0;
+        ft.properties.val_ativa = vAtiva;
+        if (vAtiva > 0) {
+            if (vAtiva < minVal) minVal = vAtiva;
+            if (vAtiva > maxVal) maxVal = vAtiva;
+        }
+    });
+
+    if (minVal === Infinity) minVal = 0;
+    if (maxVal === -Infinity || maxVal === minVal) maxVal = minVal + 1;
+
+    const fillColorExpression = ['interpolate', ['linear'], ['get', 'val_ativa'], minVal, '#E8F5E9', maxVal, '#1B5E20'];
+    const fitMapBounds = (mapInst) => {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            const processCoord = (c) => { if (eCoordenadaContinental(c)) bounds.extend(c); };
+            geoData.features.forEach(ft => {
+                const coords = ft.geometry.coordinates;
+                if (ft.geometry.type === 'Polygon') coords[0].forEach(processCoord);
+                else if (ft.geometry.type === 'MultiPolygon') coords.forEach(poly => poly[0].forEach(processCoord));
+            });
+            if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 40, animate: false });
+        } catch (e) {}
+    };
+
+    if (mapEducacaoFicha && mapEducacaoFicha.getSource('rd_educacao_source')) {
+        mapEducacaoFicha.getSource('rd_educacao_source').setData(geoData);
+        mapEducacaoFicha.setPaintProperty('rd_educacao_fill', 'fill-color', fillColorExpression);
+        fitMapBounds(mapEducacaoFicha);
+        mapEducacaoFicha.resize();
+        return;
+    }
+
+    if (mapEducacaoFicha) mapEducacaoFicha.remove();
+    mapEducacaoFicha = new maplibregl.Map({
+        container: 'ficha_map_educacao_container',
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
+    });
+
+    mapEducacaoFicha.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    mapEducacaoFicha.on('load', () => {
+        mapEducacaoFicha.resize();
+        mapEducacaoFicha.addSource('rd_educacao_source', { type: 'geojson', data: geoData });
+        mapEducacaoFicha.addLayer({ id: 'rd_educacao_fill', type: 'fill', source: 'rd_educacao_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
+        mapEducacaoFicha.addLayer({ id: 'rd_educacao_line', type: 'line', source: 'rd_educacao_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        mapEducacaoFicha.on('mousemove', 'rd_educacao_fill', (e) => {
+            mapEducacaoFicha.getCanvas().style.cursor = 'pointer';
+            if (!e.features.length) return;
+            const p = e.features[0].properties;
+            const labels = {
+                'ideb_5ano': 'IDEB (5º)', 'tdi_5ano': 'TDI (5º) %', 'aba_5ano': 'Abandono (5º) %', 'apr_5ano': 'Aprovação (5º) %', 'rep_5ano': 'Reprovação (5º) %',
+                'ideb_9ano': 'IDEB (9º)', 'tdi_9ano': 'TDI (9º) %', 'aba_9ano': 'Abandono (9º) %', 'apr_9ano': 'Aprovação (9º) %', 'rep_9ano': 'Reprovação (9º) %',
+                'mat_6_10': 'Matrículas 6 a 10', 'mat_11_14': 'Matrículas 11 a 14', 'perc_mat_int': 'Matrículas Integrais %', 'perc_alfabetizacao': 'Alfabetização %', 'atliq_creche': 'Atend. Creche %'
+            };
+            const tipo = p[`${metricaEducacaoAtiva}_tipo`];
+            let valFmt = (tipo === 'percentual') ? Number(p.val_ativa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%' : Number(p.val_ativa || 0).toLocaleString('pt-BR');
+
+            popup.setLngLat(e.lngLat).setHTML(`
+                <div style="font-family: Jost, sans-serif; padding: 4px;">
+                  <div style="font-weight: 800; color: #0C2856; border-bottom: 1px solid #eee; padding-bottom: 2px;">${p.municipio || p.name}</div>
+                  <div style="font-size: 11px; margin-top: 4px;"><b>${labels[metricaEducacaoAtiva]}:</b> <span style="color:#27AE60; font-weight:800;">${valFmt}</span></div>
+                </div>
+            `).addTo(mapEducacaoFicha);
+        });
+        mapEducacaoFicha.on('mouseleave', 'rd_educacao_fill', () => { mapEducacaoFicha.getCanvas().style.cursor = ''; popup.remove(); });
+        fitMapBounds(mapEducacaoFicha);
+    });
+}
+
+function renderizarMapaSaudeRD() {
+    const mapDom = document.getElementById('ficha_map_saude_container');
+    const geoData = obterGeoJSONSeguro(cacheSociaisRD.geojsonRD);
+    if (!mapDom || !geoData || !geoData.features) return;
+
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    let minVal = Infinity, maxVal = -Infinity;
+    const siglasSaude = ['pre_natal', 'razao_mm', 'tx_att', 'tx_dcnt', 'tx_evitaveis', 'tx_infancia', 'tx_infantil'];
+
+    geoData.features.forEach(ft => {
+        const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
+
+        siglasSaude.forEach(sig => {
+            const indArr = (cacheSociaisRD.indicadoresRD || []).filter(i => normText(i.nm_municipio).includes(normName) && String(i.sigla_indicador).toLowerCase() === sig).sort((a, b) => b.ano - a.ano);
+            ft.properties[sig] = indArr.length ? (parseFloat(String(indArr[0].indicador).replace(',', '.')) || 0) : 0;
+            ft.properties[`${sig}_tipo`] = indArr.length && indArr[0].tipo ? String(indArr[0].tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : 'absoluto';
+        });
+
+        ft.properties.is_selected = normName === normText(cacheSociaisRD.nomeMun);
+        let vAtiva = ft.properties[metricaSaudeAtiva] || 0;
+        ft.properties.val_ativa = vAtiva;
+        if (vAtiva > 0) {
+            if (vAtiva < minVal) minVal = vAtiva;
+            if (vAtiva > maxVal) maxVal = vAtiva;
+        }
+    });
+
+    if (minVal === Infinity) minVal = 0;
+    if (maxVal === -Infinity || maxVal === minVal) maxVal = minVal + 1;
+
+    const fillColorExpression = ['interpolate', ['linear'], ['get', 'val_ativa'], minVal, '#E0F2F1', maxVal, '#00695C'];
+    const fitMapBounds = (mapInst) => {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            const processCoord = (c) => { if (eCoordenadaContinental(c)) bounds.extend(c); };
+            geoData.features.forEach(ft => {
+                const coords = ft.geometry.coordinates;
+                if (ft.geometry.type === 'Polygon') coords[0].forEach(processCoord);
+                else if (ft.geometry.type === 'MultiPolygon') coords.forEach(poly => poly[0].forEach(processCoord));
+            });
+            if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 40, animate: false });
+        } catch (e) {}
+    };
+
+    if (mapSaudeFicha && mapSaudeFicha.getSource('rd_saude_source')) {
+        mapSaudeFicha.getSource('rd_saude_source').setData(geoData);
+        mapSaudeFicha.setPaintProperty('rd_saude_fill', 'fill-color', fillColorExpression);
+        fitMapBounds(mapSaudeFicha);
+        mapSaudeFicha.resize();
+        return;
+    }
+
+    if (mapSaudeFicha) mapSaudeFicha.remove();
+    mapSaudeFicha = new maplibregl.Map({
+        container: 'ficha_map_saude_container',
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
+    });
+
+    mapSaudeFicha.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    mapSaudeFicha.on('load', () => {
+        mapSaudeFicha.resize();
+        mapSaudeFicha.addSource('rd_saude_source', { type: 'geojson', data: geoData });
+        mapSaudeFicha.addLayer({ id: 'rd_saude_fill', type: 'fill', source: 'rd_saude_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
+        mapSaudeFicha.addLayer({ id: 'rd_saude_line', type: 'line', source: 'rd_saude_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        mapSaudeFicha.on('mousemove', 'rd_saude_fill', (e) => {
+            mapSaudeFicha.getCanvas().style.cursor = 'pointer';
+            if (!e.features.length) return;
+            const p = e.features[0].properties;
+            const labels = { 'pre_natal': 'Pré-Natal Cobertura (%)', 'razao_mm': 'Razão Mort. Materna (/100k)', 'tx_att': 'Taxa ATT', 'tx_dcnt': 'Mort. DCNT', 'tx_evitaveis': 'Causas Evitáveis', 'tx_infancia': 'Mort. Infância (/1k)', 'tx_infantil': 'Mort. Infantil (/1k)' };
+            const tipo = p[`${metricaSaudeAtiva}_tipo`];
+            let valFmt = (tipo === 'percentual') ? Number(p.val_ativa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%' : Number(p.val_ativa || 0).toLocaleString('pt-BR');
+
+            popup.setLngLat(e.lngLat).setHTML(`
+                <div style="font-family: Jost, sans-serif; padding: 4px;">
+                  <div style="font-weight: 800; color: #0C2856; border-bottom: 1px solid #eee; padding-bottom: 2px;">${p.municipio || p.name}</div>
+                  <div style="font-size: 11px; margin-top: 4px;"><b>${labels[metricaSaudeAtiva]}:</b> <span style="color:#00695C; font-weight:800;">${valFmt}</span></div>
+                </div>
+            `).addTo(mapSaudeFicha);
+        });
+        mapSaudeFicha.on('mouseleave', 'rd_saude_fill', () => { mapSaudeFicha.getCanvas().style.cursor = ''; popup.remove(); });
+        fitMapBounds(mapSaudeFicha);
+    });
+}
+
+/* --- 6.3 VULNERABILIDADE SOCIAL E CONDIÇÕES HABITACIONAIS --- */
+function renderizarMapaCadUnicoRD() {
+    const mapDom = document.getElementById('ficha_map_cad_unico_container');
+    if (!mapDom || !cacheSociaisRD.geojsonRD) return;
+
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    const geoData = obterGeoJSONSeguro(cacheSociaisRD.geojsonRD);
+    if (!geoData || !geoData.features) return;
+    let minVal = Infinity, maxVal = -Infinity;
+    const siglasCadUnico = ['cad_pessoas', 'tx_cad_pessoas', 'ivcad', 'ivcad_nc', 'ivcad_dpi', 'ivcad_dca', 'ivcad_tqa', 'ivcad_dr', 'ivcad_ch'];
+
+    geoData.features.forEach(ft => {
+        const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
+        const ibgeCode = String(ft.properties.ibge6 || ft.properties.ibge7 || ft.properties.cod_ibge || '').substring(0, 6);
+
+        // 1. Processar dados IVCAD
+        siglasCadUnico.forEach(sig => {
+            const indArr = (cacheSociaisRD.indicadoresRD || []).filter(i => {
+                const matchIbge = ibgeCode && String(i.ibge6 || i.ibge7 || i.cod_ibge || '').substring(0, 6) === ibgeCode;
+                const matchName = normText(i.nm_municipio).includes(normName);
+                return (matchIbge || matchName) && String(i.sigla_indicador || '').toLowerCase().trim() === sig;
+            }).sort((a, b) => b.ano - a.ano);
+
+            ft.properties[sig] = indArr.length ? (parseFloat(String(indArr[0].indicador).replace(',', '.')) || 0) : 0;
+            ft.properties[`${sig}_tipo`] = indArr.length && indArr[0].tipo ? String(indArr[0].tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : (sig === 'tx_cad_pessoas' ? 'percentual' : 'absoluto');
+        });
+
+        // 2. Processar dados Transferência de Renda
+        let mQtd = 0, mVal = 0;
+        (cacheSociaisRD.iniciativasRD || []).forEach(d => {
+            if (normText(d.municipio) === normName && d.iniciativa_estrategica && String(d.iniciativa_estrategica).trim().toUpperCase() === "MÃES DE PERNAMBUCO") {
+                mQtd += Number(d.indicador) || 0;
+                mVal += Number(d.valor_total) || 0;
+            }
+        });
+
+        let pQtd = 0, pVal = 0;
+        (cacheSociaisRD.pcpRD || []).forEach(p => {
+            if ((ibgeCode && String(p.ibge6 || p.cod_ibge) === ibgeCode) || (p.municipio && normText(p.municipio) === normName)) {
+                pQtd += Number(p.numero_de_beneficiarios) || 0;
+                pVal += Number(p.valor_investido_no_municipio) || 0;
+            }
+        });
+
+        ft.properties.maes_qtd = mQtd;
+        ft.properties.maes_val = mVal;
+        ft.properties.pcp_qtd = pQtd;
+        ft.properties.pcp_val = pVal;
+
+        ft.properties.is_selected = normName === normText(cacheSociaisRD.nomeMun);
+        
+        let vAtiva = parseFloat(ft.properties[metricaCadUnicoAtiva]) || 0;
+        ft.properties.val_ativa = vAtiva;
+        if (vAtiva < minVal) minVal = vAtiva;
+        if (vAtiva > maxVal) maxVal = vAtiva;
+    });
+
+    if (minVal === Infinity) minVal = 0;
+    if (maxVal <= minVal) maxVal = minVal + 1;
+
+    // Paleta de cor dinâmica consoante o tipo de indicador escolhido
+    let fillColorExpression;
+    if (['maes_qtd', 'maes_val', 'pcp_qtd', 'pcp_val'].includes(metricaCadUnicoAtiva)) {
+        fillColorExpression = ['interpolate', ['linear'], ['get', 'val_ativa'], minVal, '#FCE4EC', maxVal, '#880E4F']; // Cor rosa/vinho
+    } else {
+        fillColorExpression = ['interpolate', ['linear'], ['get', 'val_ativa'], minVal, '#F3E5F5', maxVal, '#4A148C']; // Cor roxa do IVCAD
+    }
+
+    const fitMapBounds = (mapInst) => {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            const processCoord = (c) => { if (eCoordenadaContinental(c)) bounds.extend(c); };
+            geoData.features.forEach(ft => {
+                const coords = ft.geometry.coordinates;
+                if (ft.geometry.type === 'Polygon') coords[0].forEach(processCoord);
+                else if (ft.geometry.type === 'MultiPolygon') coords.forEach(poly => poly[0].forEach(processCoord));
+            });
+            if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 40, animate: false });
+        } catch (e) {}
+    };
+
+    try {
+        if (mapCadUnicoFicha && mapCadUnicoFicha.loaded && mapCadUnicoFicha.loaded() && mapCadUnicoFicha.getSource('rd_cad_unico_source')) {
+            mapCadUnicoFicha.getSource('rd_cad_unico_source').setData(geoData);
+            mapCadUnicoFicha.setPaintProperty('rd_cad_unico_fill', 'fill-color', fillColorExpression);
+            fitMapBounds(mapCadUnicoFicha);
+            mapCadUnicoFicha.resize();
+            return;
+        }
+    } catch (e) {
+        console.warn("Recriando mapCadUnicoFicha...", e);
+    }
+
+    if (mapCadUnicoFicha) {
+        try { mapCadUnicoFicha.remove(); } catch (e) {}
+    }
+
+    mapCadUnicoFicha = new maplibregl.Map({
+        container: 'ficha_map_cad_unico_container',
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
+    });
+
+    mapCadUnicoFicha.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    mapCadUnicoFicha.on('load', () => {
+        mapCadUnicoFicha.resize();
+        mapCadUnicoFicha.addSource('rd_cad_unico_source', { type: 'geojson', data: geoData });
+        mapCadUnicoFicha.addLayer({ id: 'rd_cad_unico_fill', type: 'fill', source: 'rd_cad_unico_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
+        mapCadUnicoFicha.addLayer({ id: 'rd_cad_unico_line', type: 'line', source: 'rd_cad_unico_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        mapCadUnicoFicha.on('mousemove', 'rd_cad_unico_fill', (e) => {
+            mapCadUnicoFicha.getCanvas().style.cursor = 'pointer';
+            if (!e.features.length) return;
+            const p = e.features[0].properties;
+            const labels = { 
+                'cad_pessoas': 'Total Pessoas', 'tx_cad_pessoas': 'Tx. Pessoas %', 'ivcad': 'IVCAD', 'ivcad_nc': 'NC', 'ivcad_dpi': 'DPI', 'ivcad_dca': 'DCA', 'ivcad_tqa': 'TQA', 'ivcad_dr': 'DR', 'ivcad_ch': 'CH',
+                'maes_qtd': 'Mães de PE (Qtd)', 'maes_val': 'Mães de PE (R$)', 'pcp_qtd': 'Chapéu de Palha (Qtd)', 'pcp_val': 'Chapéu de Palha (R$)'
+            };
+            
+            const isTransfRenda = ['maes_qtd', 'maes_val', 'pcp_qtd', 'pcp_val'].includes(metricaCadUnicoAtiva);
+            const colorHex = isTransfRenda ? '#880E4F' : '#4A148C';
+            const tipo = p[`${metricaCadUnicoAtiva}_tipo`];
+            
+            let valFmt = "";
+            if (metricaCadUnicoAtiva === 'maes_val' || metricaCadUnicoAtiva === 'pcp_val') {
+                valFmt = "R$ " + Number(p.val_ativa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else if (tipo === 'percentual' || metricaCadUnicoAtiva === 'tx_cad_pessoas') {
+                valFmt = Number(p.val_ativa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%';
+            } else {
+                valFmt = Number(p.val_ativa || 0).toLocaleString('pt-BR');
+            }
+
+            popup.setLngLat(e.lngLat).setHTML(`
+                <div style="font-family: Jost, sans-serif; padding: 4px;">
+                  <div style="font-weight: 800; color: #0C2856; border-bottom: 1px solid #eee; padding-bottom: 2px;">${p.municipio || p.name}</div>
+                  <div style="font-size: 11px; margin-top: 4px;"><b>${labels[metricaCadUnicoAtiva] || metricaCadUnicoAtiva}:</b> <span style="color:${colorHex}; font-weight:800;">${valFmt}</span></div>
+                </div>
+            `).addTo(mapCadUnicoFicha);
+        });
+        mapCadUnicoFicha.on('mouseleave', 'rd_cad_unico_fill', () => { mapCadUnicoFicha.getCanvas().style.cursor = ''; popup.remove(); });
+        fitMapBounds(mapCadUnicoFicha);
+        setTimeout(() => { if (mapCadUnicoFicha) mapCadUnicoFicha.resize(); }, 150);
+        setTimeout(() => { if (mapCadUnicoFicha) mapCadUnicoFicha.resize(); }, 500);
+    });
+}
+
+function renderizarMapaSaneamentoRD() {
+    const mapDom = document.getElementById('ficha_map_saneamento_container');
+    if (!mapDom || !cacheSociaisRD.geojsonRD) return;
+
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    const geoData = obterGeoJSONSeguro(cacheSociaisRD.geojsonRD);
+    if (!geoData || !geoData.features) return;
+    let minVal = Infinity, maxVal = -Infinity;
+    const siglasSaneamento = ['pct_agua_rede', 'pct_esgoto_rede'];
+
+    geoData.features.forEach(ft => {
+        const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
+        const ibgeCode = String(ft.properties.ibge6 || ft.properties.ibge7 || ft.properties.cod_ibge || '').substring(0, 6);
+
+        siglasSaneamento.forEach(sig => {
+            const indArr = (cacheSociaisRD.indicadoresRD || []).filter(i => {
+                const matchIbge = ibgeCode && String(i.ibge6 || i.ibge7 || i.cod_ibge || '').substring(0, 6) === ibgeCode;
+                const matchName = normText(i.nm_municipio).includes(normName);
+                return (matchIbge || matchName) && String(i.sigla_indicador || '').toLowerCase().trim() === sig;
+            }).sort((a, b) => b.ano - a.ano);
+
+            ft.properties[sig] = indArr.length ? (parseFloat(String(indArr[0].indicador).replace(',', '.')) || 0) : 0;
+            ft.properties[`${sig}_tipo`] = indArr.length && indArr[0].tipo ? String(indArr[0].tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : 'percentual';
+        });
+
+        ft.properties.is_selected = normName === normText(cacheSociaisRD.nomeMun);
+        let vAtiva = parseFloat(ft.properties[metricaSaneamentoAtiva]) || 0;
+        ft.properties.val_ativa = vAtiva;
+        if (vAtiva < minVal) minVal = vAtiva;
+        if (vAtiva > maxVal) maxVal = vAtiva;
+    });
+
+    if (minVal === Infinity) minVal = 0;
+    if (maxVal <= minVal) maxVal = minVal + 1;
+
+    const fillColorExpression = ['interpolate', ['linear'], ['get', 'val_ativa'], minVal, '#E0F7FA', maxVal, '#006064'];
+    const fitMapBounds = (mapInst) => {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            const processCoord = (c) => { if (eCoordenadaContinental(c)) bounds.extend(c); };
+            geoData.features.forEach(ft => {
+                const coords = ft.geometry.coordinates;
+                if (ft.geometry.type === 'Polygon') coords[0].forEach(processCoord);
+                else if (ft.geometry.type === 'MultiPolygon') coords.forEach(poly => poly[0].forEach(processCoord));
+            });
+            if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 40, animate: false });
+        } catch (e) {}
+    };
+
+    try {
+        if (mapSaneamentoFicha && mapSaneamentoFicha.loaded && mapSaneamentoFicha.loaded() && mapSaneamentoFicha.getSource('rd_saneamento_source')) {
+            mapSaneamentoFicha.getSource('rd_saneamento_source').setData(geoData);
+            mapSaneamentoFicha.setPaintProperty('rd_saneamento_fill', 'fill-color', fillColorExpression);
+            fitMapBounds(mapSaneamentoFicha);
+            mapSaneamentoFicha.resize();
+            return;
+        }
+    } catch (e) {
+        console.warn("Recriando mapSaneamentoFicha...", e);
+    }
+
+    if (mapSaneamentoFicha) {
+        try { mapSaneamentoFicha.remove(); } catch (e) {}
+    }
+
+    mapSaneamentoFicha = new maplibregl.Map({
+        container: 'ficha_map_saneamento_container',
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
+    });
+
+    mapSaneamentoFicha.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    mapSaneamentoFicha.on('load', () => {
+        mapSaneamentoFicha.resize();
+        mapSaneamentoFicha.addSource('rd_saneamento_source', { type: 'geojson', data: geoData });
+        mapSaneamentoFicha.addLayer({ id: 'rd_saneamento_fill', type: 'fill', source: 'rd_saneamento_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
+        mapSaneamentoFicha.addLayer({ id: 'rd_saneamento_line', type: 'line', source: 'rd_saneamento_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        mapSaneamentoFicha.on('mousemove', 'rd_saneamento_fill', (e) => {
+            mapSaneamentoFicha.getCanvas().style.cursor = 'pointer';
+            if (!e.features.length) return;
+            const p = e.features[0].properties;
+            const labels = { 'pct_agua_rede': 'Água (Rede Geral)', 'pct_esgoto_rede': 'Esgoto (Rede Geral)' };
+            const tipo = p[`${metricaSaneamentoAtiva}_tipo`];
+            let valFmt = (tipo === 'percentual' || metricaSaneamentoAtiva.startsWith('pct_')) ? Number(p.val_ativa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%' : Number(p.val_ativa || 0).toLocaleString('pt-BR');
+
+            popup.setLngLat(e.lngLat).setHTML(`
+                <div style="font-family: Jost, sans-serif; padding: 4px;">
+                  <div style="font-weight: 800; color: #0C2856; border-bottom: 1px solid #eee; padding-bottom: 2px;">${p.municipio || p.name}</div>
+                  <div style="font-size: 11px; margin-top: 4px;"><b>${labels[metricaSaneamentoAtiva] || metricaSaneamentoAtiva}:</b> <span style="color:#006064; font-weight:800;">${valFmt}</span></div>
+                </div>
+            `).addTo(mapSaneamentoFicha);
+        });
+        mapSaneamentoFicha.on('mouseleave', 'rd_saneamento_fill', () => { mapSaneamentoFicha.getCanvas().style.cursor = ''; popup.remove(); });
+        fitMapBounds(mapSaneamentoFicha);
+        setTimeout(() => { if (mapSaneamentoFicha) mapSaneamentoFicha.resize(); }, 150);
+        setTimeout(() => { if (mapSaneamentoFicha) mapSaneamentoFicha.resize(); }, 500);
+    });
+}
+
+/* --- 6.4 TRANSFERÊNCIAS DE RENDA --- */
+function renderizarTransferenciasRenda(iniciativas, pcp) {
+    let maesQtd = 0, maesVal = 0;
+    iniciativas.forEach(d => {
+        if (d.iniciativa_estrategica && String(d.iniciativa_estrategica).trim().toUpperCase() === "MÃES DE PERNAMBUCO") {
+            maesQtd += (Number(d.indicador) || 0);
+            maesVal += (Number(d.valor_total) || 0);
+        }
+    });
+
+    let pcpQtd = 0, pcpVal = 0;
+    pcp.forEach(p => {
+        pcpQtd += Number(p.numero_de_beneficiarios) || 0;
+        pcpVal += Number(p.valor_investido_no_municipio) || 0;
+    });
+
+    const formataBi = (v) => (v === 0) ? "R$ 0" : ((v >= 1e9) ? "R$ " + (v / 1e9).toFixed(2).replace('.', ',') + " Bi" : ((v >= 1e6) ? "R$ " + (v / 1e6).toFixed(2).replace('.', ',') + " Mi" : "R$ " + v.toLocaleString('pt-BR', { maximumFractionDigits: 0 })));
+
+    // Atualiza os Valores
+    $('#ficha_kpi_maes_qtd').text(maesQtd > 0 ? maesQtd.toLocaleString('pt-BR') : "-");
+    $('#ficha_kpi_maes_val').text(maesVal > 0 ? formataBi(maesVal) : "-");
+    $('#ficha_kpi_pcp_qtd').text(pcpQtd > 0 ? pcpQtd.toLocaleString('pt-BR') : "-");
+    $('#ficha_kpi_pcp_val').text(pcpVal > 0 ? formataBi(pcpVal) : "-");
+
+    // LÓGICA DE METADADOS E POLARIDADE
+    const configurarMetadados = (elemBase, sigla, sufixo) => {
+        // 1. Adiciona a badge de polaridade no rodapé
+        const badgeHTML = obterBadgePolaridade(sigla);
+        $(`#ficha_ano_${elemBase}`).html(`${sufixo} ${badgeHTML}`);
+
+        // 2. Adiciona botões de Informação (i) e Série Histórica (->) no cabeçalho do KPI
+        window.configurarBotoesKPI(elemBase, sigla, sufixo, 'programa');
+    };
+
+    // Aciona a configuração para as 4 siglas (certifique-se que estas siglas batem com o metadado)
+    configurarMetadados('maes_qtd', 'maes_qtd', 'Mulheres Atendidas');
+    configurarMetadados('maes_val', 'maes_val', 'Investimento');
+    configurarMetadados('pcp_qtd', 'pcp_qtd', 'Pessoas Atendidas');
+    configurarMetadados('pcp_val', 'pcp_val', 'Investimento Pago');
+}
+
+/* --- 6.5 INDICADORES ECONÔMICOS (INOVAÇÃO, COMÉRCIO EXTERIOR, CONECTIVIDADE) --- */
+
+// INOVAÇÃO
+function renderizarIndicadoresInovacao(ind, demo) {
+    const $containerInfocomServ = $('#ficha_container_kpis_infocom_serv');
+    const $containerKpis = $('#ficha_container_kpis_inovacao');
+    const $containerBtns = $('#ficha_btns_metrica_inovacao');
+    $containerInfocomServ.empty();
+    $containerKpis.empty();
+    $containerBtns.empty();
+
+    const normText = (str) => String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+    // Filtra indicadores do grupo economia da inovação ou correlatos
+    const itensInovacao = (ind || []).filter(i => {
+        const g = normText(i.grupo);
+        const s = String(i.sigla_indicador || '').toLowerCase().trim();
+        return g.includes('inova') || s.includes('infocom') || s.includes('tec');
+    });
+
+    if (!itensInovacao.length) {
+        $containerInfocomServ.html('<div class="col-12 text-slate-400 text-xs italic">Sem indicadores de InfoCom registrados.</div>');
+        $containerKpis.html('<div class="col-12 text-slate-400 text-xs italic">Sem indicadores de economia da inovação registrados.</div>');
+        $('#ficha_map_inovacao_container').closest('.bg-white').hide();
+        return;
+    } else {
+        $('#ficha_map_inovacao_container').closest('.bg-white').show();
+    }
+
+    const getLatestItem = (sigla) => {
+        const arr = itensInovacao.filter(i => String(i.sigla_indicador || '').toLowerCase().trim() === sigla.toLowerCase());
+        return arr.length ? arr.sort((a, b) => b.ano - a.ano)[0] : null;
+    };
+
+    const estabInfocomItem = getLatestItem('estab_infocom');
+    const empInfocomItem = getLatestItem('emp_infocom');
+    const valEstabInfocom = estabInfocomItem ? parseFloat(String(estabInfocomItem.indicador).replace(',', '.')) : NaN;
+    const valEmpInfocom = empInfocomItem ? parseFloat(String(empInfocomItem.indicador).replace(',', '.')) : NaN;
+
+    // 1. Destaque: 4 Indicadores de Participação de InfoCom em relação a Serviços
+    const configInfocomServ = [
+        {
+            sigla: 'pct_vab_infocom_serv',
+            titulo: '% InfoCom em Serviços (VAB / Massa Salarial)',
+            icone: 'fa-chart-pie',
+            cor: '#2563EB',
+            isPercent: true,
+            subExtra: 'Proxy VAB (Massa Salarial RAIS)'
+        },
+        {
+            sigla: 'pct_estab_infocom_serv',
+            titulo: '% InfoCom em Serviços (Estabelecimentos)',
+            icone: 'fa-building',
+            cor: '#0284C7',
+            isPercent: true,
+            subExtra: !isNaN(valEstabInfocom) ? `${valEstabInfocom.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} estab. InfoCom` : ''
+        },
+        {
+            sigla: 'pct_emp_infocom_serv',
+            titulo: '% InfoCom em Serviços (Empregados)',
+            icone: 'fa-users-cog',
+            cor: '#0D9488',
+            isPercent: true,
+            subExtra: !isNaN(valEmpInfocom) ? `${valEmpInfocom.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} vínculos InfoCom` : ''
+        },
+        {
+            sigla: 'ql_infocom_serv',
+            titulo: 'QL InfoCom em relação a Serviços',
+            icone: 'fa-project-diagram',
+            cor: '#4F46E5',
+            isPercent: false,
+            isQL: true
+        }
+    ];
+
+    const siglasInfocomServ = configInfocomServ.map(c => c.sigla);
+    const siglasAuxiliaresOcultas = ['estab_infocom', 'emp_infocom'];
+
+    configInfocomServ.forEach(cfg => {
+        const item = getLatestItem(cfg.sigla);
+        if (!item) return;
+
+        const val = parseFloat(String(item.indicador).replace(',', '.'));
+        let valFmt = '-';
+        if (!isNaN(val)) {
+            valFmt = cfg.isPercent
+                ? val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%'
+                : val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        const rankBadge = item.rank_pe ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank_pe}º em PE</span>` : '';
+        const meta = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === cfg.sigla);
+        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-400 hover:text-blue-600 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${cfg.sigla}')" title="Ver Metadados"></i>` : '';
+
+        let extraBadge = '';
+        if (cfg.isQL && !isNaN(val)) {
+            extraBadge = val >= 1
+                ? `<span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200 ms-1" style="font-size:0.62rem;">Especializado (≥1)</span>`
+                : `<span class="badge bg-slate-50 text-slate-500 border border-slate-200 ms-1" style="font-size:0.62rem;">Não Espec. (&lt;1)</span>`;
+        } else if (cfg.subExtra) {
+            extraBadge = `<div class="text-[10px] text-slate-500 font-semibold mt-0.5 normal-case"><i class="fas fa-angle-right text-blue-500 me-1"></i>${cfg.subExtra}</div>`;
+        }
+
+        $containerInfocomServ.append(`
+            <div class="kpi-modern-card bg-white shadow-xs" style="border-left: 4px solid ${cfg.cor};">
+              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: #1E293B; font-weight: 800;" title="${item.nm_indicador}">${cfg.titulo}${iconInfo}</div>
+              <div class="kpi-modern-body"><i class="fas ${cfg.icone} kpi-modern-icon" style="color: ${cfg.cor};"></i><span class="kpi-modern-number" id="ficha_kpi_${cfg.sigla}">${valFmt}</span></div>
+              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #0C2856; font-weight: 800;">${item.ano}</span>${rankBadge}${cfg.isQL ? extraBadge : obterBadgePolaridade(cfg.sigla)}${!cfg.isQL ? extraBadge : ''}</div>
+            </div>
+        `);
+    });
+
+    // 2. Demais indicadores de Economia da Inovação + Botões do Mapa
+    const todasSiglasUnicas = [...new Set(itensInovacao.map(i => i.sigla_indicador))].filter(s => !siglasAuxiliaresOcultas.includes(String(s).toLowerCase()));
+    // Ordena para que os 4 indicadores de InfoCom/Serviços fiquem primeiro nos botões do mapa
+    const siglasOrdenadas = [
+        ...siglasInfocomServ.filter(s => todasSiglasUnicas.includes(s)),
+        ...todasSiglasUnicas.filter(s => !siglasInfocomServ.includes(s))
+    ];
+
+    if (!metricaInovacaoAtiva && siglasOrdenadas.length > 0) metricaInovacaoAtiva = siglasOrdenadas[0];
+
+    siglasOrdenadas.forEach((sigla) => {
+        const item = itensInovacao.filter(i => i.sigla_indicador === sigla).sort((a, b) => b.ano - a.ano)[0];
+        if (!item) return;
+
+        // Adiciona botão no seletor do mapa regional para todos os indicadores (incluindo os 4 de InfoCom/Serviços)
+        $containerBtns.append(`<button type="button" class="btn ${sigla === metricaInovacaoAtiva ? 'btn-primary active' : 'btn-outline-primary'} font-bold text-xs px-2" data-metrica="${sigla}" onclick="window.alternarMetricaInovacao('${sigla}')">${item.nm_indicador}</button>`);
+
+        // Se já foi renderizado no bloco superior de InfoCom/Serviços, não duplica no grid inferior
+        if (siglasInfocomServ.includes(sigla)) return;
+
+        const tipoNorm = item.tipo ? String(item.tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+        let val = parseFloat(String(item.indicador).replace(',', '.')), valFmt = item.indicador;
+
+        if (!isNaN(val)) {
+            if (tipoNorm === 'moeda' || String(item.nm_indicador).toLowerCase().includes('salarial')) {
+                valFmt = 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else if (tipoNorm === 'percentual' || String(item.nm_indicador).includes('%')) {
+                valFmt = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%';
+            } else if (tipoNorm === 'absoluto') {
+                valFmt = val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+            } else {
+                valFmt = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+            }
+        }
+
+        const rankBadge = item.rank_pe ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank_pe}º em PE</span>` : '';
+        const meta = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
+        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${sigla}')" title="Ver Metadados"></i>` : '';
+
+        $containerKpis.append(`
+            <div class="kpi-modern-card" style="border-left-color: #00B7FF;">
+              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
+              <div class="kpi-modern-body"><i class="fas fa-laptop-code kpi-modern-icon" style="color: #00B7FF;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${valFmt}</span></div>
+              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #0C2856; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+            </div>
+        `);
+    });
+
+    const rdNome = demo?.regiao_de_desenvolvimento || demo?.['Região de Desenvolvimento'] || '-';
+    $('#ficha_inovacao_rd_titulo').text(`Municípios da RD ${rdNome}`);
+    renderizarMapaInovacaoRD();
+}
+
+function renderizarMapaInovacaoRD() {
+    const mapDom = document.getElementById('ficha_map_inovacao_container');
+    if (!mapDom || !cacheSociaisRD.geojsonRD || !metricaInovacaoAtiva) return;
+
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    const geoData = obterGeoJSONSeguro(cacheSociaisRD.geojsonRD);
+    if (!geoData || !geoData.features) return;
+    let minVal = Infinity, maxVal = -Infinity;
+
+    geoData.features.forEach(ft => {
+        const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
+        const ibgeCode = String(ft.properties.ibge6 || ft.properties.ibge7 || ft.properties.cod_ibge || '').substring(0, 6);
+
+        const indArr = (cacheSociaisRD.indicadoresRD || []).filter(i => {
+            const matchIbge = ibgeCode && String(i.ibge6 || i.ibge7 || '').substring(0, 6) === ibgeCode;
+            const matchName = normText(i.nm_municipio).includes(normName);
+            return (matchIbge || matchName) && String(i.sigla_indicador || '').toLowerCase().trim() === metricaInovacaoAtiva.toLowerCase().trim();
+        }).sort((a, b) => b.ano - a.ano);
+
+        let vAtiva = indArr.length ? (parseFloat(String(indArr[0].indicador).replace(',', '.')) || 0) : 0;
+        ft.properties.val_ativa = vAtiva;
+        ft.properties.is_selected = normName === normText(cacheSociaisRD.nomeMun);
+
+        if (vAtiva > 0) {
+            if (vAtiva < minVal) minVal = vAtiva;
+            if (vAtiva > maxVal) maxVal = vAtiva;
+        }
+    });
+
+    if (minVal === Infinity) minVal = 0;
+    if (maxVal === -Infinity || maxVal === minVal) maxVal = minVal + 1;
+
+    const fillColorExpression = ['interpolate', ['linear'], ['get', 'val_ativa'], minVal, '#E0F7FA', maxVal, '#00838F'];
+    const fitMapBounds = (mapInst) => {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            const processCoord = (c) => { if (eCoordenadaContinental(c)) bounds.extend(c); };
+            geoData.features.forEach(ft => {
+                const coords = ft.geometry.coordinates;
+                if (ft.geometry.type === 'Polygon') coords[0].forEach(processCoord);
+                else if (ft.geometry.type === 'MultiPolygon') coords.forEach(poly => poly[0].forEach(processCoord));
+            });
+            if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 40, animate: false });
+        } catch (e) {}
+    };
+
+    if (mapInovacaoFicha && mapInovacaoFicha.getSource('rd_inovacao_source')) {
+        mapInovacaoFicha.getSource('rd_inovacao_source').setData(geoData);
+        mapInovacaoFicha.setPaintProperty('rd_inovacao_fill', 'fill-color', fillColorExpression);
+        fitMapBounds(mapInovacaoFicha);
+        mapInovacaoFicha.resize();
+        return;
+    }
+
+    if (mapInovacaoFicha) mapInovacaoFicha.remove();
+    mapInovacaoFicha = new maplibregl.Map({
+        container: 'ficha_map_inovacao_container',
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
+    });
+
+    mapInovacaoFicha.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    mapInovacaoFicha.on('load', () => {
+        mapInovacaoFicha.resize();
+        mapInovacaoFicha.addSource('rd_inovacao_source', { type: 'geojson', data: geoData });
+        mapInovacaoFicha.addLayer({ id: 'rd_inovacao_fill', type: 'fill', source: 'rd_inovacao_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
+        mapInovacaoFicha.addLayer({ id: 'rd_inovacao_line', type: 'line', source: 'rd_inovacao_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        mapInovacaoFicha.on('mousemove', 'rd_inovacao_fill', (e) => {
+            mapInovacaoFicha.getCanvas().style.cursor = 'pointer';
+            if (!e.features.length) return;
+            const p = e.features[0].properties;
+            popup.setLngLat(e.lngLat).setHTML(`
+                <div style="font-family: Jost, sans-serif; padding: 4px;">
+                  <div style="font-weight: 800; color: #0C2856; border-bottom: 1px solid #eee; padding-bottom: 2px;">${p.municipio || p.name}</div>
+                  <div style="font-size: 11px; margin-top: 4px;"><b>Valor:</b> <span style="color:#00838F; font-weight:800;">${Number(p.val_ativa || 0).toLocaleString('pt-BR')}</span></div>
+                </div>
+            `).addTo(mapInovacaoFicha);
+        });
+        mapInovacaoFicha.on('mouseleave', 'rd_inovacao_fill', () => { mapInovacaoFicha.getCanvas().style.cursor = ''; popup.remove(); });
+        fitMapBounds(mapInovacaoFicha);
+    });
+}
+
+// COMÉRCIO EXTERIOR
+function renderizarIndicadoresComercio(ind, demo) {
+    const $containerKpis =$('#ficha_container_kpis_comercio'), $containerBtns =$('#ficha_btns_metrica_comercio');
+    $containerKpis.empty();$containerBtns.empty();
+
+    const itensComercio = (ind || []).filter(i => {
+        const g = String(i.grupo || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        return g === 'comex e tecnologia' || g === 'comercio exterior' || g === 'comércio exterior';
+    });
+
+    if (!itensComercio.length) {
+        $containerKpis.html('<div class="col-12 text-slate-400 text-xs italic">Sem indicadores de Comércio Exterior registrados.</div>');
+        $('#ficha_map_comercio_container').closest('.bg-white').hide();
+        return;
+    } else {
+        $('#ficha_map_comercio_container').closest('.bg-white').show();
+    }
+
+    const siglasUnicas = [...new Set(itensComercio.map(i => i.sigla_indicador))];
+    if (!metricaComercioAtiva && siglasUnicas.length > 0) metricaComercioAtiva = siglasUnicas[0];
+
+    siglasUnicas.forEach((sigla) => {
+        const item = itensComercio.filter(i => i.sigla_indicador === sigla).sort((a, b) => b.ano - a.ano)[0];
+        const tipoRaw = item.tipo ? String(item.tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : '';
+        const siglaLow = String(item.sigla_indicador || '').toLowerCase();
+        const nomeLow = String(item.nm_indicador || '').toLowerCase();
+        let val = parseFloat(String(item.indicador).replace(',', '.')), valFmt = item.indicador;
+
+        if (!isNaN(val)) {
+            if (tipoRaw === 'moeda' || nomeLow.includes('exporta') || nomeLow.includes('importa') || siglaLow.includes('valor')) {
+                valFmt = 'US$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+            } else if (tipoRaw === 'percentual') {
+                valFmt = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%';
+            } else if (tipoRaw === 'indice') {
+                valFmt = val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+            } else {
+                valFmt = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+            }
+        }
+
+        const rankBadge = item.rank_pe ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank_pe}º em PE</span>` : '';
+        
+        // Ícone de Metadado / Modal
+        const meta = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
+        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${sigla}')" title="Ver Metadados"></i>` : '';
+
+        $containerKpis.append(`
+            <div class="kpi-modern-card" style="border-left-color: #E67E22;">
+              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
+              <div class="kpi-modern-body"><i class="fas fa-globe kpi-modern-icon" style="color: #E67E22;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${valFmt}</span></div>
+              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #0C2856; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+            </div>
+        `);
+
+        $containerBtns.append(`<button type="button" class="btn ${sigla === metricaComercioAtiva ? 'btn-primary active' : 'btn-outline-primary'} font-bold text-xs px-2" data-metrica="${sigla}" onclick="window.alternarMetricaComercio('${sigla}')">${item.nm_indicador}</button>`);
+    });
+
+    const rdNome = demo?.regiao_de_desenvolvimento || demo?.['Região de Desenvolvimento'] || '-';
+    $('#ficha_comercio_rd_titulo').text(`Municípios da RD ${rdNome}`);
+    renderizarMapaComercioRD();
+}
+
+function renderizarMapaComercioRD() {
+    const mapDom = document.getElementById('ficha_map_comercio_container');
+    if (!mapDom || !cacheSociaisRD.geojsonRD || !metricaComercioAtiva) return;
+
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    const geoData = obterGeoJSONSeguro(cacheSociaisRD.geojsonRD);
+    if (!geoData || !geoData.features) return;
+    let minVal = Infinity, maxVal = -Infinity;
+
+    geoData.features.forEach(ft => {
+        const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
+        const ibgeCode = String(ft.properties.ibge6 || ft.properties.ibge7 || ft.properties.cod_ibge || '').substring(0, 6);
+
+        const indArr = (cacheSociaisRD.indicadoresRD || []).filter(i => {
+            const matchIbge = ibgeCode && String(i.ibge6 || i.ibge7 || '').substring(0, 6) === ibgeCode;
+            const matchName = normText(i.nm_municipio).includes(normName);
+            return (matchIbge || matchName) && String(i.sigla_indicador || '').toLowerCase().trim() === metricaComercioAtiva.toLowerCase().trim();
+        }).sort((a, b) => b.ano - a.ano);
+
+        let vAtiva = indArr.length ? (parseFloat(String(indArr[0].indicador).replace(',', '.')) || 0) : 0;
+        ft.properties.val_ativa = vAtiva;
+        ft.properties.is_selected = normName === normText(cacheSociaisRD.nomeMun);
+
+        if (vAtiva > 0) {
+            if (vAtiva < minVal) minVal = vAtiva;
+            if (vAtiva > maxVal) maxVal = vAtiva;
+        }
+    });
+
+    if (minVal === Infinity) minVal = 0;
+    if (maxVal === -Infinity || maxVal === minVal) maxVal = minVal + 1;
+
+    const fillColorExpression = ['interpolate', ['linear'], ['get', 'val_ativa'], minVal, '#FDF2E9', maxVal, '#BA4A00'];
+    const fitMapBounds = (mapInst) => {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            const processCoord = (c) => { if (eCoordenadaContinental(c)) bounds.extend(c); };
+            geoData.features.forEach(ft => {
+                const coords = ft.geometry.coordinates;
+                if (ft.geometry.type === 'Polygon') coords[0].forEach(processCoord);
+                else if (ft.geometry.type === 'MultiPolygon') coords.forEach(poly => poly[0].forEach(processCoord));
+            });
+            if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 40, animate: false });
+        } catch (e) {}
+    };
+
+    if (mapComercioFicha && mapComercioFicha.getSource('rd_comercio_source')) {
+        mapComercioFicha.getSource('rd_comercio_source').setData(geoData);
+        mapComercioFicha.setPaintProperty('rd_comercio_fill', 'fill-color', fillColorExpression);
+        fitMapBounds(mapComercioFicha);
+        mapComercioFicha.resize();
+        return;
+    }
+
+    if (mapComercioFicha) mapComercioFicha.remove();
+    mapComercioFicha = new maplibregl.Map({
+        container: 'ficha_map_comercio_container',
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
+    });
+
+    mapComercioFicha.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    mapComercioFicha.on('load', () => {
+        mapComercioFicha.resize();
+        mapComercioFicha.addSource('rd_comercio_source', { type: 'geojson', data: geoData });
+        mapComercioFicha.addLayer({ id: 'rd_comercio_fill', type: 'fill', source: 'rd_comercio_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
+        mapComercioFicha.addLayer({ id: 'rd_comercio_line', type: 'line', source: 'rd_comercio_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        mapComercioFicha.on('mousemove', 'rd_comercio_fill', (e) => {
+            mapComercioFicha.getCanvas().style.cursor = 'pointer';
+            if (!e.features.length) return;
+            const p = e.features[0].properties;
+            popup.setLngLat(e.lngLat).setHTML(`
+                <div style="font-family: Jost, sans-serif; padding: 4px;">
+                  <div style="font-weight: 800; color: #0C2856; border-bottom: 1px solid #eee; padding-bottom: 2px;">${p.municipio || p.name}</div>
+                  <div style="font-size: 11px; margin-top: 4px;"><b>Valor:</b> <span style="color:#BA4A00; font-weight:800;">${Number(p.val_ativa || 0).toLocaleString('pt-BR')}</span></div>
+                </div>
+            `).addTo(mapComercioFicha);
+        });
+        mapComercioFicha.on('mouseleave', 'rd_comercio_fill', () => { mapComercioFicha.getCanvas().style.cursor = ''; popup.remove(); });
+        fitMapBounds(mapComercioFicha);
+    });
+}
+
+// CONECTIVIDADE
+function renderizarIndicadoresConectividade(ind, demo) {
+    const $containerKpis =$('#ficha_container_kpis_conectividade'), $containerBtns =$('#ficha_btns_metrica_conectividade');
+    $containerKpis.empty();$containerBtns.empty();
+
+    const itensConect = (ind || []).filter(i => String(i.grupo || '').toLowerCase().trim() === 'conectividade');
+
+    if (!itensConect.length) {
+        $containerKpis.html('<div class="col-12 text-slate-400 text-xs italic">Sem indicadores de Conectividade registrados.</div>');
+        $('#ficha_map_conectividade_container').closest('.bg-white').hide();
+        return;
+    } else {
+        $('#ficha_map_conectividade_container').closest('.bg-white').show();
+    }
+
+    const siglasUnicas = [...new Set(itensConect.map(i => i.sigla_indicador))];
+    if (!metricaConectividadeAtiva && siglasUnicas.length > 0) metricaConectividadeAtiva = siglasUnicas[0];
+
+    siglasUnicas.forEach((sigla) => {
+        const item = itensConect.filter(i => i.sigla_indicador === sigla).sort((a, b) => b.ano - a.ano)[0];
+        const tipoNorm = item.tipo ? String(item.tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+        let val = parseFloat(String(item.indicador).replace(',', '.')), textoValor = "-";
+
+        if (!isNaN(val)) {
+            if (tipoNorm === 'percentual') textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 3 }) + "%";
+            else if (tipoNorm === 'moeda') textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            else if (tipoNorm === 'absoluto') textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+            else if (tipoNorm === 'indice') textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+            else textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+        } else {
+            textoValor = item.indicador;
+        }
+
+        const rankBadge = item.rank_pe ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank_pe}º em PE</span>` : '';
+        
+        // Ícone de Metadado / Modal
+        const meta = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
+        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${sigla}')" title="Ver Metadados"></i>` : '';
+
+        $containerKpis.append(`
+            <div class="kpi-modern-card" style="border-left-color: #3F51B5;">
+              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
+              <div class="kpi-modern-body"><i class="fas fa-wifi kpi-modern-icon" style="color: #3F51B5;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${textoValor}</span></div>
+              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #0C2856; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+            </div>
+        `);
+
+        $containerBtns.append(`<button type="button" class="btn ${sigla === metricaConectividadeAtiva ? 'btn-primary active' : 'btn-outline-primary'} font-bold text-xs px-2" data-metrica="${sigla}" onclick="window.alternarMetricaConectividade('${sigla}')">${item.nm_indicador}</button>`);
+    });
+
+    const rdNome = demo?.regiao_de_desenvolvimento || demo?.['Região de Desenvolvimento'] || '-';
+    $('#ficha_conectividade_rd_titulo').text(`Municípios da RD ${rdNome}`);
+    renderizarMapaConectividadeRD();
+}
+
+function renderizarMapaConectividadeRD() {
+    const mapDom = document.getElementById('ficha_map_conectividade_container');
+    if (!mapDom || !cacheSociaisRD.geojsonRD || !metricaConectividadeAtiva) return;
+
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    const geoData = obterGeoJSONSeguro(cacheSociaisRD.geojsonRD);
+    if (!geoData || !geoData.features) return;
+    let minVal = Infinity, maxVal = -Infinity;
+
+    geoData.features.forEach(ft => {
+        const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
+        const ibgeCode = String(ft.properties.ibge6 || ft.properties.ibge7 || ft.properties.cod_ibge || '').substring(0, 6);
+
+        const indArr = (cacheSociaisRD.indicadoresRD || []).filter(i => {
+            const matchIbge = ibgeCode && String(i.ibge6 || i.ibge7 || '').substring(0, 6) === ibgeCode;
+            const matchName = normText(i.nm_municipio).includes(normName);
+            return (matchIbge || matchName) && String(i.sigla_indicador || '').toLowerCase().trim() === metricaConectividadeAtiva.toLowerCase().trim();
+        }).sort((a, b) => b.ano - a.ano);
+
+        let vAtiva = indArr.length ? (parseFloat(String(indArr[0].indicador).replace(',', '.')) || 0) : 0;
+        ft.properties.val_ativa = vAtiva;
+        ft.properties.is_selected = normName === normText(cacheSociaisRD.nomeMun);
+
+        if (vAtiva > 0) {
+            if (vAtiva < minVal) minVal = vAtiva;
+            if (vAtiva > maxVal) maxVal = vAtiva;
+        }
+    });
+
+    if (minVal === Infinity) minVal = 0;
+    if (maxVal === -Infinity || maxVal === minVal) maxVal = minVal + 1;
+
+    const fillColorExpression = ['interpolate', ['linear'], ['get', 'val_ativa'], minVal, '#E8EAF6', maxVal, '#283593'];
+    const fitMapBounds = (mapInst) => {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            const processCoord = (c) => { if (eCoordenadaContinental(c)) bounds.extend(c); };
+            geoData.features.forEach(ft => {
+                const coords = ft.geometry.coordinates;
+                if (ft.geometry.type === 'Polygon') coords[0].forEach(processCoord);
+                else if (ft.geometry.type === 'MultiPolygon') coords.forEach(poly => poly[0].forEach(processCoord));
+            });
+            if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 40, animate: false });
+        } catch (e) {}
+    };
+
+    if (mapConectividadeFicha && mapConectividadeFicha.getSource('rd_conectividade_source')) {
+        mapConectividadeFicha.getSource('rd_conectividade_source').setData(geoData);
+        mapConectividadeFicha.setPaintProperty('rd_conectividade_fill', 'fill-color', fillColorExpression);
+        fitMapBounds(mapConectividadeFicha);
+        mapConectividadeFicha.resize();
+        return;
+    }
+
+    if (mapConectividadeFicha) mapConectividadeFicha.remove();
+    mapConectividadeFicha = new maplibregl.Map({
+        container: 'ficha_map_conectividade_container',
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
+    });
+
+    mapConectividadeFicha.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    mapConectividadeFicha.on('load', () => {
+        mapConectividadeFicha.resize();
+        mapConectividadeFicha.addSource('rd_conectividade_source', { type: 'geojson', data: geoData });
+        mapConectividadeFicha.addLayer({ id: 'rd_conectividade_fill', type: 'fill', source: 'rd_conectividade_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
+        mapConectividadeFicha.addLayer({ id: 'rd_conectividade_line', type: 'line', source: 'rd_conectividade_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        mapConectividadeFicha.on('mousemove', 'rd_conectividade_fill', (e) => {
+            mapConectividadeFicha.getCanvas().style.cursor = 'pointer';
+            if (!e.features.length) return;
+            const p = e.features[0].properties;
+
+            popup.setLngLat(e.lngLat).setHTML(`
+                <div style="font-family: Jost, sans-serif; padding: 4px;">
+                  <div style="font-weight: 800; color: #0C2856; border-bottom: 1px solid #eee; padding-bottom: 2px;">${p.municipio || p.name}</div>
+                  <div style="font-size: 11px; margin-top: 4px;"><b>Valor:</b> <span style="color:#283593; font-weight:800;">${Number(p.val_ativa || 0).toLocaleString('pt-BR')}</span></div>
+                </div>
+            `).addTo(mapConectividadeFicha);
+        });
+        mapConectividadeFicha.on('mouseleave', 'rd_conectividade_fill', () => { mapConectividadeFicha.getCanvas().style.cursor = ''; popup.remove(); });
+        fitMapBounds(mapConectividadeFicha);
+    });
+}
+
+function renderizarVocacoes(vocacoes) {
+    const $container =$('#ficha_container_vocacoes').empty();
+    const $subtitle =$('#ficha_vocacoes_subtitle');
+
+    if (!vocacoes || !vocacoes.length || !Array.isArray(vocacoes)) {
+        $subtitle.text("Vocações: Sem registro");
+        $container.html('<div class="col-12 text-slate-400 text-xs italic">Sem vocações econômicas registradas para este município.</div>');
+        return;
+    }
+
+    // Helper universal para conversão numérica com suporte a decodificação int64 do R
+    const parseNum = (val) => {
+        if (val === undefined || val === null || val === '-' || val === '') return null;
+        let s = String(val).trim();
+        let num = parseFloat(s.replace(',', '.'));
+        if (isNaN(num)) return null;
+
+        // Trata floats microscópicos gerados por integer64 do R quando não convertido
+        if (s.includes('e-3') && num > 0 && num < 1e-300) {
+            try {
+                let buffer = new ArrayBuffer(8);
+                let view = new DataView(buffer);
+                view.setFloat64(0, num, true);
+                let decoded = Number(view.getBigInt64(0, true));
+                if (!isNaN(decoded) && decoded >= 0) return decoded;
+            } catch (e) {}
+        }
+
+        return num;
+    };
+
+    const formatMoeda = (val) => {
+        if (val === null || val === 0) return '-';
+        if (Math.abs(val) >= 1e6) {
+            return "R$ " + (val / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + " Mi";
+        }
+        return "R$ " + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const formatInt = (val) => (val === null ? '-' : val.toLocaleString('pt-BR', { maximumFractionDigits: 0 }));
+
+    // FILTRO 1: Remove vocações fantasma (zeradas em todos os indicadores)
+    const vocacoesValidas = vocacoes.filter(v => {
+        const estab = parseNum(v.estab_cnae);
+        const emp = parseNum(v.emp_cnae);
+        const massa = parseNum(v.massa_salarial_cnae);
+        const sal = parseNum(v.sal_avg_cnae);
+        return (estab !== null && estab > 0) || 
+               (emp !== null && emp > 0) || 
+               (massa !== null && massa > 0) || 
+               (sal !== null && sal > 0);
+    });
+
+    if (!vocacoesValidas.length) {
+        $subtitle.text("Vocações: Sem registro relevante");
+        $container.html('<div class="col-12 text-slate-400 text-xs italic">Nenhuma vocação com atividade econômica ativa encontrada.</div>');
+        return;
+    }
+
+    // Atualiza a badge resumo da Caracterização no topo da página
+    const titulos = vocacoesValidas.map(v => v.nm_cnae_divisao || v.nm_vocacao).filter(Boolean);
+    $subtitle.text(titulos.length > 0 ? `Vocações: ${titulos.slice(0, 2).join(', ')}` : "Vocações: -");
+
+    vocacoesValidas.forEach(v => {
+        const titulo = v.nm_vocacao || v.nm_cnae_divisao || 'Vocação Econômica';
+        const tag = (v.tag_vocacao && v.tag_vocacao !== '-') ? v.tag_vocacao : 'Destaque Econômico';
+        
+        const estab = parseNum(v.estab_cnae);
+        const emp = parseNum(v.emp_cnae);
+        const salAvg = parseNum(v.sal_avg_cnae);
+        const massaSal = parseNum(v.massa_salarial_cnae);
+        const diffEmp = parseNum(v.diff_emp_trienio);
+        let cagr = parseNum(v.cagr_emp_trienio);
+
+        // BADGE DE CRESCIMENTO LIMPA (Apenas %, posicionado abaixo da tag)
+        let badgeSobedesce = '';
+        if (cagr !== null || diffEmp !== null) {
+            let pctVal = cagr !== null ? (Math.abs(cagr) <= 1 && cagr !== 0 ? cagr * 100 : cagr) : null;
+            let ehPositivo = (pctVal !== null ? pctVal >= 0 : (diffEmp !== null ? diffEmp >= 0 : true));
+            
+            let corClasse = ehPositivo ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-rose-700 bg-rose-50 border-rose-200';
+            let icone = ehPositivo ? '<i class="fas fa-arrow-trend-up me-1"></i>' : '<i class="fas fa-arrow-trend-down me-1"></i>';
+            
+            if (pctVal !== null) {
+                let sinal = ehPositivo ? '+' : '';
+                badgeSobedesce = `<span class="badge border rounded-pill px-2.5 py-1 text-xs font-bold ${corClasse}">${icone}${sinal}${pctVal.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% no triênio</span>`;
+            }
+        }
+
+        $container.append(`
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:shadow-md transition-all flex flex-col justify-between">
+                <div class="mb-3">
+                    <div class="mb-1.5">
+                        <span class="badge bg-slate-800 text-white rounded-pill px-2.5 py-1 text-xs font-bold uppercase tracking-wider">${tag}</span>
+                    </div>
+                    ${badgeSobedesce ? `<div class="mb-2">${badgeSobedesce}</div>` : ''}
+                    <h6 class="font-black text-slate-800 text-base leading-tight mb-0" title="${titulo}">${titulo}</h6>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-xs">
+                    <div class="bg-slate-50 p-2 rounded-xl">
+                        <span class="text-slate-400 font-bold uppercase block text-[0.65rem]">Estabelecimentos</span>
+                        <strong class="text-slate-800 text-sm font-black">${formatInt(estab)}</strong>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-xl">
+                        <span class="text-slate-400 font-bold uppercase block text-[0.65rem]">Empregos Formais</span>
+                        <strong class="text-slate-800 text-sm font-black">${formatInt(emp)}</strong>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-xl">
+                        <span class="text-slate-400 font-bold uppercase block text-[0.65rem]">Média Salarial</span>
+                        <strong class="text-slate-800 text-sm font-black">${formatMoeda(salAvg)}</strong>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-xl">
+                        <span class="text-slate-400 font-bold uppercase block text-[0.65rem]">Massa Salarial</span>
+                        <strong class="text-slate-800 text-sm font-black">${formatMoeda(massaSal)}</strong>
+                    </div>
+                </div>
+            </div>
+        `);
+    });
+}
+
+function renderizarIndicadoresTrabalho(ind, demo) {
+    const $containerKpis =$('#ficha_container_kpis_trabalho');
+    const $containerBtns =$('#ficha_btns_metrica_trabalho');
+    $containerKpis.empty();$containerBtns.empty();
+
+    // Ordem canônica desejada para exibição organizada dos cards
+    const ordemDesejada = [
+        'estab_total', 'emp_total', 'sal_avg', 'sal_med',
+        'estab_agro', 'emp_agro', 'sal_avg_agro', 'pct_estab_agro', 'pct_emp_agro',
+        'estab_ind', 'emp_ind', 'sal_avg_ind', 'pct_estab_ind', 'pct_emp_ind', 'emp_me_do_ind', 'pct_emp_me_do_ind',
+        'estab_serv', 'emp_serv', 'sal_avg_serv', 'pct_estab_serv', 'pct_emp_serv'
+    ];
+
+    const normText = (str) => String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+    // Filtra exclusivamente o grupo "mercado de trabalho"
+    let itensTrabalho = (ind || []).filter(i => normText(i.grupo) === 'mercado de trabalho');
+
+    if (!itensTrabalho.length) {
+        $containerKpis.html('<div class="col-12 text-slate-400 text-xs italic">Sem indicadores de mercado de trabalho registrados.</div>');
+        $('#ficha_map_trabalho_container').closest('.bg-white').hide();
+        return;
+    } else {
+        $('#ficha_map_trabalho_container').closest('.bg-white').show();
+    }
+
+    // Ordenação lógica (Geral -> Agro -> Indústria -> Serviços)
+    itensTrabalho.sort((a, b) => {
+        let posA = ordemDesejada.indexOf(String(a.sigla_indicador).toLowerCase());
+        let posB = ordemDesejada.indexOf(String(b.sigla_indicador).toLowerCase());
+        return (posA === -1 ? 99 : posA) - (posB === -1 ? 99 : posB);
+    });
+
+    const siglasUnicas = [...new Set(itensTrabalho.map(i => i.sigla_indicador))];
+    if (!metricaTrabalhoAtiva && siglasUnicas.length > 0) metricaTrabalhoAtiva = siglasUnicas[0];
+
+    siglasUnicas.forEach((sigla) => {
+        const item = itensTrabalho.filter(i => i.sigla_indicador === sigla).sort((a, b) => b.ano - a.ano)[0];
+        const tipoNorm = item.tipo ? String(item.tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+        let val = parseFloat(String(item.indicador).replace(',', '.')), textoValor = "-";
+
+        if (!isNaN(val)) {
+            if (tipoNorm === 'percentual' || String(item.nm_indicador).includes('%')) {
+                textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + "%";
+            } else if (tipoNorm === 'moeda' || String(item.nm_indicador).toLowerCase().includes('salarial')) {
+                textoValor = 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else if (tipoNorm === 'absoluto') {
+                textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+            } else {
+                textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+            }
+        } else {
+            textoValor = item.indicador;
+        }
+
+        // Escolha do ícone e cor por setor
+        let iconeSetor = 'fa-user-tie';
+        let corSetor = '#059669'; // Verde padrão
+        const siglaLow = sigla.toLowerCase();
+
+        if (siglaLow.includes('agro')) { iconeSetor = 'fa-tractor'; corSetor = '#1ABC9C'; }
+        else if (siglaLow.includes('ind')) { iconeSetor = 'fa-industry'; corSetor = '#34495E'; }
+        else if (siglaLow.includes('serv')) { iconeSetor = 'fa-store'; corSetor = '#2980B9'; }
+        else if (siglaLow.includes('total') || siglaLow === 'sal_avg' || siglaLow === 'sal_med') { iconeSetor = 'fa-briefcase'; corSetor = '#0C2856'; }
+
+        const rankBadge = item.rank_pe ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank_pe}º em PE</span>` : '';
+        const meta = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
+        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${sigla}')" title="Ver Metadados"></i>` : '';
+
+        $containerKpis.append(`
+            <div class="kpi-modern-card" style="border-left-color: ${corSetor};">
+              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
+              <div class="kpi-modern-body"><i class="fas ${iconeSetor} kpi-modern-icon" style="color: ${corSetor};"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${textoValor}</span></div>
+              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #0C2856; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+            </div>
+        `);
+
+        $containerBtns.append(`<button type="button" class="btn ${sigla === metricaTrabalhoAtiva ? 'btn-primary active' : 'btn-outline-primary'} font-bold text-xs px-2" data-metrica="${sigla}" onclick="window.alternarMetricaTrabalho('${sigla}')">${item.nm_indicador}</button>`);
+    });
+
+    const rdNome = demo?.regiao_de_desenvolvimento || demo?.['Região de Desenvolvimento'] || '-';
+    $('#ficha_trabalho_rd_titulo').text(`Municípios da RD ${rdNome}`);
+    renderizarMapaTrabalhoRD();
+}
+
+/* --- 6.6 DADOS FISCAIS --- */
+function renderizarDadosFiscais(fiscais, ind, demo) {
+    const itemCapag = (ind || []).filter(i => {
+        const s = String(i.sigla_indicador || '').trim().toLowerCase();
+        const nm = String(i.nm_indicador || '').trim().toLowerCase();
+        return s === 'capag' || nm === 'capag';
+    });
+    let valCapag = '-', anoCapag = '', rankCapag = '';
+
+    if (itemCapag.length) {
+        itemCapag.sort((a, b) => b.ano - a.ano);
+        valCapag = String(itemCapag[0].indicador).trim().toUpperCase();
+        anoCapag = itemCapag[0].ano ? ` (${itemCapag[0].ano})` : '';
+    } else if (demo && (demo.capag || demo.CAPAG) && String(demo.capag || demo.CAPAG).trim() !== 'n.d.') {
+        valCapag = String(demo.capag || demo.CAPAG).trim().toUpperCase();
+    }
+
+    const $badge =$('#ficha_badge_capag');
+    $badge.html(`CAPAG: ${valCapag}${anoCapag}${rankCapag}`);
+    $badge.removeClass('bg-success bg-warning bg-danger bg-secondary text-dark text-white');
+
+    const corCapag = obterCorCapag(valCapag);
+    $badge.attr('style', `background-color: ${corCapag} !important; color: #ffffff !important; font-size: 0.75rem; letter-spacing: 0.05em;`);
+
+    if (!fiscais || !fiscais.length) {
+        ['ficha_container_fiscal_despesas_tipo', 'ficha_container_fiscal_despesas_tema', 'ficha_container_fiscal_receitas', 'ficha_container_fiscal_resultados'].forEach(id => {
+            $(`#${id}`).html('<div class="col-12 text-slate-400 text-xs italic">Sem dados fiscais registrados.</div>');
+        });
+        return;
+    }
+
+    const anosDisponiveis = fiscais.map(f => parseFloat(f.exercicio)).filter(a => !isNaN(a));
+    const anoAlvo = Math.max(...anosDisponiveis) - 1;
+    const fiscaisAnoAlvo = fiscais.filter(f => parseFloat(f.exercicio) === anoAlvo);
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+
+    // Termos de classificação para divisão das despesas
+    const termosTema = ["EDUCACAO", "SAUDE", "SEGURANCA", "URBANISMO", "TRANSPORTE", "HABITACAO", "CIENCIA", "TECNOLOGIA"];
+    
+    // Filtro estrito para os 6 tipos de despesa
+    const termosTipo = ["AMORTIZACAO DA DIVIDA", "JUROS E ENCARGOS", "DESPESAS CORRENTES", "DESPESAS DE PESSOAL", "INVERSOES", "INVESTIMENTOS"];
+
+    const mapeamentoGrupos = {
+        'Despesas_Tipo': {
+            target: 'ficha_container_fiscal_despesas_tipo',
+            filtroGrupo: (g) => normText(g).includes("DESPESA"),
+            ordem: ["DESPESAS CORRENTES", "DESPESAS DE PESSOAL", "INVESTIMENTOS", "INVERSOES", "AMORTIZACAO DA DIVIDA", "JUROS E ENCARGOS"],
+            filtroIndicador: (indNome) => termosTipo.some(t => normText(indNome).includes(t))
+        },
+        'Despesas_Tema': {
+            target: 'ficha_container_fiscal_despesas_tema',
+            filtroGrupo: (g) => normText(g).includes("DESPESA"),
+            ordem: ["EDUCACAO", "HABITACAO", "SAUDE", "SEGURANCA", "URBANISMO", "TRANSPORTE", "CIENCIA"],
+            filtroIndicador: (indNome) => termosTema.some(t => normText(indNome).includes(t))
+        },
+        'Receitas': {
+            target: 'ficha_container_fiscal_receitas',
+            filtroGrupo: (g) => normText(g).includes("RECEITA"),
+            ordem: ["REC REALIZADAS", "REC DE IMPOSTOS", "REC DE TRANS CORR (UNIAO)", "REC DE TRANS CORR (ESTADO)", "OP DE CREDITO", "REC DE CAP TRANSF (UNIAO)", "REC DE CAP TRANSF (ESTADO)", "RCL"]
+        },
+        'Resultados': {
+            target: 'ficha_container_fiscal_resultados',
+            filtroGrupo: (g) => normText(g).includes("RESULTADO") || normText(g).includes("GESTÃO") || normText(g).includes("EQUILÍBRIO") || normText(g).includes("DÍVIDA"),
+            ordem: ["EDUCACAO", "SAUDE", "RESULTADO ORCAMENTARIO", "PRIMARIO", "NOMINAL", "DIVIDA CONSOLIDADA LIQUIDA/RCL (PERCENTUAL)"],
+            excluir: ["RESULTADO FISCAL", "RESULTADO ORCAMENTARIO RELATIVO", "RESULTADO ORCAMENTARIO PER CAPITA"]
+        }
+    };
+
+    const iconesFiscais = {
+        'Despesas_Tipo': 'fa-wallet',
+        'Despesas_Tema': 'fa-layer-group',
+        'Receitas': 'fa-piggy-bank',
+        'Resultados': 'fa-chart-pie'
+    };
+
+    const coresFiscais = ['#3498DB', '#27AE60', '#8E44AD', '#F39C12', '#1ABC9C', '#34495E', '#E74C3C', '#16A085', '#D35400', '#2980B9'];
+
+    Object.keys(mapeamentoGrupos).forEach(chaveGrp => {
+        const config = mapeamentoGrupos[chaveGrp];
+        const $container =$(`#${config.target}`).empty();
+        
+        // Filtra os dados pelo grupo
+        let dadosGrp = fiscaisAnoAlvo.filter(f => config.filtroGrupo(f.grupo || ''));
+
+        // Subfiltra se houver regra de indicador (Tipo vs Tema)
+        if (config.filtroIndicador) {
+            dadosGrp = dadosGrp.filter(d => config.filtroIndicador(d.indicador));
+        }
+
+        if (config.excluir) {
+            dadosGrp = dadosGrp.filter(d => !config.excluir.some(ex => normText(d.indicador).includes(normText(ex))));
+        }
+
+        if (!dadosGrp.length) {
+            $container.html(`<div class="col-12 text-slate-400 text-xs italic">Sem dados registrados para ${anoAlvo}.</div>`);
+            return;
+        }
+
+        const indUnicos = {};
+        dadosGrp.forEach(d => {
+            const indNome = String(d.indicador).trim();
+            const mes = parseFloat(d.mes_referencia) || 0;
+            if (!indUnicos[indNome] || mes > indUnicos[indNome].mes) {
+                indUnicos[indNome] = { indicador: indNome, valor: parseFloat(d.valor), ex: d.exercicio, mes: mes, rank: d.rank_pe || null };
+            }
+        });
+
+        let lista = Object.values(indUnicos).sort((a, b) => {
+            const posA = config.ordem.findIndex(o => normText(a.indicador).includes(normText(o)));
+            const posB = config.ordem.findIndex(o => normText(b.indicador).includes(normText(o)));
+            return (posA === -1 ? 99 : posA) - (posB === -1 ? 99 : posB);
+        });
+
+        lista.forEach((item, idx) => {
+            const corBarra = coresFiscais[idx % coresFiscais.length];
+            const isPercent = item.indicador.includes('%') || item.indicador.includes('DTP') || item.indicador.includes('Vinculação') || item.indicador.includes('Relativo');
+            let valFmt = "-";
+
+            if (!isNaN(item.valor)) {
+                if (isPercent) {
+                    valFmt = item.valor.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + "%";
+                } else {
+                    const absVal = Math.abs(item.valor);
+                    if (absVal >= 1e9) {
+                        valFmt = "R$ " + (item.valor / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bi";
+                    } else if (absVal >= 1e6) {
+                        valFmt = "R$ " + (item.valor / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Mi";
+                    } else {
+                        valFmt = "R$ " + item.valor.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+                    }
+                }
+            }
+
+            // BUSCA METADADOS E POLARIDADE DO INDICADOR FISCAL
+            const normKey = (str) => String(str || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const itemNorm = normKey(item.indicador);
+
+            const meta = window.dadosMetadados.find(m => 
+                normKey(m.cd_indicador) === itemNorm || normKey(m.nm_indicador) === itemNorm
+            );
+
+            const cdMeta = meta ? (meta.cd_indicador || meta.nm_indicador) : item.indicador;
+            const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="event.stopPropagation(); window.abrirModalMetadado('${cdMeta}')" title="Ver Metadados"></i>` : '';
+            const badgePolaridade = meta ? obterBadgePolaridade(cdMeta) : '';
+
+            let nomeIndicadorExib = item.indicador;
+            if (nomeIndicadorExib === 'DTP/RCL' || nomeIndicadorExib.toLowerCase().includes('dtp')) {
+                nomeIndicadorExib = 'Pessoal';
+            }
+            const cdMetaEscaped = String(cdMeta || '').replace(/'/g, "\\'");
+            const nomeExibEscaped = String(nomeIndicadorExib || '').replace(/'/g, "\\'");
+
+            $container.append(`
+                <div class="kpi-modern-card" style="border-left-color: ${corBarra};">
+                  <div class="kpi-modern-header d-flex justify-content-between align-items-start gap-1.5" style="white-space: normal; line-height: 1.25; min-height: 2.5rem; word-break: break-word;" title="${nomeIndicadorExib}">
+                    <span class="kpi-header-title" title="${nomeIndicadorExib}">${nomeIndicadorExib}</span>
+                    <div class="kpi-actions-container d-flex gap-1 align-items-center flex-shrink-0 d-print-none">
+                      <button type="button" class="btn btn-light bg-white border border-slate-200 shadow-2xs d-flex justify-content-center align-items-center" 
+                              onclick="event.stopPropagation(); window.abrirModalMetadado('${cdMetaEscaped}')" 
+                              style="width: 24px; height: 24px; border-radius: 6px; padding: 0; min-width: 24px;" title="Ver Metadados e Informações">
+                        <i class="fas fa-info text-slate-400" style="font-size: 0.65rem;"></i>
+                      </button>
+                      <button type="button" class="btn btn-light bg-white border border-slate-200 shadow-2xs d-flex justify-content-center align-items-center" 
+                              onclick="event.stopPropagation(); window.abrirModalSerieHistoricaMun('${cdMetaEscaped}', '${nomeExibEscaped}', 'fiscal')" 
+                              style="width: 24px; height: 24px; border-radius: 6px; padding: 0; min-width: 24px;" title="Ver Série Histórica e Comparativo">
+                        <i class="fas fa-arrow-right" style="color: #0C2856; font-size: 0.65rem;"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="kpi-modern-body"><i class="fas ${iconesFiscais[chaveGrp]} kpi-modern-icon" style="color: ${corBarra};"></i><span class="kpi-modern-number" style="font-size: 1.4rem;">${valFmt}</span></div>
+                  <div class="kpi-modern-footer text-uppercase">Exercício: <span style="color: #0C2856; font-weight: 800;">${item.ex || '-'}</span>${item.rank ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank}º em PE</span>` : ''}${badgePolaridade}</div>
+                </div>
+            `);
+        });
+    });
+}
+
+/* --- 6.7 INICIATIVAS REGIONAIS E CONVÊNIOS --- */
+function renderizarIniciativasFicha(dados) {
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    const eConvenio = (d) => normText(d.tipologia).includes("CONVENIOS COM MUNICIPIOS") || normText(d.iniciativa_estrategica).includes("CONVENIOS COM MUNICIPIOS");
+
+    const dadosAcoes = dados.filter(d => !eConvenio(d));
+    const dadosConvenios = dados.filter(d => eConvenio(d));
+
+    const formataBi = (v) => (v >= 1e9) ? "R$ " + (v / 1e9).toFixed(2).replace('.', ',') + " Bi" : ((v >= 1e6) ? "R$ " + (v / 1e6).toFixed(2).replace('.', ',') + " Mi" : "R$ " + v.toLocaleString('pt-BR', { maximumFractionDigits: 0 }));
+    const formatarData = (iso) => (!iso || iso === "-") ? "-" : String(iso).substring(0, 10).split('-').reverse().join('/');
+
+    let vTotalAcoes = 0, vPagoAcoes = 0, execAcoes = 0, secCountAcoes = {}, secValAcoes = {}, statusCountAcoes = {};
+
+    dadosAcoes.forEach(d => {
+        let tot = parseFloat(d.valor_total) || 0, pag = parseFloat(d.valor_pago) || 0;
+        vTotalAcoes += tot; vPagoAcoes += pag;
+
+        let st = (d.status && d.status !== "-") ? d.status.trim() : 'Não Informado';
+        if (st.toUpperCase() === 'EM EXECUÇÃO') execAcoes++;
+        statusCountAcoes[st] = (statusCountAcoes[st] || 0) + 1;
+
+        let sec = (d.secretaria && d.secretaria !== "-") ? d.secretaria.trim() : 'N/I';
+        secCountAcoes[sec] = (secCountAcoes[sec] || 0) + 1;
+        secValAcoes[sec] = (secValAcoes[sec] || 0) + tot;
+    });
+
+    $('#ficha_kpi_ini_total').text(dadosAcoes.length);
+    $('#ficha_kpi_ini_execucao').text(execAcoes);
+    $('#ficha_kpi_ini_val_tot').text(formataBi(vTotalAcoes));
+    $('#ficha_kpi_ini_val_pag').text(formataBi(vPagoAcoes));
+
+    let outStatusAcoes = Object.entries(statusCountAcoes).filter(k => k[0].toUpperCase() !== 'EM EXECUÇÃO').sort((a, b) => b[1] - a[1]).slice(0, 2).map(k => `${k[1]} ${k[0]}`).join(' | ');
+    $('#ficha_kpi_ini_top_status').text(outStatusAcoes || "Nenhum outro status");
+
+    const renderBarChart = (id, dict, prefix) => {
+        const dom = document.getElementById(id);
+        if (!dom) return;
+        let chart = echarts.getInstanceByDom(dom) || echarts.init(dom);
+        let arr = Object.entries(dict).sort((a, b) => a[1] - b[1]).slice(-5);
+        const maxVal = Math.max(...arr.map(x => x[1]), 0);
+
+        chart.setOption({
+            grid: { left: '3%', right: '22%', bottom: '8%', top: '5%', containLabel: true },
+            xAxis: { type: 'value', max: maxVal > 0 ? maxVal * 1.3 : 'dataMax', axisLabel: { formatter: (val) => (prefix === 'R$' && val >= 1e6) ? (val / 1e6).toFixed(1) + ' Mi' : val, fontSize: 9 }, splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } } },
+            yAxis: { type: 'category', data: arr.map(x => x[0]), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { fontSize: 9, width: 70, overflow: 'truncate' } },
+            series: [{ type: 'bar', data: arr.map(x => x[1]), itemStyle: { color: '#0066FF', borderRadius: [0, 4, 4, 0] }, label: { show: true, position: 'right', formatter: (p) => prefix === 'R$' ? formataBi(p.value) : p.value, fontSize: 9, color: '#333333' } }],
+            tooltip: { trigger: 'axis', formatter: (p) => `<b>${p[0].name}</b><br/>${prefix} ${p[0].value.toLocaleString('pt-BR')}` }
+        }, true);
+        chart.resize();
+        window.addEventListener('resize', () => chart.resize());
+    };
+
+    renderBarChart('ficha_chart_iniciativas_sec', secCountAcoes, '');
+    renderBarChart('ficha_chart_valor_sec', secValAcoes, 'R$');
+
+    // DataTables Ações
+    if ($.fn.DataTable.isDataTable('#ficha_tabela_iniciativas') && dtFichaIniciativas) {
+        dtFichaIniciativas.clear().rows.add(dadosAcoes).draw(false);
+    } else {
+        dtFichaIniciativas = $('#ficha_tabela_iniciativas').DataTable({
+            data: dadosAcoes, deferRender: true, language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" }, pageLength: 5, scrollX: true,
+            columns: [
+                { title: "Órgão", data: null, className: "align-middle", width: "110px", render: (d, t, r) => t !== 'display' ? r.secretaria : `<div class="dt-cell-card d-flex align-items-center justify-content-center"><span class="badge bg-black text-white rounded-pill px-3 py-2 shadow-sm" style="font-size:11px;">${(r.secretaria || "").trim() || '-'}</span></div>` },
+                { title: "Iniciativa", data: null, className: "align-middle", width: "270px", render: (d, t, r) => t !== 'display' ? r.iniciativa_estrategica : `<div class="dt-cell-card" style="white-space: normal;">${(r.no_contrato && r.no_contrato !== "-") ? `<div class="mb-1"><span class="badge bg-light border text-dark">${r.no_contrato}</span></div>` : ''}<div class="fw-bold mb-1" style="font-size:0.85rem; color:#1a3c6e;">${r.iniciativa_estrategica || '-'}</div><div class="text-muted" style="font-size:0.75rem;">${r.produto || '-'}</div></div>` },
+                { title: "Tipologia", data: "tipologia", defaultContent: "-", className: "align-middle small fw-bold", render: (d, t) => t !== 'display' ? d : `<div class="dt-cell-card align-items-start justify-content-center" style="font-size:0.8rem; color:#444;">${d || '-'}</div>` },
+                { title: "Execução", data: null, className: "align-middle", width: "135px", render: (d, t, r) => t !== 'display' ? r.status : `<div class="dt-cell-card"><div class="d-flex align-items-center gap-1 mb-1 text-truncate"><span style="font-size:0.75rem; font-weight:800; color:#F39C12;">●</span> <span style="font-size:0.75rem; font-weight:700; color:#444;">${r.status || "-"}</span></div><div class="d-flex align-items-center gap-2"><div class="progress w-100" style="height:6px; background-color: #e9ecef;"><div class="progress-bar bg-warning" style="width:${Number(r.percent_execucao) || 0}%"></div></div><small class="text-muted fw-bold" style="font-size:0.7rem;">${Number(r.percent_execucao) || 0}%</small></div></div>` },
+                { 
+    title: "Financeiro", 
+    data: null, 
+    className: "align-middle", 
+    width: "155px", 
+    render: (d, t, r) => {
+        if (t !== 'display') return r.valor_total;
+        const tot = Number(r.valor_total) || 0;
+        const pag = Number(r.valor_pago) || 0;
+        const pct = tot > 0 ? Math.round((pag / tot) * 100) : 0;
+
+        return `<div class="dt-cell-card">
+            <div class="fw-bold" style="color:#1a3c6e; font-size: 0.8rem;">Tot: <span class="text-dark">${tot.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}</span></div>
+            <div class="text-success fw-bold" style="font-size: 0.75rem;">Pag: ${pag.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })} <span class="text-muted font-normal">(${pct}% pago)</span></div>
+            <div class="d-flex align-items-center gap-2 mt-1">
+                <div class="progress w-100" style="height:5px; background-color:#e9ecef;">
+                    <div class="progress-bar bg-info" style="width:${Math.min(pct, 100)}%"></div>
+                </div>
+            </div>
+        </div>`;
+    } 
+},
+                { title: "Período", data: null, className: "align-middle text-center", width: "110px", render: (d, t, r) => t !== 'display' ? r.data_de_inicio : `<div class="dt-cell-card align-items-center justify-content-center"><span class="text-muted fw-bold" style="font-size:0.75rem; text-align:center;">${formatarData(r.data_de_inicio)}<br><span style="font-weight:normal; font-size:0.65rem;">a</span><br>${formatarData(r.data_de_termino)}</span></div>` }
+            ]
+        });
+    }
+
+    // Convênios
+    let vTotalConv = 0, vPagoConv = 0, execConv = 0, statusCountConv = {};
+    dadosConvenios.forEach(d => {
+        let tot = parseFloat(d.valor_total) || 0, pag = parseFloat(d.valor_pago) || 0;
+        vTotalConv += tot; vPagoConv += pag;
+
+        let st = (d.status && d.status !== "-") ? d.status.trim() : 'Não Informado';
+        if (st.toUpperCase() === 'EM EXECUÇÃO') execConv++;
+        statusCountConv[st] = (statusCountConv[st] || 0) + 1;
+    });
+
+    $('#ficha_kpi_conv_total').text(dadosConvenios.length);
+    $('#ficha_kpi_conv_execucao').text(execConv);
+    $('#ficha_kpi_conv_val_tot').text(formataBi(vTotalConv));
+    $('#ficha_kpi_conv_val_pag').text(formataBi(vPagoConv));
+
+    let outStatusConv = Object.entries(statusCountConv).filter(k => k[0].toUpperCase() !== 'EM EXECUÇÃO').sort((a, b) => b[1] - a[1]).slice(0, 2).map(k => `${k[1]} ${k[0]}`).join(' | ');
+    $('#ficha_kpi_conv_top_status').text(outStatusConv || "Nenhum outro status");
+
+    if ($.fn.DataTable.isDataTable('#ficha_tabela_convenios') && dtFichaConvenios) {
+        dtFichaConvenios.clear().rows.add(dadosConvenios).draw(false);
+    } else {
+        dtFichaConvenios = $('#ficha_tabela_convenios').DataTable({
+            data: dadosConvenios, deferRender: true, language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" }, pageLength: 5, scrollX: true,
+            columns: [
+                { title: "Órgão", data: null, className: "align-middle", width: "110px", render: (d, t, r) => t !== 'display' ? r.secretaria : `<div class="dt-cell-card d-flex align-items-center justify-content-center"><span class="badge bg-black text-white rounded-pill px-3 py-2 shadow-sm" style="font-size:11px;">${(r.secretaria || "").trim() || '-'}</span></div>` },
+                { title: "Objeto do Convênio", data: null, className: "align-middle", width: "270px", render: (d, t, r) => t !== 'display' ? (r.produto || r.iniciativa_estrategica) : `<div class="dt-cell-card" style="white-space: normal;">${(r.no_contrato && r.no_contrato !== "-") ? `<div class="mb-1"><span class="badge bg-light border text-dark">${r.no_contrato}</span></div>` : ''}<div class="fw-bold mb-1" style="font-size:0.85rem; color:#1a3c6e;">${r.produto || r.iniciativa_estrategica || '-'}</div></div>` },
+                { title: "Execução", data: null, className: "align-middle", width: "135px", render: (d, t, r) => t !== 'display' ? r.status : `<div class="dt-cell-card"><div class="d-flex align-items-center gap-1 mb-1 text-truncate"><span style="font-size:0.75rem; font-weight:800; color:#F39C12;">●</span> <span style="font-size:0.75rem; font-weight:700; color:#444;">${r.status || "-"}</span></div><div class="d-flex align-items-center gap-2"><div class="progress w-100" style="height:6px; background-color: #e9ecef;"><div class="progress-bar bg-warning" style="width:${Number(r.percent_execucao) || 0}%"></div></div><small class="text-muted fw-bold" style="font-size:0.7rem;">${Number(r.percent_execucao) || 0}%</small></div></div>` },
+                { 
+    title: "Financeiro", 
+    data: null, 
+    className: "align-middle", 
+    width: "155px", 
+    render: (d, t, r) => {
+        if (t !== 'display') return r.valor_total;
+        const tot = Number(r.valor_total) || 0;
+        const pag = Number(r.valor_pago) || 0;
+        const pct = tot > 0 ? Math.round((pag / tot) * 100) : 0;
+
+        return `<div class="dt-cell-card">
+            <div class="fw-bold" style="color:#1a3c6e; font-size: 0.8rem;">Tot: <span class="text-dark">${tot.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}</span></div>
+            <div class="text-success fw-bold" style="font-size: 0.75rem;">Pag: ${pag.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })} <span class="text-muted font-normal">(${pct}% pago)</span></div>
+            <div class="d-flex align-items-center gap-2 mt-1">
+                <div class="progress w-100" style="height:5px; background-color:#e9ecef;">
+                    <div class="progress-bar bg-info" style="width:${Math.min(pct, 100)}%"></div>
+                </div>
+            </div>
+        </div>`;
+    } 
+},
+                { title: "Período", data: null, className: "align-middle text-center", width: "110px", render: (d, t, r) => t !== 'display' ? r.data_de_inicio : `<div class="dt-cell-card align-items-center justify-content-center"><span class="text-muted fw-bold" style="font-size:0.75rem; text-align:center;">${formatarData(r.data_de_inicio)}<br><span style="font-weight:normal; font-size:0.65rem;">a</span><br>${formatarData(r.data_de_termino)}</span></div>` }
+            ]
+        });
+    }
+}
+
+/* --- 6.8 EMENDAS PARLAMENTARES --- */
+function renderizarEmendasFicha(dados) {
+    dados = dados || [];
+    let vTotal = 0, vPago = 0;
+    if (dados.length > 0) {
+        let anosEmendas = dados.map(d => parseFloat(d.ano)).filter(a => !isNaN(a));
+        $('#sec_emendas_parlamentares h4').text(anosEmendas.length > 0 ? `Emendas Parlamentares (${Math.max(...anosEmendas)})` : 'Emendas Parlamentares');
+    } else {
+        $('#sec_emendas_parlamentares h4').text('Emendas Parlamentares');
+    }
+
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+
+    let tipoDespesaGroup = { 
+        "APLICACAO DIRETA": { count: 0, val: 0, domSuffix: "aplicacao" }, 
+        "ENTIDADE": { count: 0, val: 0, domSuffix: "entidade" }, 
+        "MUNICIPIO": { count: 0, val: 0, domSuffix: "municipio" }, 
+        "UNIAO": { count: 0, val: 0, domSuffix: "uniao" } 
+    };
+    let parlGroup = {}, partidoGroup = {}, temaGroup = {};
+
+    dados.forEach(d => {
+        let val = parseFloat(d.valor || d.vlr_emenda || d.vl_emenda || 0) || 0;
+        let pag = parseFloat(d.pago || d.vlr_pago || d.vl_pago || 0) || 0;
+        vTotal += val; 
+        vPago += pag;
+
+        let tipoNorm = normText(d.tipo_de_despesa);
+        if (tipoNorm.includes("APLIC") || tipoNorm.includes("DIRETA")) {
+            tipoDespesaGroup["APLICACAO DIRETA"].count += 1;
+            tipoDespesaGroup["APLICACAO DIRETA"].val += val;
+        } else if (tipoNorm.includes("ENTIDADE")) {
+            tipoDespesaGroup["ENTIDADE"].count += 1;
+            tipoDespesaGroup["ENTIDADE"].val += val;
+        } else if (tipoNorm.includes("MUNIC")) {
+            tipoDespesaGroup["MUNICIPIO"].count += 1;
+            tipoDespesaGroup["MUNICIPIO"].val += val;
+        } else if (tipoNorm.includes("UNI")) {
+            tipoDespesaGroup["UNIAO"].count += 1;
+            tipoDespesaGroup["UNIAO"].val += val;
+        }
+
+        let parl = (d.parlamentar && d.parlamentar !== "-") ? d.parlamentar.trim() : 'N/I';
+        parlGroup[parl] = (parlGroup[parl] || 0) + val;
+
+        let partido = (d.partido && d.partido !== "-") ? d.partido.trim() : 'N/I';
+        partidoGroup[partido] = (partidoGroup[partido] || 0) + val;
+
+        let tema = (d.tema && d.tema !== "-") ? d.tema.trim() : 'OUTROS';
+        temaGroup[tema] = (temaGroup[tema] || 0) + val;
+    });
+
+    const formataBi = (v) => (v >= 1e9) ? "R$ " + (v / 1e9).toFixed(2).replace('.', ',') + " Bi" : ((v >= 1e6) ? "R$ " + (v / 1e6).toFixed(2).replace('.', ',') + " Mi" : "R$ " + (Number(v) || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 }));
+
+    $('#ficha_kpi_eme_total').text(dados.length.toLocaleString('pt-BR'));
+    $('#ficha_kpi_eme_val_tot').text(formataBi(vTotal));
+    $('#ficha_kpi_eme_val_pag').text(formataBi(vPago));
+
+    Object.values(tipoDespesaGroup).forEach(info => {
+        let pct = vTotal > 0 ? ((info.val / vTotal) * 100).toFixed(1) : "0,0";
+        $(`#ficha_kpi_eme_td_${info.domSuffix}_qtd`).text(info.count.toLocaleString('pt-BR'));
+        $(`#ficha_kpi_eme_td_${info.domSuffix}_sub`).text(`${formataBi(info.val)} (${pct}%)`);
+    });
+
+    const renderBarChartEme = (id, dict, cor) => {
+        const dom = document.getElementById(id);
+        if (!dom) return;
+        let chart = echarts.getInstanceByDom(dom) || echarts.init(dom);
+        let arr = Object.entries(dict).filter(x => x[1] > 0).sort((a, b) => a[1] - b[1]).slice(-5);
+        if (arr.length === 0) {
+            arr = Object.entries(dict).sort((a, b) => a[1] - b[1]).slice(-5);
+        }
+        const maxVal = Math.max(...arr.map(x => x[1]), 0);
+
+        chart.setOption({
+            grid: { left: '3%', right: '22%', bottom: '8%', top: '5%', containLabel: true },
+            xAxis: { 
+                type: 'value', 
+                max: maxVal > 0 ? maxVal * 1.3 : 'dataMax', 
+                axisLabel: { 
+                    formatter: (val) => (val >= 1e6) ? (val / 1e6).toFixed(1) + ' Mi' : ((val >= 1e3) ? (val / 1e3).toFixed(0) + ' mil' : val), 
+                    fontSize: 9 
+                }, 
+                splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } } 
+            },
+            yAxis: { 
+                type: 'category', 
+                data: arr.map(x => x[0]), 
+                axisLine: { show: false }, 
+                axisTick: { show: false }, 
+                axisLabel: { fontSize: 9, width: 85, overflow: 'truncate' } 
+            },
+            series: [{ 
+                type: 'bar', 
+                data: arr.map(x => x[1]), 
+                itemStyle: { color: cor, borderRadius: [0, 4, 4, 0] }, 
+                label: { show: true, position: 'right', formatter: (p) => formataBi(p.value), fontSize: 9, color: '#333333' } 
+            }],
+            tooltip: { 
+                trigger: 'axis', 
+                formatter: (p) => `<b>${p[0].name}</b><br/>R$ ${(Number(p[0].value) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+            }
+        }, true);
+        chart.resize();
+        window.addEventListener('resize', () => chart.resize());
+    };
+
+    renderBarChartEme('ficha_chart_eme_parlamentares', parlGroup, '#E67E22');
+    renderBarChartEme('ficha_chart_eme_partidos', partidoGroup, '#16A085');
+    renderBarChartEme('ficha_chart_eme_temas', temaGroup, '#8E44AD');
+
+    if ($.fn.DataTable.isDataTable('#ficha_tabela_emendas')) {
+        dtFichaEmendas = $('#ficha_tabela_emendas').DataTable();
+        dtFichaEmendas.clear().rows.add(dados).draw(false);
+    } else {
+        dtFichaEmendas = $('#ficha_tabela_emendas').DataTable({
+            data: dados, 
+            deferRender: true, 
+            language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" }, 
+            pageLength: 5, 
+            scrollX: true,
+            columns: [
+                { 
+                    title: "Parlamentar", 
+                    data: null, 
+                    className: "align-middle", 
+                    width: "140px", 
+                    render: (d, t, r) => t !== 'display' ? (r.parlamentar || '') : `
+                        <div class="dt-cell-card">
+                            <div class="fw-bold text-dark text-truncate" style="font-size:0.85rem;" title="${r.parlamentar || '-'}">
+                                ${r.parlamentar || '-'}${(r.partido && r.partido !== "-") ? `<span class="badge bg-secondary ms-1">${r.partido}</span>` : ''}
+                            </div>
+                            <div class="d-flex align-items-center gap-1 mt-1 flex-wrap">
+                                <span class="badge bg-primary px-1.5 py-0.5" style="font-size:0.65rem;">Ano ${r.ano || '-'}</span>
+                                <span class="text-muted fw-bold text-truncate" style="font-size:0.65rem;" title="${r.municipio || r.nm_municipio || '-'}">${r.municipio || r.nm_municipio || '-'}</span>
+                            </div>
+                        </div>` 
+                },
+                { 
+                    title: "Ação / Objeto", 
+                    data: null, 
+                    className: "align-middle", 
+                    width: "420px", 
+                    render: (d, t, r) => t !== 'display' ? (r.acao_nome || '') : `
+                        <div class="dt-cell-card" style="white-space: normal;">
+                            <div class="fw-bold mb-1" style="font-size:0.85rem; color:#1a3c6e;">${r.acao_nome || '-'}</div>
+                            <div class="text-muted" style="font-size:0.75rem;">${r.objeto || '-'}</div>
+                        </div>` 
+                },
+                { 
+                    title: "Tema", 
+                    data: null, 
+                    className: "align-middle", 
+                    width: "130px", 
+                    render: (d, t, r) => t !== 'display' ? (r.tema || '') : `
+                        <div class="dt-cell-card">
+                            <div class="fw-bold text-dark" style="font-size:0.8rem;">${r.tema || '-'}</div>
+                            <div class="text-muted" style="font-size:0.75rem;">${r.tipo_de_despesa || '-'}</div>
+                            <div class="text-muted" style="font-size:0.7rem;">UO: ${r.uo_sigla || '-'}</div>
+                        </div>` 
+                },
+                { 
+                    title: "Status / Situação", 
+                    data: null, 
+                    className: "align-middle", 
+                    width: "150px", 
+                    render: (d, t, r) => t !== 'display' ? (r.status || r.status_documental_fisico || '') : `
+                        <div class="dt-cell-card">
+                            <div class="mb-1">
+                                <span class="badge bg-light border text-dark fw-bold text-truncate" style="font-size:0.75rem; max-width: 100%;" title="${(r.status && r.status !== "-") ? r.status.trim() : 'N/I'}">
+                                    ${(r.status && r.status !== "-") ? r.status.trim() : 'N/I'}
+                                </span>
+                            </div>
+                            ${(r.status_documental_fisico && r.status_documental_fisico !== "-") ? `<div class="text-muted" style="font-size:0.7rem; line-height:1.2;">${r.status_documental_fisico.trim()}</div>` : ''}
+                        </div>` 
+                },
+                { 
+                    title: "Financeiro", 
+                    data: null, 
+                    className: "align-middle", 
+                    width: "130px", 
+                    render: (d, t, r) => {
+                        const val = Number(r.valor || r.vlr_emenda || r.vl_emenda || 0) || 0;
+                        const pag = Number(r.pago || r.vlr_pago || r.vl_pago || 0) || 0;
+                        if (t !== 'display') return val;
+                        const pct = val > 0 ? Math.round((pag / val) * 100) : 0;
+
+                        return `
+                            <div class="dt-cell-card">
+                                <div class="fw-bold" style="color:#1a3c6e; font-size: 0.8rem;">Ind: ${val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}</div>
+                                <div class="text-success fw-bold" style="font-size: 0.75rem;">Pag: ${pag.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })} <span class="text-muted font-normal">(${pct}% pago)</span></div>
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    <div class="progress w-100" style="height:5px; background-color:#e9ecef;">
+                                        <div class="progress-bar bg-success" style="width:${Math.min(pct, 100)}%"></div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    } 
+                }
+            ]
+        });
+    }
+}
+
+/* ==========================================================================
+   7. METADADOS (MODAL E TABELA)
+   ========================================================================== */
+window.abrirModalMetadado = function (sigla) {
+    const normKey = (str) => String(str || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const siglaNorm = normKey(sigla);
+
+    const meta = window.dadosMetadados.find(m => 
+        normKey(m.cd_indicador) === siglaNorm || normKey(m.nm_indicador) === siglaNorm
+    );
+    if (!meta) return;
+
+    $('#modalMetadadoTitle').text(meta.nm_indicador);
+    $('#modalMetadadoBadge').text(meta.natureza);
+    $('#modalMetadadoDesc').text(meta.referencia_analise?.interpretacao || 'Sem descrição.');
+    $('#modalMetadadoImpacto').text(meta.referencia_analise?.impacto_planejamento || '-');
+    $('#modalMetadadoLimiar').text(meta.referencia_analise?.limiar_corte || '-');
+    $('#modalMetadadoDirecao').text(meta.referencia_analise?.direcao_desejavel || '-');
+
+    const formulaEl = document.getElementById('modalMetadadoFormula');
+    if (meta.formula_katex && typeof katex !== 'undefined') {
+        katex.render(meta.formula_katex, formulaEl, { displayMode: true, throwOnError: false });
+    } else {
+        formulaEl.innerText = meta.formula_katex || 'Fórmula não disponível.';
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('modalMetadado'));
+    modal.show();
+};
+
+window.renderizarAbaMetadados = async function () {
+    if (!window.dadosMetadados || !Array.isArray(window.dadosMetadados) || window.dadosMetadados.length === 0) {
+        try {
+            const resMeta = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/metadados`.replace(/\/+/g, '/'));
+            if (resMeta && resMeta.ok) {
+                const j = await resMeta.json();
+                window.dadosMetadados = j.indicadores_dicionario || (Array.isArray(j) ? j : []);
+            }
+        } catch (e) {
+            console.warn("Erro ao buscar metadados para a aba:", e);
+        }
+    }
+    if (!window.dadosMetadados || !Array.isArray(window.dadosMetadados)) {
+        window.dadosMetadados = [];
+    }
+
+    if ($.fn.DataTable.isDataTable('#tabela_metadados') && dtMetadados) {
+        dtMetadados.clear().rows.add(window.dadosMetadados).draw(false);
+    } else {
+        dtMetadados = $('#tabela_metadados').DataTable({
+            data: window.dadosMetadados,
+            language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
+            pageLength: 15,
+            columns: [
+                { title: "Subdimensão", data: "subdimensao", className: "align-middle text-muted small fw-bold", defaultContent: "-" },
+                { title: "Indicador", data: "nm_indicador", className: "align-middle", defaultContent: "-", render: (d, t, r) => `<div class="fw-bold text-primary cursor-pointer d-flex align-items-center gap-2 hover:underline" onclick="window.abrirModalMetadado('${r.cd_indicador}')"><span>${d || '-'}</span> <i class="fas fa-external-link-alt text-xs opacity-50"></i></div>` },
+                { title: "Sigla", data: "cd_indicador", className: "align-middle", defaultContent: "-", render: d => `<code class="bg-slate-100 text-slate-800 px-2 py-1 rounded">${d || '-'}</code>` },
+                { title: "Natureza", data: "natureza", className: "align-middle small", defaultContent: "-" },
+                { title: "Limiar / Corte", data: "referencia_analise.limiar_corte", className: "align-middle text-sm", defaultContent: "-" }
+            ]
+        });
+    }
+};
+
+/* ==========================================================================
+   8. EXPORTAÇÃO E EVENTOS DE IMPRESSÃO (PDF)
+   ========================================================================== */
+window.baixarDadosCompletosFicha = function () {
+    if (!dadosBrutosFicha || dadosBrutosFicha.length === 0) return alert("Não há dados para baixar.");
+    let csvContent = "Ano,Indicador,Sigla,Valor\n";
+    dadosBrutosFicha.forEach(row => {
+        csvContent += `${row.ano},"${row.nm_indicador}","${row.sigla_indicador}","${String(row.indicador).replace('.', ',')}"\n`;
+    });
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Dados_Completos_${$('#ficha_f_municipio').val()}.csv`;
+    link.click();
+};
+
+window.imprimirResumoExecutivo = function () {
+    $('body').addClass('print-resumo-executivo');
+    $('#capa_tipo_relatorio').text('RESUMO EXECUTIVO INTEGRADO & DIAGNÓSTICO REGIONAL');
+    setTimeout(() => {
+        window.print();
+    }, 150);
+};
+
+window.imprimirRelatorioCompleto = function () {
+    $('body').removeClass('print-resumo-executivo');
+    $('#capa_tipo_relatorio').text('RELATÓRIO EXECUTIVO COMPLETO');
+    setTimeout(() => {
+        window.print();
+    }, 150);
+};
+
+window.addEventListener('beforeprint', function () {
+    ['ficha_chart_iniciativas_sec', 'ficha_chart_valor_sec', 'ficha_chart_eme_parlamentares', 'ficha_chart_eme_partidos', 'ficha_chart_eme_temas'].forEach(id => {
+        const dom = document.getElementById(id);
+        if (dom) { const chart = echarts.getInstanceByDom(dom); if (chart) chart.resize(); }
+    });
+
+    if (dtFichaIniciativas) dtFichaIniciativas.page.len(-1).draw(false);
+    if (dtFichaConvenios) dtFichaConvenios.page.len(-1).draw(false);
+    if (dtFichaEmendas) dtFichaEmendas.page.len(-1).draw(false);
+});
+
+window.addEventListener('afterprint', function () {
+    $('body').removeClass('print-resumo-executivo');
+    $('#capa_tipo_relatorio').text('RELATÓRIO EXECUTIVO');
+
+    ['ficha_chart_iniciativas_sec', 'ficha_chart_valor_sec', 'ficha_chart_eme_parlamentares', 'ficha_chart_eme_partidos', 'ficha_chart_eme_temas'].forEach(id => {
+        const dom = document.getElementById(id);
+        if (dom) { const chart = echarts.getInstanceByDom(dom); if (chart) chart.resize(); }
+    });
+
+    if (dtFichaIniciativas) dtFichaIniciativas.page.len(5).draw(false);
+    if (dtFichaConvenios) dtFichaConvenios.page.len(5).draw(false);
+    if (dtFichaEmendas) dtFichaEmendas.page.len(5).draw(false);
+});
+
+window.redimensionarMapasFicha = function () {
+    const mapas = [
+        mapFicha, mapDemografiaFicha, mapSociaisFicha, mapEducacaoFicha,
+        mapSaudeFicha, mapCadUnicoFicha, mapSaneamentoFicha, mapInovacaoFicha,
+        mapComercioFicha, mapConectividadeFicha, mapTrabalhoFicha
+    ];
+    mapas.forEach(m => {
+        if (m && typeof m.resize === 'function') {
+            try { m.resize(); } catch (e) {}
+        }
+    });
+
+    if (typeof echarts === 'object' && echarts.getInstanceByDom) {
+        document.querySelectorAll('#aba_ficha [id^="ficha_chart_"], #aba_ficha .echarts-container').forEach(el => {
+            const inst = echarts.getInstanceByDom(el);
+            if (inst && typeof inst.resize === 'function') {
+                try { inst.resize(); } catch (e) {}
+            }
+        });
+    }
+};
+
+/* ==========================================================================
+   SUBABAS DO MÓDULO MUNICÍPIOS: FICHA MUNICIPAL & RESUMOS MUNICIPAIS
+   ========================================================================== */
+
+window.alternarSubabaMunicipios = function (subaba, elemento) {
+    const btnFicha = document.getElementById('subtab_btn_ficha');
+    const btnResumos = document.getElementById('subtab_btn_resumos');
+    const subFicha = document.getElementById('subaba_ficha_municipal');
+    const subResumos = document.getElementById('subaba_resumos_municipais');
+    const legenda = document.getElementById('subaba_municipios_legenda');
+    const controlesFicha = document.getElementById('controles_ficha_municipal');
+
+    if (subaba === 'ficha') {
+        if (btnFicha) {
+            btnFicha.classList.add('active', 'btn-primary', 'shadow-sm');
+            btnFicha.classList.remove('text-slate-600');
+        }
+        if (btnResumos) {
+            btnResumos.classList.remove('active', 'btn-primary', 'shadow-sm');
+            btnResumos.classList.add('text-slate-600');
+        }
+        if (subFicha) subFicha.classList.remove('d-none');
+        if (subResumos) subResumos.classList.add('d-none');
+        if (legenda) legenda.innerText = "Visão detalhada e indicadores por município";
+
+        if (controlesFicha) {
+            const selectContainer = controlesFicha.querySelector('.form-select-municipio')?.closest('.d-flex');
+            const navContainer = document.getElementById('ficha_navbar_nav');
+            if (selectContainer) selectContainer.classList.remove('d-none');
+            if (navContainer) navContainer.classList.remove('d-none');
+        }
+
+        setTimeout(() => {
+            if (typeof window.redimensionarMapasFicha === 'function') {
+                window.redimensionarMapasFicha();
+            }
+        }, 60);
+    } else if (subaba === 'resumos') {
+        if (btnResumos) {
+            btnResumos.classList.add('active', 'btn-primary', 'shadow-sm');
+            btnResumos.classList.remove('text-slate-600');
+        }
+        if (btnFicha) {
+            btnFicha.classList.remove('active', 'btn-primary', 'shadow-sm');
+            btnFicha.classList.add('text-slate-600');
+        }
+        if (subFicha) subFicha.classList.add('d-none');
+        if (subResumos) subResumos.classList.remove('d-none');
+        if (legenda) legenda.innerText = "Visão consolidada estadual e diagnósticos temáticos";
+
+        if (controlesFicha) {
+            const selectContainer = controlesFicha.querySelector('.form-select-municipio')?.closest('.d-flex');
+            const navContainer = document.getElementById('ficha_navbar_nav');
+            if (selectContainer) selectContainer.classList.add('d-none');
+            if (navContainer) navContainer.classList.add('d-none');
+        }
+
+        if (typeof window.alternarPautaResumos === 'function') {
+            window.alternarPautaResumos(window.pautaResumoAtiva || 'capag');
+        } else if (typeof window.renderizarResumoCapag === 'function') {
+            window.renderizarResumoCapag();
+        }
+    }
+};
+
+let mapResumoCapag = null;
+let cacheResumoCapag = null;
+
+window.renderizarResumoCapag = function () {
+    const container = document.getElementById('resumo_capag_map');
+    if (!container) return;
+
+    if (mapResumoCapag) {
+        setTimeout(() => {
+            if (mapResumoCapag && typeof mapResumoCapag.resize === 'function') {
+                mapResumoCapag.resize();
+            }
+        }, 100);
+        return;
+    }
+
+    $('#resumo_capag_spinner').removeClass('d-none');
+
+    const apiUrl = `${window.basePath || ''}/municipios/resumo/capag`.replace(/\/+/g, '/');
+    fetch(apiUrl)
+        .then(res => {
+            if (!res.ok) throw new Error("Erro na requisição CAPAG");
+            return res.json();
+        })
+        .then(data => {
+            cacheResumoCapag = data;
+            $('#resumo_capag_spinner').addClass('d-none');
+
+            // 1. Atualizar Tabela 8 com contagens reais
+            const c = data.contagens || {};
+            $('#capag_count_A').text(c['A'] ?? 0);
+            $('#capag_count_Aplus').text(c['A+'] ?? 0);
+            $('#capag_count_B').text(c['B'] ?? 0);
+            $('#capag_count_Bplus').text(c['B+'] ?? 0);
+            $('#capag_count_C').text(c['C'] ?? 0);
+            $('#capag_count_D').text(c['D'] ?? 0);
+            $('#capag_count_nd').text(c['n.d.'] ?? 0);
+            $('#capag_count_ne').text(c['n.e.'] ?? 0);
+
+            // 2. Montar GeoJSON
+            const geoData = obterGeoJSONSeguro(data.geojson);
+            if (!geoData || !geoData.features) {
+                console.warn("[Resumo CAPAG] GeoJSON não disponível.");
+                return;
+            }
+
+            const capagMap = data.capag_map || {};
+            geoData.features.forEach(feat => {
+                const props = feat.properties || {};
+                const ibge6 = String(props.ibge6 || props.cod_ibge || '').substring(0, 6);
+                feat.properties.capag = capagMap[ibge6] || 'n.d.';
+            });
+
+            // 3. Inicializar MapLibre GL
+            mapResumoCapag = new maplibregl.Map({
+                container: 'resumo_capag_map',
+                style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                center: [-37.8, -8.3],
+                zoom: 7,
+                preserveDrawingBuffer: true
+            });
+
+            mapResumoCapag.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+            mapResumoCapag.on('load', () => {
+                mapResumoCapag.resize();
+
+                // Enquadrar limites de Pernambuco
+                try {
+                    const bounds = new maplibregl.LngLatBounds();
+                    geoData.features.forEach(feature => {
+                        const geom = feature.geometry;
+                        if (!geom) return;
+                        const coords = geom.coordinates;
+                        const expand = (c) => {
+                            if (typeof c[0] === 'number') bounds.extend(c);
+                            else c.forEach(expand);
+                        };
+                        expand(coords);
+                    });
+                    if (!bounds.isEmpty()) {
+                        mapResumoCapag.fitBounds(bounds, { padding: 30, animate: false });
+                    }
+                } catch (e) {
+                    console.warn("[Resumo CAPAG] Erro ao ajustar limites:", e);
+                }
+
+                mapResumoCapag.addSource('resumo_capag_source', {
+                    type: 'geojson',
+                    data: geoData
+                });
+
+                // Layer de preenchimento com cores fiéis ao Objeto 1
+                mapResumoCapag.addLayer({
+                    id: 'resumo_capag_fill',
+                    type: 'fill',
+                    source: 'resumo_capag_source',
+                    paint: {
+                        'fill-color': [
+                            'match',
+                            ['get', 'capag'],
+                            'A', '#92D050',
+                            'A+', '#70AD47',
+                            'B', '#00A8A8',
+                            'B+', '#00B0B9',
+                            'C', '#C55A11',
+                            'D', '#843C0C',
+                            'n.d.', '#595959',
+                            'n.e.', '#404040',
+                            '#64748B' // fallback
+                        ],
+                        'fill-opacity': 0.92
+                    }
+                });
+
+                // Layer de contorno branco sutil
+                mapResumoCapag.addLayer({
+                    id: 'resumo_capag_line',
+                    type: 'line',
+                    source: 'resumo_capag_source',
+                    paint: {
+                        'line-color': '#ffffff',
+                        'line-width': 0.8
+                    }
+                });
+
+                // Layer de destaque no hover
+                mapResumoCapag.addLayer({
+                    id: 'resumo_capag_hover',
+                    type: 'line',
+                    source: 'resumo_capag_source',
+                    paint: {
+                        'line-color': '#0F172A',
+                        'line-width': 2.5
+                    },
+                    filter: ['==', 'ibge6', '']
+                });
+
+                // Tooltip / Popup customizado
+                const popup = new maplibregl.Popup({
+                    closeButton: false,
+                    closeOnClick: false,
+                    offset: 12
+                });
+
+                mapResumoCapag.on('mousemove', 'resumo_capag_fill', (e) => {
+                    mapResumoCapag.getCanvas().style.cursor = 'pointer';
+                    if (!e.features.length) return;
+                    const f = e.features[0];
+                    const props = f.properties || {};
+                    const munNome = props.municipio || props.NM_MUN || 'Município';
+                    const rdNome = props.regiao_de_desenvolvimento || '-';
+                    const capagVal = props.capag || 'n.d.';
+                    const badgeCor = obterCorCapag(capagVal);
+
+                    const ibge6 = String(props.ibge6 || props.cod_ibge || '').substring(0, 6);
+                    mapResumoCapag.setFilter('resumo_capag_hover', ['==', 'ibge6', ibge6]);
+
+                    popup.setLngLat(e.lngLat)
+                        .setHTML(`
+                            <div style="font-family: inherit; font-size: 12px; padding: 4px;">
+                                <div style="font-weight: 800; color: #0F172A; text-transform: uppercase; margin-bottom: 2px;">${munNome}</div>
+                                <div style="font-size: 11px; color: #64748B; margin-bottom: 6px;">RD ${rdNome}</div>
+                                <div style="display: inline-block; padding: 3px 10px; border-radius: 9999px; background: ${badgeCor}; color: #ffffff; font-weight: 800; font-size: 11px; letter-spacing: 0.03em;">
+                                    CAPAG: ${capagVal}
+                                </div>
+                                <div style="margin-top: 5px; font-size: 10px; color: #94A3B8; font-style: italic;">
+                                    Clique para abrir a Ficha Municipal
+                                </div>
+                            </div>
+                        `)
+                        .addTo(mapResumoCapag);
+                });
+
+                mapResumoCapag.on('mouseleave', 'resumo_capag_fill', () => {
+                    mapResumoCapag.getCanvas().style.cursor = '';
+                    mapResumoCapag.setFilter('resumo_capag_hover', ['==', 'ibge6', '']);
+                    popup.remove();
+                });
+
+                // Clique no município leva diretamente para a Ficha Municipal daquele município
+                mapResumoCapag.on('click', 'resumo_capag_fill', (e) => {
+                    if (!e.features.length) return;
+                    const props = e.features[0].properties || {};
+                    const munNome = props.municipio || props.NM_MUN;
+                    if (munNome) {
+                        popup.remove();
+                        const $select = $('#ficha_f_municipio');
+                        if ($select.length) {
+                            $select.val(munNome);
+                            if ($select.data('selectpicker')) {
+                                $select.selectpicker('refresh');
+                            }
+                            $select.trigger('change');
+                        }
+                        window.alternarSubabaMunicipios('ficha');
+                    }
+                });
+            });
+        })
+        .catch(err => {
+            console.error('[Resumo CAPAG] Erro ao carregar dados:', err);
+            $('#resumo_capag_spinner').addClass('d-none');
+        });
+};
+
+/* ==========================================================================
+   RESUMOS MUNICIPAIS - PAUTA 2: ÁGUAS DE PERNAMBUCO (COMPESA / SRHS)
+   ========================================================================== */
+window.pautaResumoAtiva = 'capag';
+
+window.alternarPautaResumos = function (pauta, btn) {
+    window.pautaResumoAtiva = pauta || 'capag';
+    const btnCapag = document.getElementById('btn_pauta_resumo_capag');
+    const btnAguas = document.getElementById('btn_pauta_resumo_aguas');
+    const blocoCapag = document.getElementById('resumo_pauta_capag');
+    const blocoAguas = document.getElementById('resumo_pauta_aguas');
+
+    if (window.pautaResumoAtiva === 'capag') {
+        if (btnCapag) {
+            btnCapag.classList.remove('btn-light', 'text-slate-600');
+            btnCapag.classList.add('btn-primary', 'text-white', 'shadow-sm');
+        }
+        if (btnAguas) {
+            btnAguas.classList.remove('btn-primary', 'text-white', 'shadow-sm');
+            btnAguas.classList.add('btn-light', 'text-slate-600');
+        }
+        if (blocoCapag) blocoCapag.classList.remove('d-none');
+        if (blocoAguas) blocoAguas.classList.add('d-none');
+        if (typeof window.renderizarResumoCapag === 'function') {
+            window.renderizarResumoCapag();
+        }
+    } else if (window.pautaResumoAtiva === 'aguas') {
+        if (btnAguas) {
+            btnAguas.classList.remove('btn-light', 'text-slate-600');
+            btnAguas.classList.add('btn-primary', 'text-white', 'shadow-sm');
+        }
+        if (btnCapag) {
+            btnCapag.classList.remove('btn-primary', 'text-white', 'shadow-sm');
+            btnCapag.classList.add('btn-light', 'text-slate-600');
+        }
+        if (blocoAguas) blocoAguas.classList.remove('d-none');
+        if (blocoCapag) blocoCapag.classList.add('d-none');
+        if (typeof window.renderizarResumoAguas === 'function') {
+            window.renderizarResumoAguas();
+        }
+    }
+};
+
+let mapResumoAguas = null;
+let cacheResumoAguas = null;
+let dtResumoAguas = null;
+let camadaAtivaAguas = 'Cenario: Geral';
+let chartAguasDesembolso = null;
+let chartAguasStatus = null;
+let chartAguasTopMuns = null;
+let filtroMunAguasAtivo = null;
+
+window.renderizarResumoAguas = function () {
+    const container = document.getElementById('resumo_aguas_map');
+    if (!container) return;
+
+    if (cacheResumoAguas) {
+        setTimeout(() => {
+            if (mapResumoAguas && typeof mapResumoAguas.resize === 'function') {
+                mapResumoAguas.resize();
+            }
+            if (chartAguasDesembolso) chartAguasDesembolso.resize();
+            if (chartAguasStatus) chartAguasStatus.resize();
+            if (chartAguasTopMuns) chartAguasTopMuns.resize();
+        }, 100);
+        return;
+    }
+
+    $('#resumo_aguas_spinner').removeClass('d-none');
+
+    const apiUrl = `${window.basePath || ''}/municipios/resumo/aguas`.replace(/\/+/g, '/');
+    fetch(apiUrl)
+        .then(res => {
+            if (!res.ok) throw new Error("Erro na requisição Águas de Pernambuco");
+            return res.json();
+        })
+        .then(data => {
+            cacheResumoAguas = data;
+            $('#resumo_aguas_spinner').addClass('d-none');
+
+            const projetos = data.projetos || [];
+            const desembolso = data.desembolso || [];
+            const municipios = data.municipios || [];
+
+            // 1. CALCULAR MACRO KPIS
+            let totInvestimento = 0;
+            let totPopulacao = 0;
+            const munsSet = new Set();
+
+            projetos.forEach(p => {
+                totInvestimento += Number(p.valor_total_m) || 0;
+                totPopulacao += Number(p.populacao_beneficiada) || 0;
+                if (p.municipio && p.municipio !== '-') {
+                    munsSet.add(p.municipio.trim().toLowerCase());
+                }
+            });
+
+            municipios.forEach(m => {
+                if (m.municipio) munsSet.add(m.municipio.trim().toLowerCase());
+            });
+
+            let totDesembolso = 0;
+            desembolso.forEach(d => {
+                totDesembolso += Number(d.valor_desembolso_m) || 0;
+            });
+
+            // Preenchimento dos KPIs no DOM
+            const elKpiInv = document.getElementById('aguas_kpi_investimento');
+            if (elKpiInv) {
+                const bi = totInvestimento / 1000;
+                elKpiInv.innerText = `R$ ${bi.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bi`;
+            }
+
+            const elKpiProj = document.getElementById('aguas_kpi_projetos');
+            if (elKpiProj) {
+                elKpiProj.innerText = `${projetos.length} Projetos`;
+            }
+
+            const elKpiPop = document.getElementById('aguas_kpi_populacao');
+            if (elKpiPop) {
+                elKpiPop.innerText = "9,5 Mi hab.";
+            }
+
+            const elKpiMuns = document.getElementById('aguas_kpi_municipios');
+            if (elKpiMuns) {
+                elKpiMuns.innerText = "185 Municípios";
+            }
+
+            const elKpiDesemb = document.getElementById('aguas_kpi_desembolso');
+            if (elKpiDesemb) {
+                const biDesemb = totDesembolso / 1000;
+                elKpiDesemb.innerText = `R$ ${biDesemb.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bi`;
+            }
+
+            // 2. INICIALIZAR MAPLIBRE GL
+            const geoData = obterGeoJSONSeguro(data.geojson);
+            if (geoData && geoData.features) {
+                mapResumoAguas = new maplibregl.Map({
+                    container: 'resumo_aguas_map',
+                    style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                    center: [-37.8, -8.3],
+                    zoom: 7,
+                    preserveDrawingBuffer: true
+                });
+
+                mapResumoAguas.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+                mapResumoAguas.on('load', () => {
+                    mapResumoAguas.resize();
+
+                    try {
+                        const bounds = new maplibregl.LngLatBounds();
+                        geoData.features.forEach(feature => {
+                            const geom = feature.geometry;
+                            if (!geom) return;
+                            const coords = geom.coordinates;
+                            const expand = (c) => {
+                                if (typeof c[0] === 'number') bounds.extend(c);
+                                else c.forEach(expand);
+                            };
+                            expand(coords);
+                        });
+                        if (!bounds.isEmpty()) {
+                            mapResumoAguas.fitBounds(bounds, { padding: 30, animate: false });
+                        }
+                    } catch (e) {
+                        console.warn("[Resumo Águas] Erro ao ajustar limites:", e);
+                    }
+
+                    mapResumoAguas.addSource('resumo_aguas_source', {
+                        type: 'geojson',
+                        data: geoData
+                    });
+
+                    // Layer de preenchimento baseado no cenário consolidado
+                    mapResumoAguas.addLayer({
+                        id: 'resumo_aguas_fill',
+                        type: 'fill',
+                        source: 'resumo_aguas_source',
+                        paint: {
+                            'fill-color': [
+                                'case',
+                                ['has', camadaAtivaAguas],
+                                ['get', camadaAtivaAguas],
+                                '#CBD5E1'
+                            ],
+                            'fill-opacity': 0.88
+                        }
+                    });
+
+                    // Linha de contorno branca
+                    mapResumoAguas.addLayer({
+                        id: 'resumo_aguas_line',
+                        type: 'line',
+                        source: 'resumo_aguas_source',
+                        paint: {
+                            'line-color': '#ffffff',
+                            'line-width': 0.8
+                        }
+                    });
+
+                    // Linha de destaque no hover do município
+                    mapResumoAguas.addLayer({
+                        id: 'resumo_aguas_hover',
+                        type: 'line',
+                        source: 'resumo_aguas_source',
+                        paint: {
+                            'line-color': '#0f172a',
+                            'line-width': 2.2
+                        },
+                        filter: ['==', 'codarea', '']
+                    });
+
+                    let hoveringAdutora = false;
+
+                    // -------------------------------------------------------------
+                    // CAMADA DE INFRAESTRUTURA HÍDRICA: ADUTORAS DE PERNAMBUCO
+                    // -------------------------------------------------------------
+                    const geoAdutoras = obterGeoJSONSeguro(data.adutoras);
+                    if (geoAdutoras && geoAdutoras.features && geoAdutoras.features.length > 0) {
+                        mapResumoAguas.addSource('resumo_aguas_adutoras_source', {
+                            type: 'geojson',
+                            data: geoAdutoras
+                        });
+
+                        // Linha de realce no hover da adutora
+                        mapResumoAguas.addLayer({
+                            id: 'resumo_aguas_adutoras_hover',
+                            type: 'line',
+                            source: 'resumo_aguas_adutoras_source',
+                            layout: {
+                                'line-join': 'round',
+                                'line-cap': 'round',
+                                'visibility': 'visible'
+                            },
+                            paint: {
+                                'line-color': '#0f172a',
+                                'line-width': [
+                                    'interpolate', ['linear'], ['zoom'],
+                                    6, 4.0,
+                                    9, 6.5,
+                                    12, 9.0
+                                ],
+                                'line-opacity': 0.75
+                            },
+                            filter: ['==', 'ID', -1]
+                        });
+
+                        // Linhas principais das Adutoras coloridas por situação
+                        mapResumoAguas.addLayer({
+                            id: 'resumo_aguas_adutoras_lines',
+                            type: 'line',
+                            source: 'resumo_aguas_adutoras_source',
+                            layout: {
+                                'line-join': 'round',
+                                'line-cap': 'round',
+                                'visibility': 'visible'
+                            },
+                            paint: {
+                                'line-color': [
+                                    'match',
+                                    ['get', 'SITUAÇÃO'],
+                                    'Sistema Existente', '#0284c7',   // Azul vivo
+                                    'Sistema em Obras', '#f59e0b',    // Âmbar / Laranja
+                                    'Sistema Planejado', '#8b5cf6',   // Violeta
+                                    '#0ea5e9'                         // Fallback
+                                ],
+                                'line-width': [
+                                    'interpolate', ['linear'], ['zoom'],
+                                    6, 2.4,
+                                    9, 3.8,
+                                    12, 5.8
+                                ]
+                            }
+                        });
+
+                        // Hit-test layer transparente para tornar o hover na linha imediato e estável
+                        mapResumoAguas.addLayer({
+                            id: 'resumo_aguas_adutoras_hit',
+                            type: 'line',
+                            source: 'resumo_aguas_adutoras_source',
+                            layout: {
+                                'line-join': 'round',
+                                'line-cap': 'round',
+                                'visibility': 'visible'
+                            },
+                            paint: {
+                                'line-color': '#000000',
+                                'line-opacity': 0.001,
+                                'line-width': 16
+                            }
+                        });
+
+                        // Garante que todas as camadas de adutoras fiquem no topo absoluto da pilha
+                        try {
+                            mapResumoAguas.moveLayer('resumo_aguas_adutoras_hover');
+                            mapResumoAguas.moveLayer('resumo_aguas_adutoras_lines');
+                            mapResumoAguas.moveLayer('resumo_aguas_adutoras_hit');
+                        } catch (e) {}
+
+                        const popupAdutora = new maplibregl.Popup({
+                            closeButton: false,
+                            closeOnClick: false,
+                            offset: 12
+                        });
+
+                        const handleAdutoraHover = (e) => {
+                            if (!e.features.length) return;
+                            hoveringAdutora = true;
+                            if (popup) popup.remove();
+                            mapResumoAguas.getCanvas().style.cursor = 'pointer';
+                            const feat = e.features[0];
+                            const props = feat.properties || {};
+                            const id = props.ID || props.OBJECTID || -1;
+                            mapResumoAguas.setFilter('resumo_aguas_adutoras_hover', ['==', 'ID', id]);
+
+                            const nomeAdutora = props.ADUTORA || 'Adutora';
+                            const sit = props['SITUAÇÃO'] || 'Sistema Operacional';
+                            let corBadge = '#0284c7';
+                            if (sit === 'Sistema em Obras') corBadge = '#f59e0b';
+                            else if (sit === 'Sistema Planejado') corBadge = '#8b5cf6';
+
+                            popupAdutora.setLngLat(e.lngLat)
+                                .setHTML(`
+                                    <div style="font-family: inherit; font-size: 12px; min-width: 190px; padding: 4px;">
+                                        <div style="font-size: 10px; color: #0284c7; font-weight: 800; text-transform: uppercase; margin-bottom: 3px;">
+                                            <i class="fas fa-water"></i> Rede Adutora de Pernambuco
+                                        </div>
+                                        <div style="font-weight: 900; font-size: 13px; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 6px;">
+                                            ${nomeAdutora}
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span style="font-weight: 700; color: #475569;">Situação:</span>
+                                            <span style="font-weight: 800; color: #ffffff; background: ${corBadge}; padding: 2px 7px; border-radius: 999px; font-size: 10px;">${sit}</span>
+                                        </div>
+                                        ${props.ESTADO ? `<div style="font-size: 11px; color: #64748b; margin-top: 4px;">Estado: <b>${props.ESTADO}</b></div>` : ''}
+                                    </div>
+                                `)
+                                .addTo(mapResumoAguas);
+                        };
+
+                        mapResumoAguas.on('mousemove', 'resumo_aguas_adutoras_hit', handleAdutoraHover);
+                        mapResumoAguas.on('mousemove', 'resumo_aguas_adutoras_lines', handleAdutoraHover);
+
+                        const handleAdutoraLeave = () => {
+                            hoveringAdutora = false;
+                            mapResumoAguas.getCanvas().style.cursor = '';
+                            mapResumoAguas.setFilter('resumo_aguas_adutoras_hover', ['==', 'ID', -1]);
+                            popupAdutora.remove();
+                        };
+
+                        mapResumoAguas.on('mouseleave', 'resumo_aguas_adutoras_hit', handleAdutoraLeave);
+                        mapResumoAguas.on('mouseleave', 'resumo_aguas_adutoras_lines', handleAdutoraLeave);
+                    }
+
+                    const popup = new maplibregl.Popup({
+                        closeButton: false,
+                        closeOnClick: false,
+                        offset: 12
+                    });
+
+                    // Interatividade no mapa (Municípios)
+                    mapResumoAguas.on('mousemove', 'resumo_aguas_fill', (e) => {
+                        // Se estiver sobre uma adutora ativa, prioriza a adutora e não exibe o popup municipal
+                        if (hoveringAdutora) return;
+                        if (mapResumoAguas.getLayer('resumo_aguas_adutoras_lines') && mapResumoAguas.getLayoutProperty('resumo_aguas_adutoras_lines', 'visibility') !== 'none') {
+                            const hits = mapResumoAguas.queryRenderedFeatures(e.point, { layers: ['resumo_aguas_adutoras_lines', 'resumo_aguas_adutoras_hit'] });
+                            if (hits && hits.length > 0) return;
+                        }
+
+                        if (!e.features.length) return;
+                        mapResumoAguas.getCanvas().style.cursor = 'pointer';
+                        const feat = e.features[0];
+                        const props = feat.properties || {};
+                        const cod = props.codarea || '';
+                        mapResumoAguas.setFilter('resumo_aguas_hover', ['==', 'codarea', cod]);
+
+                        const munNome = props.municipio || props.NM_MUN || 'Município';
+                        const corCenario = props[camadaAtivaAguas] || '#CBD5E1';
+                        
+                        let labelCor = 'Sem intervenção identificada';
+                        if (corCenario === '#1D9E75') labelCor = 'Atendido / Cobertura Plena';
+                        else if (corCenario === '#EF9F27') labelCor = 'Intervenção Parcial / Em Andamento';
+                        else if (corCenario === '#E24B4A') labelCor = 'Déficit / Prioritário';
+
+                        popup.setLngLat(e.lngLat)
+                            .setHTML(`
+                                <div style="font-family: inherit; font-size: 12px; min-width: 170px; padding: 4px;">
+                                    <div style="font-weight: 800; font-size: 13px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 6px;">
+                                        ${munNome}
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${corCenario};"></span>
+                                        <span style="font-weight: 700; color: #334155;">${labelCor}</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
+                                        Clique para filtrar a tabela de projetos
+                                    </div>
+                                </div>
+                            `)
+                            .addTo(mapResumoAguas);
+                    });
+
+                    mapResumoAguas.on('mouseleave', 'resumo_aguas_fill', () => {
+                        mapResumoAguas.getCanvas().style.cursor = '';
+                        mapResumoAguas.setFilter('resumo_aguas_hover', ['==', 'codarea', '']);
+                        popup.remove();
+                    });
+
+                    // Clique filtra a tabela de projetos
+                    mapResumoAguas.on('click', 'resumo_aguas_fill', (e) => {
+                        if (!e.features.length) return;
+                        const props = e.features[0].properties || {};
+                        const munNome = props.municipio || props.NM_MUN;
+                        if (munNome) {
+                            window.filtrarTabelaProjetosPorMunicipio(munNome);
+                        }
+                    });
+                });
+            }
+
+            // 3. RENDERIZAR GRÁFICOS ANALÍTICOS (ECHART)
+            renderizarGraficosAguas(desembolso, projetos, municipios);
+
+            // 4. RENDERIZAR TABELA DE PROJETOS COM DATATABLES
+            renderizarTabelaProjetosAguas(projetos);
+        })
+        .catch(err => {
+            console.error('[Resumo Águas] Erro ao carregar dados:', err);
+            $('#resumo_aguas_spinner').addClass('d-none');
+        });
+};
+
+window.toggleCamadaAdutoras = function (ativo) {
+    if (!mapResumoAguas) return;
+    const vis = ativo ? 'visible' : 'none';
+    if (mapResumoAguas.getLayer('resumo_aguas_adutoras_lines')) {
+        mapResumoAguas.setLayoutProperty('resumo_aguas_adutoras_lines', 'visibility', vis);
+    }
+    if (mapResumoAguas.getLayer('resumo_aguas_adutoras_hover')) {
+        mapResumoAguas.setLayoutProperty('resumo_aguas_adutoras_hover', 'visibility', vis);
+    }
+    if (mapResumoAguas.getLayer('resumo_aguas_adutoras_hit')) {
+        mapResumoAguas.setLayoutProperty('resumo_aguas_adutoras_hit', 'visibility', vis);
+    }
+    const elLeg = document.getElementById('resumo_aguas_legenda_adutoras');
+    if (elLeg) {
+        if (ativo) elLeg.classList.remove('d-none');
+        else elLeg.classList.add('d-none');
+    }
+};
+
+window.trocarCamadaMapaAguas = function (camada) {
+    camadaAtivaAguas = camada;
+    if (mapResumoAguas && mapResumoAguas.getLayer('resumo_aguas_fill')) {
+        mapResumoAguas.setPaintProperty('resumo_aguas_fill', 'fill-color', [
+            'case',
+            ['has', camada],
+            ['get', camada],
+            '#CBD5E1'
+        ]);
+    }
+};
+
+function renderizarGraficosAguas(desembolso, projetos, municipios) {
+    if (typeof echarts === 'undefined') return;
+
+    // Gráfico 1: Necessidades de Desembolso Plurianual (2026-2030)
+    const elChartDesemb = document.getElementById('resumo_aguas_chart_desembolso') || document.getElementById('chart_aguas_desembolso');
+    if (elChartDesemb) {
+        if (chartAguasDesembolso) chartAguasDesembolso.dispose();
+        chartAguasDesembolso = echarts.init(elChartDesemb);
+
+        const anos = [2026, 2027, 2028, 2029, 2030];
+        const valoresPorAno = {};
+        anos.forEach(a => { valoresPorAno[a] = 0; });
+
+        desembolso.forEach(d => {
+            const ano = Number(d.ano_desembolso);
+            if (valoresPorAno[ano] !== undefined) {
+                valoresPorAno[ano] += Number(d.valor_desembolso_m) || 0;
+            }
+        });
+
+        const seriesVals = anos.map(a => Math.round(valoresPorAno[a] * 10) / 10);
+
+        chartAguasDesembolso.setOption({
+            tooltip: {
+                trigger: 'axis',
+                formatter: params => {
+                    const p = params[0];
+                    return `<b>Ano ${p.name}</b><br/>Previsão: R$ ${p.value.toLocaleString('pt-BR')} M`;
+                }
+            },
+            grid: { top: 30, right: 20, bottom: 30, left: 55 },
+            xAxis: {
+                type: 'category',
+                data: anos.map(String),
+                axisLine: { lineStyle: { color: '#cbd5e1' } },
+                axisLabel: { color: '#64748b', fontWeight: 'bold' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLine: { show: false },
+                axisLabel: { color: '#64748b', formatter: 'R$ {value}M' },
+                splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }
+            },
+            series: [{
+                name: 'Desembolso',
+                type: 'bar',
+                barWidth: '42%',
+                data: seriesVals,
+                itemStyle: {
+                    borderRadius: [6, 6, 0, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#0284c7' },
+                        { offset: 1, color: '#38bdf8' }
+                    ])
+                },
+                label: {
+                    show: true,
+                    position: 'top',
+                    color: '#0369a1',
+                    fontWeight: 'bold',
+                    formatter: params => `R$ ${params.value}M`
+                }
+            }]
+        });
+    }
+
+    // Gráfico 2: Distribuição por Status de Intervenção
+    const elChartStatus = document.getElementById('resumo_aguas_chart_status') || document.getElementById('chart_aguas_status');
+    if (elChartStatus) {
+        if (chartAguasStatus) chartAguasStatus.dispose();
+        chartAguasStatus = echarts.init(elChartStatus);
+
+        const statusMap = {};
+        projetos.forEach(p => {
+            let s = (p.status || 'Outro').trim();
+            if (s.toLowerCase().includes('conclu')) s = 'Concluído';
+            else if (s.toLowerCase().includes('andamento')) s = 'Em Andamento';
+            else if (s.toLowerCase().includes('a licitar')) s = 'A Licitar';
+            else if (s.toLowerCase().includes('em licita')) s = 'Em Licitação';
+            else if (s.toLowerCase().includes('a iniciar') || s.toLowerCase().includes('a fazer')) s = 'A Iniciar / A Fazer';
+            else if (s.toLowerCase().includes('elabora')) s = 'Em Elaboração';
+            else s = 'Outros';
+
+            statusMap[s] = (statusMap[s] || 0) + 1;
+        });
+
+        const statusData = Object.entries(statusMap).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+
+        const coresStatus = {
+            'Concluído': '#10b981',
+            'Em Andamento': '#0284c7',
+            'A Licitar': '#f59e0b',
+            'Em Licitação': '#8b5cf6',
+            'A Iniciar / A Fazer': '#06b6d4',
+            'Em Elaboração': '#ec4899',
+            'Outros': '#94a3b8'
+        };
+
+        chartAguasStatus.setOption({
+            tooltip: { trigger: 'item', formatter: '{b}: <b>{c} projetos</b> ({d}%)' },
+            legend: { orient: 'vertical', right: 10, top: 'middle', textStyle: { fontSize: 11, color: '#475569' } },
+            series: [{
+                name: 'Status',
+                type: 'pie',
+                radius: ['45%', '72%'],
+                center: ['38%', '50%'],
+                avoidLabelOverlap: false,
+                itemStyle: {
+                    borderRadius: 6,
+                    borderColor: '#fff',
+                    borderWidth: 2,
+                    color: params => coresStatus[params.name] || '#94a3b8'
+                },
+                label: { show: false },
+                emphasis: { label: { show: true, fontSize: 13, fontWeight: 'bold' } },
+                data: statusData
+            }]
+        });
+    }
+
+    // Gráfico 3: Top 15 Municípios por Investimento (R$ Milhões)
+    const elChartTop = document.getElementById('resumo_aguas_chart_top_muns') || document.getElementById('chart_aguas_top_muns');
+    if (elChartTop) {
+        if (chartAguasTopMuns) chartAguasTopMuns.dispose();
+        chartAguasTopMuns = echarts.init(elChartTop);
+
+        const munsInv = {};
+        municipios.forEach(m => {
+            const nome = (m.municipio || '').trim();
+            if (nome && nome !== '-') {
+                munsInv[nome] = (munsInv[nome] || 0) + (Number(m.valor_rateado_m) || Number(m.investimento_total) || 0);
+            }
+        });
+
+        // Caso municipios_rel não tenha valores agregados suficientes, agrega dos projetos
+        if (Object.keys(munsInv).length === 0) {
+            projetos.forEach(p => {
+                const nome = (p.municipio || '').trim();
+                if (nome && nome !== '-') {
+                    munsInv[nome] = (munsInv[nome] || 0) + (Number(p.valor_total_m) || 0);
+                }
+            });
+        }
+
+        const top15 = Object.entries(munsInv)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 15)
+            .reverse();
+
+        chartAguasTopMuns.setOption({
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: params => {
+                    const p = params[0];
+                    return `<b>${p.name}</b><br/>Investimento Total: R$ ${p.value.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M`;
+                }
+            },
+            grid: { top: 20, right: 30, bottom: 20, left: 130 },
+            xAxis: {
+                type: 'value',
+                axisLine: { show: false },
+                splitLine: { lineStyle: { color: '#f1f5f9' } },
+                axisLabel: { color: '#64748b', formatter: 'R$ {value}M' }
+            },
+            yAxis: {
+                type: 'category',
+                data: top15.map(t => t[0]),
+                axisLine: { lineStyle: { color: '#cbd5e1' } },
+                axisLabel: { color: '#334155', fontWeight: 'bold', fontSize: 11 }
+            },
+            series: [{
+                name: 'Investimento',
+                type: 'bar',
+                data: top15.map(t => Math.round(t[1] * 10) / 10),
+                itemStyle: {
+                    borderRadius: [0, 6, 6, 0],
+                    color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [
+                        { offset: 0, color: '#059669' },
+                        { offset: 1, color: '#34d399' }
+                    ])
+                },
+                label: {
+                    show: true,
+                    position: 'right',
+                    color: '#065f46',
+                    fontWeight: 'bold',
+                    fontSize: 10,
+                    formatter: params => `R$ ${params.value}M`
+                }
+            }]
+        });
+
+        // Clique no gráfico também filtra a tabela
+        chartAguasTopMuns.on('click', params => {
+            if (params.name) {
+                window.filtrarTabelaProjetosPorMunicipio(params.name);
+            }
+        });
+    }
+}
+
+function renderizarTabelaProjetosAguas(projetos) {
+    if ($.fn.DataTable.isDataTable('#resumo_aguas_tabela_projetos')) {
+        dtResumoAguas = $('#resumo_aguas_tabela_projetos').DataTable();
+        dtResumoAguas.clear().rows.add(projetos).draw(false);
+        return;
+    }
+
+    dtResumoAguas = $('#resumo_aguas_tabela_projetos').DataTable({
+        data: projetos,
+        deferRender: true,
+        language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
+        pageLength: 10,
+        scrollX: true,
+        order: [[5, 'desc']], // ordenar por valor de investimento
+        columns: [
+            { 
+                title: "ID", 
+                data: "id_projeto", 
+                className: "align-middle text-center", 
+                width: "60px",
+                render: d => `<span class="badge bg-slate-100 text-slate-700 font-mono border">#${d || '-'}</span>`
+            },
+            { 
+                title: "Nome do Projeto / Intervenção", 
+                data: "nome_do_projeto", 
+                className: "align-middle", 
+                width: "280px",
+                render: (d, t, r) => {
+                    const obj = r.objetivo ? `<div class="text-xs text-slate-500 mt-0.5">${r.objetivo}</div>` : '';
+                    return `<div class="fw-bold text-slate-800 text-sm leading-tight">${d || '-'}</div>${obj}`;
+                }
+            },
+            { 
+                title: "Município(s)", 
+                data: "municipio", 
+                className: "align-middle", 
+                width: "140px",
+                render: d => `<span class="badge bg-blue-50 text-blue-700 border border-blue-200 fw-bold px-2 py-1 rounded-pill">${d || 'Estadual'}</span>`
+            },
+            { 
+                title: "Diretoria", 
+                data: "diretoria", 
+                className: "align-middle text-center", 
+                width: "90px",
+                render: d => `<span class="badge bg-slate-800 text-white rounded-pill px-2.5 py-1 text-xs">${d || 'COMPESA'}</span>`
+            },
+            { 
+                title: "Status", 
+                data: "status", 
+                className: "align-middle", 
+                width: "140px",
+                render: d => {
+                    const s = String(d || '').trim();
+                    let badgeClass = 'bg-slate-100 text-slate-700 border';
+                    if (s.toLowerCase().includes('conclu')) badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                    else if (s.toLowerCase().includes('andamento')) badgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
+                    else if (s.toLowerCase().includes('licita')) badgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
+                    else if (s.toLowerCase().includes('iniciar') || s.toLowerCase().includes('fazer')) badgeClass = 'bg-indigo-100 text-indigo-800 border-indigo-300';
+                    return `<span class="badge ${badgeClass} rounded-pill px-2.5 py-1 text-xs font-bold">${s || '-'}</span>`;
+                }
+            },
+            { 
+                title: "Investimento (R$)", 
+                data: "valor_total_m", 
+                className: "align-middle text-end fw-bold text-slate-800", 
+                width: "130px",
+                render: (d, t) => {
+                    const num = Number(d) || 0;
+                    if (t !== 'display') return num;
+                    return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} M`;
+                }
+            },
+            { 
+                title: "Pop. Beneficiada", 
+                data: "populacao_beneficiada", 
+                className: "align-middle text-end", 
+                width: "120px",
+                render: (d, t) => {
+                    const num = Number(d) || 0;
+                    if (t !== 'display') return num;
+                    return num > 0 ? num.toLocaleString('pt-BR') : '-';
+                }
+            },
+            { 
+                title: "Execução (%)", 
+                data: "percentual_executado", 
+                className: "align-middle", 
+                width: "110px",
+                render: (d, t) => {
+                    let num = Number(d) || 0;
+                    if (num <= 1 && num > 0) num = Math.round(num * 100);
+                    else num = Math.round(num);
+                    if (t !== 'display') return num;
+                    const barColor = num >= 100 ? 'bg-emerald-500' : (num >= 50 ? 'bg-sky-500' : 'bg-amber-500');
+                    return `
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height: 6px;">
+                                <div class="progress-bar ${barColor}" style="width: ${Math.min(num, 100)}%;"></div>
+                            </div>
+                            <span class="text-xs fw-bold text-slate-700">${num}%</span>
+                        </div>
+                    `;
+                }
+            },
+            { 
+                title: "Fonte de Recursos", 
+                data: "fonte_de_recursos", 
+                className: "align-middle text-xs text-slate-600", 
+                width: "160px",
+                render: d => d || '-'
+            }
+        ]
+    });
+}
+
+window.filtrarTabelaProjetosPorMunicipio = function (nomeMun) {
+    if (!nomeMun) return;
+    filtroMunAguasAtivo = nomeMun;
+    if (dtResumoAguas) {
+        dtResumoAguas.column(2).search(nomeMun).draw();
+    }
+    const badgeContainer = document.getElementById('aguas_filtro_municipio_ativo');
+    const badgeText = document.getElementById('aguas_filtro_municipio_badge');
+    if (badgeContainer && badgeText) {
+        badgeText.innerText = `Filtro: ${nomeMun}`;
+        badgeContainer.classList.remove('d-none');
+        badgeContainer.classList.add('d-flex');
+    }
+    const elTabela = document.getElementById('resumo_aguas_tabela_projetos');
+    if (elTabela) {
+        elTabela.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+};
+
+window.limparFiltroMunTabelaAguas = function () {
+    filtroMunAguasAtivo = null;
+    if (dtResumoAguas) {
+        dtResumoAguas.column(2).search('').draw();
+    }
+    const badgeContainer = document.getElementById('aguas_filtro_municipio_ativo');
+    if (badgeContainer) {
+        badgeContainer.classList.add('d-none');
+        badgeContainer.classList.remove('d-flex');
+    }
+};
+
+
+/* ==========================================================================
+   MODAL DE SÉRIE HISTÓRICA E RANKING / COMPARATIVO REGIONAL (MUNICÍPIOS)
+   ========================================================================== */
+
+var chartModalFichaSerie = null;
+var chartModalFichaRanking = null;
+
+window.configurarBotoesKPI = function(elemBase, sigla, titulo, tipo) {
+    const $card = $(`#ficha_kpi_${elemBase}`).closest('.kpi-modern-card');
+    if (!$card.length) return;
+    const headerEl = $card.find('.kpi-modern-header');
+    if (!headerEl.length) return;
+
+    if (headerEl.find('.kpi-actions-container').length > 0) return;
+
+    let txtTitulo = titulo;
+    if (!txtTitulo) {
+        const clone = headerEl.clone();
+        clone.find('button, i').remove();
+        txtTitulo = clone.text().trim();
+    }
+    if (txtTitulo === 'DTP/RCL' || String(sigla).toLowerCase().includes('dtp')) {
+        txtTitulo = 'Pessoal';
+    }
+    const tituloEscaped = txtTitulo.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const siglaEscaped = String(sigla || elemBase || '').trim().replace(/'/g, "\\'");
+    const tipoEscaped = (tipo || 'socio').replace(/'/g, "\\'");
+
+    headerEl.addClass('d-flex justify-content-between align-items-start gap-1.5');
+    headerEl.html(`
+        <span class="kpi-header-title" title="${tituloEscaped}">${txtTitulo}</span>
+        <div class="kpi-actions-container d-flex gap-1 align-items-center flex-shrink-0 d-print-none">
+            <button type="button" class="btn btn-light bg-white border border-slate-200 shadow-2xs d-flex justify-content-center align-items-center" 
+                    onclick="event.stopPropagation(); window.abrirModalMetadado('${siglaEscaped}')" 
+                    style="width: 24px; height: 24px; border-radius: 6px; padding: 0; min-width: 24px;" title="Ver Metadados e Informações">
+                <i class="fas fa-info text-slate-400 hover:text-blue-600" style="font-size: 0.65rem;"></i>
+            </button>
+            <button type="button" class="btn btn-light bg-white border border-slate-200 shadow-2xs d-flex justify-content-center align-items-center" 
+                    onclick="event.stopPropagation(); window.abrirModalSerieHistoricaMun('${siglaEscaped}', '${tituloEscaped}', '${tipoEscaped}')" 
+                    style="width: 24px; height: 24px; border-radius: 6px; padding: 0; min-width: 24px;" title="Ver Série Histórica e Comparativo">
+                <i class="fas fa-arrow-right" style="color: #0C2856; font-size: 0.65rem;"></i>
+            </button>
+        </div>
+    `);
+};
+
+window.garantirBotoesTodosKPIs = function() {
+    // 1. Configurar os 8 KPIs da caracterização inicial
+    window.configurarBotoesKPI('pibpc', 'pibpc', 'PIB per Capita', 'socio');
+    window.configurarBotoesKPI('pib_pct', 'pib_pct', 'Participação PIB Estadual', 'socio');
+    window.configurarBotoesKPI('pib_1000', 'pib', 'PIB Total', 'socio');
+    window.configurarBotoesKPI('idhm', 'idhm', 'IDHM', 'socio');
+    window.configurarBotoesKPI('vab_agro', 'vab_agro', 'VAB Agropecuária', 'socio');
+    window.configurarBotoesKPI('vab_ind', 'vab_ind', 'VAB Indústria', 'socio');
+    window.configurarBotoesKPI('vab_serv', 'vab_serv', 'VAB Serviços', 'socio');
+    window.configurarBotoesKPI('vab_adm', 'vab_adm', 'VAB Adm Pública', 'socio');
+
+    // 2. Varrer todos os .kpi-modern-card que ainda não possuam botões de ação
+    $('#aba_ficha .kpi-modern-card').each(function() {
+        const $card = $(this);
+        if ($card.find('.kpi-actions-container').length > 0) return;
+
+        const numEl = $card.find('[id^="ficha_kpi_"]');
+        if (!numEl.length) return;
+
+        const idNum = numEl.attr('id') || '';
+        const elemBase = idNum.replace('ficha_kpi_', '');
+        const clone = $card.find('.kpi-modern-header').clone();
+        clone.find('button, i').remove();
+        let titulo = clone.text().trim();
+        if (titulo === 'DTP/RCL' || elemBase.includes('dtp')) titulo = 'Pessoal';
+
+        const tipo = elemBase.includes('fisc') ? 'fiscal' : 'socio';
+        window.configurarBotoesKPI(elemBase, elemBase, titulo, tipo);
+    });
+};
+
+window.abrirModalSerieHistoricaMun = async function (sigla, titulo, tipo) {
+    const mun = $('#ficha_f_municipio').val() || 'Município';
+    const siglaNorm = String(sigla || '').trim().toLowerCase();
+    let nomeExib = titulo || sigla;
+    if (nomeExib === 'DTP/RCL' || siglaNorm.includes('dtp')) nomeExib = 'Pessoal';
+
+    const modalTitle = document.getElementById('modal_ficha_kpi_titulo');
+    if (modalTitle) {
+        modalTitle.innerText = `${nomeExib} — Evolução Histórica e Comparativo (${mun})`;
+    }
+
+    const badgeTipo = document.getElementById('modal_ficha_kpi_badge_tipo');
+    if (badgeTipo) {
+        badgeTipo.innerText = tipo === 'fiscal' ? 'GESTÃO FISCAL' : 'INDICADOR MUNICIPAL';
+    }
+
+    const modalEl = document.getElementById('modal_ficha_kpi_serie');
+    if (!modalEl) {
+        console.error('[Ficha] Modal #modal_ficha_kpi_serie não encontrado no DOM!');
+        return;
+    }
+
+    let bsModal = null;
+    if (window.bootstrap && window.bootstrap.Modal) {
+        bsModal = window.bootstrap.Modal.getOrCreateInstance 
+            ? window.bootstrap.Modal.getOrCreateInstance(modalEl) 
+            : new window.bootstrap.Modal(modalEl);
+    } else if (typeof $(modalEl).modal === 'function') {
+        $(modalEl).modal('show');
+    }
+    if (bsModal) {
+        bsModal.show();
+    }
+
+    renderizarModalConteudoMun(siglaNorm, nomeExib, mun, tipo);
+    $(modalEl).one('shown.bs.modal', function () {
+        if (chartModalFichaSerie) chartModalFichaSerie.resize();
+        if (chartModalFichaRanking) chartModalFichaRanking.resize();
+    });
+};
+
+function renderizarModalConteudoMun(siglaNorm, nomeExib, mun, tipo) {
+    const normKey = (str) => String(str || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const siglaKey = normKey(siglaNorm);
+    const meta = (window.dadosMetadados || []).find(m => normKey(m.cd_indicador) === siglaKey || normKey(m.nm_indicador) === siglaKey);
+    const unidade = meta ? (meta.unidade || '') : '';
+    const isPct = unidade.includes('%') || nomeExib.includes('%') || siglaNorm.includes('pct') || siglaNorm.includes('perc') || siglaNorm.includes('tx_') || siglaNorm.includes('dtp') || siglaNorm.includes('pessoal');
+    const isMoeda = unidade.includes('R$') || nomeExib.includes('R$') || siglaNorm.includes('pib') || siglaNorm.includes('val');
+    const isIndice = unidade.toLowerCase().includes('índice') || siglaNorm.includes('idhm') || siglaNorm.includes('ideb') || siglaNorm.includes('ivcad') || siglaNorm.includes('ql');
+
+    let anos = [];
+    let valores = [];
+    let serieMun = [];
+
+    if (tipo === 'fiscal' || siglaNorm.includes('dtp') || siglaNorm.includes('fisc') || siglaNorm.includes('pessoal')) {
+        const fiscais = window.dadosFiscaisMun || [];
+        const matches = fiscais.filter(f => {
+            const indNorm = normKey(f.indicador);
+            return indNorm === siglaKey || (siglaKey === 'pessoal' && (indNorm.includes('dtp') || indNorm.includes('pessoal')));
+        });
+        const porAno = {};
+        matches.forEach(m => {
+            const ex = Number(m.exercicio);
+            if (!isNaN(ex) && ex > 0) {
+                porAno[ex] = parseFloat(m.valor) || 0;
+            }
+        });
+        const anosOrd = Object.keys(porAno).map(Number).sort((a, b) => a - b);
+        anos = anosOrd.map(String);
+        valores = anosOrd.map(a => porAno[a]);
+    } else {
+        const indicadores = dadosBrutosFicha || [];
+        serieMun = indicadores.filter(i => {
+            const s = normKey(i.sigla_indicador);
+            return s === siglaKey || (meta && normKey(i.nm_indicador) === normKey(meta.nm_indicador));
+        });
+
+        serieMun.sort((a, b) => (Number(a.ano) || 0) - (Number(b.ano) || 0));
+        anos = serieMun.map(d => String(d.ano));
+        valores = serieMun.map(d => {
+            const valStr = String(d.indicador || '').replace(',', '.').replace('%', '').trim();
+            return parseFloat(valStr) || 0;
+        });
+    }
+
+    const indRD = cacheSociaisRD.indicadoresRD || [];
+    const rdNome = cacheSociaisRD.demografiaRD?.[0]?.regiao_de_desenvolvimento || '';
+    const anoMaisRecente = anos.length ? Math.max(...anos.map(Number)) : 0;
+    
+    let rankingArr = [];
+    if (indRD.length > 0 && anoMaisRecente > 0) {
+        const itensRD = indRD.filter(d => {
+            const s = normKey(d.sigla_indicador);
+            return (s === siglaKey || (meta && normKey(d.nm_indicador) === normKey(meta.nm_indicador))) && Number(d.ano) === anoMaisRecente;
+        });
+
+        rankingArr = itensRD.map(d => ({
+            municipio: d.nm_municipio || d.municipio,
+            valor: parseFloat(String(d.indicador || '').replace(',', '.').replace('%', '').trim()) || 0,
+            rank_pe: d.rank_pe || null
+        }));
+    }
+
+    if (rankingArr.length === 0 && valores.length > 0) {
+        rankingArr.push({
+            municipio: mun,
+            valor: valores[valores.length - 1],
+            rank_pe: serieMun.length ? serieMun[serieMun.length - 1].rank_pe : null
+        });
+    }
+
+    rankingArr.sort((a, b) => b.valor - a.valor);
+
+    renderStorytellingModalMun(nomeExib, mun, anos, valores, rankingArr, unidade, isPct, isMoeda, isIndice, meta);
+    renderGraficoLinhaModalMun(anos, valores, nomeExib, mun, isPct, isMoeda, isIndice);
+    renderGraficoBarrasModalMun(rankingArr, mun, nomeExib, rdNome, isPct, isMoeda, isIndice, anoMaisRecente);
+}
+
+function renderStorytellingModalMun(nomeExib, mun, anos, valores, rankingArr, unidade, isPct, isMoeda, isIndice, meta) {
+    const $story = $('#modal_ficha_kpi_storytelling');
+    if (!$story.length) return;
+
+    if (!valores.length) {
+        $story.html(`<div class="text-slate-500 italic">Série histórica em consolidação para este município.</div>`);
+        return;
+    }
+
+    const ultimoVal = valores[valores.length - 1];
+    const ultimoAno = anos[anos.length - 1];
+    
+    const formatarValor = (v) => {
+        if (isNaN(v)) return '-';
+        if (isPct) return v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%';
+        if (isMoeda) return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (isIndice) return v.toFixed(3);
+        return v.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+    };
+
+    let textoVar = '';
+    if (valores.length >= 2) {
+        const penultimoVal = valores[valores.length - 2];
+        const penultimoAno = anos[anos.length - 2];
+        const varAbs = ultimoVal - penultimoVal;
+        const varPct = penultimoVal !== 0 ? (varAbs / Math.abs(penultimoVal)) * 100 : 0;
+        const sinal = varPct >= 0 ? '+' : '';
+        const cor = varPct >= 0 ? '#10B981' : '#EF4444';
+        textoVar = ` Em relação a <strong>${penultimoAno}</strong> (${formatarValor(penultimoVal)}), registrou variação de <strong style="color: ${cor};">${sinal}${varPct.toFixed(1)}%</strong>.`;
+    }
+
+    let textoRank = '';
+    const normTextMun = (s) => String(s || '').toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const munItem = rankingArr.find(r => normTextMun(r.municipio) === normTextMun(mun));
+    if (munItem && munItem.rank_pe) {
+        textoRank = ` No ranking estadual, <strong>${mun}</strong> posiciona-se no <strong>${munItem.rank_pe}º lugar</strong> entre os 184 municípios de Pernambuco.`;
+    }
+
+    let refTexto = '';
+    if (meta && meta.referencia_analise) {
+        const ref = typeof meta.referencia_analise === 'object' ? meta.referencia_analise : {};
+        if (ref.interpretacao) {
+            refTexto = `<div class="mt-2 text-xs text-slate-500 pt-2 border-t border-slate-100"><i class="fas fa-lightbulb text-amber-500 me-1"></i><strong>Interpretação Estratégica:</strong> ${ref.interpretacao}</div>`;
+        }
+    }
+
+    $story.html(`
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-blue-100 text-blue-800 font-bold px-2.5 py-1 rounded-pill text-xs">DIAGNÓSTICO EXECUTIVO</span>
+            <span class="text-xs text-slate-500 font-semibold">${mun} &bull; Ano-base ${ultimoAno}</span>
+        </div>
+        <p class="mb-0 text-slate-700 leading-relaxed text-sm">
+            No ano mais recente disponível (<strong>${ultimoAno}</strong>), o indicador <strong>${nomeExib}</strong> de <strong>${mun}</strong> atingiu a marca de <strong>${formatarValor(ultimoVal)}</strong>.${textoVar}${textoRank}
+        </p>
+        ${refTexto}
+    `);
+}
+
+function renderGraficoLinhaModalMun(anos, valores, nomeExib, mun, isPct, isMoeda, isIndice) {
+    const dom = document.getElementById('modal_ficha_chart_serie');
+    if (!dom) return;
+
+    if (chartModalFichaSerie) chartModalFichaSerie.dispose();
+    chartModalFichaSerie = echarts.init(dom);
+
+    if (!anos.length) {
+        chartModalFichaSerie.clear();
+        return;
+    }
+
+    const formatarEixo = (val) => {
+        if (isPct) return val + '%';
+        if (isMoeda) {
+            if (val >= 1e6) return 'R$ ' + (val / 1e6).toFixed(1) + 'M';
+            if (val >= 1e3) return 'R$ ' + (val / 1e3).toFixed(0) + 'k';
+            return 'R$ ' + val;
+        }
+        return val;
+    };
+
+    chartModalFichaSerie.setOption({
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                const item = params[0];
+                let v = Number(item.value);
+                let vFmt = isPct ? v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%' 
+                         : (isMoeda ? 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                         : (isIndice ? v.toFixed(3) : v.toLocaleString('pt-BR')));
+                return `<strong>${mun} (${item.name})</strong><br/>${nomeExib}: <strong>${vFmt}</strong>`;
+            }
+        },
+        grid: { left: '3%', right: '5%', bottom: '10%', top: '15%', containLabel: true },
+        xAxis: { type: 'category', data: anos, boundaryGap: false, axisLabel: { fontWeight: 'bold' } },
+        yAxis: { type: 'value', axisLabel: { formatter: formatarEixo } },
+        series: [{
+            name: nomeExib,
+            type: 'line',
+            data: valores,
+            smooth: true,
+            symbolSize: 8,
+            lineStyle: { width: 3.5, color: '#0C2856' },
+            itemStyle: { color: '#0C2856' },
+            areaStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: 'rgba(12, 40, 86, 0.35)' },
+                    { offset: 1, color: 'rgba(12, 40, 86, 0.02)' }
+                ])
+            }
+        }]
+    });
+}
+
+function renderGraficoBarrasModalMun(rankingArr, munAlvo, nomeExib, rdNome, isPct, isMoeda, isIndice, ano) {
+    const dom = document.getElementById('modal_ficha_chart_ranking');
+    if (!dom) return;
+
+    if (chartModalFichaRanking) chartModalFichaRanking.dispose();
+    chartModalFichaRanking = echarts.init(dom);
+
+    const tituloEl = document.getElementById('modal_ficha_ranking_titulo');
+    if (tituloEl) {
+        tituloEl.innerHTML = `<i class="fas fa-chart-bar text-purple-600"></i> Comparativo Regional ${rdNome ? '— RD ' + rdNome : ''} ${ano ? '(' + ano + ')' : ''}`;
+    }
+
+    if (!rankingArr || rankingArr.length === 0) {
+        chartModalFichaRanking.clear();
+        return;
+    }
+
+    const normTextMun = (s) => String(s || '').toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const dadosReversos = [...rankingArr].reverse();
+    const categorias = dadosReversos.map(d => d.municipio);
+    const valores = dadosReversos.map(d => {
+        const isAlvo = normTextMun(d.municipio) === normTextMun(munAlvo);
+        const cor = isAlvo ? '#0C2856' : '#94A3B8';
+        return {
+            value: d.valor,
+            itemStyle: {
+                color: cor,
+                borderRadius: [0, 4, 4, 0]
+            }
+        };
+    });
+
+    const formatarEixo = (val) => {
+        if (isPct) return val + '%';
+        if (isMoeda) {
+            if (val >= 1e6) return 'R$ ' + (val / 1e6).toFixed(1) + 'M';
+            if (val >= 1e3) return 'R$ ' + (val / 1e3).toFixed(0) + 'k';
+            return 'R$ ' + val;
+        }
+        return val;
+    };
+
+    chartModalFichaRanking.setOption({
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
+            formatter: function (params) {
+                const item = params[0];
+                let v = Number(item.value);
+                let vFmt = isPct ? v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%' 
+                         : (isMoeda ? 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                         : (isIndice ? v.toFixed(3) : v.toLocaleString('pt-BR')));
+                return `<strong>${item.name}</strong><br/>${nomeExib}: <strong>${vFmt}</strong>`;
+            }
+        },
+        grid: { left: '3%', right: '8%', bottom: '5%', top: '5%', containLabel: true },
+        xAxis: { type: 'value', axisLabel: { formatter: formatarEixo } },
+        yAxis: { type: 'category', data: categorias, axisLabel: { fontSize: 11, fontWeight: 'bold' } },
+        series: [{
+            type: 'bar',
+            data: valores,
+            barMaxWidth: 24
+        }]
+    });
+}

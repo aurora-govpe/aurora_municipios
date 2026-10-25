@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   height="800px"
+   width="800px"
+   version="1.1"
+   id="Layer_1"
+   viewBox="0 0 420 420"
+   xml:space="preserve"
+   sodipodi:docname="sol2.svg"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs1"><pattern
+     inkscape:collect="always"
+     xlink:href="#pattern6-7"
+     preserveAspectRatio="xMidYMid"
+     id="pattern28"
+     patternTransform="translate(190,350)" /><pattern
+     patternUnits="userSpaceOnUse"
+     width="29"
+     height="20"
+     patternTransform="translate(190,350)"
+     preserveAspectRatio="xMidYMid"
+     style="fill:#000000"
+     id="pattern6-7"
+     inkscape:label=""
+     inkscape:collect="always"
+     inkscape:isstock="true"><path
+       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:butt;stroke-dasharray:none;paint-order:stroke markers fill;stop-color:#000000"
+       d="M 0,5 C 19,5 10,15 29,15"
+       id="path4-2"
+       sodipodi:nodetypes="cc" /></pattern><linearGradient
+     id="swatch28"
+     inkscape:swatch="solid"><stop
+       style="stop-color:#000000;stop-opacity:1;"
+       offset="0"
+       id="stop28" /></linearGradient><linearGradient
+     inkscape:collect="always"
+     xlink:href="#swatch28"
+     id="linearGradient28"
+     x1="70"
+     y1="210"
+     x2="350"
+     y2="210"
+     gradientUnits="userSpaceOnUse" /></defs><sodipodi:namedview
+   id="namedview1"
+   pagecolor="#ffffff"
+   bordercolor="#000000"
+   borderopacity="0.25"
+   inkscape:showpageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1"
+   showgrid="false"
+   inkscape:zoom="1.09875"
+   inkscape:cx="52.332196"
+   inkscape:cy="402.73038"
+   inkscape:window-width="2049"
+   inkscape:window-height="1118"
+   inkscape:window-x="2869"
+   inkscape:window-y="-11"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="g1" />
+<g
+   id="g1">
+	<polygon
+   style="fill:#F5C525;stroke:url(#pattern28)"
+   points="420,210 375.774,247.857 399.238,301.145 342.926,315.986 340.945,374.184 283.764,363.211    256.724,414.779 210,380 163.276,414.779 136.236,363.211 79.055,374.184 77.073,315.986 20.762,301.144 44.226,247.858 0,210    44.226,172.143 20.762,118.855 77.074,104.014 79.055,45.816 136.236,56.789 163.276,5.221 210,40 256.723,5.221 283.764,56.789    340.945,45.816 342.927,104.014 399.238,118.856 375.774,172.142  "
+   id="polygon1" />
+	<circle
+   style="fill:#F8A805;stroke:url(#linearGradient28)"
+   cx="210"
+   cy="210"
+   id="circle1"
+   r="140" />
+</g>
+</svg>

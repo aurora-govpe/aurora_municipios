@@ -1,0 +1,50 @@
+/* ==========================================================================
+   AURORA PRIME - MÓDULO REGIÕES DE DESENVOLVIMENTO (RD)
+   Estilização específica para mapas, clusters e spinners de carregamento progressivo
+   ========================================================================== */
+
+.rd-cluster-spinner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 25;
+  border-radius: inherit;
+  transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
+  pointer-events: none;
+}
+
+.rd-cluster-spinner.d-none {
+  display: none !important;
+}
+
+.rd-cluster-spinner .spinner-border {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-width: 0.22em;
+  color: #0066FF !important;
+}
+
+.rd-cluster-spinner-text {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #334155;
+  margin-top: 0.6rem;
+}
+
+@media print {
+  .rd-cluster-spinner {
+    display: none !important;
+  }
+}

@@ -1,0 +1,82 @@
+/* 1. POSICIONAMENTO GLOBAL DO CARD */
+/* Removemos a margem automática do topo que o pacote injeta */
+#auth-panel {
+    margin-top: -120px !important; /* Sobe o card significativamente */
+    display: flex;
+    justify-content: center;
+}
+
+/* 2. O ENVELOPE (CARD) */
+.panel {
+    background: #eee !important;
+    border-radius: 25px !important;
+    max-width: 380px !important; /* Garante que não fique largo demais */
+    width: 100%;
+    
+    /* AJUSTE DE PADDING: Menos em cima, mais embaixo */
+    padding: 25px 25px 40px 25px !important; 
+    
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border: none !important;
+}
+
+/* 3. AJUSTE DO LOGO (REDUZIR MARGEM SUPERIOR INTERNA) */
+.panel img {
+    margin-top: 0 !important;
+    margin-bottom: 15px !important;
+    max-width: 250px;
+}
+
+/* 4. BOTÃO CONECTAR (ESTILO MODERNO) */
+#auth-go_auth.btn-primary {
+    background-color: #7f00ff !important;
+    border: none !important;
+    border-radius: 25px !important;
+    padding: 10px 30px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    color: white !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(127, 0, 255, 0.2) !important;
+}
+
+#auth-go_auth.btn-primary:hover {
+    background-color: white !important;
+    color: #7f00ff !important;
+    border-color: #7f00ff !important;
+}
+
+/* 5. RODAPÉ (SOLICITAR ACESSO E E-MAIL) */
+.login-footer-container {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.btn-solicitar-acesso {
+    display: inline-block;
+    background-color: #7f00ff;
+    color: white !important;
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-decoration: none !important;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(127, 0, 255, 0.2);
+}
+
+.btn-solicitar-acesso:hover {
+    background-color: white !important;
+    color: #7f00ff !important;
+    border-color: #7f00ff !important;
+    transform: scale(1.03); /* Leve aumento para feedback visual */
+}
+
+/* ESPAÇAMENTO DO E-MAIL (PREVENIR COLAR NA BORDA) */
+.admin-contact {
+    color: #666 !important;
+    font-size: 0.75rem;
+    margin-top: 20px !important;
+    display: block;
+    padding-bottom: 10px; /* Garante o respiro final */
+}

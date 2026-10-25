@@ -1,0 +1,743 @@
+@charset "UTF-8";
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
+
+/* ==========================================================================
+ 1. VARIÁVEIS GLOBAIS DE CORES E ESTRUTURA
+========================================================================== */
+:root {
+  --azul-escuro: #0C2856;
+  --roxo: #400FFF;
+  --azul-medio: #0066FF;
+  --azul-claro: #00B7FF;
+  --verde-agua: #3AEBC6;
+  --verde-card: #3BB631;
+  --verde-escuro: #43CC37;
+  --verde-vivo: #4AE220;
+  --verde-limao: #95E53C;
+  --amarelo: #FFCE00;
+  --amarelo-laranja: #FB8000;
+  --laranja: #FF6700;
+  --vermelho: #ED282C;
+  --cinza-claro: #F2F2F2;
+  --cinza-medio: #CCCCCC;
+  --cinza-escuro: #666666;
+
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 70px;
+  --sidebar-bg: #0C2856;
+  --sidebar-hover: rgba(255, 255, 255, 0.08);
+  --sidebar-active: rgba(255, 255, 255, 0.15);
+  --sidebar-text: rgba(255, 255, 255, 0.7);
+  --topbar-height: 65px;
+}
+
+/* ==========================================================================
+ 2. TYPOGRAPHY E RESET GLOBAL
+========================================================================== */
+html, body {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden !important;
+  background-color: #F8FAFC !important;
+  font-family: 'Jost', sans-serif;
+}
+
+body, h1, h2, h3, h4, h5, h6, p, span, div, button, input, select, textarea {
+  font-family: 'Jost', sans-serif;
+}
+
+.dataTables_wrapper, table.dataTable {
+  font-family: 'Jost', sans-serif !important;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  vertical-align: middle !important;
+  font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+}
+
+/* ==========================================================================
+ 3. CONTROLE DE ABAS NATIVAS CLIENT-SIDE (.tab-pane) - SEM BSLIB
+========================================================================== */
+.tab-pane {
+  display: none !important;
+}
+
+.tab-pane.active,
+.tab-pane.show {
+  display: block !important;
+}
+
+/* ==========================================================================
+ 4. ESTRUTURA SAAS & LAYOUT FLEXBOX
+========================================================================== */
+.aurora-app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.aurora-main-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.aurora-content-area {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-bottom: 2rem;
+}
+
+ul#aurora_tabs, .nav-hidden {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ==========================================================================
+ 5. SIDEBAR NATIVA AURORA (EXPANDIDA, COLAPSADA & MOBILE)
+========================================================================== */
+.aurora-sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--sidebar-bg);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
+  z-index: 9999 !important;
+  flex-shrink: 0;
+  box-shadow: 2px 0 15px rgba(0,0,0,0.05);
+}
+
+.sidebar-brand {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.brand-link,
+.sidebar-brand a {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-decoration: none !important;
+  width: 100%;
+}
+
+.brand-icon { 
+  height: 32px; 
+  min-width: 32px; 
+  margin-right: 12px; 
+  object-fit: contain; 
+}
+
+.brand-text { 
+  font-weight: 900; 
+  font-size: 1.2rem; 
+  color: #fff; 
+  letter-spacing: 0.5px; 
+}
+
+.btn-close-sidebar {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  padding: 0;
+  cursor: pointer;
+}
+
+.menu-section {
+  padding: 10px 1.5rem 5px 1.5rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 1.5rem;
+  color: var(--sidebar-text);
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  border-left: 3px solid transparent;
+}
+
+.menu-item i {
+  font-size: 1.1rem;
+  min-width: 24px;
+  text-align: center;
+  margin-right: 14px;
+  transition: margin 0.3s;
+}
+
+.menu-item:hover { 
+  background-color: var(--sidebar-hover); 
+  color: #fff; 
+}
+
+.menu-item.aurora-active {
+  background-color: var(--sidebar-active);
+  color: #fff;
+  border-left-color: #00B7FF; 
+  font-weight: 600;
+}
+
+/* SIDEBAR COLAPSADA NO DESKTOP (CENTRALIZAÇÃO PERFEITA DA LOGO) */
+@media (min-width: 769px) {
+  .aurora-sidebar.collapsed { 
+    width: var(--sidebar-collapsed-width) !important; 
+  }
+  .aurora-sidebar.collapsed .brand-text,
+  .aurora-sidebar.collapsed .item-text,
+  .aurora-sidebar.collapsed .section-text {
+    opacity: 0;
+    display: none !important;
+  }
+  .aurora-sidebar.collapsed .sidebar-brand { 
+    padding: 0 !important; 
+    justify-content: center !important; 
+  }
+  .aurora-sidebar.collapsed .brand-link,
+  .aurora-sidebar.collapsed .sidebar-brand a {
+    justify-content: center !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+  }
+  .aurora-sidebar.collapsed .brand-icon { 
+    margin-right: 0 !important; 
+    margin-left: 0 !important;
+  }
+  .aurora-sidebar.collapsed .menu-item { 
+    padding: 12px 0 !important; 
+    justify-content: center !important; 
+  }
+  .aurora-sidebar.collapsed .menu-item i { 
+    margin-right: 0 !important; 
+    font-size: 1.2rem !important; 
+  }
+}
+
+/* SIDEBAR EM DISPOSITIVOS MÓVEIS (DRAWER SLIDE-IN) */
+@media (max-width: 768px) {
+  .aurora-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+  }
+  .aurora-sidebar.mobile-open { 
+    transform: translateX(0); 
+  }
+  .aurora-sidebar.collapsed { 
+    width: var(--sidebar-width); 
+  }
+  .btn-close-sidebar {
+    display: block !important;
+  }
+}
+
+/* ==========================================================================
+ 6. TOPBAR E BADGES DE CABEÇALHO
+========================================================================== */
+.aurora-topbar {
+  height: var(--topbar-height);
+  background-color: #fff;
+  border-bottom: 1px solid #E2E8F0;
+  padding: 0 1.5rem;
+  flex-shrink: 0;
+  z-index: 1040;
+}
+
+.btn-sidebar-toggle {
+  background: transparent;
+  border: none;
+  color: #475569;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.btn-sidebar-toggle:hover { 
+  background-color: #F1F5F9; 
+  color: #0F172A; 
+}
+
+.badge-atualizacao,
+#tag_atualizacao_dados {
+  background: #F1F5F9 !important;
+  padding: 2px 8px !important;
+  border-radius: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+#tag_atualizacao_dados span {
+  color: #475569 !important;
+  font-weight: 600 !important;
+  margin-right: 0 !important;
+}
+
+#tag_atualizacao_dados span i {
+  color: #64748B !important;
+}
+
+/* ==========================================================================
+ 7. CARDS E MICRO-KPIS (ESTILO SAAS / WAZE)
+========================================================================== */
+body .card {
+  border-radius: 16px !important;
+  border: none !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02) !important;
+  background-color: #FFFFFF;
+}
+
+.kpi-modern-card {
+  background: #FAFAFA; /* Fundo cinza super claro, estilo bloco da imagem 1 */
+  border-radius: 16px;
+  box-shadow: none !important;
+  padding: 24px;
+  border: none !important; /* Removemos a borda colorida esquerda */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.kpi-modern-card:hover {
+  transform: translateY(-2px);
+  background: #FFFFFF;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.04) !important;
+}
+
+.kpi-modern-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: #555;
+  margin: 0;
+  text-transform: none !important; /* Remove o UPPERCASE para ficar como o site ref */
+}
+
+.kpi-modern-body { 
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kpi-modern-icon {
+  font-size: 20px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background-color: transparent !important; /* Remove fundo colorido do ícone */
+}
+
+.kpi-modern-number {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.kpi-modern-footer {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* Deixa as tabelas mais limpas, sem bordas pesadas */
+.bg-white.rounded-2xl.border.border-slate-100 {
+  border: none !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02) !important;
+  background-color: #FFFFFF;
+  border-radius: 20px !important;
+}
+
+/* ==========================================================================
+ 8. DATATABLES, BOOTSTRAP-SELECT & FORMULÁRIOS
+========================================================================== */
+.dataTable { width: 100% !important; }
+table.dataTable tbody td, table.dataTable thead th { 
+  font-family: 'Jost', sans-serif !important; 
+  font-size: 1.0em !important; 
+}
+.dataTable thead th { 
+  border-bottom: 2px solid #333 !important; 
+  font-size: 14px; 
+}
+table.dataTable tbody tr:hover { 
+  background-color: #D6EAF8 !important; 
+}
+
+div.dataTables_filter input[type='search'] {
+  backdrop-filter: blur(2px);
+  background: rgba(255,255,255,.9);
+  border: 1px solid #D1D5DB !important;
+  border-radius: 9999px !important;
+  height: 38px;
+  padding-left: 36px !important; 
+  padding-right: 36px !important;
+  width: 360px !important;
+}
+
+.bootstrap-select .dropdown-menu { 
+  z-index: 9999 !important; 
+  font-family: 'Jost', sans-serif !important; 
+  font-size: 13px !important; 
+}
+.bootstrap-select { 
+  position: relative !important; 
+  z-index: 1070 !important; 
+}
+.aurora-content-area .row:has(.bootstrap-select) { 
+  position: relative; 
+  z-index: 1060; 
+}
+
+.bootstrap-select > .dropdown-toggle {
+  background-color: #fff !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 6px !important;
+  color: #333 !important;
+}
+
+/* ==========================================================================
+ 9. BOTÃO FLUTUANTE VOLTAR AO TOPO
+========================================================================== */
+#btn-back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: #0066FF;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 9999;
+}
+
+#btn-back-to-top.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+ 10. TELA DE LOGIN (CLEAN UI)
+========================================================================== */
+body.login-page, #login-section {
+  background-color: #F8FAFC !important;
+  background-image: none !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jost', sans-serif;
+}
+
+body.logado #login-section { display: none !important; }
+
+#login-section .card {
+  background: #FFFFFF !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid #F1F5F9 !important;
+  padding: 40px 30px !important;
+}
+
+#login-section label {
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 8px;
+  display: block;
+  font-size: 0.95rem;
+}
+
+#login-section input[type="text"],
+#login-section input[type="password"] {
+  border-radius: 8px !important;
+  border: 1px solid #E2E8F0 !important;
+  padding: 12px 16px !important;
+  font-size: 1rem;
+  color: #1E293B !important;
+  background-color: #FFFFFF !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease;
+}
+
+#login-section input[type="text"]:focus,
+#login-section input[type="password"]:focus {
+  border-color: #94A3B8 !important;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1) !important;
+  outline: none !important;
+}
+
+#auth-go_auth {
+  background-color: #1E293B !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 12px 30px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 10px;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 12px rgba(30, 41, 59, 0.15) !important;
+}
+
+#auth-go_auth:hover {
+  background-color: #0F172A !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(30, 41, 59, 0.2) !important;
+}
+
+.login-footer-container {
+  text-align: center;
+  margin-top: 25px;
+  color: #64748B;
+  font-size: 0.9rem;
+}
+
+.btn-solicitar-acesso {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  background-color: #FFFFFF !important;
+  color: #475569 !important;
+  padding: 10px 24px !important;
+  border-radius: 999px !important;
+  border: 1px solid #E2E8F0 !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
+}
+
+.btn-solicitar-acesso:hover {
+  background-color: #F1F5F9 !important;
+  color: #1E293B !important;
+  border-color: #CBD5E0 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ==========================================================================
+ 11. REGRAS GLOBAIS DE IMPRESSÃO PDF (@media print) E CAPA
+========================================================================== */
+/* Esconder a capa na visualização web normal com máxima especificidade */
+.capa-relatorio,
+div.capa-relatorio,
+body .capa-relatorio { 
+  display: none !important; 
+}
+
+@media print {
+
+  @page { 
+    size: A4 landscape !important; 
+    margin: 5mm 8mm !important; 
+  }
+  
+  /* 1. Marca d'água 5% visível em todas as páginas */
+  body::before {
+    content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url('../images/brasao_gov_pe.png');
+    background-repeat: no-repeat; background-position: center center;
+    background-size: 60%; opacity: 0.05; z-index: -9999;
+  }
+
+  /* 2. Zerar a estrutura principal */
+  html, body, .aurora-app-container, .aurora-main-wrapper, .aurora-content-area, .tabbable, .tab-content, .container-fluid {
+    height: auto !important; min-height: auto !important; max-height: none !important;
+    overflow: visible !important; position: static !important; background: transparent !important;
+    padding: 0 !important; margin: 0 !important; width: 100% !important; display: block !important;
+  }
+
+  body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .tab-pane { display: none !important; }
+  .tab-pane.active, .tab-pane.show { display: block !important; height: auto !important; overflow: visible !important; opacity: 1 !important; }
+
+  /* 3. O SEGREDO DA NAVBAR: Alta Especificidade para vencer o Bootstrap */
+  body header.aurora-topbar, 
+  body nav.aurora-sidebar, 
+  body #aurora-chat-container, 
+  body .ficha-nav-floating, 
+  body .d-print-none, 
+  body button.fixed.bottom-6 { 
+    display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; border: none !important;
+  }
+
+  /* 4. Capa Ajustada para NUNCA gerar folha em branco (98vh) */
+  .capa-relatorio,
+  body .capa-relatorio {
+    display: flex !important;
+
+    height: 98vh !important;
+    max-height: 98vh !important;
+    width: 100% !important;
+    page-break-after: always !important;
+    page-break-before: avoid !important;
+    margin: 0 !important; padding: 0 !important; box-sizing: border-box !important; overflow: hidden !important;
+  }
+
+  /* 5. TRAVANDO O LAYOUT (KPIs e Gráficos na horizontal) */
+  .grid { display: flex !important; flex-wrap: wrap !important; gap: 10px !important; }
+  .grid-cols-1.md\:grid-cols-4 > div, .grid-cols-1.sm\:grid-cols-2.md\:grid-cols-4 > div { flex: 0 0 calc(25% - 10px) !important; max-width: calc(25% - 10px) !important; }
+  .grid-cols-1.md\:grid-cols-3 > div { flex: 0 0 calc(33.333% - 10px) !important; max-width: calc(33.333% - 10px) !important; }
+  .grid-cols-1.sm\:grid-cols-2 > div { flex: 0 0 calc(50% - 10px) !important; max-width: calc(50% - 10px) !important; }
+  
+  .row { display: flex !important; flex-wrap: nowrap !important; width: 100% !important; }
+  .col-md-6 { flex: 0 0 50% !important; max-width: 50% !important; }
+  .col-md-4 { flex: 0 0 33.333% !important; max-width: 33.333% !important; }
+  .col-md-7 { flex: 0 0 58.333% !important; max-width: 58.333% !important; }
+  .col-md-5 { flex: 0 0 41.666% !important; max-width: 41.666% !important; }
+
+  /* 6. CONTROLE INTELIGENTE DE QUEBRAS DE PÁGINA (Fim dos cortes) */
+  /* Impede que títulos e cabeçalhos fiquem órfãos no final da página */
+  h1, h2, h3, h4, h5, h6, [id^="sec_"], .border-b-2 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Impede que caixas, kpis, tabelas e gráficos sejam cortados ao meio */
+  .card, .kpi-modern-card, .bg-white.rounded-2xl, tr, td, th, .echarts-container, [id^="ficha_chart_"], .grid > div {
+    page-break-inside: avoid !important; 
+    break-inside: avoid !important; 
+    box-shadow: none !important;
+  }
+
+  /* 7. Libera o scroll das tabelas para imprimir todas as linhas */
+  .dataTables_scrollBody, .dataTables_scroll, .dataTables_wrapper {
+    overflow: visible !important; height: auto !important; max-height: none !important;
+  }
+  table.dataTable { width: 100% !important; max-width: 100% !important; }
+}
+
+/* ==========================================================================
+   PADRONIZAÇÃO DOS MAPAS (CLEAN)
+========================================================================== */
+.map-clean-container {
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #FAFAFA; /* Fundo super suave */
+  position: relative;
+  width: 100%;
+  height: 380px; /* Altura padrão para os mapas regionais */
+  border: none;
+}
+
+/* Variação para o mapa menor da Caracterização */
+.map-clean-container.map-small {
+  height: 280px;
+}
+
+/* ==========================================================================
+   12. TELA DE CARREGAMENTO (OVERLAY)
+========================================================================== */
+#loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(255, 255, 255, 0.95);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#loading-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.spinner-ring {
+  width: 80px;
+  height: 80px;
+  border: 6px solid #f1f5f9;
+  border-top: 6px solid #0066FF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 24px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-title {
+  font-family: 'Jost', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0C2856;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.loading-subtitle {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.9rem;
+  color: #64748B;
+}
+
+:root {
+  /* ... mantendo as cores ... */
+  --sidebar-width: 0px;
+  --sidebar-collapsed-width: 0px;
+  --topbar-height: 48px; /* Reduzido de 65px para 48px */
+}
+
+/* Oculta a sidebar completamente dentro do iFrame */
+.aurora-sidebar {
+  display: none !important;
+}
+
+/* Ajusta o padding e altura da Topbar */
+.aurora-topbar {
+  height: var(--topbar-height) !important;
+  padding: 0 0.75rem !important;
+}

@@ -1,0 +1,25 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   MÓDULO SOBRE / EQUIPE AURORA
+========================================================================== */
+
+.team-card {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+}
+
+.email-badge:hover {
+  background: var(--azul-escuro) !important;
+  color: #fff !important;
+  border-color: var(--azul-escuro) !important;
+}
+
+.email-badge:hover svg {
+  color: #fff !important;
+}

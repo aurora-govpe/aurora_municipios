@@ -1,0 +1,19 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   AURORA MASTER CSS ORCHESTRATOR
+   Centraliza e importa a estilização desacoplada por módulos
+========================================================================== */
+
+/* 1. Núcleo Base (Layout SaaS, Sidebar, Topbar, Typography, Micro-KPIs e Print Base) */
+@import url('css/core.css');
+
+/* 2. Módulos de Estilização por Aba */
+@import url('css/sobre.css');
+@import url('css/ficha.css');
+@import url('css/regioes.css');
+
+/* FORÇAR RENDERIZAÇÃO DO MARKDOWN DA AURORA NO TAILWIND */
+.aurora-markdown p { margin-bottom: 0.5rem; }
+.aurora-markdown ul { list-style-type: disc !important; padding-left: 1.5rem !important; margin-bottom: 0.5rem; }
+.aurora-markdown strong { font-weight: 700; color: #0C2856; }
