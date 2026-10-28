@@ -61,11 +61,13 @@ func main() {
 		rg.Any("/municipios/data", handlers.PostMunicipiosData)
 		rg.Any("/municipios/resumo/capag", handlers.GetCapagResumo)
 		rg.Any("/municipios/resumo/aguas", handlers.GetAguasResumo)
+		rg.Any("/municipios/resumo/cozinhas", handlers.GetCozinhasResumo)
 		rg.Any("/ficha/filtros", handlers.GetFichaFiltros)
 		rg.Any("/ficha/metadados", handlers.GetFichaMetadados)
 		rg.Any("/ficha/data", handlers.PostFichaData)
 		rg.Any("/ficha/resumo/capag", handlers.GetCapagResumo)
 		rg.Any("/ficha/resumo/aguas", handlers.GetAguasResumo)
+		rg.Any("/ficha/resumo/cozinhas", handlers.GetCozinhasResumo)
 
 		// Regiões de Desenvolvimento
 		rg.Any("/regioes/filtros", handlers.GetRegioesFiltros)

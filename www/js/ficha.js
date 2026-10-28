@@ -1223,7 +1223,7 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
     // $('#ficha_transf_rd_titulo').text(`Municípios da RD ${rdNome}`);
     renderizarTransferenciasRenda(iniciativas || [], pcp || []);
     // renderizarMapaTransfRD();
-    renderizarIniciativasFicha(iniciativas || []);
+    renderizarIniciativasFicha(iniciativas || [], demo || {});
     renderizarEmendasFicha(emendas || []);
     
     renderizarVocacoes(vocacoes || []);
@@ -3004,7 +3004,7 @@ function renderizarDadosFiscais(fiscais, ind, demo) {
 }
 
 /* --- 6.7 INICIATIVAS REGIONAIS E CONVÊNIOS --- */
-function renderizarIniciativasFicha(dados) {
+function renderizarIniciativasFicha(dados, demo) {
     const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
     const eConvenio = (d) => normText(d.tipologia).includes("CONVENIOS COM MUNICIPIOS") || normText(d.iniciativa_estrategica).includes("CONVENIOS COM MUNICIPIOS");
 
@@ -3033,6 +3033,11 @@ function renderizarIniciativasFicha(dados) {
     $('#ficha_kpi_ini_execucao').text(execAcoes);
     $('#ficha_kpi_ini_val_tot').text(formataBi(vTotalAcoes));
     $('#ficha_kpi_ini_val_pag').text(formataBi(vPagoAcoes));
+    if (typeof window.atualizarKpiCozinhasMunicipio === 'function') {
+        const munNome = (demo && demo.municipio) ? demo.municipio : (window.municipioAtualFicha || '');
+        const munIbge = (demo && (demo.cod_ibge || demo.ibge7 || demo.ibge6)) ? (demo.cod_ibge || demo.ibge7 || demo.ibge6) : '';
+        window.atualizarKpiCozinhasMunicipio(munNome, munIbge);
+    }
 
     let outStatusAcoes = Object.entries(statusCountAcoes).filter(k => k[0].toUpperCase() !== 'EM EXECUÇÃO').sort((a, b) => b[1] - a[1]).slice(0, 2).map(k => `${k[1]} ${k[0]}`).join(' | ');
     $('#ficha_kpi_ini_top_status').text(outStatusAcoes || "Nenhum outro status");
@@ -3779,20 +3784,28 @@ window.alternarPautaResumos = function (pauta, btn) {
     window.pautaResumoAtiva = pauta || 'capag';
     const btnCapag = document.getElementById('btn_pauta_resumo_capag');
     const btnAguas = document.getElementById('btn_pauta_resumo_aguas');
+    const btnCozinhas = document.getElementById('btn_pauta_resumo_cozinhas');
     const blocoCapag = document.getElementById('resumo_pauta_capag');
     const blocoAguas = document.getElementById('resumo_pauta_aguas');
+    const blocoCozinhas = document.getElementById('resumo_pauta_cozinhas');
+
+    // Desativa todos os botões e oculta todos os blocos
+    [btnCapag, btnAguas, btnCozinhas].forEach(b => {
+        if (b) {
+            b.classList.remove('btn-primary', 'text-white', 'shadow-sm');
+            b.classList.add('btn-light', 'text-slate-600');
+        }
+    });
+    [blocoCapag, blocoAguas, blocoCozinhas].forEach(bl => {
+        if (bl) bl.classList.add('d-none');
+    });
 
     if (window.pautaResumoAtiva === 'capag') {
         if (btnCapag) {
             btnCapag.classList.remove('btn-light', 'text-slate-600');
             btnCapag.classList.add('btn-primary', 'text-white', 'shadow-sm');
         }
-        if (btnAguas) {
-            btnAguas.classList.remove('btn-primary', 'text-white', 'shadow-sm');
-            btnAguas.classList.add('btn-light', 'text-slate-600');
-        }
         if (blocoCapag) blocoCapag.classList.remove('d-none');
-        if (blocoAguas) blocoAguas.classList.add('d-none');
         if (typeof window.renderizarResumoCapag === 'function') {
             window.renderizarResumoCapag();
         }
@@ -3801,14 +3814,18 @@ window.alternarPautaResumos = function (pauta, btn) {
             btnAguas.classList.remove('btn-light', 'text-slate-600');
             btnAguas.classList.add('btn-primary', 'text-white', 'shadow-sm');
         }
-        if (btnCapag) {
-            btnCapag.classList.remove('btn-primary', 'text-white', 'shadow-sm');
-            btnCapag.classList.add('btn-light', 'text-slate-600');
-        }
         if (blocoAguas) blocoAguas.classList.remove('d-none');
-        if (blocoCapag) blocoCapag.classList.add('d-none');
         if (typeof window.renderizarResumoAguas === 'function') {
             window.renderizarResumoAguas();
+        }
+    } else if (window.pautaResumoAtiva === 'cozinhas') {
+        if (btnCozinhas) {
+            btnCozinhas.classList.remove('btn-light', 'text-slate-600');
+            btnCozinhas.classList.add('btn-primary', 'text-white', 'shadow-sm');
+        }
+        if (blocoCozinhas) blocoCozinhas.classList.remove('d-none');
+        if (typeof window.renderizarResumoCozinhas === 'function') {
+            window.renderizarResumoCozinhas();
         }
     }
 };
@@ -4956,3 +4973,621 @@ function renderGraficoBarrasModalMun(rankingArr, munAlvo, nomeExib, rdNome, isPc
         }]
     });
 }
+
+
+
+/* ==========================================================================
+   ANÁLISES TEMÁTICAS - PAUTA 1: PERNAMBUCO SEM FOME (COZINHAS & MÃES DE PE)
+   ========================================================================== */
+
+let cozinhasPorMunCache = null;
+window.atualizarKpiCozinhasMunicipio = function(nomeMun, codIbge) {
+    const el = document.getElementById('ficha_kpi_ini_cozinhas');
+    const elSub = document.getElementById('ficha_kpi_ini_cozinhas_sub');
+    if (!el) return;
+
+    const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+    const aplicarValor = () => {
+        let count = 0;
+        let func = 0;
+        const targetMun = norm(nomeMun);
+        const targetIbge = String(codIbge || '').trim();
+
+        if (cozinhasPorMunCache && cozinhasPorMunCache.length) {
+            cozinhasPorMunCache.forEach(c => {
+                const cMun = norm(c.municipio);
+                const cIbge = String(c.cod_ibge || '').trim();
+                if ((targetIbge && cIbge && (cIbge === targetIbge || cIbge.startsWith(targetIbge) || targetIbge.startsWith(cIbge))) ||
+                    (targetMun && cMun && cMun === targetMun)) {
+                    count++;
+                    if ((c.status_funcionamento || '').includes('Funcionamento')) {
+                        func++;
+                    }
+                }
+            });
+        }
+        el.textContent = count;
+        if (elSub) {
+            elSub.textContent = count > 0 
+                ? `${func} em funcionamento` 
+                : 'Pernambuco sem Fome';
+        }
+    };
+
+    if (cozinhasPorMunCache) {
+        aplicarValor();
+        return;
+    }
+
+    const apiUrl = `${window.basePath || ''}/municipios/resumo/cozinhas`.replace(/\/+/g, '/');
+    fetch(apiUrl)
+        .then(res => res.json())
+        .then(data => {
+            cozinhasPorMunCache = data.cozinhas || [];
+            aplicarValor();
+        })
+        .catch(() => {
+            el.textContent = "0";
+            if (elSub) elSub.textContent = "Pernambuco sem Fome";
+        });
+};
+
+let mapResumoCozinhas = null;
+let cacheResumoCozinhas = null;
+let chartResumoCozinhasMuns = null;
+window.visaoSemFomeAtiva = 'cozinhas';
+
+window.alternarVisaoSemFome = function (visao, btn) {
+    window.visaoSemFomeAtiva = visao || 'cozinhas';
+
+    const btnCozinhas = document.getElementById('btn_visao_sem_fome_cozinhas');
+    const btnMaes = document.getElementById('btn_visao_sem_fome_maes');
+    const legCozinhas = document.getElementById('legenda_visao_cozinhas');
+    const legMaes = document.getElementById('legenda_visao_maes');
+    const lblCamada = document.getElementById('sem_fome_camada_label');
+
+    if (window.visaoSemFomeAtiva === 'cozinhas') {
+        if (btnCozinhas) {
+            btnCozinhas.classList.remove('btn-light', 'text-slate-600');
+            btnCozinhas.classList.add('btn-primary', 'text-white', 'shadow-sm');
+        }
+        if (btnMaes) {
+            btnMaes.classList.remove('btn-primary', 'text-white', 'shadow-sm');
+            btnMaes.classList.add('btn-light', 'text-slate-600');
+        }
+        if (legCozinhas) legCozinhas.classList.remove('d-none');
+        if (legMaes) legMaes.classList.add('d-none');
+        if (lblCamada) lblCamada.textContent = "Exibindo: Localização das Cozinhas Comunitárias";
+
+        // Ajusta camadas no mapa
+        if (mapResumoCozinhas && mapResumoCozinhas.isStyleLoaded()) {
+            try {
+                if (mapResumoCozinhas.getLayer('cozinhas_clusters')) mapResumoCozinhas.setLayoutProperty('cozinhas_clusters', 'visibility', 'visible');
+                if (mapResumoCozinhas.getLayer('cozinhas_cluster_count')) mapResumoCozinhas.setLayoutProperty('cozinhas_cluster_count', 'visibility', 'visible');
+                if (mapResumoCozinhas.getLayer('cozinhas_points')) mapResumoCozinhas.setLayoutProperty('cozinhas_points', 'visibility', 'visible');
+                if (mapResumoCozinhas.getLayer('mun_choropleth_fill')) {
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_fill', 'fill-opacity', 0.05);
+                }
+            } catch(e) {}
+        }
+
+        // Atualiza gráfico de barras
+        atualizarGraficoSemFome('cozinhas');
+    } else {
+        if (btnMaes) {
+            btnMaes.classList.remove('btn-light', 'text-slate-600');
+            btnMaes.classList.add('btn-primary', 'text-white', 'shadow-sm');
+        }
+        if (btnCozinhas) {
+            btnCozinhas.classList.remove('btn-primary', 'text-white', 'shadow-sm');
+            btnCozinhas.classList.add('btn-light', 'text-slate-600');
+        }
+        if (legCozinhas) legCozinhas.classList.add('d-none');
+        if (legMaes) legMaes.classList.remove('d-none');
+        if (lblCamada) lblCamada.textContent = "Exibindo: Programa Mães de Pernambuco (Beneficiárias por Município)";
+
+        // Ajusta camadas no mapa
+        if (mapResumoCozinhas && mapResumoCozinhas.isStyleLoaded()) {
+            try {
+                if (mapResumoCozinhas.getLayer('cozinhas_clusters')) mapResumoCozinhas.setLayoutProperty('cozinhas_clusters', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('cozinhas_cluster_count')) mapResumoCozinhas.setLayoutProperty('cozinhas_cluster_count', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('cozinhas_points')) mapResumoCozinhas.setLayoutProperty('cozinhas_points', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('mun_choropleth_fill')) {
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_fill', 'fill-opacity', 0.75);
+                }
+            } catch(e) {}
+        }
+
+        // Atualiza gráfico de barras
+        atualizarGraficoSemFome('maes');
+    }
+};
+
+function atualizarGraficoSemFome(visao) {
+    if (!cacheResumoCozinhas) return;
+    const chartDom = document.getElementById('resumo_cozinhas_chart_muns');
+    if (!chartDom || typeof echarts === 'undefined') return;
+
+    const elTitle = document.getElementById('sem_fome_chart_title');
+    const elSub = document.getElementById('sem_fome_chart_subtitle');
+    const elBadge = document.getElementById('cozinhas_badge_total_muns');
+
+    if (chartResumoCozinhasMuns) {
+        try { chartResumoCozinhasMuns.dispose(); } catch(e) {}
+    }
+    chartResumoCozinhasMuns = echarts.init(chartDom);
+
+    if (visao === 'cozinhas') {
+        if (elTitle) elTitle.textContent = "Cozinhas Comunitárias por Município";
+        if (elSub) elSub.textContent = "Top municípios com maior número de unidades do programa";
+        if (elBadge) elBadge.innerHTML = `<i class="fas fa-utensils text-amber-500 me-1"></i> ${(cacheResumoCozinhas.kpis?.municipios_cobertos || 185)} Municípios Mapeados`;
+
+        const munsCount = {};
+        (cacheResumoCozinhas.cozinhas || []).forEach(c => {
+            const m = c.municipio ? c.municipio.trim() : 'Não informado';
+            munsCount[m] = (munsCount[m] || 0) + 1;
+        });
+
+        const sortedMuns = Object.entries(munsCount)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 25)
+            .reverse();
+
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: function (params) {
+                    const p = params[0];
+                    return `<strong>${p.name}</strong><br/>Cozinhas Comunitárias: <b>${p.value}</b>`;
+                }
+            },
+            grid: { top: 20, bottom: 25, left: '4%', right: '8%', containLabel: true },
+            xAxis: {
+                type: 'value',
+                minInterval: 1,
+                axisLabel: { color: '#64748b', fontSize: 11 },
+                splitLine: { lineStyle: { color: '#f1f5f9' } }
+            },
+            yAxis: {
+                type: 'category',
+                data: sortedMuns.map(item => item[0]),
+                axisLabel: { color: '#334155', fontWeight: 600, fontSize: 11 },
+                axisLine: { lineStyle: { color: '#cbd5e1' } }
+            },
+            series: [{
+                name: 'Cozinhas',
+                type: 'bar',
+                data: sortedMuns.map(item => item[1]),
+                barMaxWidth: 20,
+                itemStyle: {
+                    borderRadius: [0, 6, 6, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#f59e0b' },
+                        { offset: 1, color: '#d97706' }
+                    ])
+                },
+                label: {
+                    show: true,
+                    position: 'right',
+                    fontWeight: 'bold',
+                    fontSize: 11,
+                    color: '#78350f'
+                }
+            }]
+        };
+        chartResumoCozinhasMuns.setOption(option);
+    } else {
+        if (elTitle) elTitle.textContent = "Mães de Pernambuco por Município";
+        if (elSub) elSub.textContent = "Top municípios com maior número de mães beneficiadas no programa";
+        if (elBadge) elBadge.innerHTML = `<i class="fas fa-person-breastfeeding text-pink-500 me-1"></i> ${(cacheResumoCozinhas.kpis_maes?.total_municipios || 185)} Municípios Beneficiados`;
+
+        const maesList = (cacheResumoCozinhas.maes || []).slice();
+        const sortedMaes = maesList
+            .sort((a, b) => (b.qtd_beneficiarias_total || 0) - (a.qtd_beneficiarias_total || 0))
+            .slice(0, 25)
+            .reverse();
+
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: function (params) {
+                    const p = params[0];
+                    const rawItem = sortedMaes.find(m => m.municipio === p.name);
+                    const valInvest = rawItem ? `R$ ${(rawItem.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-';
+                    return `<strong>${p.name}</strong><br/>Mães Beneficiadas: <b>${p.value.toLocaleString('pt-BR')}</b><br/>Investimento Total: <b>${valInvest}</b>`;
+                }
+            },
+            grid: { top: 20, bottom: 25, left: '4%', right: '10%', containLabel: true },
+            xAxis: {
+                type: 'value',
+                axisLabel: {
+                    color: '#64748b',
+                    fontSize: 11,
+                    formatter: (v) => v >= 1e3 ? (v/1e3).toFixed(0) + 'k' : v
+                },
+                splitLine: { lineStyle: { color: '#f1f5f9' } }
+            },
+            yAxis: {
+                type: 'category',
+                data: sortedMaes.map(item => item.municipio),
+                axisLabel: { color: '#334155', fontWeight: 600, fontSize: 11 },
+                axisLine: { lineStyle: { color: '#cbd5e1' } }
+            },
+            series: [{
+                name: 'Mães Beneficiadas',
+                type: 'bar',
+                data: sortedMaes.map(item => item.qtd_beneficiarias_total),
+                barMaxWidth: 20,
+                itemStyle: {
+                    borderRadius: [0, 6, 6, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#f472b6' },
+                        { offset: 1, color: '#be185d' }
+                    ])
+                },
+                label: {
+                    show: true,
+                    position: 'right',
+                    fontWeight: 'bold',
+                    fontSize: 11,
+                    color: '#831843',
+                    formatter: (params) => Number(params.value).toLocaleString('pt-BR')
+                }
+            }]
+        };
+        chartResumoCozinhasMuns.setOption(option);
+    }
+}
+
+window.renderizarResumoCozinhas = function () {
+    const container = document.getElementById('resumo_cozinhas_map');
+    if (!container) return;
+
+    if (cacheResumoCozinhas) {
+        setTimeout(() => {
+            if (mapResumoCozinhas && typeof mapResumoCozinhas.resize === 'function') {
+                mapResumoCozinhas.resize();
+            }
+            if (chartResumoCozinhasMuns && typeof chartResumoCozinhasMuns.resize === 'function') {
+                chartResumoCozinhasMuns.resize();
+            }
+        }, 100);
+        return;
+    }
+
+    $('#resumo_cozinhas_spinner').removeClass('d-none');
+
+    const apiUrl = `${window.basePath || ''}/municipios/resumo/cozinhas`.replace(/\/+/g, '/');
+    fetch(apiUrl)
+        .then(res => {
+            if (!res.ok) throw new Error("Erro ao carregar dados de Cozinhas e Mães de PE");
+            return res.json();
+        })
+        .then(data => {
+            cacheResumoCozinhas = data;
+            $('#resumo_cozinhas_spinner').addClass('d-none');
+
+            const cozinhas = data.cozinhas || [];
+            const kpis = data.kpis || {};
+            const maes = data.maes || [];
+            const kpisMaes = data.kpis_maes || {};
+
+            // 1. Preencher KPIs de Cozinhas no DOM
+            const elTotal = document.getElementById('cozinhas_kpi_total');
+            const elFunc = document.getElementById('cozinhas_kpi_funcionamento');
+            const elImp = document.getElementById('cozinhas_kpi_implantacao');
+            const elPact = document.getElementById('cozinhas_kpi_pactuacao');
+            const elNao = document.getElementById('cozinhas_kpi_nao_aderiu');
+
+            if (elTotal) elTotal.textContent = (kpis.total || cozinhas.length).toLocaleString('pt-BR');
+            if (elFunc) elFunc.textContent = (kpis.funcionamento || 0).toLocaleString('pt-BR');
+            if (elImp) elImp.textContent = (kpis.implantacao || 0).toLocaleString('pt-BR');
+            if (elPact) elPact.textContent = (kpis.pactuacao || 0).toLocaleString('pt-BR');
+            if (elNao) elNao.textContent = (kpis.nao_aderiu || 0).toLocaleString('pt-BR');
+
+            // 2. Preencher KPIs de Mães de Pernambuco
+            const elMaesTot = document.getElementById('maes_kpi_total');
+            const elMaesInv = document.getElementById('maes_kpi_investimento');
+            const elMaesMun = document.getElementById('maes_kpi_municipios');
+
+            if (elMaesTot) elMaesTot.textContent = (kpisMaes.total_beneficiarias || 0).toLocaleString('pt-BR');
+            if (elMaesInv) {
+                const inv = kpisMaes.total_investido || 0;
+                elMaesInv.textContent = inv >= 1e6 ? `R$ ${(inv/1e6).toFixed(1).replace('.', ',')} Mi` : `R$ ${inv.toLocaleString('pt-BR')}`;
+            }
+            if (elMaesMun) elMaesMun.textContent = (kpisMaes.total_municipios || 185).toLocaleString('pt-BR');
+
+            // Mapas de lookup por município
+            const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+            const maesByMun = {};
+            maes.forEach(m => {
+                if (m.municipio) maesByMun[norm(m.municipio)] = m;
+                if (m.ibge7) maesByMun[m.ibge7] = m;
+            });
+
+            const cozinhasCountByMun = {};
+            cozinhas.forEach(c => {
+                const k = norm(c.municipio);
+                cozinhasCountByMun[k] = (cozinhasCountByMun[k] || 0) + 1;
+            });
+
+            // 3. Preparar GeoJSON municipal enriquecido
+            let geoMun = data.geojson_municipios;
+            if (typeof geoMun === 'string') {
+                try { geoMun = JSON.parse(geoMun); } catch(e) {}
+            }
+
+            if (geoMun && geoMun.features) {
+                geoMun.features.forEach(f => {
+                    const props = f.properties || {};
+                    const kMun = norm(props.municipio);
+                    const kIbge = String(props.ibge7 || props.cod_ibge || '');
+                    const mData = maesByMun[kIbge] || maesByMun[kMun] || {};
+                    props.qtd_maes = Number(mData.qtd_beneficiarias_total) || 0;
+                    props.valor_maes = Number(mData.valor_total) || 0;
+                    props.qtd_cozinhas = cozinhasCountByMun[kMun] || 0;
+                });
+            }
+
+            // 4. Preparar GeoJSON de pontos de cozinhas
+            const featuresCozinhas = cozinhas
+                .filter(c => c.lat && c.long && !isNaN(c.lat) && !isNaN(c.long))
+                .map(c => ({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [Number(c.long), Number(c.lat)]
+                    },
+                    properties: {
+                        cod_ibge: c.cod_ibge,
+                        nome_equipamento: c.nome_equipamento || 'Cozinha Comunitária',
+                        status_funcionamento: c.status_funcionamento || 'Não informado',
+                        endereco: c.endereco || '',
+                        municipio: c.municipio || '',
+                        regiao_de_desenvolvimento: c.regiao_de_desenvolvimento || ''
+                    }
+                }));
+
+            const geoCozinhas = {
+                type: 'FeatureCollection',
+                features: featuresCozinhas
+            };
+
+            // 5. Inicializar MapLibre GL
+            if (mapResumoCozinhas) {
+                try { mapResumoCozinhas.remove(); } catch(e) {}
+            }
+
+            mapResumoCozinhas = new maplibregl.Map({
+                container: 'resumo_cozinhas_map',
+                style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                center: [-37.8, -8.3],
+                zoom: 7,
+                preserveDrawingBuffer: true
+            });
+
+            mapResumoCozinhas.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+            mapResumoCozinhas.on('load', () => {
+                mapResumoCozinhas.resize();
+
+                // Enquadrar bounds
+                try {
+                    const bounds = new maplibregl.LngLatBounds();
+                    featuresCozinhas.forEach(f => bounds.extend(f.geometry.coordinates));
+                    if (!bounds.isEmpty()) {
+                        mapResumoCozinhas.fitBounds(bounds, { padding: 40, maxZoom: 12, duration: 800 });
+                    }
+                } catch(e) {}
+
+                // Adicionar Polígonos de Municípios
+                if (geoMun && geoMun.features) {
+                    mapResumoCozinhas.addSource('mun_source', {
+                        type: 'geojson',
+                        data: geoMun
+                    });
+
+                    // Camada de Preenchimento (Coroplético para Mães de PE)
+                    mapResumoCozinhas.addLayer({
+                        id: 'mun_choropleth_fill',
+                        type: 'fill',
+                        source: 'mun_source',
+                        paint: {
+                            'fill-color': [
+                                'step',
+                                ['get', 'qtd_maes'],
+                                '#fce7f3', // < 400
+                                400, '#f472b6', // 400 - 800
+                                800, '#db2777', // 800 - 1500
+                                1500, '#831843'  // > 1500
+                            ],
+                            'fill-opacity': window.visaoSemFomeAtiva === 'maes' ? 0.75 : 0.05
+                        }
+                    });
+
+                    // Linha de contorno dos municípios
+                    mapResumoCozinhas.addLayer({
+                        id: 'mun_choropleth_line',
+                        type: 'line',
+                        source: 'mun_source',
+                        paint: {
+                            'line-color': '#be185d',
+                            'line-width': 0.8,
+                            'line-opacity': 0.4
+                        }
+                    });
+                }
+
+                // Adicionar Pontos de Cozinhas com Cluster
+                mapResumoCozinhas.addSource('cozinhas_source', {
+                    type: 'geojson',
+                    data: geoCozinhas,
+                    cluster: true,
+                    clusterMaxZoom: 10,
+                    clusterRadius: 35
+                });
+
+                // Clusters
+                mapResumoCozinhas.addLayer({
+                    id: 'cozinhas_clusters',
+                    type: 'circle',
+                    source: 'cozinhas_source',
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'visibility': window.visaoSemFomeAtiva === 'cozinhas' ? 'visible' : 'none'
+                    },
+                    paint: {
+                        'circle-color': '#f59e0b',
+                        'circle-radius': [
+                            'step',
+                            ['get', 'point_count'],
+                            16,
+                            5, 20,
+                            15, 26
+                        ],
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ffffff',
+                        'circle-opacity': 0.85
+                    }
+                });
+
+                mapResumoCozinhas.addLayer({
+                    id: 'cozinhas_cluster_count',
+                    type: 'symbol',
+                    source: 'cozinhas_source',
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'visibility': window.visaoSemFomeAtiva === 'cozinhas' ? 'visible' : 'none',
+                        'text-field': '{point_count_abbreviated}',
+                        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                        'text-size': 12
+                    },
+                    paint: { 'text-color': '#ffffff' }
+                });
+
+                // Pontos individuais
+                mapResumoCozinhas.addLayer({
+                    id: 'cozinhas_points',
+                    type: 'circle',
+                    source: 'cozinhas_source',
+                    filter: ['!', ['has', 'point_count']],
+                    layout: {
+                        'visibility': window.visaoSemFomeAtiva === 'cozinhas' ? 'visible' : 'none'
+                    },
+                    paint: {
+                        'circle-color': [
+                            'case',
+                            ['in', 'Funcionamento', ['get', 'status_funcionamento']], '#10b981',
+                            ['in', 'Implanta', ['get', 'status_funcionamento']], '#f59e0b',
+                            ['in', 'Pactua', ['get', 'status_funcionamento']], '#3b82f6',
+                            ['in', 'aderiu', ['get', 'status_funcionamento']], '#ef4444',
+                            '#64748b'
+                        ],
+                        'circle-radius': 7,
+                        'circle-stroke-width': 1.5,
+                        'circle-stroke-color': '#ffffff'
+                    }
+                });
+
+                // Popups e interações
+                const popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '340px' });
+
+                // Click em pontos individuais de Cozinha
+                mapResumoCozinhas.on('click', 'cozinhas_points', (e) => {
+                    if (!e.features.length) return;
+                    const props = e.features[0].properties;
+                    const coords = e.features[0].geometry.coordinates.slice();
+
+                    let badgeColor = 'bg-slate-100 text-slate-700';
+                    const sf = props.status_funcionamento || '';
+                    if (sf.includes('Funcionamento')) badgeColor = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                    else if (sf.includes('Implanta')) badgeColor = 'bg-amber-100 text-amber-800 border-amber-200';
+                    else if (sf.includes('Pactua')) badgeColor = 'bg-blue-100 text-blue-800 border-blue-200';
+                    else if (sf.includes('aderiu')) badgeColor = 'bg-rose-100 text-rose-800 border-rose-200';
+
+                    const html = `
+                        <div class="p-2 font-sans text-left">
+                            <div class="d-flex align-items-center gap-1.5 mb-2">
+                                <span class="badge border ${badgeColor} text-[11px] font-bold px-2 py-0.5 rounded-pill">${props.status_funcionamento}</span>
+                            </div>
+                            <h6 class="font-bold text-slate-800 text-sm mb-1 leading-snug">${props.nome_equipamento}</h6>
+                            <div class="text-xs text-slate-600 mb-1">
+                                <i class="fas fa-map-marker-alt text-amber-500 me-1"></i><strong>${props.municipio}</strong>
+                                ${props.regiao_de_desenvolvimento ? ` • <span class="text-slate-400">${props.regiao_de_desenvolvimento}</span>` : ''}
+                            </div>
+                            ${props.endereco ? `<div class="text-xs text-slate-500 border-t border-slate-100 pt-1 mt-1"><i class="fas fa-location-dot me-1 text-slate-400"></i>${props.endereco}</div>` : ''}
+                        </div>
+                    `;
+                    popup.setLngLat(coords).setHTML(html).addTo(mapResumoCozinhas);
+                });
+
+                // Click em polígonos municipais (Modo Mães de PE)
+                mapResumoCozinhas.on('click', 'mun_choropleth_fill', (e) => {
+                    if (window.visaoSemFomeAtiva !== 'maes') return;
+                    if (!e.features.length) return;
+                    const p = e.features[0].properties;
+                    const valFmt = p.valor_maes ? `R$ ${Number(p.valor_maes).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-';
+
+                    const html = `
+                        <div class="p-2 font-sans text-left">
+                            <div class="d-flex align-items-center gap-1.5 mb-1.5">
+                                <span class="badge bg-pink-100 text-pink-800 border border-pink-300 text-[11px] font-bold px-2 py-0.5 rounded-pill">
+                                    <i class="fas fa-person-breastfeeding me-1"></i> Mães de Pernambuco
+                                </span>
+                            </div>
+                            <h6 class="font-bold text-slate-800 text-sm mb-1.5">${p.municipio}</h6>
+                            <div class="text-xs text-slate-700 mb-1">
+                                Beneficiárias: <strong>${(Number(p.qtd_maes) || 0).toLocaleString('pt-BR')} mães</strong>
+                            </div>
+                            <div class="text-xs text-slate-600 mb-2">
+                                Investimento Acumulado: <strong>${valFmt}</strong>
+                            </div>
+                            <div class="text-xs text-slate-500 border-t border-slate-100 pt-1.5">
+                                <i class="fas fa-utensils text-amber-500 me-1"></i> Cozinhas Comunitárias: <strong>${p.qtd_cozinhas || 0}</strong>
+                            </div>
+                        </div>
+                    `;
+                    popup.setLngLat(e.lngLat).setHTML(html).addTo(mapResumoCozinhas);
+                });
+
+                // Cluster click
+                mapResumoCozinhas.on('click', 'cozinhas_clusters', (e) => {
+                    const clFeatures = mapResumoCozinhas.queryRenderedFeatures(e.point, { layers: ['cozinhas_clusters'] });
+                    if (!clFeatures.length) return;
+                    const clusterId = clFeatures[0].properties.cluster_id;
+                    mapResumoCozinhas.getSource('cozinhas_source').getClusterExpansionZoom(clusterId, (err, zoom) => {
+                        if (err) return;
+                        mapResumoCozinhas.easeTo({
+                            center: clFeatures[0].geometry.coordinates,
+                            zoom: zoom
+                        });
+                    });
+                });
+
+                // Cursors
+                ['cozinhas_points', 'cozinhas_clusters'].forEach(layer => {
+                    mapResumoCozinhas.on('mouseenter', layer, () => { mapResumoCozinhas.getCanvas().style.cursor = 'pointer'; });
+                    mapResumoCozinhas.on('mouseleave', layer, () => { mapResumoCozinhas.getCanvas().style.cursor = ''; });
+                });
+                mapResumoCozinhas.on('mouseenter', 'mun_choropleth_fill', () => {
+                    if (window.visaoSemFomeAtiva === 'maes') mapResumoCozinhas.getCanvas().style.cursor = 'pointer';
+                });
+                mapResumoCozinhas.on('mouseleave', 'mun_choropleth_fill', () => {
+                    mapResumoCozinhas.getCanvas().style.cursor = '';
+                });
+            });
+
+            // 6. Inicializar Gráfico de Barras com a visão padrão (cozinhas)
+            atualizarGraficoSemFome(window.visaoSemFomeAtiva || 'cozinhas');
+            window.addEventListener('resize', () => {
+                if (chartResumoCozinhasMuns) chartResumoCozinhasMuns.resize();
+            });
+        })
+        .catch(err => {
+            console.error("Erro ao renderizar Pernambuco sem Fome:", err);
+            $('#resumo_cozinhas_spinner').addClass('d-none');
+        });
+};

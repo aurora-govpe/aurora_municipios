@@ -1,9 +1,22 @@
 # Dados e Junctions (Regra de Ouro: Dados montados externamente)
 data/
 **/data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.parquet
+*.rds
+*.csv
+*.geojson
+*.json
+!go.mod
+!go.sum
+!package.json
+!manifest.json
 
 # Binarios e temporarios Go
 server
+server.exe
 *.exe
 *.dll
 *.so
@@ -19,3 +32,4 @@ server
 .DS_Store
 *.log
 repomix*.txt
+*.tmp

@@ -1,0 +1,42 @@
+# Dependencias e assets pesados de frontend
+www/lib/
+www/Jost/
+www/images/
+www/fonts/
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.ico
+*.ttf
+*.woff
+*.woff2
+*.map
+*.min.js
+*.min.css
+
+# Dados e bancos (armazenados externamente em C:\dados\aurora)
+data/
+**/data/
+*.sqlite*
+*.parquet
+*.rds
+*.csv
+*.geojson
+
+# Binarios e pacotes compilados
+server
+server.exe
+*.exe
+*.tar.gz
+
+# R / RStudio
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Logs e outputs do Repomix
+*.log
+repomix*.txt
+.DS_Store

@@ -2,18 +2,15 @@
 data/
 data/*
 
-# Arquivos pesados legados do R
-data/*.rds
-data/*.xlsx
-data/*.csv
-data/*.pptx
-data/cache_aurora.json
-data/df_indicadores_empilhados.rds
-data/shared_iniciativas.rds
-data/pernambuco_sf.rds
-data/pe_limits.rds
+# Arquivos de dados pesados e temporarios
+*.sqlite*
+*.parquet
+*.rds
+*.csv
+*.xlsx
+*.geojson
 
-# Arquivos de rotas, interface e scripts legados em R
+# Arquivos de rotas, interface e scripts legados em R (build e Go nativo)
 api.R
 routers/
 ui_modules/
@@ -26,7 +23,7 @@ _legado/
 **/*.rds
 **/*.RData
 
-# Arquivos e pastas desnecessários no build Docker
+# Arquivos e pastas desnecessarios no build Docker
 .Rproj.user
 *.Rproj
 .Rhistory
@@ -37,6 +34,10 @@ _site/
 .quarto/
 .git/
 .gitignore
+.repomixignore
 *.exe
+server
 repomix*.txt
 lista.txt
+instrucoes.txt
+instruções.txt

@@ -3,6 +3,7 @@ library(htmltools)
 source("ui_modules/ui_ficha.R")
 source("ui_modules/ui_metadados.R")
 source("ui_modules/ui_regioes.R")
+source("ui_modules/ui_tematicas.R")
 source("ui_modules/ui_ufs.R")
 
 build_ui <- function() {
@@ -60,6 +61,11 @@ build_ui <- function() {
         class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
         onclick = "mudarAbaAurora('Municípios', this)",
         tags$i(class = "fas fa-city me-1"), "Municípios"
+      ),
+      tags$button(
+        class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
+        onclick = "mudarAbaAurora('Análises Temáticas', this)",
+        tags$i(class = "fas fa-layer-group me-1"), "Análises Temáticas"
       ),
       tags$button(
         class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
@@ -214,7 +220,8 @@ build_ui <- function() {
       class = "tab-content", 
       ui_modulo_ufs(),
       ui_modulo_regioes(),
-      ui_modulo_ficha(), 
+      ui_modulo_ficha(),
+      ui_modulo_tematicas(),
       ui_metadados()
     )
   )

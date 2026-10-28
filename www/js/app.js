@@ -174,18 +174,10 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
       controlesFicha.classList.remove('d-none');
       controlesFicha.classList.add('d-flex');
       
-      const subResumos = document.getElementById('subaba_resumos_municipais');
-      const isSubResumos = subResumos && !subResumos.classList.contains('d-none');
       const selectContainer = controlesFicha.querySelector('.form-select-municipio')?.closest('.d-flex');
       const navContainer = document.getElementById('ficha_navbar_nav');
-      if (selectContainer) {
-        if (isSubResumos) selectContainer.classList.add('d-none');
-        else selectContainer.classList.remove('d-none');
-      }
-      if (navContainer) {
-        if (isSubResumos) navContainer.classList.add('d-none');
-        else navContainer.classList.remove('d-none');
-      }
+      if (selectContainer) selectContainer.classList.remove('d-none');
+      if (navContainer) navContainer.classList.remove('d-none');
     } else {
       controlesFicha.classList.remove('d-flex');
       controlesFicha.classList.add('d-none');
@@ -248,6 +240,12 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
         Object.values(histChartsRD).forEach(function(h) { if (h && typeof h.resize === 'function') h.resize(); });
       }
     }, 80);
+  } else if (nomeAba === 'Análises Temáticas') {
+    setTimeout(function() {
+      if (typeof window.alternarPautaResumos === 'function') {
+        window.alternarPautaResumos(window.pautaResumoAtiva || 'cozinhas');
+      }
+    }, 50);
   } else if (nomeAba === 'Metadados') {
     if (typeof window.renderizarAbaMetadados === 'function') {
       window.renderizarAbaMetadados();
