@@ -107,7 +107,9 @@ func InitData() error {
 	for _, t := range tables {
 		var query string
 		if t.name == "v_demografia" {
-			query = fmt.Sprintf("CREATE TABLE %s AS SELECT *, DENSE_RANK() OVER (ORDER BY TRY_CAST(pop_2026 AS DOUBLE) DESC) AS rank_pop, %s AS ibge6_clean FROM read_parquet('%s')", t.name, t.clean, filepath.ToSlash(t.path))
+			query = fmt.Sprintf("CREATE TABLE %s AS SELECT *, DENSE_RANK() OVER (ORDER BY TRY_CAST(pop_2026 AS DOUBLE) DESC) AS rank_pop, TRY_CAST(pop_2026 AS DOUBLE) AS pop_clean, %s AS ibge6_clean FROM read_parquet('%s')", t.name, t.clean, filepath.ToSlash(t.path))
+		} else if t.name == "v_indicadores" {
+			query = fmt.Sprintf("CREATE TABLE %s AS SELECT *, %s AS ibge6_clean, LOWER(TRIM(CAST(sigla_indicador AS VARCHAR))) AS sigla_clean, TRY_CAST(REPLACE(CAST(indicador AS VARCHAR), ',', '.') AS DOUBLE) AS val_clean, TRY_CAST(ano AS INTEGER) AS ano_clean FROM read_parquet('%s')", t.name, t.clean, filepath.ToSlash(t.path))
 		} else if t.clean != "" {
 			query = fmt.Sprintf("CREATE TABLE %s AS SELECT *, %s AS ibge6_clean FROM read_parquet('%s')", t.name, t.clean, filepath.ToSlash(t.path))
 		} else {
