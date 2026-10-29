@@ -191,6 +191,12 @@ ui_modulo_tematicas <- function() {
                   class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
                   onclick = "window.alternarVisaoSemFome('cofin', this)",
                   tags$i(class = "fas fa-hand-holding-dollar me-1.5 text-blue-500"), "Cofinanciamento"
+                ),
+                tags$button(
+                  id = "btn_visao_sem_fome_ivcad",
+                  class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
+                  onclick = "window.alternarVisaoSemFome('ivcad', this)",
+                  tags$i(class = "fas fa-shield-heart me-1.5 text-indigo-500"), "Vulnerabilidade (IVCAD)"
                 )
               ),
               
@@ -220,6 +226,15 @@ ui_modulo_tematicas <- function() {
                 tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #60a5fa;", "R$ 10M - 20M"),
                 tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #2563eb;", "R$ 20M - 40M"),
                 tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #1e3a8a;", "> R$ 40M")
+              ),
+              tags$div(
+                id = "legenda_visao_ivcad",
+                class = "d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600",
+                tags$span("Vulnerab. Cuidados (Ponderada):"),
+                tags$span(class = "badge px-2 py-0.5", style = "background-color: #e0e7ff; color: #3730a3;", "< 0,10 (Baixa)"),
+                tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #818cf8;", "0,10 - 0,18"),
+                tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #4f46e5;", "0,18 - 0,28"),
+                tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #312e81;", "> 0,28 (Alta)")
               )
             )
           ),

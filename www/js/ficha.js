@@ -5063,16 +5063,76 @@ function atualizarHoverBoxSemFome(tipo, props) {
         const valCofinValFmt = props.valor_cofin_validado ? `R$ ${(Number(props.valor_cofin_validado) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-';
         const pctCofin = (props.pct_cofin !== undefined && props.pct_cofin !== null) ? Number(props.pct_cofin).toFixed(1) + '%' : '-';
 
+        const ivcadFmt = props.ivcad ? Number(props.ivcad).toFixed(3).replace('.', ',') : '-';
+        const ivcadNcFmt = props.ivcad_nc ? Number(props.ivcad_nc).toFixed(3).replace('.', ',') : '-';
+        const ivcadPondFmt = (props.ivcad_nc_ponderado !== undefined && props.ivcad_nc_ponderado !== null) 
+            ? Number(props.ivcad_nc_ponderado).toFixed(3).replace('.', ',') : '-';
+        const taxaMaesFmt = props.taxa_maes 
+            ? Number(props.taxa_maes).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '-';
+        const cadPessoasFmt = props.cad_pessoas ? Number(props.cad_pessoas).toLocaleString('pt-BR') : '-';
+
         boxActive.innerHTML = `
-            <div class="border-b border-slate-200 pb-2 mb-2.5">
-                <span class="badge bg-slate-200 text-slate-700 text-[10px] font-bold rounded-pill px-2 py-0.5 mb-1 d-inline-block">
-                    <i class="fas fa-location-dot text-primary me-1"></i> ${props.regiao_de_desenvolvimento || 'Pernambuco'}
-                </span>
-                <h4 class="font-black text-slate-800 text-lg mb-0 tracking-tight leading-tight">${props.municipio}</h4>
+            <div class="border-b border-slate-200 pb-2 mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-0.5">
+                    <span class="badge bg-slate-200 text-slate-700 text-[10px] font-bold rounded-pill px-2 py-0.5">
+                        <i class="fas fa-location-dot text-primary me-1"></i> ${props.regiao_de_desenvolvimento || 'Pernambuco'}
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-semibold">185 municípios</span>
+                </div>
+                <h4 class="font-black text-slate-800 text-base mb-0 tracking-tight leading-tight">${props.municipio}</h4>
             </div>
 
-            <div class="space-y-2 flex-1 overflow-y-auto pr-1">
-                <!-- CARD COZINHAS -->
+            <div class="space-y-2 flex-1 overflow-y-auto pr-1" style="max-height: 480px;">
+                <!-- CARD 1: VULNERABILIDADE A CUIDADOS & IVCAD -->
+                <div class="bg-gradient-to-br from-indigo-50/90 to-purple-50/70 border border-indigo-200 rounded-xl p-2.5 shadow-xs">
+                    <div class="d-flex justify-content-between align-items-center mb-1.5">
+                        <span class="text-xs font-bold text-indigo-900">
+                            <i class="fas fa-shield-heart text-indigo-600 me-1"></i> Vulnerabilidade a Cuidados
+                        </span>
+                        <span class="badge bg-indigo-600 text-white font-black text-xs px-2 py-0.5 rounded-pill shadow-xs" title="Posição relativa: 1º menor vulnerabilidade corrigida">
+                            ${props.rank_ivcad_nc_ponderado ? props.rank_ivcad_nc_ponderado + 'º de 185' : '-'}
+                        </span>
+                    </div>
+
+                    <div class="bg-white/90 rounded-lg p-2 border border-indigo-100 mb-1.5">
+                        <div class="d-flex justify-content-between align-items-baseline">
+                            <span class="text-[11px] font-medium text-slate-600">Índice Ponderado (Corrigido):</span>
+                            <span class="text-sm font-black text-indigo-700">${ivcadPondFmt}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-0.5 leading-tight">
+                            IVCAD NC original: <b>${ivcadNcFmt}</b> (${props.rank_ivcad_nc || '-'}º) mitigado por Mães de PE.
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-1 border-t border-indigo-100/80 text-[11px]">
+                        <span class="text-slate-600">IVCAD Geral:</span>
+                        <span class="font-bold text-slate-800">${ivcadFmt} <span class="badge bg-indigo-100 text-indigo-800 font-semibold px-1.5 py-0.5 ml-1">${props.rank_ivcad ? props.rank_ivcad + 'º' : '-'}</span></span>
+                    </div>
+                </div>
+
+                <!-- CARD 2: MÃES DE PERNAMBUCO & TAXA POR CADÚNICO -->
+                <div class="bg-pink-50/70 border border-pink-200 rounded-xl p-2.5">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-xs font-bold text-pink-800"><i class="fas fa-person-breastfeeding me-1"></i> Mães de Pernambuco</span>
+                        <span class="badge bg-pink-600 text-white font-black text-xs">${(Number(props.qtd_maes) || 0).toLocaleString('pt-BR')}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center text-[11px] text-pink-900/90 mb-1">
+                        <span>Investimento:</span>
+                        <strong>${valMaesFmt}</strong>
+                    </div>
+                    <div class="bg-white/85 rounded-lg p-1.5 border border-pink-100 text-[11px]">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-slate-600 font-medium">Taxa p/ 100k CadÚnico:</span>
+                            <span class="badge bg-pink-100 text-pink-800 font-bold">${props.rank_taxa_maes ? props.rank_taxa_maes + 'º lugar' : '-'}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-baseline mt-0.5">
+                            <span class="font-bold text-pink-700">${taxaMaesFmt} <span class="text-[10px] text-slate-400 font-normal">/ 100k</span></span>
+                            <span class="text-[10px] text-slate-500">${cadPessoasFmt} no CadÚnico</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3: COZINHAS COMUNITÁRIAS -->
                 <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-2.5">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <span class="text-xs font-bold text-amber-800"><i class="fas fa-utensils me-1"></i> Cozinhas Comunitárias</span>
@@ -5083,18 +5143,7 @@ function atualizarHoverBoxSemFome(tipo, props) {
                     </div>
                 </div>
 
-                <!-- CARD MÃES DE PERNAMBUCO -->
-                <div class="bg-pink-50/70 border border-pink-200 rounded-xl p-2.5">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="text-xs font-bold text-pink-800"><i class="fas fa-person-breastfeeding me-1"></i> Mães de Pernambuco</span>
-                        <span class="badge bg-pink-600 text-white font-black text-xs">${(Number(props.qtd_maes) || 0).toLocaleString('pt-BR')}</span>
-                    </div>
-                    <div class="text-[11px] text-pink-900/90">
-                        Investimento: <strong>${valMaesFmt}</strong>
-                    </div>
-                </div>
-
-                <!-- CARD COFINANCIAMENTO -->
+                <!-- CARD 4: COFINANCIAMENTO SAS -->
                 <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-2.5">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <span class="text-xs font-bold text-blue-800"><i class="fas fa-hand-holding-dollar me-1"></i> Cofinanciamento SAS</span>
@@ -5110,7 +5159,7 @@ function atualizarHoverBoxSemFome(tipo, props) {
             </div>
 
             <div class="pt-2 border-t border-slate-200 text-slate-400 text-[10px] text-center mt-2">
-                Passe o cursor sobre outro ponto ou município
+                Passe o cursor sobre outro município ou cozinha
             </div>
         `;
     } else if (tipo === 'cozinha') {
@@ -5157,14 +5206,16 @@ window.alternarVisaoSemFome = function (visao, btn) {
     const btnCozinhas = document.getElementById('btn_visao_sem_fome_cozinhas');
     const btnMaes = document.getElementById('btn_visao_sem_fome_maes');
     const btnCofin = document.getElementById('btn_visao_sem_fome_cofin');
+    const btnIvcad = document.getElementById('btn_visao_sem_fome_ivcad');
 
     const legCozinhas = document.getElementById('legenda_visao_cozinhas');
     const legMaes = document.getElementById('legenda_visao_maes');
     const legCofin = document.getElementById('legenda_visao_cofin');
+    const legIvcad = document.getElementById('legenda_visao_ivcad');
     const lblCamada = document.getElementById('sem_fome_camada_label');
 
     // Reseta botões
-    [btnCozinhas, btnMaes, btnCofin].forEach(b => {
+    [btnCozinhas, btnMaes, btnCofin, btnIvcad].forEach(b => {
         if (b) {
             b.classList.remove('btn-primary', 'text-white', 'shadow-sm');
             b.classList.add('btn-light', 'text-slate-600');
@@ -5172,7 +5223,7 @@ window.alternarVisaoSemFome = function (visao, btn) {
     });
 
     // Reseta legendas
-    [legCozinhas, legMaes, legCofin].forEach(l => {
+    [legCozinhas, legMaes, legCofin, legIvcad].forEach(l => {
         if (l) l.classList.add('d-none');
     });
 
@@ -5254,6 +5305,35 @@ window.alternarVisaoSemFome = function (visao, btn) {
             } catch(e) {}
         }
         atualizarGraficoSemFome('cofin');
+    } else if (window.visaoSemFomeAtiva === 'ivcad') {
+        if (btnIvcad) {
+            btnIvcad.classList.remove('btn-light', 'text-slate-600');
+            btnIvcad.classList.add('btn-primary', 'text-white', 'shadow-sm');
+        }
+        if (legIvcad) legIvcad.classList.remove('d-none');
+        if (lblCamada) lblCamada.textContent = "Exibindo: Vulnerabilidade a Cuidados Corrigida (IVCAD NC Ponderado por Mães de PE)";
+
+        // Ajusta camadas no mapa
+        if (mapResumoCozinhas && mapResumoCozinhas.isStyleLoaded()) {
+            try {
+                if (mapResumoCozinhas.getLayer('cozinhas_clusters')) mapResumoCozinhas.setLayoutProperty('cozinhas_clusters', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('cozinhas_cluster_count')) mapResumoCozinhas.setLayoutProperty('cozinhas_cluster_count', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('cozinhas_points')) mapResumoCozinhas.setLayoutProperty('cozinhas_points', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('mun_choropleth_fill')) {
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_fill', 'fill-color', [
+                        'step',
+                        ['get', 'ivcad_nc_ponderado'],
+                        '#e0e7ff',
+                        0.10, '#818cf8',
+                        0.18, '#4f46e5',
+                        0.28, '#312e81'
+                    ]);
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_fill', 'fill-opacity', 0.75);
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_line', 'line-color', '#3730a3');
+                }
+            } catch(e) {}
+        }
+        atualizarGraficoSemFome('ivcad');
     }
 };
 
@@ -5392,7 +5472,7 @@ function atualizarGraficoSemFome(visao) {
             }]
         };
         chartResumoCozinhasMuns.setOption(option);
-    } else {
+    } else if (visao === 'cofin') {
         if (elTitle) elTitle.textContent = "Cofinanciamento SAS por Município";
         if (elSub) elSub.textContent = "Top municípios com maior volume financeiro pago pelo Fundo Estadual de Assistência Social";
         if (elBadge) elBadge.innerHTML = `<i class="fas fa-hand-holding-dollar text-blue-500 me-1"></i> ${(cacheResumoCozinhas.kpis_cofinanciamento?.total_municipios || 185)} Municípios Beneficiados`;
@@ -5449,6 +5529,68 @@ function atualizarGraficoSemFome(visao) {
                         const v = Number(params.value);
                         return v >= 1e6 ? 'R$ ' + (v/1e6).toFixed(1).replace('.', ',') + 'M' : 'R$ ' + v.toLocaleString('pt-BR');
                     }
+                }
+            }]
+        };
+        chartResumoCozinhasMuns.setOption(option);
+    } else if (visao === 'ivcad') {
+        if (elTitle) elTitle.textContent = "Vulnerabilidade a Cuidados (IVCAD NC Ponderado)";
+        if (elSub) elSub.textContent = "Municípios com menor índice residual de vulnerabilidade a cuidados após a cobertura de Mães de PE";
+        if (elBadge) elBadge.innerHTML = `<i class="fas fa-shield-heart text-indigo-500 me-1"></i> 185 Municípios Avaliados`;
+
+        const vulnList = (cacheResumoCozinhas.vulnerabilidade_muns || []).slice();
+        const sortedVuln = vulnList
+            .sort((a, b) => (a.ivcad_nc_ponderado || 0) - (b.ivcad_nc_ponderado || 0))
+            .slice(0, 25)
+            .reverse();
+
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: function (params) {
+                    const p = params[0];
+                    const item = sortedVuln.find(m => m.municipio === p.name);
+                    const ncOrig = item ? item.ivcad_nc.toFixed(3).replace('.', ',') : '-';
+                    const txMaes = item ? item.taxa_maes.toFixed(1).replace('.', ',') : '-';
+                    return `<strong>${p.name}</strong><br/>` +
+                           `Posição Geral: <b>${item ? item.rank_ivcad_nc_ponderado + 'º de 185' : '-'}</b><br/>` +
+                           `Vulnerab. Ponderada: <b>${Number(p.value).toFixed(3).replace('.', ',')}</b><br/>` +
+                           `IVCAD NC Original: <b>${ncOrig}</b><br/>` +
+                           `Taxa Mães: <b>${txMaes} / 100k CadÚnico</b>`;
+                }
+            },
+            grid: { top: 20, bottom: 25, left: '4%', right: '12%', containLabel: true },
+            xAxis: {
+                type: 'value',
+                axisLabel: { color: '#64748b', fontSize: 11 },
+                splitLine: { lineStyle: { color: '#f1f5f9' } }
+            },
+            yAxis: {
+                type: 'category',
+                data: sortedVuln.map(item => item.municipio),
+                axisLabel: { color: '#334155', fontWeight: 600, fontSize: 11 },
+                axisLine: { lineStyle: { color: '#cbd5e1' } }
+            },
+            series: [{
+                name: 'Vulnerabilidade Ponderada',
+                type: 'bar',
+                data: sortedVuln.map(item => item.ivcad_nc_ponderado),
+                barMaxWidth: 20,
+                itemStyle: {
+                    borderRadius: [0, 6, 6, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#818cf8' },
+                        { offset: 1, color: '#4f46e5' }
+                    ])
+                },
+                label: {
+                    show: true,
+                    position: 'right',
+                    fontWeight: 'bold',
+                    fontSize: 10,
+                    color: '#312e81',
+                    formatter: (params) => Number(params.value).toFixed(3).replace('.', ',')
                 }
             }]
         };
@@ -5861,6 +6003,13 @@ window.renderizarResumoCozinhas = function () {
                 try { geoMun = JSON.parse(geoMun); } catch(e) {}
             }
 
+            const vulnByMun = {};
+            const vulnByIbge = {};
+            (data.vulnerabilidade_muns || []).forEach(v => {
+                if (v.cod_ibge) vulnByIbge[String(v.cod_ibge)] = v;
+                if (v.municipio) vulnByMun[norm(v.municipio)] = v;
+            });
+
             if (geoMun && geoMun.features) {
                 geoMun.features.forEach(f => {
                     const props = f.properties || {};
@@ -5868,6 +6017,7 @@ window.renderizarResumoCozinhas = function () {
                     const kIbge = String(props.ibge7 || props.cod_ibge || '');
                     const mData = maesByMun[kIbge] || maesByMun[kMun] || {};
                     const cData = cofinByMun[kMun] || {};
+                    const vData = vulnByIbge[kIbge] || vulnByMun[kMun] || {};
 
                     props.qtd_maes = Number(mData.qtd_beneficiarias_total) || 0;
                     props.valor_maes = Number(mData.valor_total) || 0;
@@ -5877,6 +6027,17 @@ window.renderizarResumoCozinhas = function () {
                     props.valor_cofin_pago = Number(cData.valor_pago) || 0;
                     props.valor_cofin_validado = Number(cData.valor_validado) || 0;
                     props.pct_cofin = Number(cData.percentual_pago) || 0;
+
+                    props.ivcad = Number(vData.ivcad) || 0;
+                    props.rank_ivcad = Number(vData.rank_ivcad) || 0;
+                    props.ivcad_nc = Number(vData.ivcad_nc) || 0;
+                    props.rank_ivcad_nc = Number(vData.rank_ivcad_nc) || 0;
+                    props.cad_pessoas = Number(vData.cad_pessoas) || 0;
+                    props.taxa_maes = Number(vData.taxa_maes) || 0;
+                    props.taxa_maes_norm = Number(vData.taxa_maes_norm) || 0;
+                    props.rank_taxa_maes = Number(vData.rank_taxa_maes) || 0;
+                    props.ivcad_nc_ponderado = Number(vData.ivcad_nc_ponderado) || 0;
+                    props.rank_ivcad_nc_ponderado = Number(vData.rank_ivcad_nc_ponderado) || 0;
                 });
             }
 

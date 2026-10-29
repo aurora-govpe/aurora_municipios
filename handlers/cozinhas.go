@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -84,15 +85,32 @@ type CofinanciamentoMun struct {
 	PercentualPago float64 `json:"percentual_pago"`
 }
 
+type VulnerabilidadeMun struct {
+	CodIBGE          string  `json:"cod_ibge"`
+	Municipio        string  `json:"municipio"`
+	CadPessoas       float64 `json:"cad_pessoas"`
+	QtdMaes          float64 `json:"qtd_maes"`
+	TaxaMaes         float64 `json:"taxa_maes"`
+	TaxaMaesNorm     float64 `json:"taxa_maes_norm"`
+	RankTaxaMaes     int     `json:"rank_taxa_maes"`
+	IVCAD            float64 `json:"ivcad"`
+	RankIVCAD        int     `json:"rank_ivcad"`
+	IVCADNC          float64 `json:"ivcad_nc"`
+	RankIVCADNC      int     `json:"rank_ivcad_nc"`
+	IVCADNCPonderado float64 `json:"ivcad_nc_ponderado"`
+	RankIVCADNCPond  int     `json:"rank_ivcad_nc_ponderado"`
+}
+
 type CozinhasResponse struct {
-	Cozinhas         []CozinhaItem        `json:"cozinhas"`
-	KPIs             CozinhasKPIs         `json:"kpis"`
-	Maes             []MaeItem            `json:"maes"`
-	KPIsMaes         MaesKPIs             `json:"kpis_maes"`
-	KPIsCofin        CofinanciamentoKPIs  `json:"kpis_cofinanciamento"`
-	CofinAnos        []CofinanciamentoAno `json:"cofinanciamento_anos"`
-	CofinMuns        []CofinanciamentoMun `json:"cofinanciamento_muns"`
-	GeoJSONMun       json.RawMessage      `json:"geojson_municipios,omitempty"`
+	Cozinhas            []CozinhaItem        `json:"cozinhas"`
+	KPIs                CozinhasKPIs         `json:"kpis"`
+	Maes                []MaeItem            `json:"maes"`
+	KPIsMaes            MaesKPIs             `json:"kpis_maes"`
+	KPIsCofin           CofinanciamentoKPIs  `json:"kpis_cofinanciamento"`
+	CofinAnos           []CofinanciamentoAno `json:"cofinanciamento_anos"`
+	CofinMuns           []CofinanciamentoMun `json:"cofinanciamento_muns"`
+	VulnerabilidadeMuns []VulnerabilidadeMun `json:"vulnerabilidade_muns"`
+	GeoJSONMun          json.RawMessage      `json:"geojson_municipios,omitempty"`
 }
 
 var (
@@ -247,7 +265,145 @@ func GetCozinhasResumo(c *gin.Context) {
 			log.Printf("⚠️ Aviso: ppcof_co_financiamento.json não encontrado: %v", errCofin)
 		}
 
-		// 4. Carrega GeoJSON dos municípios de PE
+		// 4. Carrega Indicadores IVCAD e calcula Vulnerabilidade a Cuidados
+		var rawIVCADList []struct {
+			CodIBGE    string  `json:"cod_ibge"`
+			Municipio  string  `json:"municipio"`
+			CadPessoas float64 `json:"cad_pessoas"`
+			IVCAD      float64 `json:"ivcad"`
+			IVCADNC    float64 `json:"ivcad_nc"`
+		}
+
+		rawIVCADBytes, errIVCAD := readFileFromPaths(
+			"data/df_ivcad_pe.json",
+			"app_aurora_municipios/data/df_ivcad_pe.json",
+			"C:/dados/aurora/df_ivcad_pe.json",
+		)
+
+		if errIVCAD == nil {
+			_ = json.Unmarshal(rawIVCADBytes, &rawIVCADList)
+		} else if DuckDB != nil {
+			// Fallback: consulta v_indicadores se o json não estiver presente
+			qIVCAD := `
+				SELECT 
+					TRIM(CAST(cod_municipio AS VARCHAR)) AS cod_ibge, 
+					TRIM(CAST(nm_municipio AS VARCHAR)) AS nm_municipio,
+					MAX(CASE WHEN sigla_clean = 'ivcad' THEN val_clean END) AS ivcad,
+					MAX(CASE WHEN sigla_clean = 'ivcad_nc' THEN val_clean END) AS ivcad_nc,
+					MAX(CASE WHEN sigla_clean = 'cad_pessoas' THEN val_clean END) AS cad_pessoas
+				FROM v_indicadores
+				WHERE sigla_clean IN ('ivcad', 'ivcad_nc', 'cad_pessoas') AND ano_clean = 2026
+				GROUP BY cod_municipio, nm_municipio
+			`
+			if rows, errQ := DuckDB.Query(qIVCAD); errQ == nil {
+				defer rows.Close()
+				for rows.Next() {
+					var item struct {
+						CodIBGE    string  `json:"cod_ibge"`
+						Municipio  string  `json:"municipio"`
+						CadPessoas float64 `json:"cad_pessoas"`
+						IVCAD      float64 `json:"ivcad"`
+						IVCADNC    float64 `json:"ivcad_nc"`
+					}
+					var sqlIV, sqlNC, sqlCad sql.NullFloat64
+					if errS := rows.Scan(&item.CodIBGE, &item.Municipio, &sqlIV, &sqlNC, &sqlCad); errS == nil {
+						item.IVCAD = sqlIV.Float64
+						item.IVCADNC = sqlNC.Float64
+						item.CadPessoas = sqlCad.Float64
+						rawIVCADList = append(rawIVCADList, item)
+					}
+				}
+			}
+		}
+
+		// Mapear beneficiárias de Mães de PE por IBGE7
+		maesByIBGE := make(map[string]int)
+		for _, m := range maes {
+			if m.IBGE7 != "" {
+				maesByIBGE[strings.TrimSpace(m.IBGE7)] = m.QtdBeneficiariasTotal
+			}
+		}
+
+		var vulnList []VulnerabilidadeMun
+		minTaxa := 1e12
+		maxTaxa := -1e12
+
+		for _, item := range rawIVCADList {
+			v := VulnerabilidadeMun{
+				CodIBGE:    strings.TrimSpace(item.CodIBGE),
+				Municipio:  strings.TrimSpace(item.Municipio),
+				CadPessoas: item.CadPessoas,
+				IVCAD:      item.IVCAD,
+				IVCADNC:    item.IVCADNC,
+			}
+			if qtd, ok := maesByIBGE[v.CodIBGE]; ok {
+				v.QtdMaes = float64(qtd)
+			}
+			if v.CadPessoas > 0 {
+				v.TaxaMaes = (100000.0 * v.QtdMaes) / v.CadPessoas
+			}
+			if v.TaxaMaes < minTaxa {
+				minTaxa = v.TaxaMaes
+			}
+			if v.TaxaMaes > maxTaxa {
+				maxTaxa = v.TaxaMaes
+			}
+			vulnList = append(vulnList, v)
+		}
+
+		// Calcular normalização (0-1) e Vulnerabilidade a Cuidados Ponderada
+		diffTaxa := maxTaxa - minTaxa
+		for i := range vulnList {
+			if diffTaxa > 0 {
+				vulnList[i].TaxaMaesNorm = (vulnList[i].TaxaMaes - minTaxa) / diffTaxa
+			} else {
+				vulnList[i].TaxaMaesNorm = 0
+			}
+			// IVCAD NC ponderado: reduz a vulnerabilidade quanto maior a taxa de mães
+			vulnList[i].IVCADNCPonderado = vulnList[i].IVCADNC * (1.0 - vulnList[i].TaxaMaesNorm)
+		}
+
+		// Ranks relacionais (1 a 185)
+		// 1. IVCAD Geral (menor vulnerabilidade = melhor = 1º lugar)
+		sort.Slice(vulnList, func(i, j int) bool {
+			return vulnList[i].IVCAD < vulnList[j].IVCAD
+		})
+		for i := range vulnList {
+			vulnList[i].RankIVCAD = i + 1
+		}
+
+		// 2. Taxa Mães de PE (maior taxa = melhor atendimento = 1º lugar)
+		sort.Slice(vulnList, func(i, j int) bool {
+			return vulnList[i].TaxaMaes > vulnList[j].TaxaMaes
+		})
+		for i := range vulnList {
+			vulnList[i].RankTaxaMaes = i + 1
+		}
+
+		// 3. IVCAD NC original (menor necessidade = melhor = 1º lugar)
+		sort.Slice(vulnList, func(i, j int) bool {
+			return vulnList[i].IVCADNC < vulnList[j].IVCADNC
+		})
+		for i := range vulnList {
+			vulnList[i].RankIVCADNC = i + 1
+		}
+
+		// 4. IVCAD NC Ponderado (menor vulnerabilidade residual = melhor = 1º lugar)
+		sort.Slice(vulnList, func(i, j int) bool {
+			return vulnList[i].IVCADNCPonderado < vulnList[j].IVCADNCPonderado
+		})
+		for i := range vulnList {
+			vulnList[i].RankIVCADNCPond = i + 1
+		}
+
+		// Ordena alfabeticamente por município
+		sort.Slice(vulnList, func(i, j int) bool {
+			return vulnList[i].Municipio < vulnList[j].Municipio
+		})
+
+		log.Printf("✅ [Pernambuco sem Fome] %d municípios processados para IVCAD e Vulnerabilidade a Cuidados.", len(vulnList))
+
+		// 5. Carrega GeoJSON dos municípios de PE
 		var rawGeo json.RawMessage
 		rawGeoBytes, errGeo := readFileFromPaths(
 			"data/geojson/pernambuco_municipios.geojson",
@@ -263,14 +419,15 @@ func GetCozinhasResumo(c *gin.Context) {
 		}
 
 		resp := CozinhasResponse{
-			Cozinhas:   cozinhas,
-			KPIs:       kpis,
-			Maes:       maes,
-			KPIsMaes:   kpisMaes,
-			KPIsCofin:  kpisCofin,
-			CofinAnos:  cofinAnos,
-			CofinMuns:  cofinMuns,
-			GeoJSONMun: rawGeo,
+			Cozinhas:            cozinhas,
+			KPIs:                kpis,
+			Maes:                maes,
+			KPIsMaes:            kpisMaes,
+			KPIsCofin:           kpisCofin,
+			CofinAnos:           cofinAnos,
+			CofinMuns:           cofinMuns,
+			VulnerabilidadeMuns: vulnList,
+			GeoJSONMun:          rawGeo,
 		}
 
 		cozinhasPayload, cozinhasErr = json.Marshal(resp)

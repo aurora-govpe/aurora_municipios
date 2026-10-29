@@ -85,6 +85,25 @@ func LoadConfig() {
 
 // InitData inicializa as tabelas em RAM do DuckDB e pré-carrega o GeoJSON e REGIC de Pernambuco
 func InitData() error {
+	// Determina o caminho de emendas (prioriza dados_emendas_atual.parquet para usar apenas o último ano)
+	caminhoEmendas := "data/parquet/dados_emendas.parquet"
+	for _, p := range []string{
+		"data/parquet/dados_emendas_atual.parquet",
+		"data/dados_emendas_atual.parquet",
+		"app_aurora_municipios/data/parquet/dados_emendas_atual.parquet",
+		"app_aurora_municipios/data/dados_emendas_atual.parquet",
+		"C:/dados/aurora/parquet/dados_emendas_atual.parquet",
+		"C:/dados/aurora/dados_emendas_atual.parquet",
+	} {
+		if _, err := os.Stat(p); err == nil {
+			caminhoEmendas = p
+			log.Printf("📌 [Emendas] Utilizando base do último ano: %s", p)
+			break
+		}
+	}
+
+	cleanEmendas := "SUBSTR(CAST(COALESCE(NULLIF(CAST(ibge6 AS VARCHAR), ''), NULLIF(CAST(cod_ibge AS VARCHAR), '')) AS VARCHAR), 1, 6)"
+
 	tables := []struct {
 		name  string
 		path  string
@@ -92,7 +111,7 @@ func InitData() error {
 	}{
 		{"v_indicadores", "data/parquet/df_indicadores.parquet", "SUBSTR(CAST(ibge6 AS VARCHAR), 1, 6)"},
 		{"v_iniciativas", "data/parquet/df_iniciativas.parquet", "SUBSTR(CAST(ibge6 AS VARCHAR), 1, 6)"},
-		{"v_emendas", "data/parquet/dados_emendas.parquet", "SUBSTR(CAST(ibge6 AS VARCHAR), 1, 6)"},
+		{"v_emendas", caminhoEmendas, cleanEmendas},
 		{"v_pcp", "data/parquet/df_pcp.parquet", "SUBSTR(CAST(ibge6 AS VARCHAR), 1, 6)"},
 		{"v_fiscais", "data/parquet/dados_fiscais.parquet", "SUBSTR(CAST(ibge6 AS VARCHAR), 1, 6)"},
 		{"v_vocacoes", "data/parquet/df_rais_vocacoes.parquet", "SUBSTR(CAST(id_municipio AS VARCHAR), 1, 6)"},

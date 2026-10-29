@@ -59,7 +59,20 @@ func TestGetCozinhasResumo(t *testing.T) {
 		t.Errorf("GeoJSON de municípios não deveria ser vazio")
 	}
 
-	t.Logf("Sucesso! Cozinhas: %d, Mães: %d (R$ %.2f), Cofin Pago: R$ %.2f (%d anos, %d muns), GeoJSON bytes: %d",
+	if len(resp.VulnerabilidadeMuns) != 185 {
+		t.Errorf("Esperado 185 municípios na vulnerabilidade, recebido %d", len(resp.VulnerabilidadeMuns))
+	} else {
+		// Valida um item de amostra
+		item := resp.VulnerabilidadeMuns[0]
+		if item.IVCAD == 0 || item.RankIVCAD == 0 {
+			t.Errorf("Item %s possui IVCAD ou RankIVCAD zerado", item.Municipio)
+		}
+		if item.TaxaMaes == 0 || item.RankTaxaMaes == 0 {
+			t.Errorf("Item %s possui TaxaMaes ou RankTaxaMaes zerado", item.Municipio)
+		}
+	}
+
+	t.Logf("Sucesso! Cozinhas: %d, Mães: %d (R$ %.2f), Cofin Pago: R$ %.2f (%d anos, %d muns), Vuln: %d muns, GeoJSON bytes: %d",
 		resp.KPIs.Total, resp.KPIsMaes.TotalBeneficiarias, resp.KPIsMaes.TotalInvestido,
-		resp.KPIsCofin.TotalPago, len(resp.CofinAnos), len(resp.CofinMuns), len(resp.GeoJSONMun))
+		resp.KPIsCofin.TotalPago, len(resp.CofinAnos), len(resp.CofinMuns), len(resp.VulnerabilidadeMuns), len(resp.GeoJSONMun))
 }
