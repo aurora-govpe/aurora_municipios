@@ -43,7 +43,7 @@ ui_modulo_tematicas <- function() {
         )
       ),
       
-      # BLOCO PAUTA 1: PERNAMBUCO SEM FOME (COZINHAS COMUNITÁRIAS & MÃES DE PE)
+            # BLOCO PAUTA 1: PERNAMBUCO SEM FOME (COZINHAS, MÃES DE PE & COFINANCIAMENTO)
       tags$div(
         id = "resumo_pauta_cozinhas",
         class = "resumo-pauta-bloco",
@@ -57,10 +57,10 @@ ui_modulo_tematicas <- function() {
             class = "d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100",
             tags$div(
               tags$span(class = "badge bg-amber-50 text-amber-700 border border-amber-200 rounded-pill px-3 py-1 text-xs font-bold mb-1", "SEGURANÇA ALIMENTAR & ASSISTÊNCIA SOCIAL"),
-              tags$h4(class = "font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight", "Pernambuco sem Fome — Cozinhas Comunitárias & Mães de Pernambuco")
+              tags$h4(class = "font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight", "Pernambuco sem Fome — Cozinhas, Mães de Pernambuco & Cofinanciamento")
             ),
             tags$span(class = "badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold",
-              tags$i(class = "fas fa-utensils text-amber-600 me-1"), "SAS / Governo de Pernambuco"
+              tags$i(class = "fas fa-shield-heart text-amber-600 me-1"), "SAS / Governo de Pernambuco"
             )
           ),
           
@@ -104,7 +104,7 @@ ui_modulo_tematicas <- function() {
             tags$h6(class = "font-bold text-slate-700 text-xs uppercase tracking-wider mb-0", "Programa Mães de Pernambuco (Transferência de Renda)")
           ),
           tags$div(
-            class = "grid grid-cols-2 md:grid-cols-4 gap-3 mb-5",
+            class = "grid grid-cols-2 md:grid-cols-4 gap-3 mb-4",
             tags$div(
               class = "bg-pink-50/50 p-3 rounded-2xl border border-pink-200 text-center",
               tags$span(class = "text-xs font-bold text-pink-500 uppercase tracking-wider block mb-1", "Mães Beneficiadas"),
@@ -126,6 +126,40 @@ ui_modulo_tematicas <- function() {
               tags$span(id = "maes_kpi_auxilio", class = "text-lg md:text-xl font-black text-emerald-700", "R$ 300 / mãe")
             )
           ),
+
+          # SEÇÃO DE KPIS: COFINANCIAMENTO DA ASSISTÊNCIA SOCIAL (SAS / FEAS)
+          tags$div(class = "d-flex align-items-center gap-2 mb-2 mt-4",
+            tags$i(class = "fas fa-hand-holding-dollar text-blue-500"),
+            tags$h6(class = "font-bold text-slate-700 text-xs uppercase tracking-wider mb-0", "Cofinanciamento da Assistência Social (SAS / FEAS)")
+          ),
+          tags$div(
+            class = "grid grid-cols-2 md:grid-cols-5 gap-3 mb-5",
+            tags$div(
+              class = "bg-blue-50/50 p-3 rounded-2xl border border-blue-200 text-center",
+              tags$span(class = "text-xs font-bold text-blue-500 uppercase tracking-wider block mb-1", "Total Pago"),
+              tags$span(id = "cofin_kpi_pago", class = "text-lg md:text-xl font-black text-blue-700", "-")
+            ),
+            tags$div(
+              class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
+              tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Total Validado"),
+              tags$span(id = "cofin_kpi_validado", class = "text-lg md:text-xl font-black text-slate-800", "-")
+            ),
+            tags$div(
+              class = "bg-emerald-50/50 p-3 rounded-2xl border border-emerald-200 text-center",
+              tags$span(class = "text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1", "% Executado / Pago"),
+              tags$span(id = "cofin_kpi_percentual", class = "text-lg md:text-xl font-black text-emerald-700", "-")
+            ),
+            tags$div(
+              class = "bg-purple-50/50 p-3 rounded-2xl border border-purple-200 text-center",
+              tags$span(class = "text-xs font-bold text-purple-600 uppercase tracking-wider block mb-1", "Saldo a Pagar"),
+              tags$span(id = "cofin_kpi_a_pagar", class = "text-lg md:text-xl font-black text-purple-700", "-")
+            ),
+            tags$div(
+              class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
+              tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Municípios Cobertos"),
+              tags$span(id = "cofin_kpi_municipios", class = "text-lg md:text-xl font-black text-slate-800", "185")
+            )
+          ),
           
           # CABEÇALHO E CONTROLES DO MAPA
           tags$div(
@@ -137,7 +171,7 @@ ui_modulo_tematicas <- function() {
             tags$div(
               class = "d-flex align-items-center gap-3 flex-wrap",
               
-              # SELETOR DE VISÃO (COZINHAS VS MÃES)
+              # SELETOR DE VISÃO (COZINHAS VS MÃES VS COFINANCIAMENTO)
               tags$div(
                 class = "d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1",
                 tags$button(
@@ -151,6 +185,12 @@ ui_modulo_tematicas <- function() {
                   class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
                   onclick = "window.alternarVisaoSemFome('maes', this)",
                   tags$i(class = "fas fa-person-breastfeeding me-1.5 text-pink-500"), "Mães de Pernambuco"
+                ),
+                tags$button(
+                  id = "btn_visao_sem_fome_cofin",
+                  class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
+                  onclick = "window.alternarVisaoSemFome('cofin', this)",
+                  tags$i(class = "fas fa-hand-holding-dollar me-1.5 text-blue-500"), "Cofinanciamento"
                 )
               ),
               
@@ -171,24 +211,131 @@ ui_modulo_tematicas <- function() {
                 tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #f472b6;", "400 - 800"),
                 tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #db2777;", "800 - 1.500"),
                 tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #831843;", "> 1.500")
+              ),
+              tags$div(
+                id = "legenda_visao_cofin",
+                class = "d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600",
+                tags$span("Repasse Pago:"),
+                tags$span(class = "badge px-2 py-0.5", style = "background-color: #dbeafe; color: #1e40af;", "< R$ 10M"),
+                tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #60a5fa;", "R$ 10M - 20M"),
+                tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #2563eb;", "R$ 20M - 40M"),
+                tags$span(class = "badge text-white px-2 py-0.5", style = "background-color: #1e3a8a;", "> R$ 40M")
               )
             )
           ),
           
-          # CONTAINER DO MAPA
+          # GRID DO MAPA COM BOX LATERAL DIREITO DE DETALHAMENTO NO HOVER
           tags$div(
-            class = "position-relative rounded-2xl overflow-hidden border border-slate-200 mb-5 shadow-inner",
+            class = "row g-3 mb-5",
+            
+            # COLUNA ESQUERDA: MAPA LIBRE
             tags$div(
-              id = "resumo_cozinhas_spinner",
-              class = "position-absolute top-0 start-0 w-100 h-100 bg-white/75 d-flex align-items-center justify-content-center z-10",
-              tags$div(class = "spinner-border text-primary", role = "status")
+              class = "col-lg-8 col-xl-8",
+              tags$div(
+                class = "position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-100",
+                style = "min-height: 520px;",
+                tags$div(
+                  id = "resumo_cozinhas_spinner",
+                  class = "position-absolute top-0 start-0 w-100 h-100 bg-white/75 d-flex align-items-center justify-content-center z-10",
+                  tags$div(class = "spinner-border text-primary", role = "status")
+                ),
+                tags$div(id = "resumo_cozinhas_map", style = "width: 100%; height: 100%; min-height: 520px; background-color: #f8fafc;")
+              )
             ),
-            tags$div(id = "resumo_cozinhas_map", style = "width: 100%; height: 520px; background-color: #f8fafc;")
+            
+            # COLUNA DIREITA: BOX LATERAL COM DETALHAMENTO NO HOVER
+            tags$div(
+              class = "col-lg-4 col-xl-4",
+              tags$div(
+                id = "sem_fome_hover_box",
+                class = "bg-slate-50/70 border border-slate-200 rounded-2xl p-4 shadow-sm h-100 d-flex flex-column justify-content-between",
+                style = "min-height: 520px; max-height: 520px; overflow-y: auto;",
+                
+                # Conteúdo inicial (Default)
+                tags$div(
+                  id = "sem_fome_box_content_default",
+                  class = "text-center py-4 my-auto",
+                  tags$div(
+                    class = "w-14 h-14 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner",
+                    tags$i(class = "fas fa-map-location-dot")
+                  ),
+                  tags$h5(class = "font-black text-slate-800 text-base mb-1", "Detalhamento Territorial"),
+                  tags$p(class = "text-xs text-slate-500 mb-3 px-2 leading-relaxed", "Passe o cursor sobre os municípios ou cozinhas no mapa para inspecionar os indicadores locais em tempo real."),
+                  tags$div(
+                    class = "grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-200/80",
+                    tags$div(class = "bg-white p-2.5 rounded-xl border border-slate-200 text-center",
+                      tags$span(class = "text-[10px] font-bold text-slate-400 uppercase block", "Municípios"),
+                      tags$span(class = "text-sm font-black text-slate-700", "185")
+                    ),
+                    tags$div(class = "bg-white p-2.5 rounded-xl border border-slate-200 text-center",
+                      tags$span(class = "text-[10px] font-bold text-slate-400 uppercase block", "Cozinhas"),
+                      tags$span(class = "text-sm font-black text-amber-600", "402")
+                    ),
+                    tags$div(class = "bg-white p-2.5 rounded-xl border border-slate-200 text-center",
+                      tags$span(class = "text-[10px] font-bold text-slate-400 uppercase block", "Mães de PE"),
+                      tags$span(class = "text-sm font-black text-pink-600", "157.196")
+                    ),
+                    tags$div(class = "bg-white p-2.5 rounded-xl border border-slate-200 text-center",
+                      tags$span(class = "text-[10px] font-bold text-slate-400 uppercase block", "Cofinanciamento"),
+                      tags$span(class = "text-sm font-black text-blue-600", "R$ 3,0 Bi")
+                    )
+                  )
+                ),
+                
+                # Container dinâmico para os dados do Hover
+                tags$div(
+                  id = "sem_fome_box_content_active",
+                  class = "d-none flex-column h-100"
+                )
+              )
+            )
           ),
           
-          # SEÇÃO DO GRÁFICO DE BARRAS POR MUNICÍPIO
+          # SEÇÃO DE COFINANCIAMENTO: SÉRIE HISTÓRICA E POR MUNICÍPIO
           tags$div(
             class = "mt-4 pt-4 border-t border-slate-100",
+            tags$div(
+              class = "row g-4 mb-5",
+              
+              # Gráfico 1: Série Histórica Anual (2024-2026)
+              tags$div(
+                class = "col-lg-6",
+                tags$div(
+                  class = "bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100",
+                  tags$div(
+                    class = "d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2",
+                    tags$div(
+                      tags$h5(class = "font-bold text-slate-800 text-sm md:text-base mb-0", "Série Histórica do Cofinanciamento"),
+                      tags$span(class = "text-xs text-slate-400 font-semibold", "Valores Validados vs. Pagos por ano de competência (2024-2026)")
+                    ),
+                    tags$span(class = "badge bg-blue-100 text-blue-800 text-xs font-bold rounded-pill px-2.5 py-1", "Evolução Anual")
+                  ),
+                  tags$div(id = "chart_cofin_serie_historica", style = "width: 100%; height: 380px;")
+                )
+              ),
+              
+              # Gráfico 2: Cofinanciamento por Município (Top 20)
+              tags$div(
+                class = "col-lg-6",
+                tags$div(
+                  class = "bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100",
+                  tags$div(
+                    class = "d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2",
+                    tags$div(
+                      tags$h5(class = "font-bold text-slate-800 text-sm md:text-base mb-0", "Cofinanciamento por Município"),
+                      tags$span(class = "text-xs text-slate-400 font-semibold", "Top municípios com maior volume financeiro recebido")
+                    ),
+                    tags$span(class = "badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-2.5 py-1", "Top 20 Municípios")
+                  ),
+                  tags$div(id = "chart_cofin_por_mun", style = "width: 100%; height: 380px;")
+                )
+              )
+            )
+          ),
+          
+          # SEÇÃO DO GRÁFICO DE BARRAS POR MUNICÍPIO (COZINHAS / MÃES)
+          tags$div(
+            class = "mt-2 pt-4 border-t border-slate-100",
             tags$div(
               class = "d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2",
               tags$div(
@@ -203,13 +350,13 @@ ui_modulo_tematicas <- function() {
             ),
             tags$div(
               id = "resumo_cozinhas_chart_muns",
-              style = "width: 100%; height: 480px;"
+              style = "width: 100%; height: 460px;"
             )
           )
         )
       ),
 
-        # BLOCO PAUTA 1: CAPACIDADE DE PAGAMENTO (CAPAG)
+# BLOCO PAUTA 1: CAPACIDADE DE PAGAMENTO (CAPAG)
         tags$div(
           id = "resumo_pauta_capag",
           class = "resumo-pauta-bloco d-none",

@@ -43,10 +43,23 @@ func TestGetCozinhasResumo(t *testing.T) {
 		t.Errorf("Lista de mães não deveria ser vazia")
 	}
 
+	if resp.KPIsCofin.TotalPago == 0 {
+		t.Errorf("KPIsCofin.TotalPago não deveria ser zero")
+	}
+
+	if len(resp.CofinAnos) == 0 {
+		t.Errorf("Lista de anos de cofinanciamento não deveria ser vazia")
+	}
+
+	if len(resp.CofinMuns) == 0 {
+		t.Errorf("Lista de municípios de cofinanciamento não deveria ser vazia")
+	}
+
 	if len(resp.GeoJSONMun) == 0 {
 		t.Errorf("GeoJSON de municípios não deveria ser vazio")
 	}
 
-	t.Logf("Sucesso! Cozinhas: %d, Mães: %d (R$ %.2f), Muns com Mães: %d, GeoJSON bytes: %d",
-		resp.KPIs.Total, resp.KPIsMaes.TotalBeneficiarias, resp.KPIsMaes.TotalInvestido, resp.KPIsMaes.TotalMunicipios, len(resp.GeoJSONMun))
+	t.Logf("Sucesso! Cozinhas: %d, Mães: %d (R$ %.2f), Cofin Pago: R$ %.2f (%d anos, %d muns), GeoJSON bytes: %d",
+		resp.KPIs.Total, resp.KPIsMaes.TotalBeneficiarias, resp.KPIsMaes.TotalInvestido,
+		resp.KPIsCofin.TotalPago, len(resp.CofinAnos), len(resp.CofinMuns), len(resp.GeoJSONMun))
 }

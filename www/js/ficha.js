@@ -4977,7 +4977,7 @@ function renderGraficoBarrasModalMun(rankingArr, munAlvo, nomeExib, rdNome, isPc
 
 
 /* ==========================================================================
-   ANÁLISES TEMÁTICAS - PAUTA 1: PERNAMBUCO SEM FOME (COZINHAS & MÃES DE PE)
+   ANÁLISES TEMÁTICAS - PAUTA 1: PERNAMBUCO SEM FOME (COZINHAS, MÃES & COFINANCIAMENTO)
    ========================================================================== */
 
 let cozinhasPorMunCache = null;
@@ -5036,28 +5036,152 @@ window.atualizarKpiCozinhasMunicipio = function(nomeMun, codIbge) {
 let mapResumoCozinhas = null;
 let cacheResumoCozinhas = null;
 let chartResumoCozinhasMuns = null;
+let chartCofinSerieHistorica = null;
+let chartCofinPorMun = null;
 window.visaoSemFomeAtiva = 'cozinhas';
+
+// Atualização do Box Lateral de Detalhamento no Hover
+function atualizarHoverBoxSemFome(tipo, props) {
+    const boxDefault = document.getElementById('sem_fome_box_content_default');
+    const boxActive = document.getElementById('sem_fome_box_content_active');
+    if (!boxActive || !boxDefault) return;
+
+    if (!tipo || !props) {
+        boxActive.classList.add('d-none');
+        boxActive.classList.remove('d-flex');
+        boxDefault.classList.remove('d-none');
+        return;
+    }
+
+    boxDefault.classList.add('d-none');
+    boxActive.classList.remove('d-none');
+    boxActive.classList.add('d-flex');
+
+    if (tipo === 'municipio') {
+        const valMaesFmt = props.valor_maes ? `R$ ${(Number(props.valor_maes) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-';
+        const valCofinPagoFmt = props.valor_cofin_pago ? `R$ ${(Number(props.valor_cofin_pago) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-';
+        const valCofinValFmt = props.valor_cofin_validado ? `R$ ${(Number(props.valor_cofin_validado) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-';
+        const pctCofin = (props.pct_cofin !== undefined && props.pct_cofin !== null) ? Number(props.pct_cofin).toFixed(1) + '%' : '-';
+
+        boxActive.innerHTML = `
+            <div class="border-b border-slate-200 pb-2 mb-2.5">
+                <span class="badge bg-slate-200 text-slate-700 text-[10px] font-bold rounded-pill px-2 py-0.5 mb-1 d-inline-block">
+                    <i class="fas fa-location-dot text-primary me-1"></i> ${props.regiao_de_desenvolvimento || 'Pernambuco'}
+                </span>
+                <h4 class="font-black text-slate-800 text-lg mb-0 tracking-tight leading-tight">${props.municipio}</h4>
+            </div>
+
+            <div class="space-y-2 flex-1 overflow-y-auto pr-1">
+                <!-- CARD COZINHAS -->
+                <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-2.5">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-xs font-bold text-amber-800"><i class="fas fa-utensils me-1"></i> Cozinhas Comunitárias</span>
+                        <span class="badge bg-amber-600 text-white font-black text-xs">${props.qtd_cozinhas || 0}</span>
+                    </div>
+                    <div class="text-[11px] text-amber-900/90">
+                        ${props.qtd_cozinhas > 0 ? `<strong>${props.qtd_cozinhas_func || 0}</strong> em funcionamento` : 'Nenhuma unidade implantada'}
+                    </div>
+                </div>
+
+                <!-- CARD MÃES DE PERNAMBUCO -->
+                <div class="bg-pink-50/70 border border-pink-200 rounded-xl p-2.5">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-xs font-bold text-pink-800"><i class="fas fa-person-breastfeeding me-1"></i> Mães de Pernambuco</span>
+                        <span class="badge bg-pink-600 text-white font-black text-xs">${(Number(props.qtd_maes) || 0).toLocaleString('pt-BR')}</span>
+                    </div>
+                    <div class="text-[11px] text-pink-900/90">
+                        Investimento: <strong>${valMaesFmt}</strong>
+                    </div>
+                </div>
+
+                <!-- CARD COFINANCIAMENTO -->
+                <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-2.5">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-xs font-bold text-blue-800"><i class="fas fa-hand-holding-dollar me-1"></i> Cofinanciamento SAS</span>
+                        <span class="badge bg-blue-600 text-white font-bold text-[10px]">${pctCofin} pago</span>
+                    </div>
+                    <div class="text-[11px] text-blue-900/90 mb-0.5">
+                        Pago: <strong>${valCofinPagoFmt}</strong>
+                    </div>
+                    <div class="text-[10px] text-slate-500">
+                        Validado: ${valCofinValFmt}
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-200 text-slate-400 text-[10px] text-center mt-2">
+                Passe o cursor sobre outro ponto ou município
+            </div>
+        `;
+    } else if (tipo === 'cozinha') {
+        let badgeColor = 'bg-slate-100 text-slate-700';
+        const sf = props.status_funcionamento || '';
+        if (sf.includes('Funcionamento')) badgeColor = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+        else if (sf.includes('Implanta')) badgeColor = 'bg-amber-100 text-amber-800 border-amber-200';
+        else if (sf.includes('Pactua')) badgeColor = 'bg-blue-100 text-blue-800 border-blue-200';
+        else if (sf.includes('aderiu')) badgeColor = 'bg-rose-100 text-rose-800 border-rose-200';
+
+        boxActive.innerHTML = `
+            <div class="border-b border-slate-200 pb-2 mb-2.5">
+                <span class="badge border ${badgeColor} text-[10px] font-bold px-2 py-0.5 rounded-pill mb-1 d-inline-block">
+                    ● ${props.status_funcionamento}
+                </span>
+                <h5 class="font-black text-slate-800 text-base mb-0 leading-tight">${props.nome_equipamento}</h5>
+            </div>
+
+            <div class="space-y-2 flex-1 overflow-y-auto pr-1">
+                <div class="bg-white border border-slate-200 rounded-xl p-2.5">
+                    <div class="text-xs text-slate-700 mb-1">
+                        <i class="fas fa-map-marker-alt text-amber-500 me-1"></i><strong>${props.municipio}</strong>
+                        ${props.regiao_de_desenvolvimento ? ` • <span class="text-slate-400">${props.regiao_de_desenvolvimento}</span>` : ''}
+                    </div>
+                    ${props.endereco ? `<div class="text-xs text-slate-500 border-t border-slate-100 pt-1 mt-1"><i class="fas fa-location-dot me-1 text-slate-400"></i>${props.endereco}</div>` : ''}
+                </div>
+
+                <div class="bg-amber-50/60 border border-amber-200/80 rounded-xl p-2.5 text-xs text-amber-900 leading-relaxed">
+                    <span class="font-bold block text-amber-950 mb-1"><i class="fas fa-utensils me-1"></i> Equipamento de Segurança Alimentar</span>
+                    Unidade de preparo e distribuição gratuita de refeições nutricionais para famílias em vulnerabilidade social.
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-200 text-slate-400 text-[10px] text-center mt-2">
+                Passe o cursor sobre outro ponto ou município
+            </div>
+        `;
+    }
+}
 
 window.alternarVisaoSemFome = function (visao, btn) {
     window.visaoSemFomeAtiva = visao || 'cozinhas';
 
     const btnCozinhas = document.getElementById('btn_visao_sem_fome_cozinhas');
     const btnMaes = document.getElementById('btn_visao_sem_fome_maes');
+    const btnCofin = document.getElementById('btn_visao_sem_fome_cofin');
+
     const legCozinhas = document.getElementById('legenda_visao_cozinhas');
     const legMaes = document.getElementById('legenda_visao_maes');
+    const legCofin = document.getElementById('legenda_visao_cofin');
     const lblCamada = document.getElementById('sem_fome_camada_label');
+
+    // Reseta botões
+    [btnCozinhas, btnMaes, btnCofin].forEach(b => {
+        if (b) {
+            b.classList.remove('btn-primary', 'text-white', 'shadow-sm');
+            b.classList.add('btn-light', 'text-slate-600');
+        }
+    });
+
+    // Reseta legendas
+    [legCozinhas, legMaes, legCofin].forEach(l => {
+        if (l) l.classList.add('d-none');
+    });
 
     if (window.visaoSemFomeAtiva === 'cozinhas') {
         if (btnCozinhas) {
             btnCozinhas.classList.remove('btn-light', 'text-slate-600');
             btnCozinhas.classList.add('btn-primary', 'text-white', 'shadow-sm');
         }
-        if (btnMaes) {
-            btnMaes.classList.remove('btn-primary', 'text-white', 'shadow-sm');
-            btnMaes.classList.add('btn-light', 'text-slate-600');
-        }
         if (legCozinhas) legCozinhas.classList.remove('d-none');
-        if (legMaes) legMaes.classList.add('d-none');
         if (lblCamada) lblCamada.textContent = "Exibindo: Localização das Cozinhas Comunitárias";
 
         // Ajusta camadas no mapa
@@ -5071,19 +5195,12 @@ window.alternarVisaoSemFome = function (visao, btn) {
                 }
             } catch(e) {}
         }
-
-        // Atualiza gráfico de barras
         atualizarGraficoSemFome('cozinhas');
-    } else {
+    } else if (window.visaoSemFomeAtiva === 'maes') {
         if (btnMaes) {
             btnMaes.classList.remove('btn-light', 'text-slate-600');
             btnMaes.classList.add('btn-primary', 'text-white', 'shadow-sm');
         }
-        if (btnCozinhas) {
-            btnCozinhas.classList.remove('btn-primary', 'text-white', 'shadow-sm');
-            btnCozinhas.classList.add('btn-light', 'text-slate-600');
-        }
-        if (legCozinhas) legCozinhas.classList.add('d-none');
         if (legMaes) legMaes.classList.remove('d-none');
         if (lblCamada) lblCamada.textContent = "Exibindo: Programa Mães de Pernambuco (Beneficiárias por Município)";
 
@@ -5094,13 +5211,49 @@ window.alternarVisaoSemFome = function (visao, btn) {
                 if (mapResumoCozinhas.getLayer('cozinhas_cluster_count')) mapResumoCozinhas.setLayoutProperty('cozinhas_cluster_count', 'visibility', 'none');
                 if (mapResumoCozinhas.getLayer('cozinhas_points')) mapResumoCozinhas.setLayoutProperty('cozinhas_points', 'visibility', 'none');
                 if (mapResumoCozinhas.getLayer('mun_choropleth_fill')) {
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_fill', 'fill-color', [
+                        'step',
+                        ['get', 'qtd_maes'],
+                        '#fce7f3',
+                        400, '#f472b6',
+                        800, '#db2777',
+                        1500, '#831843'
+                    ]);
                     mapResumoCozinhas.setPaintProperty('mun_choropleth_fill', 'fill-opacity', 0.75);
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_line', 'line-color', '#be185d');
                 }
             } catch(e) {}
         }
-
-        // Atualiza gráfico de barras
         atualizarGraficoSemFome('maes');
+    } else if (window.visaoSemFomeAtiva === 'cofin') {
+        if (btnCofin) {
+            btnCofin.classList.remove('btn-light', 'text-slate-600');
+            btnCofin.classList.add('btn-primary', 'text-white', 'shadow-sm');
+        }
+        if (legCofin) legCofin.classList.remove('d-none');
+        if (lblCamada) lblCamada.textContent = "Exibindo: Cofinanciamento Estadual da Assistência Social (Valores Pagos)";
+
+        // Ajusta camadas no mapa
+        if (mapResumoCozinhas && mapResumoCozinhas.isStyleLoaded()) {
+            try {
+                if (mapResumoCozinhas.getLayer('cozinhas_clusters')) mapResumoCozinhas.setLayoutProperty('cozinhas_clusters', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('cozinhas_cluster_count')) mapResumoCozinhas.setLayoutProperty('cozinhas_cluster_count', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('cozinhas_points')) mapResumoCozinhas.setLayoutProperty('cozinhas_points', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('mun_choropleth_fill')) {
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_fill', 'fill-color', [
+                        'step',
+                        ['get', 'valor_cofin_pago'],
+                        '#dbeafe',
+                        10000000, '#60a5fa',
+                        20000000, '#2563eb',
+                        40000000, '#1e3a8a'
+                    ]);
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_fill', 'fill-opacity', 0.75);
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_line', 'line-color', '#1d4ed8');
+                }
+            } catch(e) {}
+        }
+        atualizarGraficoSemFome('cofin');
     }
 };
 
@@ -5178,7 +5331,7 @@ function atualizarGraficoSemFome(visao) {
             }]
         };
         chartResumoCozinhasMuns.setOption(option);
-    } else {
+    } else if (visao === 'maes') {
         if (elTitle) elTitle.textContent = "Mães de Pernambuco por Município";
         if (elSub) elSub.textContent = "Top municípios com maior número de mães beneficiadas no programa";
         if (elBadge) elBadge.innerHTML = `<i class="fas fa-person-breastfeeding text-pink-500 me-1"></i> ${(cacheResumoCozinhas.kpis_maes?.total_municipios || 185)} Municípios Beneficiados`;
@@ -5239,6 +5392,362 @@ function atualizarGraficoSemFome(visao) {
             }]
         };
         chartResumoCozinhasMuns.setOption(option);
+    } else {
+        if (elTitle) elTitle.textContent = "Cofinanciamento SAS por Município";
+        if (elSub) elSub.textContent = "Top municípios com maior volume financeiro pago pelo Fundo Estadual de Assistência Social";
+        if (elBadge) elBadge.innerHTML = `<i class="fas fa-hand-holding-dollar text-blue-500 me-1"></i> ${(cacheResumoCozinhas.kpis_cofinanciamento?.total_municipios || 185)} Municípios Beneficiados`;
+
+        const cofinList = (cacheResumoCozinhas.cofinanciamento_muns || []).slice(0, 25).reverse();
+
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: function (params) {
+                    const p = params[0];
+                    const rawItem = cofinList.find(m => m.municipio === p.name);
+                    const valVal = rawItem ? `R$ ${(rawItem.valor_validado || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-';
+                    const pct = rawItem ? `${rawItem.percentual_pago.toFixed(1)}%` : '-';
+                    return `<strong>${p.name}</strong><br/>Valor Pago: <b>R$ ${Number(p.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</b><br/>Validado: <b>${valVal}</b> (${pct} pago)`;
+                }
+            },
+            grid: { top: 20, bottom: 25, left: '4%', right: '12%', containLabel: true },
+            xAxis: {
+                type: 'value',
+                axisLabel: {
+                    color: '#64748b',
+                    fontSize: 11,
+                    formatter: (v) => v >= 1e6 ? 'R$ ' + (v/1e6).toFixed(0) + 'M' : v
+                },
+                splitLine: { lineStyle: { color: '#f1f5f9' } }
+            },
+            yAxis: {
+                type: 'category',
+                data: cofinList.map(item => item.municipio),
+                axisLabel: { color: '#334155', fontWeight: 600, fontSize: 11 },
+                axisLine: { lineStyle: { color: '#cbd5e1' } }
+            },
+            series: [{
+                name: 'Valor Pago',
+                type: 'bar',
+                data: cofinList.map(item => item.valor_pago),
+                barMaxWidth: 20,
+                itemStyle: {
+                    borderRadius: [0, 6, 6, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#3b82f6' },
+                        { offset: 1, color: '#1d4ed8' }
+                    ])
+                },
+                label: {
+                    show: true,
+                    position: 'right',
+                    fontWeight: 'bold',
+                    fontSize: 10,
+                    color: '#1e3a8a',
+                    formatter: (params) => {
+                        const v = Number(params.value);
+                        return v >= 1e6 ? 'R$ ' + (v/1e6).toFixed(1).replace('.', ',') + 'M' : 'R$ ' + v.toLocaleString('pt-BR');
+                    }
+                }
+            }]
+        };
+        chartResumoCozinhasMuns.setOption(option);
+    }
+}
+
+// Renderização dos Gráficos Exclusivos de Cofinanciamento
+function renderizarGraficosCofinanciamento(data) {
+    if (!data) return;
+
+    // 1. Gráfico Série Histórica (2024 - 2026) - Estilo Lollipop / Dumbbell Chart
+    const domSerie = document.getElementById('chart_cofin_serie_historica');
+    if (domSerie && typeof echarts !== 'undefined') {
+        if (chartCofinSerieHistorica) {
+            try { chartCofinSerieHistorica.dispose(); } catch(e) {}
+        }
+        chartCofinSerieHistorica = echarts.init(domSerie);
+
+        const anos = data.cofinanciamento_anos || [];
+        const categoriasAnos = anos.map(a => String(a.ano));
+        const badges = anos.map(a => {
+            const pct = a.valor_validado > 0 ? (a.valor_pago / a.valor_validado) * 100 : 0;
+            const pctFmt = pct.toFixed(1).replace('.', ',');
+            return (a.ano === 2026 || pct < 90)
+                ? `▼ ${pctFmt}% pago (em curso)`
+                : `● ${pctFmt}% executado`;
+        });
+        const badgesColors = anos.map(a => {
+            const pct = a.valor_validado > 0 ? (a.valor_pago / a.valor_validado) * 100 : 0;
+            return (a.ano === 2026 || pct < 90) ? '#2563eb' : '#16a34a';
+        });
+
+        const optionSerie = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'cross', crossStyle: { color: '#94a3b8' } },
+                formatter: function (params) {
+                    if (!params || !params.length) return '';
+                    const idx = params[0].dataIndex;
+                    const a = anos[idx];
+                    if (!a) return '';
+                    const pct = a.valor_validado > 0 ? ((a.valor_pago / a.valor_validado) * 100).toFixed(1).replace('.', ',') : '0,0';
+                    const saldo = (a.valor_validado || 0) - (a.valor_pago || 0);
+                    const valValFmt = a.valor_validado >= 1e9 
+                        ? `R$ ${(a.valor_validado/1e9).toFixed(2).replace('.', ',')} Bi` 
+                        : `R$ ${(a.valor_validado/1e6).toFixed(1).replace('.', ',')} Mi`;
+                    const valPagoFmt = a.valor_pago >= 1e9 
+                        ? `R$ ${(a.valor_pago/1e9).toFixed(2).replace('.', ',')} Bi` 
+                        : `R$ ${(a.valor_pago/1e6).toFixed(1).replace('.', ',')} Mi`;
+                    const saldoFmt = saldo >= 1e9
+                        ? `R$ ${(saldo/1e9).toFixed(2).replace('.', ',')} Bi`
+                        : `R$ ${(saldo/1e6).toFixed(1).replace('.', ',')} Mi`;
+
+                    return `
+                        <div style="font-size: 12px; font-family: sans-serif; line-height: 1.5;">
+                            <strong style="color: #0f172a; font-size: 13px;">Exercício ${a.ano}</strong><br/>
+                            <div style="margin-top: 4px;">
+                                <span style="display:inline-block;width:9px;height:9px;border-radius:50%;border:2px solid #6366f1;background:#fff;margin-right:6px;"></span>Valor Validado: <b>${valValFmt}</b><br/>
+                                <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2563eb;margin-right:6px;"></span>Valor Pago: <b>${valPagoFmt}</b>
+                            </div>
+                            <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #e2e8f0; color: #475569;">
+                                Taxa de Execução: <b style="color: #0f172a;">${pct}%</b><br/>
+                                Saldo a Pagar: <b style="color: #0f172a;">${saldoFmt}</b>
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+            legend: {
+                top: 0,
+                left: 0,
+                itemWidth: 14,
+                itemHeight: 14,
+                data: [
+                    { name: 'Valor Validado', icon: 'emptyCircle', itemStyle: { borderColor: '#6366f1', borderWidth: 2.5 } },
+                    { name: 'Valor Pago', icon: 'circle', itemStyle: { color: '#2563eb' } }
+                ],
+                textStyle: { color: '#475569', fontWeight: 600, fontSize: 11 }
+            },
+            grid: {
+                top: 45,
+                bottom: 25,
+                left: '6%',
+                right: '28%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value',
+                axisLabel: {
+                    color: '#64748b',
+                    fontSize: 11,
+                    formatter: (v) => v >= 1e9 ? 'R$ ' + (v / 1e9).toFixed(1).replace('.', ',') + ' Bi' : (v >= 1e6 ? 'R$ ' + (v / 1e6).toFixed(0) + ' Mi' : 'R$ ' + v)
+                },
+                splitLine: {
+                    lineStyle: {
+                        color: '#f1f5f9'
+                    }
+                }
+            },
+            yAxis: [
+                {
+                    type: 'category',
+                    inverse: true,
+                    data: categoriasAnos,
+                    axisLabel: {
+                        fontSize: 13,
+                        fontWeight: 'bold',
+                        color: '#1e293b'
+                    },
+                    axisLine: { show: false },
+                    axisTick: { show: false }
+                },
+                {
+                    type: 'category',
+                    inverse: true,
+                    data: badges,
+                    position: 'right',
+                    axisLabel: {
+                        fontSize: 10,
+                        fontWeight: 'bold',
+                        backgroundColor: '#f8fafc',
+                        borderColor: '#e2e8f0',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        padding: [4, 8],
+                        color: function(value, index) {
+                            return badgesColors[index] || '#16a34a';
+                        }
+                    },
+                    axisLine: { show: false },
+                    axisTick: { show: false }
+                }
+            ],
+            series: [
+                {
+                    name: 'Conexão',
+                    type: 'custom',
+                    renderItem: function (params, api) {
+                        const y = api.coord([0, api.value(2)])[1];
+                        const x1 = api.coord([api.value(0), 0])[0];
+                        const x2 = api.coord([api.value(1), 0])[0];
+                        return {
+                            type: 'group',
+                            children: [
+                                {
+                                    type: 'line',
+                                    shape: {
+                                        x1: api.coord([0, 0])[0],
+                                        y1: y,
+                                        x2: Math.min(x1, x2),
+                                        y2: y
+                                    },
+                                    style: {
+                                        stroke: '#e2e8f0',
+                                        lineWidth: 1.5,
+                                        lineDash: [3, 3]
+                                    }
+                                },
+                                {
+                                    type: 'line',
+                                    shape: {
+                                        x1: Math.min(x1, x2),
+                                        y1: y,
+                                        x2: Math.max(x1, x2),
+                                        y2: y
+                                    },
+                                    style: {
+                                        stroke: '#c7d2fe',
+                                        lineWidth: 5,
+                                        lineCap: 'round'
+                                    }
+                                }
+                            ]
+                        };
+                    },
+                    data: anos.map((a, idx) => [a.valor_pago, a.valor_validado, idx]),
+                    silent: true,
+                    z: 2
+                },
+                {
+                    name: 'Valor Validado',
+                    type: 'scatter',
+                    data: anos.map((a, idx) => [a.valor_validado, idx]),
+                    symbol: 'circle',
+                    symbolSize: 13,
+                    itemStyle: {
+                        color: '#ffffff',
+                        borderColor: '#6366f1',
+                        borderWidth: 2.5
+                    },
+                    label: {
+                        show: true,
+                        position: 'top',
+                        offset: [0, -2],
+                        fontSize: 10,
+                        fontWeight: 'bold',
+                        color: '#4f46e5',
+                        formatter: function (p) {
+                            const v = p.value[0];
+                            return v >= 1e9 ? 'R$ ' + (v / 1e9).toFixed(2).replace('.', ',') + ' Bi' : 'R$ ' + (v / 1e6).toFixed(0) + ' Mi';
+                        }
+                    },
+                    z: 4
+                },
+                {
+                    name: 'Valor Pago',
+                    type: 'scatter',
+                    data: anos.map((a, idx) => [a.valor_pago, idx]),
+                    symbol: 'circle',
+                    symbolSize: 15,
+                    itemStyle: {
+                        color: '#2563eb',
+                        shadowColor: 'rgba(37, 99, 235, 0.35)',
+                        shadowBlur: 6
+                    },
+                    label: {
+                        show: true,
+                        position: 'bottom',
+                        offset: [0, 2],
+                        fontSize: 10,
+                        fontWeight: 'bold',
+                        color: '#1e40af',
+                        formatter: function (p) {
+                            const v = p.value[0];
+                            return v >= 1e9 ? 'R$ ' + (v / 1e9).toFixed(2).replace('.', ',') + ' Bi' : 'R$ ' + (v / 1e6).toFixed(0) + ' Mi';
+                        }
+                    },
+                    z: 5
+                }
+            ]
+        };
+        chartCofinSerieHistorica.setOption(optionSerie);
+    }
+
+    // 2. Gráfico Cofinanciamento por Município (Top 20)
+    const domMun = document.getElementById('chart_cofin_por_mun');
+    if (domMun && typeof echarts !== 'undefined') {
+        if (chartCofinPorMun) {
+            try { chartCofinPorMun.dispose(); } catch(e) {}
+        }
+        chartCofinPorMun = echarts.init(domMun);
+
+        const muns = (data.cofinanciamento_muns || []).slice(0, 20).reverse();
+
+        const optionMun = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: function (params) {
+                    const p = params[0];
+                    const rawItem = muns.find(m => m.municipio === p.name);
+                    const valVal = rawItem ? `R$ ${(rawItem.valor_validado || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-';
+                    const pct = rawItem ? `${rawItem.percentual_pago.toFixed(1)}%` : '-';
+                    return `<strong>${p.name}</strong><br/>Total Pago: <b>R$ ${Number(p.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</b><br/>Validado: <b>${valVal}</b> (${pct} executado)`;
+                }
+            },
+            grid: { top: 15, bottom: 20, left: '3%', right: '12%', containLabel: true },
+            xAxis: {
+                type: 'value',
+                axisLabel: {
+                    color: '#64748b',
+                    fontSize: 11,
+                    formatter: (v) => v >= 1e6 ? 'R$ ' + (v/1e6).toFixed(0) + 'M' : v
+                },
+                splitLine: { lineStyle: { color: '#f1f5f9' } }
+            },
+            yAxis: {
+                type: 'category',
+                data: muns.map(item => item.municipio),
+                axisLabel: { color: '#334155', fontWeight: 600, fontSize: 10 },
+                axisLine: { lineStyle: { color: '#cbd5e1' } }
+            },
+            series: [{
+                name: 'Valor Pago',
+                type: 'bar',
+                data: muns.map(item => item.valor_pago),
+                barMaxWidth: 16,
+                itemStyle: {
+                    borderRadius: [0, 6, 6, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#38bdf8' },
+                        { offset: 1, color: '#0284c7' }
+                    ])
+                },
+                label: {
+                    show: true,
+                    position: 'right',
+                    fontWeight: 'bold',
+                    fontSize: 10,
+                    color: '#0369a1',
+                    formatter: (params) => {
+                        const v = Number(params.value);
+                        return (v/1e6).toFixed(1).replace('.', ',') + 'M';
+                    }
+                }
+            }]
+        };
+        chartCofinPorMun.setOption(optionMun);
     }
 }
 
@@ -5254,6 +5763,12 @@ window.renderizarResumoCozinhas = function () {
             if (chartResumoCozinhasMuns && typeof chartResumoCozinhasMuns.resize === 'function') {
                 chartResumoCozinhasMuns.resize();
             }
+            if (chartCofinSerieHistorica && typeof chartCofinSerieHistorica.resize === 'function') {
+                chartCofinSerieHistorica.resize();
+            }
+            if (chartCofinPorMun && typeof chartCofinPorMun.resize === 'function') {
+                chartCofinPorMun.resize();
+            }
         }, 100);
         return;
     }
@@ -5263,7 +5778,7 @@ window.renderizarResumoCozinhas = function () {
     const apiUrl = `${window.basePath || ''}/municipios/resumo/cozinhas`.replace(/\/+/g, '/');
     fetch(apiUrl)
         .then(res => {
-            if (!res.ok) throw new Error("Erro ao carregar dados de Cozinhas e Mães de PE");
+            if (!res.ok) throw new Error("Erro ao carregar dados consolidados do Pernambuco sem Fome");
             return res.json();
         })
         .then(data => {
@@ -5274,6 +5789,8 @@ window.renderizarResumoCozinhas = function () {
             const kpis = data.kpis || {};
             const maes = data.maes || [];
             const kpisMaes = data.kpis_maes || {};
+            const kpisCofin = data.kpis_cofinanciamento || {};
+            const cofinMuns = data.cofinanciamento_muns || [];
 
             // 1. Preencher KPIs de Cozinhas no DOM
             const elTotal = document.getElementById('cozinhas_kpi_total');
@@ -5300,6 +5817,21 @@ window.renderizarResumoCozinhas = function () {
             }
             if (elMaesMun) elMaesMun.textContent = (kpisMaes.total_municipios || 185).toLocaleString('pt-BR');
 
+            // 3. Preencher KPIs de Cofinanciamento
+            const elCofinPago = document.getElementById('cofin_kpi_pago');
+            const elCofinVal = document.getElementById('cofin_kpi_validado');
+            const elCofinPct = document.getElementById('cofin_kpi_percentual');
+            const elCofinAPagar = document.getElementById('cofin_kpi_a_pagar');
+            const elCofinMun = document.getElementById('cofin_kpi_municipios');
+
+            const fmtBiMi = (v) => v >= 1e9 ? `R$ ${(v/1e9).toFixed(2).replace('.', ',')} Bi` : (v >= 1e6 ? `R$ ${(v/1e6).toFixed(1).replace('.', ',')} Mi` : `R$ ${v.toLocaleString('pt-BR')}`);
+
+            if (elCofinPago) elCofinPago.textContent = fmtBiMi(kpisCofin.total_pago || 0);
+            if (elCofinVal) elCofinVal.textContent = fmtBiMi(kpisCofin.total_validado || 0);
+            if (elCofinPct) elCofinPct.textContent = `${(kpisCofin.percentual_pago || 0).toFixed(1)}%`;
+            if (elCofinAPagar) elCofinAPagar.textContent = fmtBiMi(kpisCofin.total_a_pagar || 0);
+            if (elCofinMun) elCofinMun.textContent = (kpisCofin.total_municipios || 185).toLocaleString('pt-BR');
+
             // Mapas de lookup por município
             const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
             const maesByMun = {};
@@ -5308,13 +5840,22 @@ window.renderizarResumoCozinhas = function () {
                 if (m.ibge7) maesByMun[m.ibge7] = m;
             });
 
+            const cofinByMun = {};
+            cofinMuns.forEach(m => {
+                if (m.municipio) cofinByMun[norm(m.municipio)] = m;
+            });
+
             const cozinhasCountByMun = {};
+            const cozinhasFuncByMun = {};
             cozinhas.forEach(c => {
                 const k = norm(c.municipio);
                 cozinhasCountByMun[k] = (cozinhasCountByMun[k] || 0) + 1;
+                if ((c.status_funcionamento || '').includes('Funcionamento')) {
+                    cozinhasFuncByMun[k] = (cozinhasFuncByMun[k] || 0) + 1;
+                }
             });
 
-            // 3. Preparar GeoJSON municipal enriquecido
+            // 4. Preparar GeoJSON municipal enriquecido
             let geoMun = data.geojson_municipios;
             if (typeof geoMun === 'string') {
                 try { geoMun = JSON.parse(geoMun); } catch(e) {}
@@ -5326,13 +5867,20 @@ window.renderizarResumoCozinhas = function () {
                     const kMun = norm(props.municipio);
                     const kIbge = String(props.ibge7 || props.cod_ibge || '');
                     const mData = maesByMun[kIbge] || maesByMun[kMun] || {};
+                    const cData = cofinByMun[kMun] || {};
+
                     props.qtd_maes = Number(mData.qtd_beneficiarias_total) || 0;
                     props.valor_maes = Number(mData.valor_total) || 0;
                     props.qtd_cozinhas = cozinhasCountByMun[kMun] || 0;
+                    props.qtd_cozinhas_func = cozinhasFuncByMun[kMun] || 0;
+
+                    props.valor_cofin_pago = Number(cData.valor_pago) || 0;
+                    props.valor_cofin_validado = Number(cData.valor_validado) || 0;
+                    props.pct_cofin = Number(cData.percentual_pago) || 0;
                 });
             }
 
-            // 4. Preparar GeoJSON de pontos de cozinhas
+            // 5. Preparar GeoJSON de pontos de cozinhas
             const featuresCozinhas = cozinhas
                 .filter(c => c.lat && c.long && !isNaN(c.lat) && !isNaN(c.long))
                 .map(c => ({
@@ -5356,7 +5904,7 @@ window.renderizarResumoCozinhas = function () {
                 features: featuresCozinhas
             };
 
-            // 5. Inicializar MapLibre GL
+            // 6. Inicializar MapLibre GL
             if (mapResumoCozinhas) {
                 try { mapResumoCozinhas.remove(); } catch(e) {}
             }
@@ -5379,7 +5927,7 @@ window.renderizarResumoCozinhas = function () {
                     const bounds = new maplibregl.LngLatBounds();
                     featuresCozinhas.forEach(f => bounds.extend(f.geometry.coordinates));
                     if (!bounds.isEmpty()) {
-                        mapResumoCozinhas.fitBounds(bounds, { padding: 40, maxZoom: 12, duration: 800 });
+                        mapResumoCozinhas.fitBounds(bounds, { padding: 35, maxZoom: 12, duration: 800 });
                     }
                 } catch(e) {}
 
@@ -5390,7 +5938,7 @@ window.renderizarResumoCozinhas = function () {
                         data: geoMun
                     });
 
-                    // Camada de Preenchimento (Coroplético para Mães de PE)
+                    // Camada de Preenchimento (Coroplético dinâmico)
                     mapResumoCozinhas.addLayer({
                         id: 'mun_choropleth_fill',
                         type: 'fill',
@@ -5399,12 +5947,12 @@ window.renderizarResumoCozinhas = function () {
                             'fill-color': [
                                 'step',
                                 ['get', 'qtd_maes'],
-                                '#fce7f3', // < 400
-                                400, '#f472b6', // 400 - 800
-                                800, '#db2777', // 800 - 1500
-                                1500, '#831843'  // > 1500
+                                '#fce7f3',
+                                400, '#f472b6',
+                                800, '#db2777',
+                                1500, '#831843'
                             ],
-                            'fill-opacity': window.visaoSemFomeAtiva === 'maes' ? 0.75 : 0.05
+                            'fill-opacity': window.visaoSemFomeAtiva === 'cozinhas' ? 0.05 : 0.75
                         }
                     });
 
@@ -5414,9 +5962,9 @@ window.renderizarResumoCozinhas = function () {
                         type: 'line',
                         source: 'mun_source',
                         paint: {
-                            'line-color': '#be185d',
+                            'line-color': '#94a3b8',
                             'line-width': 0.8,
-                            'line-opacity': 0.4
+                            'line-opacity': 0.5
                         }
                     });
                 }
@@ -5492,68 +6040,27 @@ window.renderizarResumoCozinhas = function () {
                     }
                 });
 
-                // Popups e interações
-                const popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '340px' });
-
-                // Click em pontos individuais de Cozinha
-                mapResumoCozinhas.on('click', 'cozinhas_points', (e) => {
+                // --- HOVER BOX INTERATIVO ---
+                mapResumoCozinhas.on('mousemove', 'mun_choropleth_fill', (e) => {
                     if (!e.features.length) return;
                     const props = e.features[0].properties;
-                    const coords = e.features[0].geometry.coordinates.slice();
-
-                    let badgeColor = 'bg-slate-100 text-slate-700';
-                    const sf = props.status_funcionamento || '';
-                    if (sf.includes('Funcionamento')) badgeColor = 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                    else if (sf.includes('Implanta')) badgeColor = 'bg-amber-100 text-amber-800 border-amber-200';
-                    else if (sf.includes('Pactua')) badgeColor = 'bg-blue-100 text-blue-800 border-blue-200';
-                    else if (sf.includes('aderiu')) badgeColor = 'bg-rose-100 text-rose-800 border-rose-200';
-
-                    const html = `
-                        <div class="p-2 font-sans text-left">
-                            <div class="d-flex align-items-center gap-1.5 mb-2">
-                                <span class="badge border ${badgeColor} text-[11px] font-bold px-2 py-0.5 rounded-pill">${props.status_funcionamento}</span>
-                            </div>
-                            <h6 class="font-bold text-slate-800 text-sm mb-1 leading-snug">${props.nome_equipamento}</h6>
-                            <div class="text-xs text-slate-600 mb-1">
-                                <i class="fas fa-map-marker-alt text-amber-500 me-1"></i><strong>${props.municipio}</strong>
-                                ${props.regiao_de_desenvolvimento ? ` • <span class="text-slate-400">${props.regiao_de_desenvolvimento}</span>` : ''}
-                            </div>
-                            ${props.endereco ? `<div class="text-xs text-slate-500 border-t border-slate-100 pt-1 mt-1"><i class="fas fa-location-dot me-1 text-slate-400"></i>${props.endereco}</div>` : ''}
-                        </div>
-                    `;
-                    popup.setLngLat(coords).setHTML(html).addTo(mapResumoCozinhas);
+                    atualizarHoverBoxSemFome('municipio', props);
                 });
 
-                // Click em polígonos municipais (Modo Mães de PE)
-                mapResumoCozinhas.on('click', 'mun_choropleth_fill', (e) => {
-                    if (window.visaoSemFomeAtiva !== 'maes') return;
+                mapResumoCozinhas.on('mousemove', 'cozinhas_points', (e) => {
                     if (!e.features.length) return;
-                    const p = e.features[0].properties;
-                    const valFmt = p.valor_maes ? `R$ ${Number(p.valor_maes).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-';
-
-                    const html = `
-                        <div class="p-2 font-sans text-left">
-                            <div class="d-flex align-items-center gap-1.5 mb-1.5">
-                                <span class="badge bg-pink-100 text-pink-800 border border-pink-300 text-[11px] font-bold px-2 py-0.5 rounded-pill">
-                                    <i class="fas fa-person-breastfeeding me-1"></i> Mães de Pernambuco
-                                </span>
-                            </div>
-                            <h6 class="font-bold text-slate-800 text-sm mb-1.5">${p.municipio}</h6>
-                            <div class="text-xs text-slate-700 mb-1">
-                                Beneficiárias: <strong>${(Number(p.qtd_maes) || 0).toLocaleString('pt-BR')} mães</strong>
-                            </div>
-                            <div class="text-xs text-slate-600 mb-2">
-                                Investimento Acumulado: <strong>${valFmt}</strong>
-                            </div>
-                            <div class="text-xs text-slate-500 border-t border-slate-100 pt-1.5">
-                                <i class="fas fa-utensils text-amber-500 me-1"></i> Cozinhas Comunitárias: <strong>${p.qtd_cozinhas || 0}</strong>
-                            </div>
-                        </div>
-                    `;
-                    popup.setLngLat(e.lngLat).setHTML(html).addTo(mapResumoCozinhas);
+                    const props = e.features[0].properties;
+                    atualizarHoverBoxSemFome('cozinha', props);
                 });
 
-                // Cluster click
+                mapResumoCozinhas.on('mouseleave', 'mun_choropleth_fill', () => {
+                    atualizarHoverBoxSemFome(null, null);
+                });
+                mapResumoCozinhas.on('mouseleave', 'cozinhas_points', () => {
+                    atualizarHoverBoxSemFome(null, null);
+                });
+
+                // Cluster click para zoom
                 mapResumoCozinhas.on('click', 'cozinhas_clusters', (e) => {
                     const clFeatures = mapResumoCozinhas.queryRenderedFeatures(e.point, { layers: ['cozinhas_clusters'] });
                     if (!clFeatures.length) return;
@@ -5568,22 +6075,23 @@ window.renderizarResumoCozinhas = function () {
                 });
 
                 // Cursors
-                ['cozinhas_points', 'cozinhas_clusters'].forEach(layer => {
+                ['cozinhas_points', 'cozinhas_clusters', 'mun_choropleth_fill'].forEach(layer => {
                     mapResumoCozinhas.on('mouseenter', layer, () => { mapResumoCozinhas.getCanvas().style.cursor = 'pointer'; });
                     mapResumoCozinhas.on('mouseleave', layer, () => { mapResumoCozinhas.getCanvas().style.cursor = ''; });
                 });
-                mapResumoCozinhas.on('mouseenter', 'mun_choropleth_fill', () => {
-                    if (window.visaoSemFomeAtiva === 'maes') mapResumoCozinhas.getCanvas().style.cursor = 'pointer';
-                });
-                mapResumoCozinhas.on('mouseleave', 'mun_choropleth_fill', () => {
-                    mapResumoCozinhas.getCanvas().style.cursor = '';
-                });
             });
 
-            // 6. Inicializar Gráfico de Barras com a visão padrão (cozinhas)
+            // 7. Renderizar Gráficos de Cofinanciamento
+            renderizarGraficosCofinanciamento(data);
+
+            // 8. Renderizar Gráfico de Barras com a visão inicial
             atualizarGraficoSemFome(window.visaoSemFomeAtiva || 'cozinhas');
+
             window.addEventListener('resize', () => {
-                if (chartResumoCozinhasMuns) chartResumoCozinhasMuns.resize();
+                if (mapResumoCozinhas && typeof mapResumoCozinhas.resize === 'function') mapResumoCozinhas.resize();
+                if (chartResumoCozinhasMuns && typeof chartResumoCozinhasMuns.resize === 'function') chartResumoCozinhasMuns.resize();
+                if (chartCofinSerieHistorica && typeof chartCofinSerieHistorica.resize === 'function') chartCofinSerieHistorica.resize();
+                if (chartCofinPorMun && typeof chartCofinPorMun.resize === 'function') chartCofinPorMun.resize();
             });
         })
         .catch(err => {
