@@ -104,7 +104,7 @@ ui_modulo_landing <- function() {
       ),
       
       # =========================================================================
-      # 2. GRANDES NÚMEROS DE PERNAMBUCO
+      # 2. GRANDES NÚMEROS DE PERNAMBUCO (MACROINDICADORES REAIS)
       # =========================================================================
       tags$div(
         class = "mb-5",
@@ -112,106 +112,87 @@ ui_modulo_landing <- function() {
           class = "d-flex justify-content-between align-items-center border-b-2 border-slate-200 pb-2 mb-3",
           tags$div(
             tags$h3(class = "text-xl font-black text-slate-800 uppercase tracking-tight mb-0", tags$i(class = "fas fa-chart-line text-primary me-2"), "Grandes Números de Pernambuco"),
-            tags$p(class = "text-xs font-bold text-slate-500 mb-0", "Panorama consolidado do território pernambucano com base em dados oficiais")
+            tags$p(class = "text-xs font-bold text-slate-500 mb-0", "Principais macroindicadores socioeconômicos e territoriais consolidados do Estado")
           ),
-          tags$span(class = "badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-3 py-1 text-xs font-bold", "Base Atualizada")
+          tags$span(class = "badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-3 py-1 text-xs font-bold", "Base Oficial")
         ),
         
         tags$div(
-          class = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3",
+          class = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4",
           
-          # Card 1: Cobertura Territorial
+          # Card 1: População
           tags$div(
-            class = "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between",
+            class = "bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between",
             tags$div(
-              class = "d-flex justify-content-between align-items-center mb-2",
-              tags$span(class = "text-xs font-black text-slate-500 uppercase tracking-wider", "Malha Territorial"),
-              tags$div(class = "w-8 h-8 rounded-full bg-blue-50 text-primary flex items-center justify-center text-sm", tags$i(class = "fas fa-map-location-dot"))
+              class = "d-flex justify-content-between align-items-center mb-3",
+              tags$span(class = "text-xs font-black text-slate-500 uppercase tracking-wider", "População Total"),
+              tags$div(class = "w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg", tags$i(class = "fas fa-users"))
             ),
             tags$div(
-              tags$span(class = "text-2xl font-black text-slate-800 tracking-tight block", "184 + 1"),
-              tags$span(class = "text-xs font-bold text-slate-500 block", "Municípios e Fernando de Noronha")
-            ),
-            tags$div(
-              class = "mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between",
-              tags$span(class = "badge bg-blue-100 text-blue-800 rounded-pill text-[10px] font-bold px-2 py-0.5", "12 Regiões (RDs)"),
-              tags$span(class = "text-[11px] text-slate-400 font-semibold", "100% de Cobertura")
-            )
-          ),
-          
-          # Card 2: População
-          tags$div(
-            class = "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between",
-            tags$div(
-              class = "d-flex justify-content-between align-items-center mb-2",
-              tags$span(class = "text-xs font-black text-slate-500 uppercase tracking-wider", "População Estimada"),
-              tags$div(class = "w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm", tags$i(class = "fas fa-users"))
-            ),
-            tags$div(
-              tags$span(class = "text-2xl font-black text-slate-800 tracking-tight block", "9.058.931"),
+              tags$span(class = "text-3xl font-black text-slate-800 tracking-tight block mb-1", "9.058.931"),
               tags$span(class = "text-xs font-bold text-slate-500 block", "Habitantes Estimados (2026)")
             ),
             tags$div(
-              class = "mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between",
-              tags$span(class = "badge bg-emerald-100 text-emerald-800 rounded-pill text-[10px] font-bold px-2 py-0.5", "7º no Brasil"),
-              tags$span(class = "text-[11px] text-slate-400 font-semibold", "2º no Nordeste")
+              class = "mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between",
+              tags$span(class = "badge bg-blue-100 text-blue-800 rounded-pill text-[11px] font-bold px-2.5 py-1", "7º no Brasil"),
+              tags$span(class = "text-xs text-slate-500 font-semibold", "2º no Nordeste")
             )
           ),
           
-          # Card 3: PIB Estadual
+          # Card 2: PIB Consolidado
           tags$div(
-            class = "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between",
+            class = "bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between",
             tags$div(
-              class = "d-flex justify-content-between align-items-center mb-2",
-              tags$span(class = "text-xs font-black text-slate-500 uppercase tracking-wider", "PIB Consolidado"),
-              tags$div(class = "w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-sm", tags$i(class = "fas fa-sack-dollar"))
+              class = "d-flex justify-content-between align-items-center mb-3",
+              tags$span(class = "text-xs font-black text-slate-500 uppercase tracking-wider", "PIB Estadual"),
+              tags$div(class = "w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg", tags$i(class = "fas fa-sack-dollar"))
             ),
             tags$div(
-              tags$span(class = "text-2xl font-black text-slate-800 tracking-tight block", "R$ 254+ Bi"),
-              tags$span(class = "text-xs font-bold text-slate-500 block", "Soma dos PIBs Municipais")
+              tags$span(class = "text-3xl font-black text-slate-800 tracking-tight block mb-1", "R$ 254,8 Bi"),
+              tags$span(class = "text-xs font-bold text-slate-500 block", "Soma das Economias Municipais")
             ),
             tags$div(
-              class = "mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between",
-              tags$span(class = "badge bg-amber-100 text-amber-800 rounded-pill text-[10px] font-bold px-2 py-0.5", "Economia Polo"),
-              tags$span(class = "text-[11px] text-slate-400 font-semibold", "Agro, Indústria & Serv.")
+              class = "mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between",
+              tags$span(class = "badge bg-emerald-100 text-emerald-800 rounded-pill text-[11px] font-bold px-2.5 py-1", "2º Maior do NE"),
+              tags$span(class = "text-xs text-slate-500 font-semibold", "Indústria, Agro & Serv.")
             )
           ),
           
-          # Card 4: Saúde Fiscal
+          # Card 3: PIB per Capita
           tags$div(
-            class = "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between",
+            class = "bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between",
             tags$div(
-              class = "d-flex justify-content-between align-items-center mb-2",
-              tags$span(class = "text-xs font-black text-slate-500 uppercase tracking-wider", "Gestão Fiscal (CAPAG)"),
-              tags$div(class = "w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-sm", tags$i(class = "fas fa-building-columns"))
+              class = "d-flex justify-content-between align-items-center mb-3",
+              tags$span(class = "text-xs font-black text-slate-500 uppercase tracking-wider", "PIB per Capita"),
+              tags$div(class = "w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg", tags$i(class = "fas fa-chart-line"))
             ),
             tags$div(
-              tags$span(class = "text-2xl font-black text-slate-800 tracking-tight block", "184 Municípios"),
-              tags$span(class = "text-xs font-bold text-slate-500 block", "Capacidade de Pagamento STN")
+              tags$span(class = "text-3xl font-black text-slate-800 tracking-tight block mb-1", "R$ 27.910"),
+              tags$span(class = "text-xs font-bold text-slate-500 block", "Renda Econômica Média Anual")
             ),
             tags$div(
-              class = "mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between",
-              tags$span(class = "badge bg-purple-100 text-purple-800 rounded-pill text-[10px] font-bold px-2 py-0.5", "Notas A, B, C e D"),
-              tags$span(class = "text-[11px] text-slate-400 font-semibold", "Aptidão a Crédito")
+              class = "mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between",
+              tags$span(class = "badge bg-amber-100 text-amber-800 rounded-pill text-[11px] font-bold px-2.5 py-1", "Média Estadual"),
+              tags$span(class = "text-xs text-slate-500 font-semibold", "Por Habitante")
             )
           ),
           
-          # Card 5: Pautas Prioritárias
+          # Card 4: Área Territorial
           tags$div(
-            class = "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between",
+            class = "bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between",
             tags$div(
-              class = "d-flex justify-content-between align-items-center mb-2",
-              tags$span(class = "text-xs font-black text-slate-500 uppercase tracking-wider", "Programas Prioritários"),
-              tags$div(class = "w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-sm", tags$i(class = "fas fa-hand-holding-heart"))
+              class = "d-flex justify-content-between align-items-center mb-3",
+              tags$span(class = "text-xs font-black text-slate-500 uppercase tracking-wider", "Área Territorial"),
+              tags$div(class = "w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg", tags$i(class = "fas fa-map"))
             ),
             tags$div(
-              tags$span(class = "text-2xl font-black text-slate-800 tracking-tight block", "Fome & Águas"),
-              tags$span(class = "text-xs font-bold text-slate-500 block", "Cozinhas & Segurança Hídrica")
+              tags$span(class = "text-3xl font-black text-slate-800 tracking-tight block mb-1", "98.067 km²"),
+              tags$span(class = "text-xs font-bold text-slate-500 block", "Extensão Territorial de PE")
             ),
             tags$div(
-              class = "mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between",
-              tags$span(class = "badge bg-rose-100 text-rose-800 rounded-pill text-[10px] font-bold px-2 py-0.5", "Monitoramento Ativo"),
-              tags$span(class = "text-[11px] text-slate-400 font-semibold", "Ações Estruturantes")
+              class = "mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between",
+              tags$span(class = "badge bg-purple-100 text-purple-800 rounded-pill text-[11px] font-bold px-2.5 py-1", "12 Regiões (RDs)"),
+              tags$span(class = "text-xs text-slate-500 font-semibold", "184 Muns + Noronha")
             )
           )
         )
@@ -268,7 +249,7 @@ ui_modulo_landing <- function() {
             tags$button(
               type = "button",
               class = "btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2",
-              onclick = "window.mudarAbaAurora('Análises Temáticas', null)",
+              onclick = "window.mudarAbaAurora('Temáticas', null)",
               tags$i(class = "fas fa-arrow-right"), "Ver Programas Prioritários"
             )
           ),
@@ -406,7 +387,7 @@ ui_modulo_landing <- function() {
               tags$p(class = "text-xs text-slate-600 leading-relaxed mb-3", 
                      "Consulte o mapa de cozinhas comunitárias do Pernambuco sem Fome, a malha de adutoras e municípios atendidos pela Compesa e o diagnóstico fiscal.")
             ),
-            tags$button(class = "btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50", onclick = "window.mudarAbaAurora('Análises Temáticas', null)", "Ir para Temáticas")
+            tags$button(class = "btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50", onclick = "window.mudarAbaAurora('Temáticas', null)", "Ir para Temáticas")
           ),
           
           # Jornada 4: Benchmarking Federativo

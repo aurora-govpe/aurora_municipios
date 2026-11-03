@@ -3781,7 +3781,31 @@ window.renderizarResumoCapag = function () {
 window.pautaResumoAtiva = 'capag';
 
 window.alternarPautaResumos = function (pauta, btn) {
-    window.pautaResumoAtiva = pauta || 'capag';
+    window.pautaResumoAtiva = pauta || 'cozinhas';
+    const p = window.pautaResumoAtiva;
+
+    // 1. Sincroniza botões no Topbar
+    const topCapag = document.getElementById('topbar_btn_pauta_capag');
+    const topAguas = document.getElementById('topbar_btn_pauta_aguas');
+    const topCozinhas = document.getElementById('topbar_btn_pauta_cozinhas');
+    [topCapag, topAguas, topCozinhas].forEach(b => {
+        if (b) {
+            b.classList.remove('btn-primary', 'text-white', 'shadow-xs');
+            b.classList.add('text-slate-600', 'bg-transparent', 'border-0');
+        }
+    });
+    if (p === 'capag' && topCapag) {
+        topCapag.classList.remove('text-slate-600', 'bg-transparent', 'border-0');
+        topCapag.classList.add('btn-primary', 'text-white', 'shadow-xs');
+    } else if (p === 'aguas' && topAguas) {
+        topAguas.classList.remove('text-slate-600', 'bg-transparent', 'border-0');
+        topAguas.classList.add('btn-primary', 'text-white', 'shadow-xs');
+    } else if (p === 'cozinhas' && topCozinhas) {
+        topCozinhas.classList.remove('text-slate-600', 'bg-transparent', 'border-0');
+        topCozinhas.classList.add('btn-primary', 'text-white', 'shadow-xs');
+    }
+
+    // 2. Sincroniza botões e blocos na página interna
     const btnCapag = document.getElementById('btn_pauta_resumo_capag');
     const btnAguas = document.getElementById('btn_pauta_resumo_aguas');
     const btnCozinhas = document.getElementById('btn_pauta_resumo_cozinhas');
@@ -3789,7 +3813,6 @@ window.alternarPautaResumos = function (pauta, btn) {
     const blocoAguas = document.getElementById('resumo_pauta_aguas');
     const blocoCozinhas = document.getElementById('resumo_pauta_cozinhas');
 
-    // Desativa todos os botões e oculta todos os blocos
     [btnCapag, btnAguas, btnCozinhas].forEach(b => {
         if (b) {
             b.classList.remove('btn-primary', 'text-white', 'shadow-sm');
@@ -3800,7 +3823,7 @@ window.alternarPautaResumos = function (pauta, btn) {
         if (bl) bl.classList.add('d-none');
     });
 
-    if (window.pautaResumoAtiva === 'capag') {
+    if (p === 'capag') {
         if (btnCapag) {
             btnCapag.classList.remove('btn-light', 'text-slate-600');
             btnCapag.classList.add('btn-primary', 'text-white', 'shadow-sm');
@@ -3809,7 +3832,7 @@ window.alternarPautaResumos = function (pauta, btn) {
         if (typeof window.renderizarResumoCapag === 'function') {
             window.renderizarResumoCapag();
         }
-    } else if (window.pautaResumoAtiva === 'aguas') {
+    } else if (p === 'aguas') {
         if (btnAguas) {
             btnAguas.classList.remove('btn-light', 'text-slate-600');
             btnAguas.classList.add('btn-primary', 'text-white', 'shadow-sm');
@@ -3818,7 +3841,7 @@ window.alternarPautaResumos = function (pauta, btn) {
         if (typeof window.renderizarResumoAguas === 'function') {
             window.renderizarResumoAguas();
         }
-    } else if (window.pautaResumoAtiva === 'cozinhas') {
+    } else if (p === 'cozinhas') {
         if (btnCozinhas) {
             btnCozinhas.classList.remove('btn-light', 'text-slate-600');
             btnCozinhas.classList.add('btn-primary', 'text-white', 'shadow-sm');

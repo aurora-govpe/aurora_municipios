@@ -25,19 +25,19 @@
   <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" defer></script>
-  <script src="js/core.js?v=1793736292.16408"></script>
-  <script src="js/landing.js?v=1793736292.16414"></script>
-  <script src="js/ufs.js?v=1793736292.16418"></script>
-  <script src="js/ficha.js?v=1793736292.16423"></script>
-  <script src="js/regioes.js?v=1793736292.16427"></script>
-  <script src="js/app.js?v=1793736292.16431"></script>
+  <script src="js/core.js?v=1793747270.03408"></script>
+  <script src="js/landing.js?v=1793747270.03414"></script>
+  <script src="js/ufs.js?v=1793747270.03418"></script>
+  <script src="js/ficha.js?v=1793747270.03422"></script>
+  <script src="js/regioes.js?v=1793747270.03425"></script>
+  <script src="js/app.js?v=1793747270.03429"></script>
 </head>
 <html lang="pt-br">
   <body class="bg-slate-50 antialiased overflow-hidden m-0 p-0">
     <div class="aurora-app-container p-0">
       <nav id="aurora-sidebar" class="d-none"></nav>
       <div class="aurora-main-wrapper">
-        <header class="aurora-topbar d-flex justify-content-between align-items-center gap-3 px-4 py-2">
+        <header class="aurora-topbar d-flex justify-content-between align-items-center gap-2 px-3 py-2" style="flex-wrap: nowrap; min-height: 54px;">
           <div class="d-flex align-items-center gap-3 flex-wrap">
             <div class="d-flex align-items-center gap-2 cursor-pointer select-none" onclick="window.mudarAbaAurora(&#39;Início&#39;, null)" title="Ir para o Início">
               <img src="images/aurora.png" class="w-8 h-8 rounded-full border border-slate-200 shadow-xs object-cover"/>
@@ -56,9 +56,9 @@
                 <i class="fas fa-map-location-dot me-1"></i>
                 Regiões
               </button>
-              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Análises Temáticas&#39;, this)">
+              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Temáticas&#39;, this)">
                 <i class="fas fa-layer-group me-1"></i>
-                Análises Temáticas
+                Temáticas
               </button>
               <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Municípios&#39;, this)">
                 <i class="fas fa-city me-1"></i>
@@ -78,27 +78,62 @@
             <div id="controles_ufs" class="d-none align-items-center gap-2 flex-nowrap">
               <div class="d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200">
                 <i class="fas fa-flag text-primary"></i>
-                <select id="ufs_f_uf" class="form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0" style="width: 195px; font-size: 0.85rem; outline: none; box-shadow: none;"></select>
+                <select id="ufs_f_uf" class="form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0" style="max-width: 170px; font-size: 0.85rem; outline: none; box-shadow: none;"></select>
               </div>
-              <div id="ufs_navbar_eixos" class="d-none d-lg-flex align-items-center gap-1 bg-slate-100 p-1 rounded-pill border border-slate-200">
-                <button class="btn-nav-topbar" onclick="window.scrollToSection(&#39;aba_ufs&#39;)" title="Topo da Página">
-                  <i class="fas fa-arrow-up"></i>
+              <div class="dropdown d-none d-md-block">
+                <button class="btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Navegar pelos 5 Eixos do Benchmarking" style="font-size: 0.8rem; height: 32px;">
+                  <i class="fas fa-compass text-primary" style="font-size: 0.85rem;"></i>
+                  <span>Eixos</span>
+                  <i class="fas fa-chevron-down text-slate-400 ms-1" style="font-size: 0.65rem;"></i>
                 </button>
-                <div class="vr my-1 bg-slate-300" style="width: 1px; height: 16px;"></div>
-                <button class="btn-nav-topbar" onclick="window.scrollToSection(&#39;sec_ufs_conhecimento&#39;)" title="1. Conhecimento e Inovação">
-                  <i class="fas fa-lightbulb text-warning"></i>
+                <ul class="dropdown-menu dropdown-menu-end shadow-xl border border-slate-200 py-2 text-xs rounded-2xl" style="min-width: 250px; z-index: 1060;">
+                  <li>
+                    <a class="dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2" href="javascript:void(0)" onclick="window.scrollToSection(&#39;sec_ufs_conhecimento&#39;)">
+                      <i class="fas fa-lightbulb text-warning w-4 text-center"></i>
+                      1. Conhecimento e Inovação
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2" href="javascript:void(0)" onclick="window.scrollToSection(&#39;sec_ufs_seguranca&#39;)">
+                      <i class="fas fa-shield-halved text-danger w-4 text-center"></i>
+                      2. Segurança e Cidadania
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2" href="javascript:void(0)" onclick="window.scrollToSection(&#39;sec_ufs_saude&#39;)">
+                      <i class="fas fa-heartbeat text-primary w-4 text-center"></i>
+                      3. Saúde e Qualidade de Vida
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2" href="javascript:void(0)" onclick="window.scrollToSection(&#39;sec_ufs_sustentabilidade&#39;)">
+                      <i class="fas fa-tree text-success w-4 text-center"></i>
+                      4. Desenvolvimento Sustentável
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2" href="javascript:void(0)" onclick="window.scrollToSection(&#39;sec_ufs_gestao&#39;)">
+                      <i class="fas fa-scale-balanced text-purple-700 w-4 text-center"></i>
+                      5. Gestão e Transparência
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div id="controles_tematicas" class="d-none align-items-center gap-2 flex-nowrap">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider d-none d-sm-inline">Pauta:</span>
+              <div class="d-inline-flex bg-slate-100 p-0.5 rounded-pill border border-slate-200">
+                <button id="topbar_btn_pauta_cozinhas" type="button" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs btn-primary text-white shadow-xs" onclick="window.alternarPautaResumos(&#39;cozinhas&#39;, this)">
+                  <i class="fas fa-utensils me-1 text-amber-500"></i>
+                  PE sem Fome
                 </button>
-                <button class="btn-nav-topbar" onclick="window.scrollToSection(&#39;sec_ufs_seguranca&#39;)" title="2. Segurança e Cidadania">
-                  <i class="fas fa-shield-halved text-danger"></i>
+                <button id="topbar_btn_pauta_aguas" type="button" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.alternarPautaResumos(&#39;aguas&#39;, this)">
+                  <i class="fas fa-droplet me-1 text-blue-500"></i>
+                  Águas
                 </button>
-                <button class="btn-nav-topbar" onclick="window.scrollToSection(&#39;sec_ufs_saude&#39;)" title="3. Saúde e Qualidade de Vida">
-                  <i class="fas fa-heartbeat text-primary"></i>
-                </button>
-                <button class="btn-nav-topbar" onclick="window.scrollToSection(&#39;sec_ufs_sustentabilidade&#39;)" title="4. Desenvolvimento Sustentável">
-                  <i class="fas fa-tree text-success"></i>
-                </button>
-                <button class="btn-nav-topbar" onclick="window.scrollToSection(&#39;sec_ufs_gestao&#39;)" title="5. Gestão, Transparência e Participação">
-                  <i class="fas fa-scale-balanced text-purple-700"></i>
+                <button id="topbar_btn_pauta_capag" type="button" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.alternarPautaResumos(&#39;capag&#39;, this)">
+                  <i class="fas fa-building-columns me-1 text-purple-600"></i>
+                  CAPAG
                 </button>
               </div>
             </div>
@@ -209,7 +244,7 @@
                   </ul>
                 </div>
               </div>
-              <div id="ficha_data_atualizacao_header" class="bg-slate-100 rounded-pill px-3 py-1 border border-slate-200 d-inline-flex align-items-center ms-1" style="white-space: nowrap; flex-shrink: 0;">
+              <div id="ficha_data_atualizacao_header" class="bg-slate-100 rounded-pill px-3 py-1 border border-slate-200 d-none align-items-center ms-1" style="white-space: nowrap; flex-shrink: 0;">
                 <i class="fas fa-clock me-1.5 text-primary" style="font-size: 0.8rem;"></i>
                 <span id="ficha_data_atualizacao_txt" class="fw-bold text-slate-700 uppercase tracking-tight" style="font-size: 0.72rem; letter-spacing: 0.02em;">Atualizado em: -</span>
               </div>
@@ -270,89 +305,73 @@
                         <i class="fas fa-chart-line text-primary me-2"></i>
                         Grandes Números de Pernambuco
                       </h3>
-                      <p class="text-xs font-bold text-slate-500 mb-0">Panorama consolidado do território pernambucano com base em dados oficiais</p>
+                      <p class="text-xs font-bold text-slate-500 mb-0">Principais macroindicadores socioeconômicos e territoriais consolidados do Estado</p>
                     </div>
-                    <span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-3 py-1 text-xs font-bold">Base Atualizada</span>
+                    <span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-3 py-1 text-xs font-bold">Base Oficial</span>
                   </div>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Malha Territorial</span>
-                        <div class="w-8 h-8 rounded-full bg-blue-50 text-primary flex items-center justify-center text-sm">
-                          <i class="fas fa-map-location-dot"></i>
-                        </div>
-                      </div>
-                      <div>
-                        <span class="text-2xl font-black text-slate-800 tracking-tight block">184 + 1</span>
-                        <span class="text-xs font-bold text-slate-500 block">Municípios e Fernando de Noronha</span>
-                      </div>
-                      <div class="mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between">
-                        <span class="badge bg-blue-100 text-blue-800 rounded-pill text-[10px] font-bold px-2 py-0.5">12 Regiões (RDs)</span>
-                        <span class="text-[11px] text-slate-400 font-semibold">100% de Cobertura</span>
-                      </div>
-                    </div>
-                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">População Estimada</span>
-                        <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">População Total</span>
+                        <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
                           <i class="fas fa-users"></i>
                         </div>
                       </div>
                       <div>
-                        <span class="text-2xl font-black text-slate-800 tracking-tight block">9.058.931</span>
+                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">9.058.931</span>
                         <span class="text-xs font-bold text-slate-500 block">Habitantes Estimados (2026)</span>
                       </div>
-                      <div class="mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between">
-                        <span class="badge bg-emerald-100 text-emerald-800 rounded-pill text-[10px] font-bold px-2 py-0.5">7º no Brasil</span>
-                        <span class="text-[11px] text-slate-400 font-semibold">2º no Nordeste</span>
+                      <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-blue-100 text-blue-800 rounded-pill text-[11px] font-bold px-2.5 py-1">7º no Brasil</span>
+                        <span class="text-xs text-slate-500 font-semibold">2º no Nordeste</span>
                       </div>
                     </div>
-                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">PIB Consolidado</span>
-                        <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">PIB Estadual</span>
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
                           <i class="fas fa-sack-dollar"></i>
                         </div>
                       </div>
                       <div>
-                        <span class="text-2xl font-black text-slate-800 tracking-tight block">R$ 254+ Bi</span>
-                        <span class="text-xs font-bold text-slate-500 block">Soma dos PIBs Municipais</span>
+                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">R$ 254,8 Bi</span>
+                        <span class="text-xs font-bold text-slate-500 block">Soma das Economias Municipais</span>
                       </div>
-                      <div class="mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between">
-                        <span class="badge bg-amber-100 text-amber-800 rounded-pill text-[10px] font-bold px-2 py-0.5">Economia Polo</span>
-                        <span class="text-[11px] text-slate-400 font-semibold">Agro, Indústria &amp; Serv.</span>
+                      <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-emerald-100 text-emerald-800 rounded-pill text-[11px] font-bold px-2.5 py-1">2º Maior do NE</span>
+                        <span class="text-xs text-slate-500 font-semibold">Indústria, Agro &amp; Serv.</span>
                       </div>
                     </div>
-                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Gestão Fiscal (CAPAG)</span>
-                        <div class="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-sm">
-                          <i class="fas fa-building-columns"></i>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">PIB per Capita</span>
+                        <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
+                          <i class="fas fa-chart-line"></i>
                         </div>
                       </div>
                       <div>
-                        <span class="text-2xl font-black text-slate-800 tracking-tight block">184 Municípios</span>
-                        <span class="text-xs font-bold text-slate-500 block">Capacidade de Pagamento STN</span>
+                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">R$ 27.910</span>
+                        <span class="text-xs font-bold text-slate-500 block">Renda Econômica Média Anual</span>
                       </div>
-                      <div class="mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between">
-                        <span class="badge bg-purple-100 text-purple-800 rounded-pill text-[10px] font-bold px-2 py-0.5">Notas A, B, C e D</span>
-                        <span class="text-[11px] text-slate-400 font-semibold">Aptidão a Crédito</span>
+                      <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-amber-100 text-amber-800 rounded-pill text-[11px] font-bold px-2.5 py-1">Média Estadual</span>
+                        <span class="text-xs text-slate-500 font-semibold">Por Habitante</span>
                       </div>
                     </div>
-                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Programas Prioritários</span>
-                        <div class="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-sm">
-                          <i class="fas fa-hand-holding-heart"></i>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Área Territorial</span>
+                        <div class="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg">
+                          <i class="fas fa-map"></i>
                         </div>
                       </div>
                       <div>
-                        <span class="text-2xl font-black text-slate-800 tracking-tight block">Fome &amp; Águas</span>
-                        <span class="text-xs font-bold text-slate-500 block">Cozinhas &amp; Segurança Hídrica</span>
+                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">98.067 km²</span>
+                        <span class="text-xs font-bold text-slate-500 block">Extensão Territorial de PE</span>
                       </div>
-                      <div class="mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between">
-                        <span class="badge bg-rose-100 text-rose-800 rounded-pill text-[10px] font-bold px-2 py-0.5">Monitoramento Ativo</span>
-                        <span class="text-[11px] text-slate-400 font-semibold">Ações Estruturantes</span>
+                      <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-purple-100 text-purple-800 rounded-pill text-[11px] font-bold px-2.5 py-1">12 Regiões (RDs)</span>
+                        <span class="text-xs text-slate-500 font-semibold">184 Muns + Noronha</span>
                       </div>
                     </div>
                   </div>
@@ -389,7 +408,7 @@
                         <h4 class="font-black text-slate-800 text-lg mb-2">Análises Temáticas</h4>
                         <p class="text-slate-600 text-sm leading-relaxed mb-4">Acompanhamento em profundidade dos programas centrais do Governo de Pernambuco: Pernambuco sem Fome (Cozinhas Comunitárias e Mães de PE), Águas de Pernambuco (Compesa e Adutoras) e Saúde Fiscal (CAPAG).</p>
                       </div>
-                      <button type="button" class="btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Análises Temáticas&#39;, null)">
+                      <button type="button" class="btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Temáticas&#39;, null)">
                         <i class="fas fa-arrow-right"></i>
                         Ver Programas Prioritários
                       </button>
@@ -492,7 +511,7 @@
                         <h5 class="font-black text-slate-800 text-sm mb-2">Ações Estruturantes de Estado</h5>
                         <p class="text-xs text-slate-600 leading-relaxed mb-3">Consulte o mapa de cozinhas comunitárias do Pernambuco sem Fome, a malha de adutoras e municípios atendidos pela Compesa e o diagnóstico fiscal.</p>
                       </div>
-                      <button class="btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50" onclick="window.mudarAbaAurora(&#39;Análises Temáticas&#39;, null)">Ir para Temáticas</button>
+                      <button class="btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50" onclick="window.mudarAbaAurora(&#39;Temáticas&#39;, null)">Ir para Temáticas</button>
                     </div>
                     <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
                       <div>

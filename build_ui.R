@@ -45,7 +45,7 @@ build_ui <- function() {
   sidebar <- tags$nav(id = "aurora-sidebar", class = "d-none")
   
   topbar <- tags$header(
-    class = "aurora-topbar d-flex justify-content-between align-items-center gap-3 px-4 py-2",
+    class = "aurora-topbar d-flex justify-content-between align-items-center gap-2 px-3 py-2", style = "flex-wrap: nowrap; min-height: 54px;",
     
     tags$div(
       class = "d-flex align-items-center gap-3 flex-wrap",
@@ -75,8 +75,8 @@ build_ui <- function() {
         ),
         tags$button(
           class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
-          onclick = "mudarAbaAurora('Análises Temáticas', this)",
-          tags$i(class = "fas fa-layer-group me-1"), "Análises Temáticas"
+          onclick = "mudarAbaAurora('Temáticas', this)",
+          tags$i(class = "fas fa-layer-group me-1"), "Temáticas"
         ),
         tags$button(
           class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
@@ -99,7 +99,7 @@ build_ui <- function() {
     tags$div(
       class = "d-flex align-items-center gap-2 flex-nowrap d-print-none",
       
-      # CONTROLES DA ABA UFs (Com bullets dos 5 eixos no topo)
+      # CONTROLES DA ABA UFs (Benchmarking)
       tags$div(
         id = "controles_ufs",
         class = "d-none align-items-center gap-2 flex-nowrap",
@@ -109,19 +109,62 @@ build_ui <- function() {
           tags$select(
             id = "ufs_f_uf", 
             class = "form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0",
-            style = "width: 195px; font-size: 0.85rem; outline: none; box-shadow: none;"
+            style = "max-width: 170px; font-size: 0.85rem; outline: none; box-shadow: none;"
           )
         ),
         tags$div(
-          id = "ufs_navbar_eixos",
-          class = "d-none d-lg-flex align-items-center gap-1 bg-slate-100 p-1 rounded-pill border border-slate-200",
-          tags$button(class = "btn-nav-topbar", onclick = "window.scrollToSection('aba_ufs')", title = "Topo da Página", tags$i(class = "fas fa-arrow-up")),
-          tags$div(class = "vr my-1 bg-slate-300", style = "width: 1px; height: 16px;"),
-          tags$button(class = "btn-nav-topbar", onclick = "window.scrollToSection('sec_ufs_conhecimento')", title = "1. Conhecimento e Inovação", tags$i(class = "fas fa-lightbulb text-warning")),
-          tags$button(class = "btn-nav-topbar", onclick = "window.scrollToSection('sec_ufs_seguranca')", title = "2. Segurança e Cidadania", tags$i(class = "fas fa-shield-halved text-danger")),
-          tags$button(class = "btn-nav-topbar", onclick = "window.scrollToSection('sec_ufs_saude')", title = "3. Saúde e Qualidade de Vida", tags$i(class = "fas fa-heartbeat text-primary")),
-          tags$button(class = "btn-nav-topbar", onclick = "window.scrollToSection('sec_ufs_sustentabilidade')", title = "4. Desenvolvimento Sustentável", tags$i(class = "fas fa-tree text-success")),
-          tags$button(class = "btn-nav-topbar", onclick = "window.scrollToSection('sec_ufs_gestao')", title = "5. Gestão, Transparência e Participação", tags$i(class = "fas fa-scale-balanced text-purple-700"))
+          class = "dropdown d-none d-md-block",
+          tags$button(
+            class = "btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 shadow-sm",
+            type = "button",
+            `data-bs-toggle` = "dropdown",
+            `aria-expanded` = "false",
+            title = "Navegar pelos 5 Eixos do Benchmarking",
+            style = "font-size: 0.8rem; height: 32px;",
+            tags$i(class = "fas fa-compass text-primary", style = "font-size: 0.85rem;"),
+            tags$span("Eixos"),
+            tags$i(class = "fas fa-chevron-down text-slate-400 ms-1", style = "font-size: 0.65rem;")
+          ),
+          tags$ul(
+            class = "dropdown-menu dropdown-menu-end shadow-xl border border-slate-200 py-2 text-xs rounded-2xl",
+            style = "min-width: 250px; z-index: 1060;",
+            tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_conhecimento')", tags$i(class = "fas fa-lightbulb text-warning w-4 text-center"), "1. Conhecimento e Inovação")),
+            tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_seguranca')", tags$i(class = "fas fa-shield-halved text-danger w-4 text-center"), "2. Segurança e Cidadania")),
+            tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_saude')", tags$i(class = "fas fa-heartbeat text-primary w-4 text-center"), "3. Saúde e Qualidade de Vida")),
+            tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_sustentabilidade')", tags$i(class = "fas fa-tree text-success w-4 text-center"), "4. Desenvolvimento Sustentável")),
+            tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_gestao')", tags$i(class = "fas fa-scale-balanced text-purple-700 w-4 text-center"), "5. Gestão e Transparência"))
+          )
+        )
+      ),
+      
+      # CONTROLES DA ABA TEMÁTICAS (SELETOR DE PAUTA NO TOPBAR)
+      tags$div(
+        id = "controles_tematicas",
+        class = "d-none align-items-center gap-2 flex-nowrap",
+        tags$span(class = "text-xs font-bold text-slate-500 uppercase tracking-wider d-none d-sm-inline", "Pauta:"),
+        tags$div(
+          class = "d-inline-flex bg-slate-100 p-0.5 rounded-pill border border-slate-200",
+          tags$button(
+            id = "topbar_btn_pauta_cozinhas",
+            type = "button",
+            class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs btn-primary text-white shadow-xs",
+            onclick = "window.alternarPautaResumos('cozinhas', this)",
+            tags$i(class = "fas fa-utensils me-1 text-amber-500"), "PE sem Fome"
+          ),
+          tags$button(
+            id = "topbar_btn_pauta_aguas",
+            type = "button",
+            class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
+            onclick = "window.alternarPautaResumos('aguas', this)",
+            tags$i(class = "fas fa-droplet me-1 text-blue-500"), "Águas"
+          ),
+          tags$button(
+            id = "topbar_btn_pauta_capag",
+            type = "button",
+            class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
+            onclick = "window.alternarPautaResumos('capag', this)",
+            tags$i(class = "fas fa-building-columns me-1 text-purple-600"), "CAPAG"
+          )
         )
       ),
       
@@ -222,7 +265,7 @@ build_ui <- function() {
       # --- BADGE DA DATA COM FLEX-SHRINK: 0 E ALINHAMENTO FIXO ---
         tags$div(
           id = "ficha_data_atualizacao_header",
-          class = "bg-slate-100 rounded-pill px-3 py-1 border border-slate-200 d-inline-flex align-items-center ms-1", # Removeu d-none
+          class = "bg-slate-100 rounded-pill px-3 py-1 border border-slate-200 d-none align-items-center ms-1", # Removeu d-none
           style = "white-space: nowrap; flex-shrink: 0;",
           tags$i(class = "fas fa-clock me-1.5 text-primary", style = "font-size: 0.8rem;"),
           tags$span(

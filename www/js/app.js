@@ -7,13 +7,10 @@ window.onload = function() {
 window.iniciarApp = function() {
   console.log("[MASTER] Iniciando App Aurora...");
   document.body.classList.add('logado');
-  
-  // A aba inicial padrÃ£o Ã© a Landing Page (InÃ­cio)
-  // Os mÃ³dulos analÃ­ticos especializados (RegiÃµes, MunicÃ­pios, UFs) utilizam carregamento sob demanda (lazy)
 };
 
 // ==========================================
-// LÃ“GICA DO CHAT AURORA
+// LÓGICA DO CHAT AURORA
 // ==========================================
 
 window.toggleAuroraChat = function() {
@@ -35,7 +32,6 @@ window.enviarMensagemAurora = async function() {
   
   if (!mensagem) return;
 
-  // 1. Adiciona a mensagem do usuÃ¡rio na tela de forma segura
   msgArea.insertAdjacentHTML('beforeend', `
     <div class="self-end bg-[#0C2856] text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-sm">
       ${mensagem}
@@ -44,17 +40,15 @@ window.enviarMensagemAurora = async function() {
   inputEl.value = "";
   msgArea.scrollTop = msgArea.scrollHeight;
 
-  // 2. Adiciona indicador de "digitando..."
   const typingId = "typing-" + Date.now();
   msgArea.insertAdjacentHTML('beforeend', `
     <div id="${typingId}" class="self-start bg-white border border-slate-200 text-slate-500 p-3 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm flex items-center gap-2">
-      <i class="fas fa-circle-notch fa-spin"></i> Aurora estÃ¡ pensando...
+      <i class="fas fa-circle-notch fa-spin"></i> Aurora está pensando...
     </div>
   `);
   msgArea.scrollTop = msgArea.scrollHeight;
 
   try {
-    // 3. Envia para a API Plumber
     const res = await window.fetchSeguro(`${window.basePath || ''}/api/aurora/perguntar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -65,16 +59,13 @@ window.enviarMensagemAurora = async function() {
     
     const data = await res.json();
     
-    // 4. Remove "digitando..."
     const typEl = document.getElementById(typingId);
     if (typEl) typEl.remove();
 
-    // 5. Converte o Markdown da IA para HTML nativo
     const htmlResposta = (typeof marked !== 'undefined' && marked.parse)
       ? marked.parse(data.resposta || "")
       : (data.resposta || "").replace(/\n/g, '<br>');
 
-    // 6. Insere a resposta formatada
     msgArea.insertAdjacentHTML('beforeend', `
       <div class="aurora-markdown self-start bg-white border border-slate-200 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm" style="font-size: 0.9rem;">
         ${htmlResposta}
@@ -95,7 +86,6 @@ window.enviarMensagemAurora = async function() {
   }
 };
 
-// Permite enviar a mensagem pressionando Enter
 document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("aurora-chat-input")?.addEventListener("keypress", function(e) {
     if (e.key === "Enter") window.enviarMensagemAurora();
@@ -106,7 +96,6 @@ window.usarPerguntaPronta = function(texto) {
     const inputEl = document.getElementById("aurora-chat-input");
     if (!inputEl) return;
     
-    // Se o chat estiver fechado, abre automaticamente
     const container = document.getElementById("aurora-chat-container");
     if (container && container.classList.contains("scale-0")) {
         window.toggleAuroraChat();
@@ -117,9 +106,11 @@ window.usarPerguntaPronta = function(texto) {
 };
 
 window.moduloFichaIniciado = false;
+window.moduloRegioesIniciado = false;
+window.moduloUFsIniciado = false;
 
 window.scrollToSection = function (id) {
-  if (id === 'aba_inicio' || id === 'aba_ficha' || id === 'aba_regioes' || id === 'aba_ufs' || id === 'topo') {
+  if (id === 'aba_inicio' || id === 'aba_ficha' || id === 'aba_regioes' || id === 'aba_ufs' || id === 'aba_tematicas' || id === 'topo') {
     const container = document.querySelector('.aurora-content-area');
     if (container) {
       container.scrollTo({ top: 0, behavior: 'smooth' });
@@ -130,85 +121,89 @@ window.scrollToSection = function (id) {
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
+function normalizarAba(str) {
+  if (!str) return "";
+  return String(str).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 window.mudarAbaAurora = function(nomeAba, elemento) {
-  document.querySelectorAll('.tab-pane').forEach(function(el) { el.classList.remove('active', 'show'); });
-  
-  let alvo = document.querySelector(".tab-pane[data-value='" + nomeAba + "']");
-  if (!alvo && (nomeAba === 'InÃ­cio' || nomeAba === 'Inicio')) {
+  const norm = normalizarAba(nomeAba);
+  console.log("[Navegação] Mudando para aba:", nomeAba, "-> normalizado:", norm);
+
+  // 1. Oculta todos os tab-panes
+  document.querySelectorAll('.tab-pane').forEach(function(el) { 
+    el.classList.remove('active', 'show'); 
+  });
+
+  // 2. Determina qual o ID alvo
+  let alvo = null;
+  if (norm.includes('inicio')) {
     alvo = document.getElementById('aba_inicio');
-  } else if (!alvo && (nomeAba === 'MunicÃ­pios' || nomeAba === 'Ficha Municipal' || nomeAba === 'Municipios')) {
-    alvo = document.getElementById('aba_ficha');
-  } else if (!alvo && (nomeAba === 'Comparativo UFs' || nomeAba === 'UFs' || nomeAba === 'Benchmarking')) {
-    alvo = document.getElementById('aba_ufs');
-  } else if (!alvo && (nomeAba === 'RegiÃµes' || nomeAba === 'Regioes')) {
+  } else if (norm.includes('regio')) {
     alvo = document.getElementById('aba_regioes');
-  } else if (!alvo && (nomeAba === 'AnÃ¡lises TemÃ¡ticas' || nomeAba === 'TemÃ¡ticas' || nomeAba === 'Tematicas')) {
+  } else if (norm.includes('temat') || norm.includes('pauta')) {
     alvo = document.getElementById('aba_tematicas');
-  } else if (!alvo && (nomeAba === 'Metadados')) {
+  } else if (norm.includes('municip') || norm.includes('ficha')) {
+    alvo = document.getElementById('aba_ficha');
+  } else if (norm.includes('uf') || norm.includes('comparativ') || norm.includes('bench')) {
+    alvo = document.getElementById('aba_ufs');
+  } else if (norm.includes('meta')) {
     alvo = document.getElementById('aba_metadados');
   }
-  
-  if (alvo) alvo.classList.add('active', 'show');
 
-  // Rola o conteÃºdo principal para o topo na troca de aba
+  // Fallback por data-value
+  if (!alvo) {
+    document.querySelectorAll('.tab-pane').forEach(function(pane) {
+      if (normalizarAba(pane.getAttribute('data-value')) === norm) {
+        alvo = pane;
+      }
+    });
+  }
+
+  if (alvo) {
+    alvo.classList.add('active', 'show');
+  }
+
+  // 3. Rola o container para o topo
   const mainContent = document.querySelector('.aurora-content-area');
   if (mainContent) mainContent.scrollTo({ top: 0, behavior: 'smooth' });
 
-  // Sincroniza estilo ativo no botÃ£o do Topbar
+  // 4. Sincroniza estilo ativo no botão do Topbar
   let botaoAtivar = elemento;
   if (!botaoAtivar) {
-    const topButtons = document.querySelectorAll('.aurora-topbar-tabs button');
-    topButtons.forEach(function(btn) {
-      const txt = btn.textContent.trim();
-      if (txt === nomeAba || (nomeAba === 'MunicÃ­pios' && txt.includes('MunicÃ­pios')) || (nomeAba === 'RegiÃµes' && txt.includes('RegiÃµes')) || (nomeAba === 'Comparativo UFs' && (txt.includes('UFs') || txt.includes('Comparativo')))) {
+    document.querySelectorAll('.aurora-topbar-tabs button').forEach(function(btn) {
+      const btnNorm = normalizarAba(btn.textContent);
+      if (btnNorm.includes(norm) || norm.includes(btnNorm)) {
         botaoAtivar = btn;
       }
     });
   }
 
-  const container = botaoAtivar ? botaoAtivar.closest('.d-flex') : document.querySelector('.aurora-topbar-tabs');
-  if (container) {
-    container.querySelectorAll('button').forEach(function(btn) {
-      btn.classList.remove('btn-primary', 'shadow-sm');
-      btn.classList.add('btn-light', 'text-slate-700');
-    });
-    if (botaoAtivar) {
+  if (botaoAtivar) {
+    const parentContainer = botaoAtivar.closest('.aurora-topbar-tabs') || botaoAtivar.parentElement;
+    if (parentContainer) {
+      parentContainer.querySelectorAll('button').forEach(function(btn) {
+        btn.classList.remove('btn-primary', 'shadow-sm');
+        btn.classList.add('btn-light', 'text-slate-700');
+      });
       botaoAtivar.classList.remove('btn-light', 'text-slate-700');
       botaoAtivar.classList.add('btn-primary', 'shadow-sm');
     }
   }
 
-  const controlesFicha = document.getElementById('controles_ficha_municipal');
+  // 5. Exibição estrita dos Filtros contextuais na Topbar
   const controlesRegional = document.getElementById('controles_regioes');
+  const controlesTematicas = document.getElementById('controles_tematicas');
+  const controlesFicha = document.getElementById('controles_ficha_municipal');
   const controlesUFs = document.getElementById('controles_ufs');
-  const isAbaMunicipios = (nomeAba === 'MunicÃ­pios' || nomeAba === 'Ficha Municipal' || nomeAba === 'Municipios');
-  const isAbaUFs = (nomeAba === 'Comparativo UFs' || nomeAba === 'UFs');
-  const isAbaRegioes = (nomeAba === 'RegiÃµes' || nomeAba === 'Regioes');
+  const badgeData = document.getElementById('ficha_data_atualizacao_header');
 
-  if (controlesUFs) {
-    if (isAbaUFs) {
-      controlesUFs.classList.remove('d-none');
-      controlesUFs.classList.add('d-flex');
-    } else {
-      controlesUFs.classList.remove('d-flex');
-      controlesUFs.classList.add('d-none');
-    }
-  }
-
-  if (controlesFicha) {
-    if (isAbaMunicipios) {
-      controlesFicha.classList.remove('d-none');
-      controlesFicha.classList.add('d-flex');
-      
-      const selectContainer = controlesFicha.querySelector('.form-select-municipio')?.closest('.d-flex');
-      const navContainer = document.getElementById('ficha_navbar_nav');
-      if (selectContainer) selectContainer.classList.remove('d-none');
-      if (navContainer) navContainer.classList.remove('d-none');
-    } else {
-      controlesFicha.classList.remove('d-flex');
-      controlesFicha.classList.add('d-none');
-    }
-  }
+  const isAbaInicio = norm.includes('inicio');
+  const isAbaRegioes = norm.includes('regio');
+  const isAbaTematicas = norm.includes('temat') || norm.includes('pauta');
+  const isAbaMunicipios = norm.includes('municip') || norm.includes('ficha');
+  const isAbaUFs = norm.includes('uf') || norm.includes('comparativ') || norm.includes('bench');
+  const isAbaMetadados = norm.includes('meta');
 
   if (controlesRegional) {
     if (isAbaRegioes) {
@@ -220,35 +215,48 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
     }
   }
 
-  // --- CONTROLE DE CICLO DE VIDA (LAZY LOADING E RESIZE) ---
-  if (isAbaUFs) {
-    if (!window.moduloUFsIniciado) {
-      if (typeof window.iniciarModuloUFs === 'function') {
-        window.iniciarModuloUFs();
-      }
+  if (controlesTematicas) {
+    if (isAbaTematicas) {
+      controlesTematicas.classList.remove('d-none');
+      controlesTematicas.classList.add('d-flex');
     } else {
-      setTimeout(function() {
-        if (typeof window.redimensionarGraficosUFs === 'function') {
-          window.redimensionarGraficosUFs();
-        }
-      }, 80);
+      controlesTematicas.classList.remove('d-flex');
+      controlesTematicas.classList.add('d-none');
     }
-  } else if (isAbaMunicipios) {
-    if (!window.moduloFichaIniciado) {
-      window.moduloFichaIniciado = true;
-      if (typeof window.iniciarModuloMunicipios === 'function') {
-        window.iniciarModuloMunicipios();
-      } else if (typeof window.iniciarModuloFicha === 'function') {
-        window.iniciarModuloFicha();
-      }
+  }
+
+  if (controlesFicha) {
+    if (isAbaMunicipios) {
+      controlesFicha.classList.remove('d-none');
+      controlesFicha.classList.add('d-flex');
     } else {
-      setTimeout(function() {
-        if (typeof window.redimensionarMapasFicha === 'function') {
-          window.redimensionarMapasFicha();
-        }
-      }, 80);
+      controlesFicha.classList.remove('d-flex');
+      controlesFicha.classList.add('d-none');
     }
-  } else if (isAbaRegioes) {
+  }
+
+  if (controlesUFs) {
+    if (isAbaUFs) {
+      controlesUFs.classList.remove('d-none');
+      controlesUFs.classList.add('d-flex');
+    } else {
+      controlesUFs.classList.remove('d-flex');
+      controlesUFs.classList.add('d-none');
+    }
+  }
+
+  if (badgeData) {
+    if (isAbaMunicipios) {
+      badgeData.classList.remove('d-none');
+      badgeData.classList.add('d-inline-flex');
+    } else {
+      badgeData.classList.remove('d-inline-flex');
+      badgeData.classList.add('d-none');
+    }
+  }
+
+  // 6. Inicialização de Ciclo de Vida e Resize
+  if (isAbaRegioes) {
     if (!window.moduloRegioesIniciado) {
       window.moduloRegioesIniciado = true;
       if (typeof window.iniciarModuloRegioes === 'function') {
@@ -265,14 +273,40 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
       if (typeof histChartsRD === 'object' && histChartsRD) {
         Object.values(histChartsRD).forEach(function(h) { if (h && typeof h.resize === 'function') h.resize(); });
       }
-    }, 80);
-  } else if (nomeAba === 'AnÃ¡lises TemÃ¡ticas' || nomeAba === 'TemÃ¡ticas') {
+    }, 100);
+  } else if (isAbaTematicas) {
     setTimeout(function() {
       if (typeof window.alternarPautaResumos === 'function') {
         window.alternarPautaResumos(window.pautaResumoAtiva || 'cozinhas');
       }
-    }, 50);
-  } else if (nomeAba === 'Metadados') {
+    }, 80);
+  } else if (isAbaMunicipios) {
+    if (!window.moduloFichaIniciado) {
+      window.moduloFichaIniciado = true;
+      if (typeof window.iniciarModuloMunicipios === 'function') {
+        window.iniciarModuloMunicipios();
+      } else if (typeof window.iniciarModuloFicha === 'function') {
+        window.iniciarModuloFicha();
+      }
+    }
+    setTimeout(function() {
+      if (typeof window.redimensionarMapasFicha === 'function') {
+        window.redimensionarMapasFicha();
+      }
+    }, 100);
+  } else if (isAbaUFs) {
+    if (!window.moduloUFsIniciado) {
+      window.moduloUFsIniciado = true;
+      if (typeof window.iniciarModuloUFs === 'function') {
+        window.iniciarModuloUFs();
+      }
+    }
+    setTimeout(function() {
+      if (typeof window.redimensionarGraficosUFs === 'function') {
+        window.redimensionarGraficosUFs();
+      }
+    }, 100);
+  } else if (isAbaMetadados) {
     if (typeof window.renderizarAbaMetadados === 'function') {
       window.renderizarAbaMetadados();
     }
