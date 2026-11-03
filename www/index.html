@@ -25,20 +25,20 @@
   <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" defer></script>
-  <script src="js/core.js?v=1793747270.03408"></script>
-  <script src="js/landing.js?v=1793747270.03414"></script>
-  <script src="js/ufs.js?v=1793747270.03418"></script>
-  <script src="js/ficha.js?v=1793747270.03422"></script>
-  <script src="js/regioes.js?v=1793747270.03425"></script>
-  <script src="js/app.js?v=1793747270.03429"></script>
+  <script src="js/core.js?v=1793749589.86775"></script>
+  <script src="js/landing.js?v=1793749589.8678"></script>
+  <script src="js/ufs.js?v=1793749589.86784"></script>
+  <script src="js/ficha.js?v=1793749589.86789"></script>
+  <script src="js/regioes.js?v=1793749589.86793"></script>
+  <script src="js/app.js?v=1793749589.86796"></script>
 </head>
 <html lang="pt-br">
   <body class="bg-slate-50 antialiased overflow-hidden m-0 p-0">
     <div class="aurora-app-container p-0">
       <nav id="aurora-sidebar" class="d-none"></nav>
       <div class="aurora-main-wrapper">
-        <header class="aurora-topbar d-flex justify-content-between align-items-center gap-2 px-3 py-2" style="flex-wrap: nowrap; min-height: 54px;">
-          <div class="d-flex align-items-center gap-3 flex-wrap">
+        <header class="aurora-topbar d-flex justify-content-between align-items-center gap-2 px-3 py-2" style="flex-wrap: nowrap; min-height: 54px; overflow-x: auto; overflow-y: hidden;">
+          <div class="d-flex align-items-center gap-2 flex-nowrap flex-shrink-0" style="flex-shrink: 0;">
             <div class="d-flex align-items-center gap-2 cursor-pointer select-none" onclick="window.mudarAbaAurora(&#39;Início&#39;, null)" title="Ir para o Início">
               <img src="images/aurora.png" class="w-8 h-8 rounded-full border border-slate-200 shadow-xs object-cover"/>
               <div class="d-none d-lg-flex flex-column">
@@ -47,7 +47,7 @@
               </div>
             </div>
             <div class="d-none d-lg-block vr my-1 bg-slate-300" style="width: 1px; height: 24px;"></div>
-            <div class="d-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1 d-print-none aurora-topbar-tabs">
+            <div class="d-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1 d-print-none aurora-topbar-tabs flex-shrink-0 flex-nowrap">
               <button class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm aurora-default-tab" onclick="mudarAbaAurora(&#39;Início&#39;, this)">
                 <i class="fas fa-house me-1"></i>
                 Início
@@ -56,9 +56,9 @@
                 <i class="fas fa-map-location-dot me-1"></i>
                 Regiões
               </button>
-              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Temáticas&#39;, this)">
+              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Programas&#39;, this)">
                 <i class="fas fa-layer-group me-1"></i>
-                Temáticas
+                Programas
               </button>
               <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Municípios&#39;, this)">
                 <i class="fas fa-city me-1"></i>
@@ -74,7 +74,7 @@
               </button>
             </div>
           </div>
-          <div class="d-flex align-items-center gap-2 flex-nowrap d-print-none">
+          <div class="d-flex align-items-center gap-2 flex-nowrap flex-shrink-0 d-print-none">
             <div id="controles_ufs" class="d-none align-items-center gap-2 flex-nowrap">
               <div class="d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200">
                 <i class="fas fa-flag text-primary"></i>
@@ -120,23 +120,6 @@
                 </ul>
               </div>
             </div>
-            <div id="controles_tematicas" class="d-none align-items-center gap-2 flex-nowrap">
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider d-none d-sm-inline">Pauta:</span>
-              <div class="d-inline-flex bg-slate-100 p-0.5 rounded-pill border border-slate-200">
-                <button id="topbar_btn_pauta_cozinhas" type="button" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs btn-primary text-white shadow-xs" onclick="window.alternarPautaResumos(&#39;cozinhas&#39;, this)">
-                  <i class="fas fa-utensils me-1 text-amber-500"></i>
-                  PE sem Fome
-                </button>
-                <button id="topbar_btn_pauta_aguas" type="button" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.alternarPautaResumos(&#39;aguas&#39;, this)">
-                  <i class="fas fa-droplet me-1 text-blue-500"></i>
-                  Águas
-                </button>
-                <button id="topbar_btn_pauta_capag" type="button" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.alternarPautaResumos(&#39;capag&#39;, this)">
-                  <i class="fas fa-building-columns me-1 text-purple-600"></i>
-                  CAPAG
-                </button>
-              </div>
-            </div>
             <div id="controles_regioes" class="d-none align-items-center gap-2 flex-nowrap">
               <div class="d-inline-flex bg-slate-100 p-0.5 rounded-pill border border-slate-200">
                 <button id="regioes_btn_tipo_rd" type="button" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs shadow-xs btn-primary text-white" onclick="window.trocarTipoAgrupamentoRegioes(&#39;rd&#39;)" title="Filtrar por Região de Desenvolvimento">
@@ -150,12 +133,7 @@
               </div>
               <div class="d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200">
                 <i id="regioes_filtro_icone" class="fas fa-location-dot text-primary"></i>
-                <select id="regioes_f_rd" class="form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0" style="max-width: 250px; font-size: 0.8rem; outline: none; box-shadow: none;"></select>
-              </div>
-              <div class="d-none d-md-flex align-items-center gap-1 bg-slate-100 p-1 rounded-pill border border-slate-200">
-                <button class="btn-nav-topbar" onclick="window.scrollToSection(&#39;aba_regioes&#39;)" title="Topo da Página">
-                  <i class="fas fa-arrow-up"></i>
-                </button>
+                <select id="regioes_f_rd" class="form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0" style="max-width: 170px; font-size: 0.8rem; outline: none; box-shadow: none;"></select>
               </div>
             </div>
             <div id="controles_ficha_municipal" class="d-none align-items-center gap-2 flex-nowrap">
@@ -164,10 +142,6 @@
                 <select id="ficha_f_municipio" class="form-select-municipio" data-live-search="true" data-live-search-normalize="true" data-live-search-placeholder="Buscar município..." data-none-results-text="Nenhum município encontrado" data-size="10" data-container="body" data-style="btn-sm btn-light fw-bold text-slate-700 border-0 bg-transparent py-0 px-1 shadow-none" data-width="230px"></select>
               </div>
               <div id="ficha_navbar_nav" class="d-none d-md-flex align-items-center gap-1 bg-slate-100 p-1 rounded-pill border border-slate-200 shadow-sm">
-                <button class="btn-nav-topbar" onclick="window.scrollToSection(&#39;aba_ficha&#39;)" title="Voltar ao início">
-                  <i class="fas fa-arrow-up"></i>
-                </button>
-                <div class="vr my-1 bg-slate-300" style="width: 1px; height: 18px;"></div>
                 <div class="dropdown">
                   <button class="btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Navegar pelas Seções da Ficha" style="font-size: 0.8rem; height: 32px; transition: all 0.2s;">
                     <i class="fas fa-compass text-primary" style="font-size: 0.85rem;"></i>
@@ -244,10 +218,6 @@
                   </ul>
                 </div>
               </div>
-              <div id="ficha_data_atualizacao_header" class="bg-slate-100 rounded-pill px-3 py-1 border border-slate-200 d-none align-items-center ms-1" style="white-space: nowrap; flex-shrink: 0;">
-                <i class="fas fa-clock me-1.5 text-primary" style="font-size: 0.8rem;"></i>
-                <span id="ficha_data_atualizacao_txt" class="fw-bold text-slate-700 uppercase tracking-tight" style="font-size: 0.72rem; letter-spacing: 0.02em;">Atualizado em: -</span>
-              </div>
             </div>
           </div>
         </header>
@@ -260,16 +230,16 @@
                   <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
                     <span class="badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-white shadow-sm" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.25);">
                       <i class="fas fa-landmark me-1.5 text-amber-300"></i>
-                      Governo de Pernambuco • SEPLAG
+                      Governo de Pernambuco
                     </span>
                     <span class="badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-blue-200 shadow-sm" style="background: rgba(0, 183, 255, 0.15); border: 1px solid rgba(0, 183, 255, 0.3);">
                       <i class="fas fa-shield-halved me-1.5 text-blue-300"></i>
-                      Secretaria Executiva de Desenvolvimento Regional e Captação
+                      Secretaria de Planejamento, Gestão e Desenvolvimento Regional
                     </span>
                   </div>
                   <div class="row align-items-center mb-4">
                     <div class="col-lg-9">
-                      <h1 class="text-3xl md:text-5xl font-black tracking-tight mb-3 text-white leading-tight">Aurora Municípios &amp; Territórios</h1>
+                      <h1 class="text-3xl md:text-5xl font-black tracking-tight mb-3 text-white leading-tight">Aurora Desenvolvimento Regional</h1>
                       <p class="text-sm md:text-base text-blue-100 max-w-3xl leading-relaxed mb-0 font-medium">
                         A plataforma estratégica de inteligência de dados e apoio ao planejamento governamental do Estado de Pernambuco. 
                         Monitore indicadores socioeconômicos, avalie a convergência inter e intra-regional e acesse o diagnóstico dos 184 municípios e 12 Regiões de Desenvolvimento.
@@ -285,7 +255,7 @@
                         <div class="relative flex items-center">
                           <i class="fas fa-search absolute left-4 text-slate-400 text-sm pointer-events-none"></i>
                           <input id="landing_search_input" type="text" class="w-full bg-white text-slate-800 placeholder-slate-400 pl-11 pr-28 py-3 rounded-2xl text-sm font-semibold shadow-lg focus:outline-none focus:ring-2 focus:ring-[#00B7FF] border-0 transition-all" placeholder="Buscar município (ex: Caruaru, Petrolina, Serra Talhada) ou Região (ex: Agreste Central)..." onkeydown="if(event.key===&#39;Enter&#39;) window.executarBuscaLanding();"/>
-                          <button type="button" class="absolute right-2 btn btn-primary btn-sm rounded-xl px-3.5 py-1.5 font-bold text-xs shadow-sm" onclick="window.executarBuscaLanding()">Acessar</button>
+                          <button id="btn_executar_busca_landing" type="button" class="absolute right-2 btn btn-primary btn-sm rounded-xl px-3.5 py-1.5 font-bold text-xs shadow-sm cursor-pointer" onclick="window.executarBuscaLanding()">Acessar</button>
                         </div>
                       </div>
                       <div class="col-md-5 col-lg-4 d-flex align-items-center gap-1.5 flex-wrap">
@@ -405,10 +375,10 @@
                           <i class="fas fa-layer-group"></i>
                         </div>
                         <span class="badge bg-amber-50 text-amber-800 border border-amber-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Pautas Estruturadoras</span>
-                        <h4 class="font-black text-slate-800 text-lg mb-2">Análises Temáticas</h4>
+                        <h4 class="font-black text-slate-800 text-lg mb-2">Programas Prioritários</h4>
                         <p class="text-slate-600 text-sm leading-relaxed mb-4">Acompanhamento em profundidade dos programas centrais do Governo de Pernambuco: Pernambuco sem Fome (Cozinhas Comunitárias e Mães de PE), Águas de Pernambuco (Compesa e Adutoras) e Saúde Fiscal (CAPAG).</p>
                       </div>
-                      <button type="button" class="btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Temáticas&#39;, null)">
+                      <button type="button" class="btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Programas&#39;, null)">
                         <i class="fas fa-arrow-right"></i>
                         Ver Programas Prioritários
                       </button>
@@ -511,7 +481,7 @@
                         <h5 class="font-black text-slate-800 text-sm mb-2">Ações Estruturantes de Estado</h5>
                         <p class="text-xs text-slate-600 leading-relaxed mb-3">Consulte o mapa de cozinhas comunitárias do Pernambuco sem Fome, a malha de adutoras e municípios atendidos pela Compesa e o diagnóstico fiscal.</p>
                       </div>
-                      <button class="btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50" onclick="window.mudarAbaAurora(&#39;Temáticas&#39;, null)">Ir para Temáticas</button>
+                      <button class="btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50" onclick="window.mudarAbaAurora(&#39;Programas&#39;, null)">Ir para Programas</button>
                     </div>
                     <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
                       <div>
@@ -956,11 +926,11 @@
                 </div>
               </div>
             </div>
-            <div class="tab-pane relative" data-value="Análises Temáticas" id="aba_tematicas">
+            <div class="tab-pane relative" data-value="Programas" id="aba_tematicas">
               <div class="container-fluid mt-3 px-4 pb-5">
                 <div class="border-b-2 border-slate-200 pb-3 mb-4 mt-2 d-flex justify-content-between align-items-center flex-wrap gap-3">
                   <div>
-                    <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Análises Temáticas</h2>
+                    <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Programas Prioritários</h2>
                     <p class="text-sm font-bold text-slate-500 mb-0">Programas Prioritários, Investimentos Estruturadores e Visão Territorial do Estado</p>
                   </div>
                   <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -1422,7 +1392,7 @@
                   <img src="images/brasao_gov_pe.png" style="width: 120px; margin-bottom: 20px;"/>
                   <h5 class="fw-bold text-dark">GOVERNO DO ESTADO DE PERNAMBUCO</h5>
                   <h6 class="fw-bold text-dark">Secretaria de Planejamento, Gestão e Desenvolvimento Regional — SEPLAG</h6>
-                  <p class="text-muted mb-5">Secretaria Executiva de Desenvolvimento Regional e Captação</p>
+                  <p class="text-muted mb-5">Secretaria de Planejamento, Gestão e Desenvolvimento Regional</p>
                   <br/>
                   <br/>
                   <br/>

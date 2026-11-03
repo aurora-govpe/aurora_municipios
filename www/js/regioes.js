@@ -362,7 +362,14 @@ window.iniciarModuloRegioes = async function () {
         if ($select.length) {
             $select.empty().html(window.listaRDsCache.map(r => `<option value="${r}">${r}</option>`).join(''));
             $select.off('change').on('change', function () { window.carregarDadosRegioes(); });
-            $select.val("Agreste Central");
+            let rdInicial = "Agreste Central";
+            if (window.rdAlvoBusca) {
+                const alvoNorm = String(window.rdAlvoBusca).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const encontrado = window.listaRDsCache.find(r => String(r).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(alvoNorm));
+                if (encontrado) rdInicial = encontrado;
+                window.rdAlvoBusca = null;
+            }
+            $select.val(rdInicial);
         }
 
         if (jsonDados && !jsonDados.error) {
@@ -418,7 +425,14 @@ window.trocarTipoAgrupamentoRegioes = function (tipo) {
         if ($select.length) {
             const lista = window.listaRDsCache && window.listaRDsCache.length > 0 ? window.listaRDsCache : LISTA_RDS_PADRAO;
             $select.empty().html(lista.map(r => `<option value="${r}">${r}</option>`).join(''));
-            $select.val("Agreste Central");
+            let rdInicial = "Agreste Central";
+            if (window.rdAlvoBusca) {
+                const alvoNorm = String(window.rdAlvoBusca).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const encontrado = window.listaRDsCache.find(r => String(r).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(alvoNorm));
+                if (encontrado) rdInicial = encontrado;
+                window.rdAlvoBusca = null;
+            }
+            $select.val(rdInicial);
         }
     }
     window.carregarDadosRegioes();

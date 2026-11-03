@@ -2496,7 +2496,10 @@ function obterBadgePolaridadeUFs(siglaOrKey, tipoDado, config) {
 
 // Inicialização Lazy do Módulo
 window.iniciarModuloUFs = async function() {
-    if (window.moduloUFsIniciado) return;
+    if (window.moduloUFsIniciado) {
+        if (typeof window.filtrarUFsLocal === 'function') window.filtrarUFsLocal();
+        return;
+    }
 
     try {
         console.log("⚡ [UFs] Inicializando Módulo de Benchmarking das UFs...");

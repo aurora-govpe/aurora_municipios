@@ -107,7 +107,6 @@ window.usarPerguntaPronta = function(texto) {
 
 window.moduloFichaIniciado = false;
 window.moduloRegioesIniciado = false;
-window.moduloUFsIniciado = false;
 
 window.scrollToSection = function (id) {
   if (id === 'aba_inicio' || id === 'aba_ficha' || id === 'aba_regioes' || id === 'aba_ufs' || id === 'aba_tematicas' || id === 'topo') {
@@ -141,7 +140,7 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
     alvo = document.getElementById('aba_inicio');
   } else if (norm.includes('regio')) {
     alvo = document.getElementById('aba_regioes');
-  } else if (norm.includes('temat') || norm.includes('pauta')) {
+  } else if (norm.includes('programa') || norm.includes('temat') || norm.includes('pauta')) {
     alvo = document.getElementById('aba_tematicas');
   } else if (norm.includes('municip') || norm.includes('ficha')) {
     alvo = document.getElementById('aba_ficha');
@@ -193,14 +192,12 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
 
   // 5. Exibição estrita dos Filtros contextuais na Topbar
   const controlesRegional = document.getElementById('controles_regioes');
-  const controlesTematicas = document.getElementById('controles_tematicas');
   const controlesFicha = document.getElementById('controles_ficha_municipal');
   const controlesUFs = document.getElementById('controles_ufs');
-  const badgeData = document.getElementById('ficha_data_atualizacao_header');
 
   const isAbaInicio = norm.includes('inicio');
   const isAbaRegioes = norm.includes('regio');
-  const isAbaTematicas = norm.includes('temat') || norm.includes('pauta');
+  const isAbaProgramas = norm.includes('programa') || norm.includes('temat') || norm.includes('pauta');
   const isAbaMunicipios = norm.includes('municip') || norm.includes('ficha');
   const isAbaUFs = norm.includes('uf') || norm.includes('comparativ') || norm.includes('bench');
   const isAbaMetadados = norm.includes('meta');
@@ -212,16 +209,6 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
     } else {
       controlesRegional.classList.remove('d-flex');
       controlesRegional.classList.add('d-none');
-    }
-  }
-
-  if (controlesTematicas) {
-    if (isAbaTematicas) {
-      controlesTematicas.classList.remove('d-none');
-      controlesTematicas.classList.add('d-flex');
-    } else {
-      controlesTematicas.classList.remove('d-flex');
-      controlesTematicas.classList.add('d-none');
     }
   }
 
@@ -245,16 +232,6 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
     }
   }
 
-  if (badgeData) {
-    if (isAbaMunicipios) {
-      badgeData.classList.remove('d-none');
-      badgeData.classList.add('d-inline-flex');
-    } else {
-      badgeData.classList.remove('d-inline-flex');
-      badgeData.classList.add('d-none');
-    }
-  }
-
   // 6. Inicialização de Ciclo de Vida e Resize
   if (isAbaRegioes) {
     if (!window.moduloRegioesIniciado) {
@@ -274,7 +251,7 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
         Object.values(histChartsRD).forEach(function(h) { if (h && typeof h.resize === 'function') h.resize(); });
       }
     }, 100);
-  } else if (isAbaTematicas) {
+  } else if (isAbaProgramas) {
     setTimeout(function() {
       if (typeof window.alternarPautaResumos === 'function') {
         window.alternarPautaResumos(window.pautaResumoAtiva || 'cozinhas');
@@ -288,6 +265,15 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
       } else if (typeof window.iniciarModuloFicha === 'function') {
         window.iniciarModuloFicha();
       }
+    } else if (window.municipioAlvoBusca) {
+      const munAlvo = window.municipioAlvoBusca;
+      window.municipioAlvoBusca = null;
+      if (typeof window.carregarDadosFicha === 'function') {
+        window.carregarDadosFicha(munAlvo);
+      }
+      if (typeof window.sincronizarBotaoFiltroMunicipio === 'function') {
+        window.sincronizarBotaoFiltroMunicipio(munAlvo);
+      }
     }
     setTimeout(function() {
       if (typeof window.redimensionarMapasFicha === 'function') {
@@ -295,17 +281,14 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
       }
     }, 100);
   } else if (isAbaUFs) {
-    if (!window.moduloUFsIniciado) {
-      window.moduloUFsIniciado = true;
-      if (typeof window.iniciarModuloUFs === 'function') {
-        window.iniciarModuloUFs();
-      }
+    if (typeof window.iniciarModuloUFs === 'function') {
+      window.iniciarModuloUFs();
     }
     setTimeout(function() {
       if (typeof window.redimensionarGraficosUFs === 'function') {
         window.redimensionarGraficosUFs();
       }
-    }, 100);
+    }, 150);
   } else if (isAbaMetadados) {
     if (typeof window.renderizarAbaMetadados === 'function') {
       window.renderizarAbaMetadados();

@@ -23,20 +23,20 @@ ui_modulo_landing <- function() {
           style = "background: radial-gradient(circle, #00B7FF 0%, transparent 70%); filter: blur(25px);"
         ),
         
-        # Badge Institucional
+        # Badges Institucionais
         tags$div(
           class = "d-flex align-items-center gap-2 mb-3 flex-wrap",
           tags$span(
             class = "badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-white shadow-sm",
             style = "background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.25);",
             tags$i(class = "fas fa-landmark me-1.5 text-amber-300"),
-            "Governo de Pernambuco • SEPLAG"
+            "Governo de Pernambuco"
           ),
           tags$span(
             class = "badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-blue-200 shadow-sm",
             style = "background: rgba(0, 183, 255, 0.15); border: 1px solid rgba(0, 183, 255, 0.3);",
             tags$i(class = "fas fa-shield-halved me-1.5 text-blue-300"),
-            "Secretaria Executiva de Desenvolvimento Regional e Captação"
+            "Secretaria de Planejamento, Gestão e Desenvolvimento Regional"
           )
         ),
         
@@ -47,7 +47,7 @@ ui_modulo_landing <- function() {
             class = "col-lg-9",
             tags$h1(
               class = "text-3xl md:text-5xl font-black tracking-tight mb-3 text-white leading-tight",
-              "Aurora Municípios & Territórios"
+              "Aurora Desenvolvimento Regional"
             ),
             tags$p(
               class = "text-sm md:text-base text-blue-100 max-w-3xl leading-relaxed mb-0 font-medium",
@@ -84,8 +84,9 @@ ui_modulo_landing <- function() {
                   onkeydown = "if(event.key==='Enter') window.executarBuscaLanding();"
                 ),
                 tags$button(
+                  id = "btn_executar_busca_landing",
                   type = "button",
-                  class = "absolute right-2 btn btn-primary btn-sm rounded-xl px-3.5 py-1.5 font-bold text-xs shadow-sm",
+                  class = "absolute right-2 btn btn-primary btn-sm rounded-xl px-3.5 py-1.5 font-bold text-xs shadow-sm cursor-pointer",
                   onclick = "window.executarBuscaLanding()",
                   "Acessar"
                 )
@@ -233,7 +234,7 @@ ui_modulo_landing <- function() {
             )
           ),
           
-          # Módulo 2: Análises Temáticas
+          # Módulo 2: Programas Prioritários
           tags$div(
             class = "bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between",
             tags$div(
@@ -242,14 +243,14 @@ ui_modulo_landing <- function() {
                 tags$i(class = "fas fa-layer-group")
               ),
               tags$span(class = "badge bg-amber-50 text-amber-800 border border-amber-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1", "Pautas Estruturadoras"),
-              tags$h4(class = "font-black text-slate-800 text-lg mb-2", "Análises Temáticas"),
+              tags$h4(class = "font-black text-slate-800 text-lg mb-2", "Programas Prioritários"),
               tags$p(class = "text-slate-600 text-sm leading-relaxed mb-4", 
                      "Acompanhamento em profundidade dos programas centrais do Governo de Pernambuco: Pernambuco sem Fome (Cozinhas Comunitárias e Mães de PE), Águas de Pernambuco (Compesa e Adutoras) e Saúde Fiscal (CAPAG).")
             ),
             tags$button(
               type = "button",
               class = "btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2",
-              onclick = "window.mudarAbaAurora('Temáticas', null)",
+              onclick = "window.mudarAbaAurora('Programas', null)",
               tags$i(class = "fas fa-arrow-right"), "Ver Programas Prioritários"
             )
           ),
@@ -387,7 +388,7 @@ ui_modulo_landing <- function() {
               tags$p(class = "text-xs text-slate-600 leading-relaxed mb-3", 
                      "Consulte o mapa de cozinhas comunitárias do Pernambuco sem Fome, a malha de adutoras e municípios atendidos pela Compesa e o diagnóstico fiscal.")
             ),
-            tags$button(class = "btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50", onclick = "window.mudarAbaAurora('Temáticas', null)", "Ir para Temáticas")
+            tags$button(class = "btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50", onclick = "window.mudarAbaAurora('Programas', null)", "Ir para Programas")
           ),
           
           # Jornada 4: Benchmarking Federativo

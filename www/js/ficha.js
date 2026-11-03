@@ -812,7 +812,17 @@ window.iniciarModuloFicha = async function () {
             }
             
             // Padrão canônico de inicialização: Recife se disponível, senão primeiro da lista
-            const defaultMun = json.municipios.includes("Recife") ? "Recife" : json.municipios[0];
+            let defaultMun = "Recife";
+            if (window.municipioAlvoBusca) {
+                const alvoNorm = String(window.municipioAlvoBusca).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const encontrado = json.municipios.find(m => String(m).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === alvoNorm || String(m).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(alvoNorm));
+                if (encontrado) defaultMun = encontrado;
+                window.municipioAlvoBusca = null;
+            } else if (json.municipios.includes("Recife")) {
+                defaultMun = "Recife";
+            } else {
+                defaultMun = json.municipios[0];
+            }
             $select.empty().html(json.municipios.map(m => `<option value="${m}" ${m === defaultMun ? 'selected' : ''}>${m}</option>`).join(''));
             $select.val(defaultMun);
 

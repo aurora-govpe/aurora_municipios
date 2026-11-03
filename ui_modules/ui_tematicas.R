@@ -1,7 +1,7 @@
 ui_modulo_tematicas <- function() {
   tags$div(
     class = "tab-pane relative",
-    `data-value` = "Análises Temáticas",
+    `data-value` = "Programas",
     id = "aba_tematicas",
     
     tags$div(
@@ -11,7 +11,7 @@ ui_modulo_tematicas <- function() {
       tags$div(
         class = "border-b-2 border-slate-200 pb-3 mb-4 mt-2 d-flex justify-content-between align-items-center flex-wrap gap-3",
         tags$div(
-          tags$h2(class = "text-2xl font-black text-slate-800 uppercase tracking-tight mb-0", "Análises Temáticas"),
+          tags$h2(class = "text-2xl font-black text-slate-800 uppercase tracking-tight mb-0", "Programas Prioritários"),
           tags$p(class = "text-sm font-bold text-slate-500 mb-0", "Programas Prioritários, Investimentos Estruturadores e Visão Territorial do Estado")
         ),
         

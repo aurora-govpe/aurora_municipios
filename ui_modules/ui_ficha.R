@@ -15,7 +15,7 @@ ui_modulo_ficha <- function() {
         
         tags$h5("GOVERNO DO ESTADO DE PERNAMBUCO", class = "fw-bold text-dark"),
         tags$h6("Secretaria de Planejamento, Gestão e Desenvolvimento Regional — SEPLAG", class = "fw-bold text-dark"),
-        tags$p("Secretaria Executiva de Desenvolvimento Regional e Captação", class = "text-muted mb-5"),
+        tags$p("Secretaria de Planejamento, Gestão e Desenvolvimento Regional", class = "text-muted mb-5"),
         tags$br(), tags$br(), tags$br(),
         tags$span(class = "badge bg-dark rounded-pill px-3 py-2 mb-3", "PAINEL AURORA"),
         tags$h1("MUNICÍPIOS", class = "display-4 fw-black text-primary"),
