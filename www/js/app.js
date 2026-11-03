@@ -8,22 +8,17 @@ window.iniciarApp = function() {
   console.log("[MASTER] Iniciando App Aurora...");
   document.body.classList.add('logado');
   
-  // Inicialização do módulo ativo inicial (UFs)
-  if (typeof window.iniciarModuloUFs === 'function') {
-    window.iniciarModuloUFs();
-  } else if (typeof window.iniciarModuloRegioes === 'function') {
-    window.iniciarModuloRegioes();
-  }
-
-  // O módulo Municípios agora é LAZY e será carregado somente quando sua aba for ativada
+  // A aba inicial padrÃ£o Ã© a Landing Page (InÃ­cio)
+  // Os mÃ³dulos analÃ­ticos especializados (RegiÃµes, MunicÃ­pios, UFs) utilizam carregamento sob demanda (lazy)
 };
 
 // ==========================================
-// LÓGICA DO CHAT AURORA
+// LÃ“GICA DO CHAT AURORA
 // ==========================================
 
 window.toggleAuroraChat = function() {
   const container = document.getElementById("aurora-chat-container");
+  if (!container) return;
   if (container.classList.contains("scale-0")) {
     container.classList.remove("scale-0");
     container.classList.add("scale-100");
@@ -40,7 +35,7 @@ window.enviarMensagemAurora = async function() {
   
   if (!mensagem) return;
 
-  // 1. Adiciona a mensagem do usuário na tela de forma segura
+  // 1. Adiciona a mensagem do usuÃ¡rio na tela de forma segura
   msgArea.insertAdjacentHTML('beforeend', `
     <div class="self-end bg-[#0C2856] text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-sm">
       ${mensagem}
@@ -53,7 +48,7 @@ window.enviarMensagemAurora = async function() {
   const typingId = "typing-" + Date.now();
   msgArea.insertAdjacentHTML('beforeend', `
     <div id="${typingId}" class="self-start bg-white border border-slate-200 text-slate-500 p-3 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm flex items-center gap-2">
-      <i class="fas fa-circle-notch fa-spin"></i> Aurora está pensando...
+      <i class="fas fa-circle-notch fa-spin"></i> Aurora estÃ¡ pensando...
     </div>
   `);
   msgArea.scrollTop = msgArea.scrollHeight;
@@ -124,7 +119,7 @@ window.usarPerguntaPronta = function(texto) {
 window.moduloFichaIniciado = false;
 
 window.scrollToSection = function (id) {
-  if (id === 'aba_ficha' || id === 'aba_regioes' || id === 'topo') {
+  if (id === 'aba_inicio' || id === 'aba_ficha' || id === 'aba_regioes' || id === 'aba_ufs' || id === 'topo') {
     const container = document.querySelector('.aurora-content-area');
     if (container) {
       container.scrollTo({ top: 0, behavior: 'smooth' });
@@ -137,27 +132,58 @@ window.scrollToSection = function (id) {
 
 window.mudarAbaAurora = function(nomeAba, elemento) {
   document.querySelectorAll('.tab-pane').forEach(function(el) { el.classList.remove('active', 'show'); });
+  
   let alvo = document.querySelector(".tab-pane[data-value='" + nomeAba + "']");
-  if (!alvo && (nomeAba === 'Municípios' || nomeAba === 'Ficha Municipal')) {
+  if (!alvo && (nomeAba === 'InÃ­cio' || nomeAba === 'Inicio')) {
+    alvo = document.getElementById('aba_inicio');
+  } else if (!alvo && (nomeAba === 'MunicÃ­pios' || nomeAba === 'Ficha Municipal' || nomeAba === 'Municipios')) {
     alvo = document.getElementById('aba_ficha');
+  } else if (!alvo && (nomeAba === 'Comparativo UFs' || nomeAba === 'UFs' || nomeAba === 'Benchmarking')) {
+    alvo = document.getElementById('aba_ufs');
+  } else if (!alvo && (nomeAba === 'RegiÃµes' || nomeAba === 'Regioes')) {
+    alvo = document.getElementById('aba_regioes');
+  } else if (!alvo && (nomeAba === 'AnÃ¡lises TemÃ¡ticas' || nomeAba === 'TemÃ¡ticas' || nomeAba === 'Tematicas')) {
+    alvo = document.getElementById('aba_tematicas');
+  } else if (!alvo && (nomeAba === 'Metadados')) {
+    alvo = document.getElementById('aba_metadados');
   }
-  if(alvo) alvo.classList.add('active', 'show');
+  
+  if (alvo) alvo.classList.add('active', 'show');
 
-  const container = elemento ? elemento.closest('.d-flex') : null;
+  // Rola o conteÃºdo principal para o topo na troca de aba
+  const mainContent = document.querySelector('.aurora-content-area');
+  if (mainContent) mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Sincroniza estilo ativo no botÃ£o do Topbar
+  let botaoAtivar = elemento;
+  if (!botaoAtivar) {
+    const topButtons = document.querySelectorAll('.aurora-topbar-tabs button');
+    topButtons.forEach(function(btn) {
+      const txt = btn.textContent.trim();
+      if (txt === nomeAba || (nomeAba === 'MunicÃ­pios' && txt.includes('MunicÃ­pios')) || (nomeAba === 'RegiÃµes' && txt.includes('RegiÃµes')) || (nomeAba === 'Comparativo UFs' && (txt.includes('UFs') || txt.includes('Comparativo')))) {
+        botaoAtivar = btn;
+      }
+    });
+  }
+
+  const container = botaoAtivar ? botaoAtivar.closest('.d-flex') : document.querySelector('.aurora-topbar-tabs');
   if (container) {
     container.querySelectorAll('button').forEach(function(btn) {
       btn.classList.remove('btn-primary', 'shadow-sm');
       btn.classList.add('btn-light', 'text-slate-700');
     });
-    elemento.classList.remove('btn-light', 'text-slate-700');
-    elemento.classList.add('btn-primary', 'shadow-sm');
+    if (botaoAtivar) {
+      botaoAtivar.classList.remove('btn-light', 'text-slate-700');
+      botaoAtivar.classList.add('btn-primary', 'shadow-sm');
+    }
   }
 
   const controlesFicha = document.getElementById('controles_ficha_municipal');
   const controlesRegional = document.getElementById('controles_regioes');
   const controlesUFs = document.getElementById('controles_ufs');
-  const isAbaMunicipios = (nomeAba === 'Municípios' || nomeAba === 'Ficha Municipal');
-  const isAbaUFs = (nomeAba === 'UFs');
+  const isAbaMunicipios = (nomeAba === 'MunicÃ­pios' || nomeAba === 'Ficha Municipal' || nomeAba === 'Municipios');
+  const isAbaUFs = (nomeAba === 'Comparativo UFs' || nomeAba === 'UFs');
+  const isAbaRegioes = (nomeAba === 'RegiÃµes' || nomeAba === 'Regioes');
 
   if (controlesUFs) {
     if (isAbaUFs) {
@@ -185,7 +211,7 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
   }
 
   if (controlesRegional) {
-    if (nomeAba === 'Regiões') {
+    if (isAbaRegioes) {
       controlesRegional.classList.remove('d-none');
       controlesRegional.classList.add('d-flex');
     } else {
@@ -222,7 +248,7 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
         }
       }, 80);
     }
-  } else if (nomeAba === 'Regiões') {
+  } else if (isAbaRegioes) {
     if (!window.moduloRegioesIniciado) {
       window.moduloRegioesIniciado = true;
       if (typeof window.iniciarModuloRegioes === 'function') {
@@ -240,7 +266,7 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
         Object.values(histChartsRD).forEach(function(h) { if (h && typeof h.resize === 'function') h.resize(); });
       }
     }, 80);
-  } else if (nomeAba === 'Análises Temáticas') {
+  } else if (nomeAba === 'AnÃ¡lises TemÃ¡ticas' || nomeAba === 'TemÃ¡ticas') {
     setTimeout(function() {
       if (typeof window.alternarPautaResumos === 'function') {
         window.alternarPautaResumos(window.pautaResumoAtiva || 'cozinhas');
@@ -252,7 +278,6 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
     }
   }
 };
-
 
 window.toggleSidebar = function() {
   const sidebar = document.getElementById('aurora-sidebar');

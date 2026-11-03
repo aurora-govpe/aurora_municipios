@@ -25,11 +25,12 @@
   <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" defer></script>
-  <script src="js/core.js?v=1793289567.2405"></script>
-  <script src="js/ufs.js?v=1793289567.24056"></script>
-  <script src="js/ficha.js?v=1793289567.2406"></script>
-  <script src="js/regioes.js?v=1793289567.24064"></script>
-  <script src="js/app.js?v=1793289567.24068"></script>
+  <script src="js/core.js?v=1793736292.16408"></script>
+  <script src="js/landing.js?v=1793736292.16414"></script>
+  <script src="js/ufs.js?v=1793736292.16418"></script>
+  <script src="js/ficha.js?v=1793736292.16423"></script>
+  <script src="js/regioes.js?v=1793736292.16427"></script>
+  <script src="js/app.js?v=1793736292.16431"></script>
 </head>
 <html lang="pt-br">
   <body class="bg-slate-50 antialiased overflow-hidden m-0 p-0">
@@ -37,30 +38,44 @@
       <nav id="aurora-sidebar" class="d-none"></nav>
       <div class="aurora-main-wrapper">
         <header class="aurora-topbar d-flex justify-content-between align-items-center gap-3 px-4 py-2">
-          <div class="d-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1 d-print-none">
-            <button class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm aurora-default-tab" onclick="mudarAbaAurora(&#39;UFs&#39;, this)">
-              <i class="fas fa-flag me-1"></i>
-              UFs
-            </button>
-            <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Regiões&#39;, this)">
-              <i class="fas fa-map-location-dot me-1"></i>
-              Regiões
-            </button>
-            <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Municípios&#39;, this)">
-              <i class="fas fa-city me-1"></i>
-              Municípios
-            </button>
-            <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Análises Temáticas&#39;, this)">
-              <i class="fas fa-layer-group me-1"></i>
-              Análises Temáticas
-            </button>
-            <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Metadados&#39;, this)">
-              <i class="fas fa-book me-1"></i>
-              Metadados
-            </button>
+          <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="d-flex align-items-center gap-2 cursor-pointer select-none" onclick="window.mudarAbaAurora(&#39;Início&#39;, null)" title="Ir para o Início">
+              <img src="images/aurora.png" class="w-8 h-8 rounded-full border border-slate-200 shadow-xs object-cover"/>
+              <div class="d-none d-lg-flex flex-column">
+                <span class="fw-black text-slate-800 leading-tight tracking-tight" style="font-size: 0.95rem;">Aurora</span>
+                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Pernambuco</span>
+              </div>
+            </div>
+            <div class="d-none d-lg-block vr my-1 bg-slate-300" style="width: 1px; height: 24px;"></div>
+            <div class="d-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1 d-print-none aurora-topbar-tabs">
+              <button class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm aurora-default-tab" onclick="mudarAbaAurora(&#39;Início&#39;, this)">
+                <i class="fas fa-house me-1"></i>
+                Início
+              </button>
+              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Regiões&#39;, this)">
+                <i class="fas fa-map-location-dot me-1"></i>
+                Regiões
+              </button>
+              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Análises Temáticas&#39;, this)">
+                <i class="fas fa-layer-group me-1"></i>
+                Análises Temáticas
+              </button>
+              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Municípios&#39;, this)">
+                <i class="fas fa-city me-1"></i>
+                Municípios
+              </button>
+              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Comparativo UFs&#39;, this)">
+                <i class="fas fa-chart-column me-1"></i>
+                Comparativo UFs
+              </button>
+              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Metadados&#39;, this)">
+                <i class="fas fa-book me-1"></i>
+                Metadados
+              </button>
+            </div>
           </div>
           <div class="d-flex align-items-center gap-2 flex-nowrap d-print-none">
-            <div id="controles_ufs" class="d-flex align-items-center gap-2 flex-nowrap">
+            <div id="controles_ufs" class="d-none align-items-center gap-2 flex-nowrap">
               <div class="d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200">
                 <i class="fas fa-flag text-primary"></i>
                 <select id="ufs_f_uf" class="form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0" style="width: 195px; font-size: 0.85rem; outline: none; box-shadow: none;"></select>
@@ -203,169 +218,292 @@
         </header>
         <main class="aurora-content-area">
           <div class="tab-content">
-            <div class="tab-pane active show relative" data-value="UFs" id="aba_ufs">
-              <div class="container-fluid mt-3 px-4">
-                <div class="capa-relatorio d-none d-print-flex flex-column justify-content-center align-items-center text-center" style="display: none;">
-                  <img src="images/brasao_gov_pe.png" style="width: 120px; margin-bottom: 20px;"/>
-                  <h5 class="fw-bold text-dark">GOVERNO DO ESTADO DE PERNAMBUCO</h5>
-                  <h6 class="fw-bold text-dark">Secretaria de Planejamento, Gestão e Desenvolvimento Regional — SEPLAG</h6>
-                  <p class="text-muted mb-5">Painel Comparativo de Unidades da Federação (Benchmarking Nacional)</p>
-                  <span class="badge bg-dark rounded-pill px-3 py-2 mb-3">PAINEL AURORA</span>
-                  <h1 class="display-4 fw-black text-primary">BENCHMARKING ESTADUAL (UFs)</h1>
-                  <h2 id="capa_nome_uf" class="fw-bold text-secondary mb-5">PERNAMBUCO</h2>
-                  <h4 class="fw-bold text-secondary mt-4">RELATÓRIO COMPARATIVO NACIONAL</h4>
-                </div>
-                <div class="d-flex justify-content-between align-items-center border-b-2 border-slate-200 pb-3 mb-4 flex-wrap gap-3">
-                  <div class="d-flex align-items-center gap-3">
-                    <img id="ufs_header_flag" src="images/bandeiras/PE.png" onerror="this.style.display=&#39;none&#39;" alt="Bandeira UF" style="height: 38px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.18);"/>
-                    <div>
-                      <h2 id="ufs_header_titulo" class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">BENCHMARKING DAS UFs — PERNAMBUCO (PE)</h2>
-                      <p id="ufs_header_subtitulo" class="text-sm font-bold text-slate-500 mb-0">Comparativo Socioeconômico, Ambiental e Fiscal entre os 26 Estados e o DF</p>
+            <div class="tab-pane active show relative" data-value="Início" id="aba_inicio">
+              <div class="container-fluid mt-3 px-4 pb-5">
+                <div class="relative rounded-3xl p-6 md:p-10 mb-5 overflow-hidden shadow-xl text-white" style="background: linear-gradient(135deg, #0C2856 0%, #153e7e 60%, #081c3d 100%); border: 1px solid rgba(255, 255, 255, 0.12);">
+                  <div class="absolute -right-12 -bottom-16 w-80 h-80 rounded-full opacity-10 pointer-events-none" style="background: radial-gradient(circle, #00B7FF 0%, transparent 70%); filter: blur(25px);"></div>
+                  <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                    <span class="badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-white shadow-sm" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.25);">
+                      <i class="fas fa-landmark me-1.5 text-amber-300"></i>
+                      Governo de Pernambuco • SEPLAG
+                    </span>
+                    <span class="badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-blue-200 shadow-sm" style="background: rgba(0, 183, 255, 0.15); border: 1px solid rgba(0, 183, 255, 0.3);">
+                      <i class="fas fa-shield-halved me-1.5 text-blue-300"></i>
+                      Secretaria Executiva de Desenvolvimento Regional e Captação
+                    </span>
+                  </div>
+                  <div class="row align-items-center mb-4">
+                    <div class="col-lg-9">
+                      <h1 class="text-3xl md:text-5xl font-black tracking-tight mb-3 text-white leading-tight">Aurora Municípios &amp; Territórios</h1>
+                      <p class="text-sm md:text-base text-blue-100 max-w-3xl leading-relaxed mb-0 font-medium">
+                        A plataforma estratégica de inteligência de dados e apoio ao planejamento governamental do Estado de Pernambuco. 
+                        Monitore indicadores socioeconômicos, avalie a convergência inter e intra-regional e acesse o diagnóstico dos 184 municípios e 12 Regiões de Desenvolvimento.
+                      </p>
+                    </div>
+                    <div class="col-lg-3 d-none d-lg-flex justify-content-end">
+                      <img src="images/brasao_gov_pe.png" alt="Brasão Governo de Pernambuco" class="opacity-85 filter drop-shadow-lg" style="max-height: 110px; object-fit: contain;"/>
                     </div>
                   </div>
-                  <div class="d-flex align-items-center gap-2 d-print-none flex-wrap">
-                    <button id="ufs_btn_ipca" class="btn btn-outline-primary btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 shadow-none" onclick="window.toggleIPCAUFs()">
-                      <i class="fas fa-coins"></i>
-                      <span id="ufs_btn_ipca_label">Valores Nominais</span>
-                    </button>
-                    <button class="btn btn-danger btn-sm fw-bold shadow-sm rounded-pill px-3" onclick="window.print()">
-                      <i class="fas fa-file-pdf me-1"></i>
-                      Salvar PDF
-                    </button>
-                  </div>
-                </div>
-                <div id="sec_ufs_conhecimento" class="subsecao-print-break mb-5">
-                  <div class="border-b-2 border-slate-200 pb-2 mb-3">
-                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
-                      <i class="fas fa-lightbulb text-warning me-2"></i>
-                      Eixo 1: Conhecimento e Inovação
-                    </h3>
-                    <p class="text-xs font-bold text-slate-500 mb-0">Desempenho Educacional (IDEB, Abandono, Distorção, Creches e Pré-escola) e Investimentos em C&amp;T e Educação</p>
-                  </div>
-                  <div class="bg-amber-50/60 border border-amber-200 rounded-2xl p-4 mb-4">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                      <span class="badge bg-amber-600 text-white text-xs uppercase px-2.5 py-1 rounded-pill">Síntese Estratégica</span>
-                      <h6 class="font-black text-slate-800 text-sm mb-0">Educação &amp; Ciência e Tecnologia</h6>
-                    </div>
-                    <p id="ufs_sintese_conhecimento" class="text-sm text-slate-700 leading-relaxed mb-0">Indicadores educacionais oficiais por rede de ensino (Estadual, Pública e Total) integrados às despesas orçamentárias executadas em Educação e Ciência &amp; Tecnologia.</p>
-                  </div>
-                  <div id="grid_ufs_conhecimento" class="row g-3 mb-4"></div>
-                </div>
-                <div id="sec_ufs_seguranca" class="subsecao-print-break mb-5">
-                  <div class="border-b-2 border-slate-200 pb-2 mb-3">
-                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
-                      <i class="fas fa-shield-halved text-danger me-2"></i>
-                      Eixo 2: Segurança e Cidadania
-                    </h3>
-                    <p class="text-xs font-bold text-slate-500 mb-0">Alocação Orçamentária em Segurança Pública, Direitos da Cidadania, Judiciária e Legislativa</p>
-                  </div>
-                  <div class="bg-rose-50/60 border border-rose-200 rounded-2xl p-4 mb-4">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                      <span class="badge bg-rose-600 text-white text-xs uppercase px-2.5 py-1 rounded-pill">Proteção Social &amp; Cidadania</span>
-                      <h6 class="font-black text-slate-800 text-sm mb-0">Recursos Executados em Segurança e Garantia de Direitos</h6>
-                    </div>
-                    <p id="ufs_sintese_seguranca" class="text-sm text-slate-700 leading-relaxed mb-0">Demonstrativo dos recursos empenhados/liquidados pelo Estado nas funções de Segurança Pública e Direitos da Cidadania, com comparações relativas aos demais estados.</p>
-                  </div>
-                  <div id="grid_ufs_seguranca" class="row g-3 mb-4"></div>
-                </div>
-                <div id="sec_ufs_saude" class="subsecao-print-break mb-5">
-                  <div class="border-b-2 border-slate-200 pb-2 mb-3">
-                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
-                      <i class="fas fa-heartbeat text-primary me-2"></i>
-                      Eixo 3: Saúde e Qualidade de Vida
-                    </h3>
-                    <p class="text-xs font-bold text-slate-500 mb-0">Mercado de Trabalho, Demografia, Saúde Pública, Vinculação Constitucional, Saneamento, Habitação e Assistência Social</p>
-                  </div>
-                  <div class="bg-blue-50/60 border border-blue-200 rounded-2xl p-4 mb-4">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                      <span class="badge bg-blue-600 text-white text-xs uppercase px-2.5 py-1 rounded-pill">Qualidade de Vida</span>
-                      <h6 class="font-black text-slate-800 text-sm mb-0">Investimentos Sociais e Infraestrutura Urbana</h6>
-                    </div>
-                    <p id="ufs_sintese_saude" class="text-sm text-slate-700 leading-relaxed mb-0">Acompanhamento dos recursos destinados à atenção à saúde (incluindo o percentual obrigatório de vinculação da receita de impostos), habitação digna, urbanismo e previdência.</p>
-                  </div>
-                  <div id="grid_ufs_saude" class="row g-3 mb-4"></div>
-                </div>
-                <div id="sec_ufs_sustentabilidade" class="subsecao-print-break mb-5">
-                  <div class="border-b-2 border-slate-200 pb-2 mb-3">
-                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
-                      <i class="fas fa-tree text-emerald-600 me-2"></i>
-                      Eixo 4: Desenvolvimento Sustentável
-                    </h3>
-                    <p class="text-xs font-bold text-slate-500 mb-0">PIB, Produtividade do Trabalho, Unidades de Conservação e Despesas com Gestão Ambiental, Agricultura e Transporte</p>
-                  </div>
-                  <div class="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 mb-4">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                      <span class="badge bg-emerald-700 text-white text-xs uppercase px-2.5 py-1 rounded-pill">Meio Ambiente &amp; Sustentabilidade</span>
-                      <h6 class="font-black text-slate-800 text-sm mb-0">Conservação Ambiental e Desenvolvimento Verde</h6>
-                    </div>
-                    <p id="ufs_sintese_sustentabilidade" class="text-sm text-slate-700 leading-relaxed mb-0">Preservação do patrimônio natural (hectares protegidos e unidades sob gestão estadual, federal e municipal) conjugada ao financiamento da gestão ambiental e logística.</p>
-                  </div>
-                  <div id="grid_ufs_sustentabilidade" class="row g-3 mb-4"></div>
-                </div>
-                <div id="sec_ufs_gestao" class="subsecao-print-break mb-5">
-                  <div class="border-b-2 border-slate-200 pb-2 mb-3">
-                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
-                      <i class="fas fa-scale-balanced text-purple-700 me-2"></i>
-                      Eixo 5: Gestão, Transparência e Participação
-                    </h3>
-                    <p class="text-xs font-bold text-slate-500 mb-0">Painel Fiscal Consolidado — Resultados Orçamentários, Primário, Nominal, Dívida, Receitas e Despesas de Capital</p>
-                  </div>
-                  <div class="bg-purple-50/60 border border-purple-200 rounded-2xl p-4 mb-4">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                      <span class="badge bg-purple-700 text-white text-xs uppercase px-2.5 py-1 rounded-pill">Responsabilidade Fiscal</span>
-                      <h6 class="font-black text-slate-800 text-sm mb-0">Equilíbrio Fiscal e Gestão Orçamentária</h6>
-                    </div>
-                    <p id="ufs_sintese_gestao" class="text-sm text-slate-700 leading-relaxed mb-0">Métricas de solvência fiscal, cumprimento dos limites da LRF (Pessoal e DCL), arrecadação própria (impostos), transferências da União e execução de investimentos públicos.</p>
-                  </div>
-                  <h5 class="fw-black text-slate-700 text-sm uppercase tracking-wider mb-2">
-                    <i class="fas fa-chart-pie me-1 text-primary"></i>
-                    Resultados Fiscais e Limites da LRF
-                  </h5>
-                  <div id="grid_ufs_fiscal_resultados" class="row g-3 mb-4"></div>
-                  <h5 class="fw-black text-slate-700 text-sm uppercase tracking-wider mb-2">
-                    <i class="fas fa-coins me-1 text-success"></i>
-                    Receitas Realizadas e Transferências
-                  </h5>
-                  <div id="grid_ufs_fiscal_receitas" class="row g-3 mb-4"></div>
-                  <h5 class="fw-black text-slate-700 text-sm uppercase tracking-wider mb-2">
-                    <i class="fas fa-hand-holding-dollar me-1 text-danger"></i>
-                    Despesas de Gestão e Investimentos
-                  </h5>
-                  <div id="grid_ufs_fiscal_despesas" class="row g-3 mb-4"></div>
-                </div>
-                <div class="modal fade" id="modal_ufs_kpi_serie" tabindex="-1" aria-labelledby="modal_ufs_kpi_titulo" aria-hidden="true">
-                  <div class="modal-dialog modal-xl modal-dialog-centered">
-                    <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
-                      <div class="modal-header bg-slate-900 text-white px-4 py-3 border-0">
-                        <h5 id="modal_ufs_kpi_titulo" class="modal-title fw-black tracking-tight">Série Histórica e Ranking Nacional</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                      </div>
-                      <div class="modal-body p-4 bg-slate-50">
-                        <div id="modal_ufs_kpi_storytelling" class="alert bg-white border border-slate-200 shadow-sm rounded-xl p-3 mb-4 text-sm text-slate-700">Carregando informações...</div>
-                        <div class="row g-4">
-                          <div class="col-lg-6">
-                            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm h-100">
-                              <h6 class="fw-black text-slate-800 text-sm mb-3 d-flex align-items-center gap-1.5">
-                                <i class="fas fa-chart-line text-primary"></i>
-                                Evolução Histórica
-                              </h6>
-                              <div id="modal_ufs_chart_serie" style="width: 100%; height: 350px;"></div>
-                            </div>
-                          </div>
-                          <div class="col-lg-6">
-                            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm h-100">
-                              <h6 class="fw-black text-slate-800 text-sm mb-3 d-flex align-items-center gap-1.5">
-                                <i class="fas fa-chart-simple text-purple-700"></i>
-                                Ranking Nacional (27 UFs + NE e Brasil)
-                              </h6>
-                              <div id="modal_ufs_chart_ranking" style="width: 100%; height: 350px;"></div>
-                            </div>
-                          </div>
+                  <div class="mt-4 pt-3 border-t border-white/10">
+                    <div class="row g-2 align-items-center">
+                      <div class="col-md-7 col-lg-8">
+                        <div class="relative flex items-center">
+                          <i class="fas fa-search absolute left-4 text-slate-400 text-sm pointer-events-none"></i>
+                          <input id="landing_search_input" type="text" class="w-full bg-white text-slate-800 placeholder-slate-400 pl-11 pr-28 py-3 rounded-2xl text-sm font-semibold shadow-lg focus:outline-none focus:ring-2 focus:ring-[#00B7FF] border-0 transition-all" placeholder="Buscar município (ex: Caruaru, Petrolina, Serra Talhada) ou Região (ex: Agreste Central)..." onkeydown="if(event.key===&#39;Enter&#39;) window.executarBuscaLanding();"/>
+                          <button type="button" class="absolute right-2 btn btn-primary btn-sm rounded-xl px-3.5 py-1.5 font-bold text-xs shadow-sm" onclick="window.executarBuscaLanding()">Acessar</button>
                         </div>
                       </div>
-                      <div class="modal-footer bg-white border-top border-slate-200 px-4 py-2">
-                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Fechar</button>
+                      <div class="col-md-5 col-lg-4 d-flex align-items-center gap-1.5 flex-wrap">
+                        <span class="text-xs font-bold text-blue-200 uppercase tracking-wider me-1">Acesso Rápido:</span>
+                        <button type="button" class="btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all" onclick="window.irParaMunicipio(&#39;Recife&#39;)">Recife</button>
+                        <button type="button" class="btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all" onclick="window.irParaMunicipio(&#39;Caruaru&#39;)">Caruaru</button>
+                        <button type="button" class="btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all" onclick="window.irParaMunicipio(&#39;Petrolina&#39;)">Petrolina</button>
+                        <button type="button" class="btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all" onclick="window.irParaMunicipio(&#39;Garanhuns&#39;)">Garanhuns</button>
                       </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-5">
+                  <div class="d-flex justify-content-between align-items-center border-b-2 border-slate-200 pb-2 mb-3">
+                    <div>
+                      <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
+                        <i class="fas fa-chart-line text-primary me-2"></i>
+                        Grandes Números de Pernambuco
+                      </h3>
+                      <p class="text-xs font-bold text-slate-500 mb-0">Panorama consolidado do território pernambucano com base em dados oficiais</p>
+                    </div>
+                    <span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-3 py-1 text-xs font-bold">Base Atualizada</span>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Malha Territorial</span>
+                        <div class="w-8 h-8 rounded-full bg-blue-50 text-primary flex items-center justify-center text-sm">
+                          <i class="fas fa-map-location-dot"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="text-2xl font-black text-slate-800 tracking-tight block">184 + 1</span>
+                        <span class="text-xs font-bold text-slate-500 block">Municípios e Fernando de Noronha</span>
+                      </div>
+                      <div class="mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-blue-100 text-blue-800 rounded-pill text-[10px] font-bold px-2 py-0.5">12 Regiões (RDs)</span>
+                        <span class="text-[11px] text-slate-400 font-semibold">100% de Cobertura</span>
+                      </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">População Estimada</span>
+                        <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+                          <i class="fas fa-users"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="text-2xl font-black text-slate-800 tracking-tight block">9.058.931</span>
+                        <span class="text-xs font-bold text-slate-500 block">Habitantes Estimados (2026)</span>
+                      </div>
+                      <div class="mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-emerald-100 text-emerald-800 rounded-pill text-[10px] font-bold px-2 py-0.5">7º no Brasil</span>
+                        <span class="text-[11px] text-slate-400 font-semibold">2º no Nordeste</span>
+                      </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">PIB Consolidado</span>
+                        <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
+                          <i class="fas fa-sack-dollar"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="text-2xl font-black text-slate-800 tracking-tight block">R$ 254+ Bi</span>
+                        <span class="text-xs font-bold text-slate-500 block">Soma dos PIBs Municipais</span>
+                      </div>
+                      <div class="mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-amber-100 text-amber-800 rounded-pill text-[10px] font-bold px-2 py-0.5">Economia Polo</span>
+                        <span class="text-[11px] text-slate-400 font-semibold">Agro, Indústria &amp; Serv.</span>
+                      </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Gestão Fiscal (CAPAG)</span>
+                        <div class="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-sm">
+                          <i class="fas fa-building-columns"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="text-2xl font-black text-slate-800 tracking-tight block">184 Municípios</span>
+                        <span class="text-xs font-bold text-slate-500 block">Capacidade de Pagamento STN</span>
+                      </div>
+                      <div class="mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-purple-100 text-purple-800 rounded-pill text-[10px] font-bold px-2 py-0.5">Notas A, B, C e D</span>
+                        <span class="text-[11px] text-slate-400 font-semibold">Aptidão a Crédito</span>
+                      </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Programas Prioritários</span>
+                        <div class="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-sm">
+                          <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="text-2xl font-black text-slate-800 tracking-tight block">Fome &amp; Águas</span>
+                        <span class="text-xs font-bold text-slate-500 block">Cozinhas &amp; Segurança Hídrica</span>
+                      </div>
+                      <div class="mt-3 pt-2 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-rose-100 text-rose-800 rounded-pill text-[10px] font-bold px-2 py-0.5">Monitoramento Ativo</span>
+                        <span class="text-[11px] text-slate-400 font-semibold">Ações Estruturantes</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-5">
+                  <div class="border-b-2 border-slate-200 pb-2 mb-4">
+                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
+                      <i class="fas fa-sitemap text-primary me-2"></i>
+                      O Que Você Encontra no Aurora
+                    </h3>
+                    <p class="text-xs font-bold text-slate-500 mb-0">Navegue diretamente pelos módulos de análise conforme sua necessidade de informação</p>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl bg-blue-100 text-primary flex items-center justify-center text-xl mb-4">
+                          <i class="fas fa-map-location-dot"></i>
+                        </div>
+                        <span class="badge bg-blue-50 text-blue-700 border border-blue-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Escala Regional</span>
+                        <h4 class="font-black text-slate-800 text-lg mb-2">Regiões de Desenvolvimento (RDs)</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Diagnóstico territorial consolidado das 12 RDs e Consórcios Intermunicipais. Analise clusters de desenvolvimento, redes de influência (REGIC), fluxos pendulares e recursos estaduais alocados.</p>
+                      </div>
+                      <button type="button" class="btn btn-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2 shadow-sm" onclick="window.mudarAbaAurora(&#39;Regiões&#39;, null)">
+                        <i class="fas fa-arrow-right"></i>
+                        Explorar Regiões
+                      </button>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl mb-4">
+                          <i class="fas fa-layer-group"></i>
+                        </div>
+                        <span class="badge bg-amber-50 text-amber-800 border border-amber-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Pautas Estruturadoras</span>
+                        <h4 class="font-black text-slate-800 text-lg mb-2">Análises Temáticas</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Acompanhamento em profundidade dos programas centrais do Governo de Pernambuco: Pernambuco sem Fome (Cozinhas Comunitárias e Mães de PE), Águas de Pernambuco (Compesa e Adutoras) e Saúde Fiscal (CAPAG).</p>
+                      </div>
+                      <button type="button" class="btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Análises Temáticas&#39;, null)">
+                        <i class="fas fa-arrow-right"></i>
+                        Ver Programas Prioritários
+                      </button>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl mb-4">
+                          <i class="fas fa-city"></i>
+                        </div>
+                        <span class="badge bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Escala Local (184 Municípios)</span>
+                        <h4 class="font-black text-slate-800 text-lg mb-2">Fichas Municipais</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Raio-X de cada um dos 184 municípios em 11 dimensões detalhadas: Demografia, Indicadores Sociais, Econômicos, Ciência e Tecnologia, Meio Ambiente, Finanças, Iniciativas e Emendas Parlamentares.</p>
+                      </div>
+                      <button type="button" class="btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Municípios&#39;, null)">
+                        <i class="fas fa-arrow-right"></i>
+                        Consultar Municípios
+                      </button>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl mb-4">
+                          <i class="fas fa-chart-column"></i>
+                        </div>
+                        <span class="badge bg-indigo-50 text-indigo-800 border border-indigo-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Escala Inter-Regional / Nacional</span>
+                        <h4 class="font-black text-slate-800 text-lg mb-2">Comparativo UFs (Benchmarking)</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Benchmarking das 27 Unidades da Federação estruturado em 5 Eixos Estratégicos: Conhecimento e Inovação (IDEB), Segurança e Cidadania, Saúde e Qualidade de Vida, Desenvolvimento Sustentável e Gestão Fiscal.</p>
+                      </div>
+                      <button type="button" class="btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Comparativo UFs&#39;, null)">
+                        <i class="fas fa-arrow-right"></i>
+                        Abrir Comparativo Nacional
+                      </button>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center text-xl mb-4">
+                          <i class="fas fa-book"></i>
+                        </div>
+                        <span class="badge bg-slate-100 text-slate-700 border border-slate-300 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Transparência &amp; Governança</span>
+                        <h4 class="font-black text-slate-800 text-lg mb-2">Dicionário de Metadados</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Documentação rigorosa com as fórmulas de cálculo, limiares de corte, direções desejáveis, periodicidade e impacto no planejamento para cada indicador presente no sistema.</p>
+                      </div>
+                      <button type="button" class="btn btn-outline-secondary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Metadados&#39;, null)">
+                        <i class="fas fa-arrow-right"></i>
+                        Ver Metadados
+                      </button>
+                    </div>
+                    <div class="bg-gradient-to-br from-[#0C2856] to-[#153e7e] rounded-3xl p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between text-white">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl bg-white/10 text-cyan-300 flex items-center justify-center text-xl mb-4 border border-white/20">
+                          <i class="fas fa-robot"></i>
+                        </div>
+                        <span class="badge bg-cyan-400/20 text-cyan-200 border border-cyan-300/30 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Inteligência Artificial</span>
+                        <h4 class="font-black text-white text-lg mb-2">Assistente de Dados Aurora</h4>
+                        <p class="text-blue-100 text-sm leading-relaxed mb-4">Converse diretamente com os dados de Pernambuco em linguagem natural. Obtenha comparativos imediatos, sínteses territoriais e respostas rápidas sobre qualquer município ou região.</p>
+                      </div>
+                      <button type="button" class="btn btn-light rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2 text-slate-900 shadow-sm" onclick="window.toggleAuroraChat()">
+                        <i class="fas fa-comments text-primary"></i>
+                        Conversar com a Aurora
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-slate-100 rounded-3xl p-6 md:p-8 border border-slate-200">
+                  <div class="border-b border-slate-200 pb-3 mb-4">
+                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">
+                      <i class="fas fa-compass text-primary me-2"></i>
+                      Como Usar o Aurora (Fluxos Recomendados)
+                    </h3>
+                    <p class="text-xs font-bold text-slate-500 mb-0">Escolha a jornada que melhor atende aos seus objetivos de planejamento e tomada de decisão</p>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div class="text-emerald-600 font-black text-sm mb-1 d-flex align-items-center gap-1.5">
+                          <i class="fas fa-building"></i>
+                          Gestores Municipais
+                        </div>
+                        <h5 class="font-black text-slate-800 text-sm mb-2">Panorama e Monitoramento Local</h5>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3">Acesse a ficha da sua cidade para analisar as 11 dimensões sociais e econômicas, verificar a nota CAPAG e acompanhar convênios e emendas parlamentares em execução.</p>
+                      </div>
+                      <button class="btn btn-xs btn-outline-emerald border-emerald-500 text-emerald-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-emerald-50" onclick="window.mudarAbaAurora(&#39;Municípios&#39;, null)">Ir para Municípios</button>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div class="text-blue-600 font-black text-sm mb-1 d-flex align-items-center gap-1.5">
+                          <i class="fas fa-map"></i>
+                          Planejamento Territorial
+                        </div>
+                        <h5 class="font-black text-slate-800 text-sm mb-2">Articulação de RDs e Consórcios</h5>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3">Identifique disparidades inter-regionais entre as 12 RDs, analise bacias de emprego e conectividade territorial para orientar investimentos descentralizados.</p>
+                      </div>
+                      <button class="btn btn-xs btn-outline-primary font-bold rounded-lg py-1.5 px-3 w-full hover:bg-blue-50" onclick="window.mudarAbaAurora(&#39;Regiões&#39;, null)">Ir para Regiões</button>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div class="text-amber-600 font-black text-sm mb-1 d-flex align-items-center gap-1.5">
+                          <i class="fas fa-utensils"></i>
+                          Programas de Governo
+                        </div>
+                        <h5 class="font-black text-slate-800 text-sm mb-2">Ações Estruturantes de Estado</h5>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3">Consulte o mapa de cozinhas comunitárias do Pernambuco sem Fome, a malha de adutoras e municípios atendidos pela Compesa e o diagnóstico fiscal.</p>
+                      </div>
+                      <button class="btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50" onclick="window.mudarAbaAurora(&#39;Análises Temáticas&#39;, null)">Ir para Temáticas</button>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div class="text-indigo-600 font-black text-sm mb-1 d-flex align-items-center gap-1.5">
+                          <i class="fas fa-chart-pie"></i>
+                          Analistas Estratégicos
+                        </div>
+                        <h5 class="font-black text-slate-800 text-sm mb-2">Benchmarking Interestadual</h5>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3">Compare Pernambuco frente aos outros estados do Nordeste e do Brasil em segurança pública, educação básica (IDEB), investimentos em C&amp;T e equilíbrio fiscal.</p>
+                      </div>
+                      <button class="btn btn-xs btn-outline-indigo border-indigo-500 text-indigo-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-indigo-50" onclick="window.mudarAbaAurora(&#39;Comparativo UFs&#39;, null)">Ir para Comparativo UFs</button>
                     </div>
                   </div>
                 </div>
@@ -795,6 +933,466 @@
                       <span class="rd-cluster-spinner-text">Carregando matriz dos municípios...</span>
                     </div>
                     <table id="rd_tabela_matriz_municipios" class="table w-100"></table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane relative" data-value="Análises Temáticas" id="aba_tematicas">
+              <div class="container-fluid mt-3 px-4 pb-5">
+                <div class="border-b-2 border-slate-200 pb-3 mb-4 mt-2 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                  <div>
+                    <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Análises Temáticas</h2>
+                    <p class="text-sm font-bold text-slate-500 mb-0">Programas Prioritários, Investimentos Estruturadores e Visão Territorial do Estado</p>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pauta:</span>
+                    <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1">
+                      <button id="btn_pauta_resumo_cozinhas" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.alternarPautaResumos(&#39;cozinhas&#39;, this)">
+                        <i class="fas fa-utensils me-1.5 text-amber-500"></i>
+                        Pernambuco sem Fome
+                      </button>
+                      <button id="btn_pauta_resumo_aguas" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;aguas&#39;, this)">
+                        <i class="fas fa-droplet me-1.5 text-blue-500"></i>
+                        Águas de Pernambuco
+                      </button>
+                      <button id="btn_pauta_resumo_capag" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;capag&#39;, this)">
+                        <i class="fas fa-building-columns me-1.5 text-purple-600"></i>
+                        Capacidade de Pagamento
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_cozinhas" class="resumo-pauta-bloco">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-amber-50 text-amber-700 border border-amber-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">SEGURANÇA ALIMENTAR &amp; ASSISTÊNCIA SOCIAL</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Pernambuco sem Fome — Cozinhas, Mães de Pernambuco &amp; Cofinanciamento</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-shield-heart text-amber-600 me-1"></i>
+                        SAS / Governo de Pernambuco
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="fas fa-utensils text-amber-500"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Rede de Cozinhas Comunitárias</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total de Cozinhas</span>
+                        <span id="cozinhas_kpi_total" class="text-lg md:text-xl font-black text-slate-800">-</span>
+                      </div>
+                      <div class="bg-emerald-50/60 p-3 rounded-2xl border border-emerald-200 text-center">
+                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">Em Funcionamento</span>
+                        <span id="cozinhas_kpi_funcionamento" class="text-lg md:text-xl font-black text-emerald-700">-</span>
+                      </div>
+                      <div class="bg-amber-50/60 p-3 rounded-2xl border border-amber-200 text-center">
+                        <span class="text-xs font-bold text-amber-600 uppercase tracking-wider block mb-1">Em Implantação</span>
+                        <span id="cozinhas_kpi_implantacao" class="text-lg md:text-xl font-black text-amber-700">-</span>
+                      </div>
+                      <div class="bg-blue-50/60 p-3 rounded-2xl border border-blue-200 text-center">
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider block mb-1">Aguard. Pactuação</span>
+                        <span id="cozinhas_kpi_pactuacao" class="text-lg md:text-xl font-black text-blue-700">-</span>
+                      </div>
+                      <div class="bg-rose-50/60 p-3 rounded-2xl border border-rose-200 text-center">
+                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider block mb-1">Não Aderiu</span>
+                        <span id="cozinhas_kpi_nao_aderiu" class="text-lg md:text-xl font-black text-rose-700">-</span>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                      <i class="fas fa-person-breastfeeding text-pink-500"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Programa Mães de Pernambuco (Transferência de Renda)</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                      <div class="bg-pink-50/50 p-3 rounded-2xl border border-pink-200 text-center">
+                        <span class="text-xs font-bold text-pink-500 uppercase tracking-wider block mb-1">Mães Beneficiadas</span>
+                        <span id="maes_kpi_total" class="text-lg md:text-xl font-black text-pink-700">-</span>
+                      </div>
+                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Investimento Acumulado</span>
+                        <span id="maes_kpi_investimento" class="text-lg md:text-xl font-black text-purple-700">-</span>
+                      </div>
+                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Municípios Atendidos</span>
+                        <span id="maes_kpi_municipios" class="text-lg md:text-xl font-black text-slate-800">185</span>
+                      </div>
+                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Benefício Mensal</span>
+                        <span id="maes_kpi_auxilio" class="text-lg md:text-xl font-black text-emerald-700">R$ 300 / mãe</span>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                      <i class="fas fa-hand-holding-dollar text-blue-500"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Cofinanciamento da Assistência Social (SAS / FEAS)</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+                      <div class="bg-blue-50/50 p-3 rounded-2xl border border-blue-200 text-center">
+                        <span class="text-xs font-bold text-blue-500 uppercase tracking-wider block mb-1">Total Pago</span>
+                        <span id="cofin_kpi_pago" class="text-lg md:text-xl font-black text-blue-700">-</span>
+                      </div>
+                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Validado</span>
+                        <span id="cofin_kpi_validado" class="text-lg md:text-xl font-black text-slate-800">-</span>
+                      </div>
+                      <div class="bg-emerald-50/50 p-3 rounded-2xl border border-emerald-200 text-center">
+                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">% Executado / Pago</span>
+                        <span id="cofin_kpi_percentual" class="text-lg md:text-xl font-black text-emerald-700">-</span>
+                      </div>
+                      <div class="bg-purple-50/50 p-3 rounded-2xl border border-purple-200 text-center">
+                        <span class="text-xs font-bold text-purple-600 uppercase tracking-wider block mb-1">Saldo a Pagar</span>
+                        <span id="cofin_kpi_a_pagar" class="text-lg md:text-xl font-black text-purple-700">-</span>
+                      </div>
+                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Municípios Cobertos</span>
+                        <span id="cofin_kpi_municipios" class="text-lg md:text-xl font-black text-slate-800">185</span>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      <div>
+                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa de Cobertura Territorial e Equipamentos</h5>
+                        <span id="sem_fome_camada_label" class="text-xs text-slate-400 font-semibold">Exibindo: Localização das Cozinhas Comunitárias</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1">
+                          <button id="btn_visao_sem_fome_cozinhas" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.alternarVisaoSemFome(&#39;cozinhas&#39;, this)">
+                            <i class="fas fa-utensils me-1.5"></i>
+                            Cozinhas Comunitárias
+                          </button>
+                          <button id="btn_visao_sem_fome_maes" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoSemFome(&#39;maes&#39;, this)">
+                            <i class="fas fa-person-breastfeeding me-1.5 text-pink-500"></i>
+                            Mães de Pernambuco
+                          </button>
+                          <button id="btn_visao_sem_fome_cofin" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoSemFome(&#39;cofin&#39;, this)">
+                            <i class="fas fa-hand-holding-dollar me-1.5 text-blue-500"></i>
+                            Cofinanciamento
+                          </button>
+                          <button id="btn_visao_sem_fome_ivcad" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoSemFome(&#39;ivcad&#39;, this)">
+                            <i class="fas fa-shield-heart me-1.5 text-indigo-500"></i>
+                            Vulnerabilidade (IVCAD)
+                          </button>
+                        </div>
+                        <div id="legenda_visao_cozinhas" class="d-flex align-items-center gap-1.5 flex-wrap">
+                          <span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs">● Funcionando</span>
+                          <span class="badge bg-amber-100 text-amber-800 border border-amber-300 text-xs">● Implantação</span>
+                          <span class="badge bg-blue-100 text-blue-800 border border-blue-300 text-xs">● Pactuação</span>
+                          <span class="badge bg-rose-100 text-rose-800 border border-rose-300 text-xs">● Não Aderiu</span>
+                        </div>
+                        <div id="legenda_visao_maes" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Beneficiárias:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #fce7f3; color: #831843;">&lt; 400</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #f472b6;">400 - 800</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #db2777;">800 - 1.500</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #831843;">&gt; 1.500</span>
+                        </div>
+                        <div id="legenda_visao_cofin" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Repasse Pago:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #dbeafe; color: #1e40af;">&lt; R$ 10M</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #60a5fa;">R$ 10M - 20M</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #2563eb;">R$ 20M - 40M</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #1e3a8a;">&gt; R$ 40M</span>
+                        </div>
+                        <div id="legenda_visao_ivcad" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Vulnerab. Cuidados (Ponderada):</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #e0e7ff; color: #3730a3;">&lt; 0,10 (Baixa)</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #818cf8;">0,10 - 0,18</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #4f46e5;">0,18 - 0,28</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #312e81;">&gt; 0,28 (Alta)</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-5">
+                      <div class="col-lg-8 col-xl-8">
+                        <div class="position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-100" style="min-height: 520px;">
+                          <div id="resumo_cozinhas_spinner" class="position-absolute top-0 start-0 w-100 h-100 bg-white/75 d-flex align-items-center justify-content-center z-10">
+                            <div class="spinner-border text-primary" role="status"></div>
+                          </div>
+                          <div id="resumo_cozinhas_map" style="width: 100%; height: 100%; min-height: 520px; background-color: #f8fafc;"></div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4 col-xl-4">
+                        <div id="sem_fome_hover_box" class="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 shadow-sm h-100 d-flex flex-column justify-content-between" style="min-height: 520px; max-height: 520px; overflow-y: auto;">
+                          <div id="sem_fome_box_content_default" class="text-center py-4 my-auto">
+                            <div class="w-14 h-14 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
+                              <i class="fas fa-map-location-dot"></i>
+                            </div>
+                            <h5 class="font-black text-slate-800 text-base mb-1">Detalhamento Territorial</h5>
+                            <p class="text-xs text-slate-500 mb-3 px-2 leading-relaxed">Passe o cursor sobre os municípios ou cozinhas no mapa para inspecionar os indicadores locais em tempo real.</p>
+                            <div class="grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-200/80">
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Municípios</span>
+                                <span class="text-sm font-black text-slate-700">185</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Cozinhas</span>
+                                <span class="text-sm font-black text-amber-600">402</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Mães de PE</span>
+                                <span class="text-sm font-black text-pink-600">157.196</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Cofinanciamento</span>
+                                <span class="text-sm font-black text-blue-600">R$ 3,0 Bi</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div id="sem_fome_box_content_active" class="d-none flex-column h-100"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                      <div class="row g-4 mb-5">
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Série Histórica do Cofinanciamento</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Valores Validados vs. Pagos por ano de competência (2024-2026)</span>
+                              </div>
+                              <span class="badge bg-blue-100 text-blue-800 text-xs font-bold rounded-pill px-2.5 py-1">Evolução Anual</span>
+                            </div>
+                            <div id="chart_cofin_serie_historica" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Cofinanciamento por Município</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Top municípios com maior volume financeiro recebido</span>
+                              </div>
+                              <span class="badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-2.5 py-1">Top 20 Municípios</span>
+                            </div>
+                            <div id="chart_cofin_por_mun" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-2 pt-4 border-t border-slate-100">
+                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                          <h5 id="sem_fome_chart_title" class="font-bold text-slate-700 text-sm md:text-base mb-0">Cozinhas Comunitárias por Município</h5>
+                          <span id="sem_fome_chart_subtitle" class="text-xs text-slate-400 font-semibold">Top municípios com maior número de unidades do programa</span>
+                        </div>
+                        <span id="cozinhas_badge_total_muns" class="badge bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 text-xs rounded-pill font-bold">
+                          <i class="fas fa-map-pin text-amber-500 me-1"></i>
+                          185 Municípios Mapeados
+                        </span>
+                      </div>
+                      <div id="resumo_cozinhas_chart_muns" style="width: 100%; height: 460px;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_capag" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-purple-50 text-purple-700 border border-purple-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">GESTÃO FISCAL &amp; CRÉDITO</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Capacidade de Pagamento dos Municípios (CAPAG)</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-building-columns text-primary me-1"></i>
+                        Secretaria do Tesouro Nacional (STN)
+                      </span>
+                    </div>
+                    <div class="text-center mb-3">
+                      <h5 class="font-bold text-slate-700 text-sm md:text-base mb-1">CAPAG por Município</h5>
+                    </div>
+                    <div id="resumo_capag_map_container" class="map-clean-container rounded-2xl border border-slate-200 overflow-hidden relative shadow-inner mx-auto" style="height: 520px; width: 100%; max-width: 1100px; background-color: #f8fafc; position: relative;">
+                      <div id="resumo_capag_spinner" class="d-none position-absolute top-50 start-50 translate-middle text-center bg-white/90 p-4 rounded-2xl shadow-lg border border-slate-200 z-10">
+                        <div class="spinner-border text-primary mb-2" role="status"></div>
+                        <div class="text-xs font-bold text-slate-700">Carregando dados da CAPAG...</div>
+                      </div>
+                      <div id="resumo_capag_map" style="width: 100%; height: 100%;"></div>
+                    </div>
+                    <div class="mt-5 d-flex flex-column align-items-center">
+                      <h5 class="font-bold text-slate-700 text-sm md:text-base mb-3 text-center">Quantidade de municípios de Pernambuco por nota final na CAPAG</h5>
+                      <div class="table-responsive w-100 d-flex justify-content-center">
+                        <table class="table table-bordered text-center align-middle shadow-sm rounded-xl overflow-hidden mb-2" style="max-width: 860px; border: 1.5px solid #205090;">
+                          <thead>
+                            <tr style="background-color: #205090; color: #ffffff; font-weight: 800; font-size: 0.8rem; border-color: #1a4278;">
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr style="font-size: 0.88rem;">
+                              <td style="background-color: #92D050; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">A</td>
+                              <td id="capag_count_A" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                              <td style="background-color: #00A8A8; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">B</td>
+                              <td id="capag_count_B" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                              <td style="background-color: #C55A11; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">C</td>
+                              <td id="capag_count_C" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                              <td style="background-color: #595959; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">n.d.</td>
+                              <td id="capag_count_nd" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                            </tr>
+                            <tr style="font-size: 0.88rem;">
+                              <td style="background-color: #70AD47; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">A+</td>
+                              <td id="capag_count_Aplus" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                              <td style="background-color: #00B0B9; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">B+</td>
+                              <td id="capag_count_Bplus" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                              <td style="background-color: #843C0C; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">D</td>
+                              <td id="capag_count_D" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">0</td>
+                              <td style="background-color: #404040; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">n.e.</td>
+                              <td id="capag_count_ne" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="text-center text-slate-400 text-xs mt-2">Fonte: Secretaria do Tesouro Nacional (STN). Classificação da Capacidade de Pagamento (CAPAG). n.d. = Não Disponível; n.e. = Não Elegível.</div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_aguas" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-blue-50 text-blue-700 border border-blue-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">SANEAMENTO &amp; RECURSOS HÍDRICOS</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Águas de Pernambuco — Investimentos e Obras Estruturantes</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-water text-primary me-1"></i>
+                        COMPESA / SRHS
+                      </span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Investimento Total</span>
+                        <span id="aguas_kpi_investimento" class="text-lg md:text-xl font-black text-blue-700">R$ 14,8 Bi</span>
+                      </div>
+                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Projetos / Obras</span>
+                        <span id="aguas_kpi_projetos" class="text-lg md:text-xl font-black text-slate-800">560</span>
+                      </div>
+                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Municípios Atendidos</span>
+                        <span id="aguas_kpi_municipios" class="text-lg md:text-xl font-black text-slate-800">185</span>
+                      </div>
+                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Pop. Beneficiada (PE)</span>
+                        <span id="aguas_kpi_populacao" class="text-lg md:text-xl font-black text-emerald-700">9,5 Mi</span>
+                      </div>
+                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center col-span-2 md:col-span-1">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Desembolso Futuro</span>
+                        <span id="aguas_kpi_desembolso" class="text-lg md:text-xl font-black text-purple-700">R$ 7,7 Bi</span>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                      <div>
+                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa de Infraestrutura Hídrica e Cobertura Municipal</h5>
+                        <span id="aguas_camada_ativa_label" class="text-xs text-slate-400 font-semibold">Camada Base: Visão Geral de Municípios</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-flex align-items-center gap-2 bg-blue-50/70 border border-blue-200 px-3 py-1.5 rounded-pill shadow-xs">
+                          <div class="form-check form-switch mb-0 d-flex align-items-center gap-1.5 ps-0">
+                            <input class="form-check-input ms-0 cursor-pointer" type="checkbox" role="switch" id="aguas_toggle_adutoras" checked="checked" style="cursor: pointer;" onchange="window.toggleCamadaAdutoras(this.checked)"/>
+                            <label class="form-check-label text-xs font-bold text-blue-900 cursor-pointer mb-0 select-none" for="aguas_toggle_adutoras">
+                              <i class="fas fa-water text-blue-600 me-1"></i>
+                              Rede de Adutoras
+                            </label>
+                          </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                          <label class="text-xs font-bold text-slate-400 mb-0">Cenário / Camada:</label>
+                          <select id="aguas_select_camada" class="form-select form-select-sm fw-bold text-slate-400 bg-slate-100 border-slate-200 rounded-pill shadow-none" style="width: 210px; font-size: 0.82rem; cursor: not-allowed; opacity: 0.75;" disabled="disabled" title="Filtro inativo até a inclusão de nova camada de polígonos">
+                            <option value="Cenario: Geral" selected="selected">Visão Geral Consolidada</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="resumo_aguas_map_container" class="map-clean-container rounded-2xl border border-slate-200 overflow-hidden relative shadow-inner mx-auto mb-4" style="height: 520px; width: 100%; background-color: #f8fafc; position: relative;">
+                      <div id="resumo_aguas_spinner" class="d-none position-absolute top-50 start-50 translate-middle text-center bg-white/90 p-4 rounded-2xl shadow-lg border border-slate-200 z-10">
+                        <div class="spinner-border text-primary mb-2" role="status"></div>
+                        <div class="text-xs font-bold text-slate-700">Carregando mapa de Águas de Pernambuco...</div>
+                      </div>
+                      <div id="resumo_aguas_map" style="width: 100%; height: 100%;"></div>
+                      <div id="resumo_aguas_legenda" class="bg-white/95 backdrop-blur border border-slate-200 rounded-xl p-3 shadow-md position-absolute bottom-4 left-4 z-10 text-xs">
+                        <div class="fw-bold text-slate-800 mb-1.5" style="font-size: 0.75rem;">Situação Municipal</div>
+                        <div class="d-flex flex-column gap-1 mb-2 pb-2 border-bottom border-slate-200">
+                          <div class="d-flex align-items-center gap-2">
+                            <span style="width: 12px; height: 12px; border-radius: 3px; background-color: #1D9E75; display: inline-block;"></span>
+                            <span class="text-slate-700 font-semibold">Atendido / Concluído / Positivo</span>
+                          </div>
+                          <div class="d-flex align-items-center gap-2">
+                            <span style="width: 12px; height: 12px; border-radius: 3px; background-color: #EF9F27; display: inline-block;"></span>
+                            <span class="text-slate-700 font-semibold">Em Andamento / Em Atenção</span>
+                          </div>
+                          <div class="d-flex align-items-center gap-2">
+                            <span style="width: 12px; height: 12px; border-radius: 3px; background-color: #E24B4A; display: inline-block;"></span>
+                            <span class="text-slate-700 font-semibold">Crítico / Déficit / Não Iniciado</span>
+                          </div>
+                          <div class="d-flex align-items-center gap-2">
+                            <span style="width: 12px; height: 12px; border-radius: 3px; background-color: #B8B6AE; display: inline-block;"></span>
+                            <span class="text-slate-700 font-semibold">Sem Intervenção / Não Aplicável</span>
+                          </div>
+                        </div>
+                        <div id="resumo_aguas_legenda_adutoras">
+                          <div class="fw-bold text-blue-900 mb-1.5" style="font-size: 0.75rem;">
+                            <i class="fas fa-water text-blue-600 me-1"></i>
+                            Rede de Adutoras
+                          </div>
+                          <div class="d-flex flex-column gap-1">
+                            <div class="d-flex align-items-center gap-2">
+                              <span style="width: 16px; height: 3.5px; border-radius: 2px; background-color: #0284c7; display: inline-block;"></span>
+                              <span class="text-slate-700 font-semibold">Sistema Existente</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                              <span style="width: 16px; height: 3.5px; border-radius: 2px; background-color: #f59e0b; display: inline-block;"></span>
+                              <span class="text-slate-700 font-semibold">Sistema em Obras</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                              <span style="width: 16px; height: 2px; border-top: 2px dashed #8b5cf6; display: inline-block;"></span>
+                              <span class="text-slate-700 font-semibold">Sistema Planejado</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-4 mb-5">
+                      <div class="col-lg-6">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 h-100">
+                          <h6 class="font-extrabold text-slate-700 text-sm mb-1">Cronograma Plurianual de Desembolso Financeiro</h6>
+                          <p class="text-xs text-slate-400 mb-3">Necessidade de recursos projetada por ano (em R$ Milhões)</p>
+                          <div id="resumo_aguas_chart_desembolso" style="width: 100%; height: 320px;"></div>
+                        </div>
+                      </div>
+                      <div class="col-lg-6">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 h-100">
+                          <h6 class="font-extrabold text-slate-700 text-sm mb-1">Carteira de Projetos por Situação</h6>
+                          <p class="text-xs text-slate-400 mb-3">Distribuição do número de projetos por status de execução</p>
+                          <div id="resumo_aguas_chart_status" style="width: 100%; height: 320px;"></div>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                          <h6 class="font-extrabold text-slate-700 text-sm mb-1">Top 15 Municípios com Maior Volume de Recursos Rateados</h6>
+                          <p class="text-xs text-slate-400 mb-3">Soma dos valores rateados das obras e intervenções hídricas (em R$ Milhões)</p>
+                          <div id="resumo_aguas_chart_top_muns" style="width: 100%; height: 380px;"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4">
+                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                          <h5 class="font-bold text-slate-800 text-base mb-0">Portfólio Detalhado de Projetos e Obras da Compesa</h5>
+                          <p class="text-xs text-slate-400 mb-0">Listagem consolidada de todas as intervenções com diretoria, orçamento e execução</p>
+                        </div>
+                        <div id="aguas_filtro_municipio_ativo" class="d-none align-items-center gap-2">
+                          <span class="badge bg-blue-100 text-blue-800 font-bold px-3 py-1.5 rounded-pill" id="aguas_filtro_municipio_badge">Filtro: Todos</span>
+                          <button class="btn btn-outline-secondary btn-sm rounded-pill font-bold text-xs py-0.5 px-2" onclick="window.limparFiltroMunTabelaAguas()">Limpar Filtro</button>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <table id="resumo_aguas_tabela_projetos" class="table table-hover w-100 text-sm"></table>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1955,460 +2553,168 @@
                 </div>
               </div>
             </div>
-            <div class="tab-pane relative" data-value="Análises Temáticas" id="aba_tematicas">
-              <div class="container-fluid mt-3 px-4 pb-5">
-                <div class="border-b-2 border-slate-200 pb-3 mb-4 mt-2 d-flex justify-content-between align-items-center flex-wrap gap-3">
-                  <div>
-                    <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Análises Temáticas</h2>
-                    <p class="text-sm font-bold text-slate-500 mb-0">Programas Prioritários, Investimentos Estruturadores e Visão Territorial do Estado</p>
-                  </div>
-                  <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pauta:</span>
-                    <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1">
-                      <button id="btn_pauta_resumo_cozinhas" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.alternarPautaResumos(&#39;cozinhas&#39;, this)">
-                        <i class="fas fa-utensils me-1.5 text-amber-500"></i>
-                        Pernambuco sem Fome
-                      </button>
-                      <button id="btn_pauta_resumo_aguas" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;aguas&#39;, this)">
-                        <i class="fas fa-droplet me-1.5 text-blue-500"></i>
-                        Águas de Pernambuco
-                      </button>
-                      <button id="btn_pauta_resumo_capag" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;capag&#39;, this)">
-                        <i class="fas fa-building-columns me-1.5 text-purple-600"></i>
-                        Capacidade de Pagamento
-                      </button>
+            <div class="tab-pane relative" data-value="Comparativo UFs" id="aba_ufs">
+              <div class="container-fluid mt-3 px-4">
+                <div class="capa-relatorio d-none d-print-flex flex-column justify-content-center align-items-center text-center" style="display: none;">
+                  <img src="images/brasao_gov_pe.png" style="width: 120px; margin-bottom: 20px;"/>
+                  <h5 class="fw-bold text-dark">GOVERNO DO ESTADO DE PERNAMBUCO</h5>
+                  <h6 class="fw-bold text-dark">Secretaria de Planejamento, Gestão e Desenvolvimento Regional — SEPLAG</h6>
+                  <p class="text-muted mb-5">Painel Comparativo de Unidades da Federação (Benchmarking Nacional)</p>
+                  <span class="badge bg-dark rounded-pill px-3 py-2 mb-3">PAINEL AURORA</span>
+                  <h1 class="display-4 fw-black text-primary">BENCHMARKING ESTADUAL (UFs)</h1>
+                  <h2 id="capa_nome_uf" class="fw-bold text-secondary mb-5">PERNAMBUCO</h2>
+                  <h4 class="fw-bold text-secondary mt-4">RELATÓRIO COMPARATIVO NACIONAL</h4>
+                </div>
+                <div class="d-flex justify-content-between align-items-center border-b-2 border-slate-200 pb-3 mb-4 flex-wrap gap-3">
+                  <div class="d-flex align-items-center gap-3">
+                    <img id="ufs_header_flag" src="images/bandeiras/PE.png" onerror="this.style.display=&#39;none&#39;" alt="Bandeira UF" style="height: 38px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.18);"/>
+                    <div>
+                      <h2 id="ufs_header_titulo" class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">BENCHMARKING DAS UFs — PERNAMBUCO (PE)</h2>
+                      <p id="ufs_header_subtitulo" class="text-sm font-bold text-slate-500 mb-0">Comparativo Socioeconômico, Ambiental e Fiscal entre os 26 Estados e o DF</p>
                     </div>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 d-print-none flex-wrap">
+                    <button id="ufs_btn_ipca" class="btn btn-outline-primary btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 shadow-none" onclick="window.toggleIPCAUFs()">
+                      <i class="fas fa-coins"></i>
+                      <span id="ufs_btn_ipca_label">Valores Nominais</span>
+                    </button>
+                    <button class="btn btn-danger btn-sm fw-bold shadow-sm rounded-pill px-3" onclick="window.print()">
+                      <i class="fas fa-file-pdf me-1"></i>
+                      Salvar PDF
+                    </button>
                   </div>
                 </div>
-                <div id="resumo_pauta_cozinhas" class="resumo-pauta-bloco">
-                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
-                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
-                      <div>
-                        <span class="badge bg-amber-50 text-amber-700 border border-amber-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">SEGURANÇA ALIMENTAR &amp; ASSISTÊNCIA SOCIAL</span>
-                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Pernambuco sem Fome — Cozinhas, Mães de Pernambuco &amp; Cofinanciamento</h4>
-                      </div>
-                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
-                        <i class="fas fa-shield-heart text-amber-600 me-1"></i>
-                        SAS / Governo de Pernambuco
-                      </span>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                      <i class="fas fa-utensils text-amber-500"></i>
-                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Rede de Cozinhas Comunitárias</h6>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total de Cozinhas</span>
-                        <span id="cozinhas_kpi_total" class="text-lg md:text-xl font-black text-slate-800">-</span>
-                      </div>
-                      <div class="bg-emerald-50/60 p-3 rounded-2xl border border-emerald-200 text-center">
-                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">Em Funcionamento</span>
-                        <span id="cozinhas_kpi_funcionamento" class="text-lg md:text-xl font-black text-emerald-700">-</span>
-                      </div>
-                      <div class="bg-amber-50/60 p-3 rounded-2xl border border-amber-200 text-center">
-                        <span class="text-xs font-bold text-amber-600 uppercase tracking-wider block mb-1">Em Implantação</span>
-                        <span id="cozinhas_kpi_implantacao" class="text-lg md:text-xl font-black text-amber-700">-</span>
-                      </div>
-                      <div class="bg-blue-50/60 p-3 rounded-2xl border border-blue-200 text-center">
-                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider block mb-1">Aguard. Pactuação</span>
-                        <span id="cozinhas_kpi_pactuacao" class="text-lg md:text-xl font-black text-blue-700">-</span>
-                      </div>
-                      <div class="bg-rose-50/60 p-3 rounded-2xl border border-rose-200 text-center">
-                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider block mb-1">Não Aderiu</span>
-                        <span id="cozinhas_kpi_nao_aderiu" class="text-lg md:text-xl font-black text-rose-700">-</span>
-                      </div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-2 mt-4">
-                      <i class="fas fa-person-breastfeeding text-pink-500"></i>
-                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Programa Mães de Pernambuco (Transferência de Renda)</h6>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                      <div class="bg-pink-50/50 p-3 rounded-2xl border border-pink-200 text-center">
-                        <span class="text-xs font-bold text-pink-500 uppercase tracking-wider block mb-1">Mães Beneficiadas</span>
-                        <span id="maes_kpi_total" class="text-lg md:text-xl font-black text-pink-700">-</span>
-                      </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Investimento Acumulado</span>
-                        <span id="maes_kpi_investimento" class="text-lg md:text-xl font-black text-purple-700">-</span>
-                      </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Municípios Atendidos</span>
-                        <span id="maes_kpi_municipios" class="text-lg md:text-xl font-black text-slate-800">185</span>
-                      </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Benefício Mensal</span>
-                        <span id="maes_kpi_auxilio" class="text-lg md:text-xl font-black text-emerald-700">R$ 300 / mãe</span>
-                      </div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-2 mt-4">
-                      <i class="fas fa-hand-holding-dollar text-blue-500"></i>
-                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Cofinanciamento da Assistência Social (SAS / FEAS)</h6>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
-                      <div class="bg-blue-50/50 p-3 rounded-2xl border border-blue-200 text-center">
-                        <span class="text-xs font-bold text-blue-500 uppercase tracking-wider block mb-1">Total Pago</span>
-                        <span id="cofin_kpi_pago" class="text-lg md:text-xl font-black text-blue-700">-</span>
-                      </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Validado</span>
-                        <span id="cofin_kpi_validado" class="text-lg md:text-xl font-black text-slate-800">-</span>
-                      </div>
-                      <div class="bg-emerald-50/50 p-3 rounded-2xl border border-emerald-200 text-center">
-                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">% Executado / Pago</span>
-                        <span id="cofin_kpi_percentual" class="text-lg md:text-xl font-black text-emerald-700">-</span>
-                      </div>
-                      <div class="bg-purple-50/50 p-3 rounded-2xl border border-purple-200 text-center">
-                        <span class="text-xs font-bold text-purple-600 uppercase tracking-wider block mb-1">Saldo a Pagar</span>
-                        <span id="cofin_kpi_a_pagar" class="text-lg md:text-xl font-black text-purple-700">-</span>
-                      </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Municípios Cobertos</span>
-                        <span id="cofin_kpi_municipios" class="text-lg md:text-xl font-black text-slate-800">185</span>
-                      </div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pt-2 border-t border-slate-100">
-                      <div>
-                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa de Cobertura Territorial e Equipamentos</h5>
-                        <span id="sem_fome_camada_label" class="text-xs text-slate-400 font-semibold">Exibindo: Localização das Cozinhas Comunitárias</span>
-                      </div>
-                      <div class="d-flex align-items-center gap-3 flex-wrap">
-                        <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1">
-                          <button id="btn_visao_sem_fome_cozinhas" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.alternarVisaoSemFome(&#39;cozinhas&#39;, this)">
-                            <i class="fas fa-utensils me-1.5"></i>
-                            Cozinhas Comunitárias
-                          </button>
-                          <button id="btn_visao_sem_fome_maes" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoSemFome(&#39;maes&#39;, this)">
-                            <i class="fas fa-person-breastfeeding me-1.5 text-pink-500"></i>
-                            Mães de Pernambuco
-                          </button>
-                          <button id="btn_visao_sem_fome_cofin" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoSemFome(&#39;cofin&#39;, this)">
-                            <i class="fas fa-hand-holding-dollar me-1.5 text-blue-500"></i>
-                            Cofinanciamento
-                          </button>
-                          <button id="btn_visao_sem_fome_ivcad" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoSemFome(&#39;ivcad&#39;, this)">
-                            <i class="fas fa-shield-heart me-1.5 text-indigo-500"></i>
-                            Vulnerabilidade (IVCAD)
-                          </button>
-                        </div>
-                        <div id="legenda_visao_cozinhas" class="d-flex align-items-center gap-1.5 flex-wrap">
-                          <span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs">● Funcionando</span>
-                          <span class="badge bg-amber-100 text-amber-800 border border-amber-300 text-xs">● Implantação</span>
-                          <span class="badge bg-blue-100 text-blue-800 border border-blue-300 text-xs">● Pactuação</span>
-                          <span class="badge bg-rose-100 text-rose-800 border border-rose-300 text-xs">● Não Aderiu</span>
-                        </div>
-                        <div id="legenda_visao_maes" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
-                          <span>Beneficiárias:</span>
-                          <span class="badge px-2 py-0.5" style="background-color: #fce7f3; color: #831843;">&lt; 400</span>
-                          <span class="badge text-white px-2 py-0.5" style="background-color: #f472b6;">400 - 800</span>
-                          <span class="badge text-white px-2 py-0.5" style="background-color: #db2777;">800 - 1.500</span>
-                          <span class="badge text-white px-2 py-0.5" style="background-color: #831843;">&gt; 1.500</span>
-                        </div>
-                        <div id="legenda_visao_cofin" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
-                          <span>Repasse Pago:</span>
-                          <span class="badge px-2 py-0.5" style="background-color: #dbeafe; color: #1e40af;">&lt; R$ 10M</span>
-                          <span class="badge text-white px-2 py-0.5" style="background-color: #60a5fa;">R$ 10M - 20M</span>
-                          <span class="badge text-white px-2 py-0.5" style="background-color: #2563eb;">R$ 20M - 40M</span>
-                          <span class="badge text-white px-2 py-0.5" style="background-color: #1e3a8a;">&gt; R$ 40M</span>
-                        </div>
-                        <div id="legenda_visao_ivcad" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
-                          <span>Vulnerab. Cuidados (Ponderada):</span>
-                          <span class="badge px-2 py-0.5" style="background-color: #e0e7ff; color: #3730a3;">&lt; 0,10 (Baixa)</span>
-                          <span class="badge text-white px-2 py-0.5" style="background-color: #818cf8;">0,10 - 0,18</span>
-                          <span class="badge text-white px-2 py-0.5" style="background-color: #4f46e5;">0,18 - 0,28</span>
-                          <span class="badge text-white px-2 py-0.5" style="background-color: #312e81;">&gt; 0,28 (Alta)</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row g-3 mb-5">
-                      <div class="col-lg-8 col-xl-8">
-                        <div class="position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-100" style="min-height: 520px;">
-                          <div id="resumo_cozinhas_spinner" class="position-absolute top-0 start-0 w-100 h-100 bg-white/75 d-flex align-items-center justify-content-center z-10">
-                            <div class="spinner-border text-primary" role="status"></div>
-                          </div>
-                          <div id="resumo_cozinhas_map" style="width: 100%; height: 100%; min-height: 520px; background-color: #f8fafc;"></div>
-                        </div>
-                      </div>
-                      <div class="col-lg-4 col-xl-4">
-                        <div id="sem_fome_hover_box" class="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 shadow-sm h-100 d-flex flex-column justify-content-between" style="min-height: 520px; max-height: 520px; overflow-y: auto;">
-                          <div id="sem_fome_box_content_default" class="text-center py-4 my-auto">
-                            <div class="w-14 h-14 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
-                              <i class="fas fa-map-location-dot"></i>
-                            </div>
-                            <h5 class="font-black text-slate-800 text-base mb-1">Detalhamento Territorial</h5>
-                            <p class="text-xs text-slate-500 mb-3 px-2 leading-relaxed">Passe o cursor sobre os municípios ou cozinhas no mapa para inspecionar os indicadores locais em tempo real.</p>
-                            <div class="grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-200/80">
-                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Municípios</span>
-                                <span class="text-sm font-black text-slate-700">185</span>
-                              </div>
-                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Cozinhas</span>
-                                <span class="text-sm font-black text-amber-600">402</span>
-                              </div>
-                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Mães de PE</span>
-                                <span class="text-sm font-black text-pink-600">157.196</span>
-                              </div>
-                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Cofinanciamento</span>
-                                <span class="text-sm font-black text-blue-600">R$ 3,0 Bi</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div id="sem_fome_box_content_active" class="d-none flex-column h-100"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-slate-100">
-                      <div class="row g-4 mb-5">
-                        <div class="col-lg-6">
-                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
-                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                              <div>
-                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Série Histórica do Cofinanciamento</h5>
-                                <span class="text-xs text-slate-400 font-semibold">Valores Validados vs. Pagos por ano de competência (2024-2026)</span>
-                              </div>
-                              <span class="badge bg-blue-100 text-blue-800 text-xs font-bold rounded-pill px-2.5 py-1">Evolução Anual</span>
-                            </div>
-                            <div id="chart_cofin_serie_historica" style="width: 100%; height: 380px;"></div>
-                          </div>
-                        </div>
-                        <div class="col-lg-6">
-                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
-                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                              <div>
-                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Cofinanciamento por Município</h5>
-                                <span class="text-xs text-slate-400 font-semibold">Top municípios com maior volume financeiro recebido</span>
-                              </div>
-                              <span class="badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-2.5 py-1">Top 20 Municípios</span>
-                            </div>
-                            <div id="chart_cofin_por_mun" style="width: 100%; height: 380px;"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mt-2 pt-4 border-t border-slate-100">
-                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <div>
-                          <h5 id="sem_fome_chart_title" class="font-bold text-slate-700 text-sm md:text-base mb-0">Cozinhas Comunitárias por Município</h5>
-                          <span id="sem_fome_chart_subtitle" class="text-xs text-slate-400 font-semibold">Top municípios com maior número de unidades do programa</span>
-                        </div>
-                        <span id="cozinhas_badge_total_muns" class="badge bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 text-xs rounded-pill font-bold">
-                          <i class="fas fa-map-pin text-amber-500 me-1"></i>
-                          185 Municípios Mapeados
-                        </span>
-                      </div>
-                      <div id="resumo_cozinhas_chart_muns" style="width: 100%; height: 460px;"></div>
-                    </div>
+                <div id="sec_ufs_conhecimento" class="subsecao-print-break mb-5">
+                  <div class="border-b-2 border-slate-200 pb-2 mb-3">
+                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
+                      <i class="fas fa-lightbulb text-warning me-2"></i>
+                      Eixo 1: Conhecimento e Inovação
+                    </h3>
+                    <p class="text-xs font-bold text-slate-500 mb-0">Desempenho Educacional (IDEB, Abandono, Distorção, Creches e Pré-escola) e Investimentos em C&amp;T e Educação</p>
                   </div>
-                </div>
-                <div id="resumo_pauta_capag" class="resumo-pauta-bloco d-none">
-                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
-                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
-                      <div>
-                        <span class="badge bg-purple-50 text-purple-700 border border-purple-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">GESTÃO FISCAL &amp; CRÉDITO</span>
-                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Capacidade de Pagamento dos Municípios (CAPAG)</h4>
-                      </div>
-                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
-                        <i class="fas fa-building-columns text-primary me-1"></i>
-                        Secretaria do Tesouro Nacional (STN)
-                      </span>
+                  <div class="bg-amber-50/60 border border-amber-200 rounded-2xl p-4 mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <span class="badge bg-amber-600 text-white text-xs uppercase px-2.5 py-1 rounded-pill">Síntese Estratégica</span>
+                      <h6 class="font-black text-slate-800 text-sm mb-0">Educação &amp; Ciência e Tecnologia</h6>
                     </div>
-                    <div class="text-center mb-3">
-                      <h5 class="font-bold text-slate-700 text-sm md:text-base mb-1">CAPAG por Município</h5>
-                    </div>
-                    <div id="resumo_capag_map_container" class="map-clean-container rounded-2xl border border-slate-200 overflow-hidden relative shadow-inner mx-auto" style="height: 520px; width: 100%; max-width: 1100px; background-color: #f8fafc; position: relative;">
-                      <div id="resumo_capag_spinner" class="d-none position-absolute top-50 start-50 translate-middle text-center bg-white/90 p-4 rounded-2xl shadow-lg border border-slate-200 z-10">
-                        <div class="spinner-border text-primary mb-2" role="status"></div>
-                        <div class="text-xs font-bold text-slate-700">Carregando dados da CAPAG...</div>
-                      </div>
-                      <div id="resumo_capag_map" style="width: 100%; height: 100%;"></div>
-                    </div>
-                    <div class="mt-5 d-flex flex-column align-items-center">
-                      <h5 class="font-bold text-slate-700 text-sm md:text-base mb-3 text-center">Quantidade de municípios de Pernambuco por nota final na CAPAG</h5>
-                      <div class="table-responsive w-100 d-flex justify-content-center">
-                        <table class="table table-bordered text-center align-middle shadow-sm rounded-xl overflow-hidden mb-2" style="max-width: 860px; border: 1.5px solid #205090;">
-                          <thead>
-                            <tr style="background-color: #205090; color: #ffffff; font-weight: 800; font-size: 0.8rem; border-color: #1a4278;">
-                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
-                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
-                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
-                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
-                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
-                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
-                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
-                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr style="font-size: 0.88rem;">
-                              <td style="background-color: #92D050; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">A</td>
-                              <td id="capag_count_A" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
-                              <td style="background-color: #00A8A8; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">B</td>
-                              <td id="capag_count_B" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
-                              <td style="background-color: #C55A11; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">C</td>
-                              <td id="capag_count_C" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
-                              <td style="background-color: #595959; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">n.d.</td>
-                              <td id="capag_count_nd" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
-                            </tr>
-                            <tr style="font-size: 0.88rem;">
-                              <td style="background-color: #70AD47; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">A+</td>
-                              <td id="capag_count_Aplus" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
-                              <td style="background-color: #00B0B9; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">B+</td>
-                              <td id="capag_count_Bplus" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
-                              <td style="background-color: #843C0C; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">D</td>
-                              <td id="capag_count_D" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">0</td>
-                              <td style="background-color: #404040; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">n.e.</td>
-                              <td id="capag_count_ne" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div class="text-center text-slate-400 text-xs mt-2">Fonte: Secretaria do Tesouro Nacional (STN). Classificação da Capacidade de Pagamento (CAPAG). n.d. = Não Disponível; n.e. = Não Elegível.</div>
-                    </div>
+                    <p id="ufs_sintese_conhecimento" class="text-sm text-slate-700 leading-relaxed mb-0">Indicadores educacionais oficiais por rede de ensino (Estadual, Pública e Total) integrados às despesas orçamentárias executadas em Educação e Ciência &amp; Tecnologia.</p>
                   </div>
+                  <div id="grid_ufs_conhecimento" class="row g-3 mb-4"></div>
                 </div>
-                <div id="resumo_pauta_aguas" class="resumo-pauta-bloco d-none">
-                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
-                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
-                      <div>
-                        <span class="badge bg-blue-50 text-blue-700 border border-blue-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">SANEAMENTO &amp; RECURSOS HÍDRICOS</span>
-                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Águas de Pernambuco — Investimentos e Obras Estruturantes</h4>
-                      </div>
-                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
-                        <i class="fas fa-water text-primary me-1"></i>
-                        COMPESA / SRHS
-                      </span>
+                <div id="sec_ufs_seguranca" class="subsecao-print-break mb-5">
+                  <div class="border-b-2 border-slate-200 pb-2 mb-3">
+                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
+                      <i class="fas fa-shield-halved text-danger me-2"></i>
+                      Eixo 2: Segurança e Cidadania
+                    </h3>
+                    <p class="text-xs font-bold text-slate-500 mb-0">Alocação Orçamentária em Segurança Pública, Direitos da Cidadania, Judiciária e Legislativa</p>
+                  </div>
+                  <div class="bg-rose-50/60 border border-rose-200 rounded-2xl p-4 mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <span class="badge bg-rose-600 text-white text-xs uppercase px-2.5 py-1 rounded-pill">Proteção Social &amp; Cidadania</span>
+                      <h6 class="font-black text-slate-800 text-sm mb-0">Recursos Executados em Segurança e Garantia de Direitos</h6>
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Investimento Total</span>
-                        <span id="aguas_kpi_investimento" class="text-lg md:text-xl font-black text-blue-700">R$ 14,8 Bi</span>
-                      </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Projetos / Obras</span>
-                        <span id="aguas_kpi_projetos" class="text-lg md:text-xl font-black text-slate-800">560</span>
-                      </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Municípios Atendidos</span>
-                        <span id="aguas_kpi_municipios" class="text-lg md:text-xl font-black text-slate-800">185</span>
-                      </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Pop. Beneficiada (PE)</span>
-                        <span id="aguas_kpi_populacao" class="text-lg md:text-xl font-black text-emerald-700">9,5 Mi</span>
-                      </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center col-span-2 md:col-span-1">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Desembolso Futuro</span>
-                        <span id="aguas_kpi_desembolso" class="text-lg md:text-xl font-black text-purple-700">R$ 7,7 Bi</span>
-                      </div>
+                    <p id="ufs_sintese_seguranca" class="text-sm text-slate-700 leading-relaxed mb-0">Demonstrativo dos recursos empenhados/liquidados pelo Estado nas funções de Segurança Pública e Direitos da Cidadania, com comparações relativas aos demais estados.</p>
+                  </div>
+                  <div id="grid_ufs_seguranca" class="row g-3 mb-4"></div>
+                </div>
+                <div id="sec_ufs_saude" class="subsecao-print-break mb-5">
+                  <div class="border-b-2 border-slate-200 pb-2 mb-3">
+                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
+                      <i class="fas fa-heartbeat text-primary me-2"></i>
+                      Eixo 3: Saúde e Qualidade de Vida
+                    </h3>
+                    <p class="text-xs font-bold text-slate-500 mb-0">Mercado de Trabalho, Demografia, Saúde Pública, Vinculação Constitucional, Saneamento, Habitação e Assistência Social</p>
+                  </div>
+                  <div class="bg-blue-50/60 border border-blue-200 rounded-2xl p-4 mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <span class="badge bg-blue-600 text-white text-xs uppercase px-2.5 py-1 rounded-pill">Qualidade de Vida</span>
+                      <h6 class="font-black text-slate-800 text-sm mb-0">Investimentos Sociais e Infraestrutura Urbana</h6>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                      <div>
-                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa de Infraestrutura Hídrica e Cobertura Municipal</h5>
-                        <span id="aguas_camada_ativa_label" class="text-xs text-slate-400 font-semibold">Camada Base: Visão Geral de Municípios</span>
-                      </div>
-                      <div class="d-flex align-items-center gap-3 flex-wrap">
-                        <div class="d-flex align-items-center gap-2 bg-blue-50/70 border border-blue-200 px-3 py-1.5 rounded-pill shadow-xs">
-                          <div class="form-check form-switch mb-0 d-flex align-items-center gap-1.5 ps-0">
-                            <input class="form-check-input ms-0 cursor-pointer" type="checkbox" role="switch" id="aguas_toggle_adutoras" checked="checked" style="cursor: pointer;" onchange="window.toggleCamadaAdutoras(this.checked)"/>
-                            <label class="form-check-label text-xs font-bold text-blue-900 cursor-pointer mb-0 select-none" for="aguas_toggle_adutoras">
-                              <i class="fas fa-water text-blue-600 me-1"></i>
-                              Rede de Adutoras
-                            </label>
-                          </div>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                          <label class="text-xs font-bold text-slate-400 mb-0">Cenário / Camada:</label>
-                          <select id="aguas_select_camada" class="form-select form-select-sm fw-bold text-slate-400 bg-slate-100 border-slate-200 rounded-pill shadow-none" style="width: 210px; font-size: 0.82rem; cursor: not-allowed; opacity: 0.75;" disabled="disabled" title="Filtro inativo até a inclusão de nova camada de polígonos">
-                            <option value="Cenario: Geral" selected="selected">Visão Geral Consolidada</option>
-                          </select>
-                        </div>
-                      </div>
+                    <p id="ufs_sintese_saude" class="text-sm text-slate-700 leading-relaxed mb-0">Acompanhamento dos recursos destinados à atenção à saúde (incluindo o percentual obrigatório de vinculação da receita de impostos), habitação digna, urbanismo e previdência.</p>
+                  </div>
+                  <div id="grid_ufs_saude" class="row g-3 mb-4"></div>
+                </div>
+                <div id="sec_ufs_sustentabilidade" class="subsecao-print-break mb-5">
+                  <div class="border-b-2 border-slate-200 pb-2 mb-3">
+                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
+                      <i class="fas fa-tree text-emerald-600 me-2"></i>
+                      Eixo 4: Desenvolvimento Sustentável
+                    </h3>
+                    <p class="text-xs font-bold text-slate-500 mb-0">PIB, Produtividade do Trabalho, Unidades de Conservação e Despesas com Gestão Ambiental, Agricultura e Transporte</p>
+                  </div>
+                  <div class="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <span class="badge bg-emerald-700 text-white text-xs uppercase px-2.5 py-1 rounded-pill">Meio Ambiente &amp; Sustentabilidade</span>
+                      <h6 class="font-black text-slate-800 text-sm mb-0">Conservação Ambiental e Desenvolvimento Verde</h6>
                     </div>
-                    <div id="resumo_aguas_map_container" class="map-clean-container rounded-2xl border border-slate-200 overflow-hidden relative shadow-inner mx-auto mb-4" style="height: 520px; width: 100%; background-color: #f8fafc; position: relative;">
-                      <div id="resumo_aguas_spinner" class="d-none position-absolute top-50 start-50 translate-middle text-center bg-white/90 p-4 rounded-2xl shadow-lg border border-slate-200 z-10">
-                        <div class="spinner-border text-primary mb-2" role="status"></div>
-                        <div class="text-xs font-bold text-slate-700">Carregando mapa de Águas de Pernambuco...</div>
+                    <p id="ufs_sintese_sustentabilidade" class="text-sm text-slate-700 leading-relaxed mb-0">Preservação do patrimônio natural (hectares protegidos e unidades sob gestão estadual, federal e municipal) conjugada ao financiamento da gestão ambiental e logística.</p>
+                  </div>
+                  <div id="grid_ufs_sustentabilidade" class="row g-3 mb-4"></div>
+                </div>
+                <div id="sec_ufs_gestao" class="subsecao-print-break mb-5">
+                  <div class="border-b-2 border-slate-200 pb-2 mb-3">
+                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
+                      <i class="fas fa-scale-balanced text-purple-700 me-2"></i>
+                      Eixo 5: Gestão, Transparência e Participação
+                    </h3>
+                    <p class="text-xs font-bold text-slate-500 mb-0">Painel Fiscal Consolidado — Resultados Orçamentários, Primário, Nominal, Dívida, Receitas e Despesas de Capital</p>
+                  </div>
+                  <div class="bg-purple-50/60 border border-purple-200 rounded-2xl p-4 mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <span class="badge bg-purple-700 text-white text-xs uppercase px-2.5 py-1 rounded-pill">Responsabilidade Fiscal</span>
+                      <h6 class="font-black text-slate-800 text-sm mb-0">Equilíbrio Fiscal e Gestão Orçamentária</h6>
+                    </div>
+                    <p id="ufs_sintese_gestao" class="text-sm text-slate-700 leading-relaxed mb-0">Métricas de solvência fiscal, cumprimento dos limites da LRF (Pessoal e DCL), arrecadação própria (impostos), transferências da União e execução de investimentos públicos.</p>
+                  </div>
+                  <h5 class="fw-black text-slate-700 text-sm uppercase tracking-wider mb-2">
+                    <i class="fas fa-chart-pie me-1 text-primary"></i>
+                    Resultados Fiscais e Limites da LRF
+                  </h5>
+                  <div id="grid_ufs_fiscal_resultados" class="row g-3 mb-4"></div>
+                  <h5 class="fw-black text-slate-700 text-sm uppercase tracking-wider mb-2">
+                    <i class="fas fa-coins me-1 text-success"></i>
+                    Receitas Realizadas e Transferências
+                  </h5>
+                  <div id="grid_ufs_fiscal_receitas" class="row g-3 mb-4"></div>
+                  <h5 class="fw-black text-slate-700 text-sm uppercase tracking-wider mb-2">
+                    <i class="fas fa-hand-holding-dollar me-1 text-danger"></i>
+                    Despesas de Gestão e Investimentos
+                  </h5>
+                  <div id="grid_ufs_fiscal_despesas" class="row g-3 mb-4"></div>
+                </div>
+                <div class="modal fade" id="modal_ufs_kpi_serie" tabindex="-1" aria-labelledby="modal_ufs_kpi_titulo" aria-hidden="true">
+                  <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+                      <div class="modal-header bg-slate-900 text-white px-4 py-3 border-0">
+                        <h5 id="modal_ufs_kpi_titulo" class="modal-title fw-black tracking-tight">Série Histórica e Ranking Nacional</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
                       </div>
-                      <div id="resumo_aguas_map" style="width: 100%; height: 100%;"></div>
-                      <div id="resumo_aguas_legenda" class="bg-white/95 backdrop-blur border border-slate-200 rounded-xl p-3 shadow-md position-absolute bottom-4 left-4 z-10 text-xs">
-                        <div class="fw-bold text-slate-800 mb-1.5" style="font-size: 0.75rem;">Situação Municipal</div>
-                        <div class="d-flex flex-column gap-1 mb-2 pb-2 border-bottom border-slate-200">
-                          <div class="d-flex align-items-center gap-2">
-                            <span style="width: 12px; height: 12px; border-radius: 3px; background-color: #1D9E75; display: inline-block;"></span>
-                            <span class="text-slate-700 font-semibold">Atendido / Concluído / Positivo</span>
-                          </div>
-                          <div class="d-flex align-items-center gap-2">
-                            <span style="width: 12px; height: 12px; border-radius: 3px; background-color: #EF9F27; display: inline-block;"></span>
-                            <span class="text-slate-700 font-semibold">Em Andamento / Em Atenção</span>
-                          </div>
-                          <div class="d-flex align-items-center gap-2">
-                            <span style="width: 12px; height: 12px; border-radius: 3px; background-color: #E24B4A; display: inline-block;"></span>
-                            <span class="text-slate-700 font-semibold">Crítico / Déficit / Não Iniciado</span>
-                          </div>
-                          <div class="d-flex align-items-center gap-2">
-                            <span style="width: 12px; height: 12px; border-radius: 3px; background-color: #B8B6AE; display: inline-block;"></span>
-                            <span class="text-slate-700 font-semibold">Sem Intervenção / Não Aplicável</span>
-                          </div>
-                        </div>
-                        <div id="resumo_aguas_legenda_adutoras">
-                          <div class="fw-bold text-blue-900 mb-1.5" style="font-size: 0.75rem;">
-                            <i class="fas fa-water text-blue-600 me-1"></i>
-                            Rede de Adutoras
-                          </div>
-                          <div class="d-flex flex-column gap-1">
-                            <div class="d-flex align-items-center gap-2">
-                              <span style="width: 16px; height: 3.5px; border-radius: 2px; background-color: #0284c7; display: inline-block;"></span>
-                              <span class="text-slate-700 font-semibold">Sistema Existente</span>
+                      <div class="modal-body p-4 bg-slate-50">
+                        <div id="modal_ufs_kpi_storytelling" class="alert bg-white border border-slate-200 shadow-sm rounded-xl p-3 mb-4 text-sm text-slate-700">Carregando informações...</div>
+                        <div class="row g-4">
+                          <div class="col-lg-6">
+                            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm h-100">
+                              <h6 class="fw-black text-slate-800 text-sm mb-3 d-flex align-items-center gap-1.5">
+                                <i class="fas fa-chart-line text-primary"></i>
+                                Evolução Histórica
+                              </h6>
+                              <div id="modal_ufs_chart_serie" style="width: 100%; height: 350px;"></div>
                             </div>
-                            <div class="d-flex align-items-center gap-2">
-                              <span style="width: 16px; height: 3.5px; border-radius: 2px; background-color: #f59e0b; display: inline-block;"></span>
-                              <span class="text-slate-700 font-semibold">Sistema em Obras</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                              <span style="width: 16px; height: 2px; border-top: 2px dashed #8b5cf6; display: inline-block;"></span>
-                              <span class="text-slate-700 font-semibold">Sistema Planejado</span>
+                          </div>
+                          <div class="col-lg-6">
+                            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm h-100">
+                              <h6 class="fw-black text-slate-800 text-sm mb-3 d-flex align-items-center gap-1.5">
+                                <i class="fas fa-chart-simple text-purple-700"></i>
+                                Ranking Nacional (27 UFs + NE e Brasil)
+                              </h6>
+                              <div id="modal_ufs_chart_ranking" style="width: 100%; height: 350px;"></div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div class="row g-4 mb-5">
-                      <div class="col-lg-6">
-                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 h-100">
-                          <h6 class="font-extrabold text-slate-700 text-sm mb-1">Cronograma Plurianual de Desembolso Financeiro</h6>
-                          <p class="text-xs text-slate-400 mb-3">Necessidade de recursos projetada por ano (em R$ Milhões)</p>
-                          <div id="resumo_aguas_chart_desembolso" style="width: 100%; height: 320px;"></div>
-                        </div>
-                      </div>
-                      <div class="col-lg-6">
-                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 h-100">
-                          <h6 class="font-extrabold text-slate-700 text-sm mb-1">Carteira de Projetos por Situação</h6>
-                          <p class="text-xs text-slate-400 mb-3">Distribuição do número de projetos por status de execução</p>
-                          <div id="resumo_aguas_chart_status" style="width: 100%; height: 320px;"></div>
-                        </div>
-                      </div>
-                      <div class="col-12">
-                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                          <h6 class="font-extrabold text-slate-700 text-sm mb-1">Top 15 Municípios com Maior Volume de Recursos Rateados</h6>
-                          <p class="text-xs text-slate-400 mb-3">Soma dos valores rateados das obras e intervenções hídricas (em R$ Milhões)</p>
-                          <div id="resumo_aguas_chart_top_muns" style="width: 100%; height: 380px;"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mt-4">
-                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <div>
-                          <h5 class="font-bold text-slate-800 text-base mb-0">Portfólio Detalhado de Projetos e Obras da Compesa</h5>
-                          <p class="text-xs text-slate-400 mb-0">Listagem consolidada de todas as intervenções com diretoria, orçamento e execução</p>
-                        </div>
-                        <div id="aguas_filtro_municipio_ativo" class="d-none align-items-center gap-2">
-                          <span class="badge bg-blue-100 text-blue-800 font-bold px-3 py-1.5 rounded-pill" id="aguas_filtro_municipio_badge">Filtro: Todos</span>
-                          <button class="btn btn-outline-secondary btn-sm rounded-pill font-bold text-xs py-0.5 px-2" onclick="window.limparFiltroMunTabelaAguas()">Limpar Filtro</button>
-                        </div>
-                      </div>
-                      <div class="table-responsive">
-                        <table id="resumo_aguas_tabela_projetos" class="table table-hover w-100 text-sm"></table>
+                      <div class="modal-footer bg-white border-top border-slate-200 px-4 py-2">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Fechar</button>
                       </div>
                     </div>
                   </div>

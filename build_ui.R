@@ -1,5 +1,6 @@
 library(htmltools)
 
+source("ui_modules/ui_landing.R")
 source("ui_modules/ui_ficha.R")
 source("ui_modules/ui_metadados.R")
 source("ui_modules/ui_regioes.R")
@@ -34,6 +35,7 @@ build_ui <- function() {
     tags$script(src = "https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js", defer = NA),
     
     tags$script(src = paste0("js/core.js?v=", as.numeric(Sys.time()))),
+    tags$script(src = paste0("js/landing.js?v=", as.numeric(Sys.time()))),
     tags$script(src = paste0("js/ufs.js?v=", as.numeric(Sys.time()))),
     tags$script(src = paste0("js/ficha.js?v=", as.numeric(Sys.time()))),
     tags$script(src = paste0("js/regioes.js?v=", as.numeric(Sys.time()))),
@@ -46,31 +48,51 @@ build_ui <- function() {
     class = "aurora-topbar d-flex justify-content-between align-items-center gap-3 px-4 py-2",
     
     tags$div(
-      class = "d-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1 d-print-none",
-      tags$button(
-        class = "btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm aurora-default-tab",
-        onclick = "mudarAbaAurora('UFs', this)",
-        tags$i(class = "fas fa-flag me-1"), "UFs"
+      class = "d-flex align-items-center gap-3 flex-wrap",
+      tags$div(
+        class = "d-flex align-items-center gap-2 cursor-pointer select-none",
+        onclick = "window.mudarAbaAurora('Início', null)",
+        title = "Ir para o Início",
+        tags$img(src = "images/aurora.png", class = "w-8 h-8 rounded-full border border-slate-200 shadow-xs object-cover"),
+        tags$div(
+          class = "d-none d-lg-flex flex-column",
+          tags$span(class = "fw-black text-slate-800 leading-tight tracking-tight", style = "font-size: 0.95rem;", "Aurora"),
+          tags$span(class = "text-[10px] text-slate-500 font-bold uppercase tracking-wider", "Pernambuco")
+        )
       ),
-      tags$button(
-        class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
-        onclick = "mudarAbaAurora('Regiões', this)",
-        tags$i(class = "fas fa-map-location-dot me-1"), "Regiões"
-      ),
-      tags$button(
-        class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
-        onclick = "mudarAbaAurora('Municípios', this)",
-        tags$i(class = "fas fa-city me-1"), "Municípios"
-      ),
-      tags$button(
-        class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
-        onclick = "mudarAbaAurora('Análises Temáticas', this)",
-        tags$i(class = "fas fa-layer-group me-1"), "Análises Temáticas"
-      ),
-      tags$button(
-        class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
-        onclick = "mudarAbaAurora('Metadados', this)",
-        tags$i(class = "fas fa-book me-1"), "Metadados"
+      tags$div(class = "d-none d-lg-block vr my-1 bg-slate-300", style = "width: 1px; height: 24px;"),
+      tags$div(
+        class = "d-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1 d-print-none aurora-topbar-tabs",
+        tags$button(
+          class = "btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm aurora-default-tab",
+          onclick = "mudarAbaAurora('Início', this)",
+          tags$i(class = "fas fa-house me-1"), "Início"
+        ),
+        tags$button(
+          class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
+          onclick = "mudarAbaAurora('Regiões', this)",
+          tags$i(class = "fas fa-map-location-dot me-1"), "Regiões"
+        ),
+        tags$button(
+          class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
+          onclick = "mudarAbaAurora('Análises Temáticas', this)",
+          tags$i(class = "fas fa-layer-group me-1"), "Análises Temáticas"
+        ),
+        tags$button(
+          class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
+          onclick = "mudarAbaAurora('Municípios', this)",
+          tags$i(class = "fas fa-city me-1"), "Municípios"
+        ),
+        tags$button(
+          class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
+          onclick = "mudarAbaAurora('Comparativo UFs', this)",
+          tags$i(class = "fas fa-chart-column me-1"), "Comparativo UFs"
+        ),
+        tags$button(
+          class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
+          onclick = "mudarAbaAurora('Metadados', this)",
+          tags$i(class = "fas fa-book me-1"), "Metadados"
+        )
       )
     ),
     
@@ -80,7 +102,7 @@ build_ui <- function() {
       # CONTROLES DA ABA UFs (Com bullets dos 5 eixos no topo)
       tags$div(
         id = "controles_ufs",
-        class = "d-flex align-items-center gap-2 flex-nowrap",
+        class = "d-none align-items-center gap-2 flex-nowrap",
         tags$div(
           class = "d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200",
           tags$i(class = "fas fa-flag text-primary"),
@@ -216,12 +238,13 @@ build_ui <- function() {
   
   main_content <- tags$main(
     class = "aurora-content-area",
-    tags$div(
+        tags$div(
       class = "tab-content", 
-      ui_modulo_ufs(),
+      ui_modulo_landing(),
       ui_modulo_regioes(),
-      ui_modulo_ficha(),
       ui_modulo_tematicas(),
+      ui_modulo_ficha(),
+      ui_modulo_ufs(),
       ui_metadados()
     )
   )

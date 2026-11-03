@@ -3,8 +3,8 @@ library(htmltools)
 
 ui_modulo_ufs <- function() {
   tags$div(
-    class = "tab-pane active show relative",
-    `data-value` = "UFs",
+    class = "tab-pane relative",
+    `data-value` = "Comparativo UFs",
     id = "aba_ufs",
     
     tags$div(
