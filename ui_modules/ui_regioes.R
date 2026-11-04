@@ -42,23 +42,6 @@ ui_modulo_regioes <- function() {
         )
       ),
       
-            # BARRA DE NAVEGAÇÃO RÁPIDA ENTRE DIMENSÕES DA RD (STICKY SUBNAV)
-      tags$div(
-        class = "sticky-top bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-2 mb-4 shadow-sm d-print-none z-20",
-        style = "top: 6px;",
-        tags$div(
-          class = "d-flex align-items-center gap-1.5 overflow-x-auto py-0.5 px-1 scrollbar-none",
-          tags$span(class = "text-xs font-black text-slate-400 uppercase tracking-wider me-1 flex-shrink-0", tags$i(class = "fas fa-compass text-primary me-1"), "Dimensões:"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('rd_kpi_qtd_muns')", "Macroindicadores"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster0')", "Dimensão 0: Redes & REGIC"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster1')", "Cluster 1: Demografia"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster2')", "Cluster 2: Vulnerabilidade"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster3')", "Cluster 3: Produção & Emprego"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster4')", "Cluster 4: Fiscal"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster5')", "Cluster 5: Investimentos")
-        )
-      ),
-      
       # BLOCO DE KPIS MACRO DA RD
       tags$div(
         class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5",

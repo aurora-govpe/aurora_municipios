@@ -311,62 +311,95 @@ body .card {
   background-color: #FFFFFF;
 }
 
+/* ==========================================================================
+   AURORA DESIGN SYSTEM - KPI CARD UNIFICADO
+   ========================================================================== */
+.aurora-kpi-card,
 .kpi-modern-card {
-  background: #FAFAFA; /* Fundo cinza super claro, estilo bloco da imagem 1 */
-  border-radius: 16px;
-  box-shadow: none !important;
-  padding: 24px;
-  border: none !important; /* Removemos a borda colorida esquerda */
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
+  padding: 16px 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  min-height: 120px !important;
+  position: relative !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
 }
 
+.aurora-kpi-card:hover,
 .kpi-modern-card:hover {
-  transform: translateY(-2px);
-  background: #FFFFFF;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.04) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08) !important;
+  border-color: #cbd5e1 !important;
 }
 
+.aurora-kpi-header,
 .kpi-modern-header {
-  font-size: 14px;
-  font-weight: 700;
-  color: #555;
-  margin: 0;
-  text-transform: none !important; /* Remove o UPPERCASE para ficar como o site ref */
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  color: #64748b !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
 }
 
+.aurora-kpi-body,
 .kpi-modern-body { 
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: flex !important;
+  align-items: baseline !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  margin: 4px 0 !important;
+  width: 100% !important;
 }
 
+.aurora-kpi-icon,
 .kpi-modern-icon {
-  font-size: 20px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background-color: transparent !important; /* Remove fundo colorido do ícone */
+  font-size: 0.95rem !important;
+  width: 34px !important;
+  height: 34px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 12px !important;
+  background-color: #f1f5f9 !important;
+  color: #0284c7 !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
 }
 
+.aurora-kpi-number,
 .kpi-modern-number {
-  font-size: 26px;
-  font-weight: 800;
-  color: #111;
-  line-height: 1;
-  letter-spacing: -1px;
+  font-size: 1.65rem !important;
+  font-weight: 900 !important;
+  color: #0f172a !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.02em !important;
 }
 
+.aurora-kpi-footer,
 .kpi-modern-footer {
-  font-size: 12px;
-  color: #888;
-  font-weight: 500;
-  margin-top: 8px;
+  font-size: 0.72rem !important;
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+  border-top: 1px solid #f1f5f9 !important;
+  padding-top: 8px !important;
+  margin-top: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
 }
 
 /* Deixa as tabelas mais limpas, sem bordas pesadas */

@@ -25,12 +25,12 @@
   <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" defer></script>
-  <script src="js/core.js?v=1793750307.1746"></script>
-  <script src="js/landing.js?v=1793750307.17466"></script>
-  <script src="js/ufs.js?v=1793750307.17471"></script>
-  <script src="js/ficha.js?v=1793750307.17475"></script>
-  <script src="js/regioes.js?v=1793750307.1748"></script>
-  <script src="js/app.js?v=1793750307.17484"></script>
+  <script src="js/core.js?v=1793751493.65687"></script>
+  <script src="js/landing.js?v=1793751493.65694"></script>
+  <script src="js/ufs.js?v=1793751493.65698"></script>
+  <script src="js/ficha.js?v=1793751493.65703"></script>
+  <script src="js/regioes.js?v=1793751493.65707"></script>
+  <script src="js/app.js?v=1793751493.65712"></script>
 </head>
 <html lang="pt-br">
   <body class="bg-slate-50 antialiased overflow-hidden m-0 p-0">
@@ -522,21 +522,6 @@
                     </button>
                   </div>
                 </div>
-                <div class="sticky-top bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-2 mb-4 shadow-sm d-print-none z-20" style="top: 6px;">
-                  <div class="d-flex align-items-center gap-1.5 overflow-x-auto py-0.5 px-1 scrollbar-none">
-                    <span class="text-xs font-black text-slate-400 uppercase tracking-wider me-1 flex-shrink-0">
-                      <i class="fas fa-compass text-primary me-1"></i>
-                      Dimensões:
-                    </span>
-                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;rd_kpi_qtd_muns&#39;)">Macroindicadores</button>
-                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster0&#39;)">Dimensão 0: Redes &amp; REGIC</button>
-                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster1&#39;)">Cluster 1: Demografia</button>
-                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster2&#39;)">Cluster 2: Vulnerabilidade</button>
-                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster3&#39;)">Cluster 3: Produção &amp; Emprego</button>
-                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster4&#39;)">Cluster 4: Fiscal</button>
-                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster5&#39;)">Cluster 5: Investimentos</button>
-                  </div>
-                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
                   <div class="kpi-modern-card" style="border-left-color: #0C2856;">
                     <div class="kpi-modern-header">MUNICÍPIOS NA RD</div>
@@ -983,25 +968,65 @@
                       <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Rede de Cozinhas Comunitárias</h6>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total de Cozinhas</span>
-                        <span id="cozinhas_kpi_total" class="text-lg md:text-xl font-black text-slate-800">-</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total de Cozinhas</span>
+                          <div class="aurora-kpi-icon">
+                            <i class="fas fa-utensils text-slate-500"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cozinhas_kpi_total" class="aurora-kpi-number">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Mapeadas no Estado</div>
                       </div>
-                      <div class="bg-emerald-50/60 p-3 rounded-2xl border border-emerald-200 text-center">
-                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">Em Funcionamento</span>
-                        <span id="cozinhas_kpi_funcionamento" class="text-lg md:text-xl font-black text-emerald-700">-</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Funcionamento</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-check-circle"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cozinhas_kpi_funcionamento" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Servindo Refeições</div>
                       </div>
-                      <div class="bg-amber-50/60 p-3 rounded-2xl border border-amber-200 text-center">
-                        <span class="text-xs font-bold text-amber-600 uppercase tracking-wider block mb-1">Em Implantação</span>
-                        <span id="cozinhas_kpi_implantacao" class="text-lg md:text-xl font-black text-amber-700">-</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Implantação</span>
+                          <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                            <i class="fas fa-clock"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cozinhas_kpi_implantacao" class="aurora-kpi-number text-amber-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Em Preparação</div>
                       </div>
-                      <div class="bg-blue-50/60 p-3 rounded-2xl border border-blue-200 text-center">
-                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider block mb-1">Aguard. Pactuação</span>
-                        <span id="cozinhas_kpi_pactuacao" class="text-lg md:text-xl font-black text-blue-700">-</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Aguard. Pactuação</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-file-signature"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cozinhas_kpi_pactuacao" class="aurora-kpi-number text-blue-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Fase de Adesão</div>
                       </div>
-                      <div class="bg-rose-50/60 p-3 rounded-2xl border border-rose-200 text-center">
-                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider block mb-1">Não Aderiu</span>
-                        <span id="cozinhas_kpi_nao_aderiu" class="text-lg md:text-xl font-black text-rose-700">-</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Não Aderiu</span>
+                          <div class="aurora-kpi-icon text-rose-600 bg-rose-50">
+                            <i class="fas fa-circle-xmark"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cozinhas_kpi_nao_aderiu" class="aurora-kpi-number text-rose-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Sem Adesão</div>
                       </div>
                     </div>
                     <div class="d-flex align-items-center gap-2 mb-2 mt-4">
@@ -1009,21 +1034,53 @@
                       <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Programa Mães de Pernambuco (Transferência de Renda)</h6>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                      <div class="bg-pink-50/50 p-3 rounded-2xl border border-pink-200 text-center">
-                        <span class="text-xs font-bold text-pink-500 uppercase tracking-wider block mb-1">Mães Beneficiadas</span>
-                        <span id="maes_kpi_total" class="text-lg md:text-xl font-black text-pink-700">-</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Mães Beneficiadas</span>
+                          <div class="aurora-kpi-icon text-pink-600 bg-pink-50">
+                            <i class="fas fa-person-breastfeeding"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="maes_kpi_total" class="aurora-kpi-number text-pink-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Mães e Crianças</div>
                       </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Investimento Acumulado</span>
-                        <span id="maes_kpi_investimento" class="text-lg md:text-xl font-black text-purple-700">-</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento Acumulado</span>
+                          <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="maes_kpi_investimento" class="aurora-kpi-number text-purple-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Recursos Pagos</div>
                       </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Municípios Atendidos</span>
-                        <span id="maes_kpi_municipios" class="text-lg md:text-xl font-black text-slate-800">185</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios Atendidos</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="maes_kpi_municipios" class="aurora-kpi-number">185</span>
+                        </div>
+                        <div class="aurora-kpi-footer">100% de Cobertura Estadual</div>
                       </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Benefício Mensal</span>
-                        <span id="maes_kpi_auxilio" class="text-lg md:text-xl font-black text-emerald-700">R$ 300 / mãe</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Benefício Mensal</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-money-bill-transfer"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="maes_kpi_auxilio" class="aurora-kpi-number text-emerald-700">R$ 300 / mãe</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Transferência Direta</div>
                       </div>
                     </div>
                     <div class="d-flex align-items-center gap-2 mb-2 mt-4">
@@ -1031,25 +1088,65 @@
                       <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Cofinanciamento da Assistência Social (SAS / FEAS)</h6>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
-                      <div class="bg-blue-50/50 p-3 rounded-2xl border border-blue-200 text-center">
-                        <span class="text-xs font-bold text-blue-500 uppercase tracking-wider block mb-1">Total Pago</span>
-                        <span id="cofin_kpi_pago" class="text-lg md:text-xl font-black text-blue-700">-</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total Pago</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-check-double"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cofin_kpi_pago" class="aurora-kpi-number text-blue-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Transferência Concluída</div>
                       </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Validado</span>
-                        <span id="cofin_kpi_validado" class="text-lg md:text-xl font-black text-slate-800">-</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total Validado</span>
+                          <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                            <i class="fas fa-clipboard-check"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cofin_kpi_validado" class="aurora-kpi-number">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Pactuado em PE</div>
                       </div>
-                      <div class="bg-emerald-50/50 p-3 rounded-2xl border border-emerald-200 text-center">
-                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">% Executado / Pago</span>
-                        <span id="cofin_kpi_percentual" class="text-lg md:text-xl font-black text-emerald-700">-</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>% Executado / Pago</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-chart-pie"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cofin_kpi_percentual" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Execução Orçamentária</div>
                       </div>
-                      <div class="bg-purple-50/50 p-3 rounded-2xl border border-purple-200 text-center">
-                        <span class="text-xs font-bold text-purple-600 uppercase tracking-wider block mb-1">Saldo a Pagar</span>
-                        <span id="cofin_kpi_a_pagar" class="text-lg md:text-xl font-black text-purple-700">-</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Saldo a Pagar</span>
+                          <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                            <i class="fas fa-hourglass-half"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cofin_kpi_a_pagar" class="aurora-kpi-number text-purple-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Parcelas Futuras</div>
                       </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Municípios Cobertos</span>
-                        <span id="cofin_kpi_municipios" class="text-lg md:text-xl font-black text-slate-800">185</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios</span>
+                          <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                            <i class="fas fa-city"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cofin_kpi_municipios" class="aurora-kpi-number">185</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Cobertura em Todo PE</div>
                       </div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pt-2 border-t border-slate-100">
@@ -1267,25 +1364,65 @@
                       </span>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Investimento Total</span>
-                        <span id="aguas_kpi_investimento" class="text-lg md:text-xl font-black text-blue-700">R$ 14,8 Bi</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento Total</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-faucet-drip"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="aguas_kpi_investimento" class="aurora-kpi-number text-blue-700">R$ 14,8 Bi</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Plano Plurianual</div>
                       </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Projetos / Obras</span>
-                        <span id="aguas_kpi_projetos" class="text-lg md:text-xl font-black text-slate-800">560</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Projetos / Obras</span>
+                          <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                            <i class="fas fa-trowel-bricks"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="aguas_kpi_projetos" class="aurora-kpi-number">560</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Intervenções Mapeadas</div>
                       </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Municípios Atendidos</span>
-                        <span id="aguas_kpi_municipios" class="text-lg md:text-xl font-black text-slate-800">185</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios</span>
+                          <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="aguas_kpi_municipios" class="aurora-kpi-number">185</span>
+                        </div>
+                        <div class="aurora-kpi-footer">100% dos Territórios</div>
                       </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Pop. Beneficiada (PE)</span>
-                        <span id="aguas_kpi_populacao" class="text-lg md:text-xl font-black text-emerald-700">9,5 Mi</span>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Pop. Beneficiada</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-users"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="aguas_kpi_populacao" class="aurora-kpi-number text-emerald-700">9,5 Mi</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Alcance Estimado</div>
                       </div>
-                      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center col-span-2 md:col-span-1">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Desembolso Futuro</span>
-                        <span id="aguas_kpi_desembolso" class="text-lg md:text-xl font-black text-purple-700">R$ 7,7 Bi</span>
+                      <div class="aurora-kpi-card col-span-2 md:col-span-1">
+                        <div class="aurora-kpi-header">
+                          <span>Desembolso Futuro</span>
+                          <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="aguas_kpi_desembolso" class="aurora-kpi-number text-purple-700">R$ 7,7 Bi</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Contratos em Andamento</div>
                       </div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -1417,25 +1554,6 @@
                   <h4 id="capa_tipo_relatorio" class="fw-bold text-secondary mt-4">RELATÓRIO EXECUTIVO</h4>
                 </div>
                 <div id="subaba_ficha_municipal">
-                  <div class="sticky-top bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-2 mb-3 shadow-sm d-print-none z-20" style="top: 6px;">
-                    <div class="d-flex align-items-center gap-1.5 overflow-x-auto py-0.5 px-1 scrollbar-none">
-                      <span class="text-xs font-black text-slate-400 uppercase tracking-wider me-1 flex-shrink-0">
-                        <i class="fas fa-compass text-primary me-1"></i>
-                        Seções:
-                      </span>
-                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_caracterizacao&#39;)">1. Caracterização</button>
-                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_resumo_executivo&#39;)">2. Resumo</button>
-                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_diagnostico_regional&#39;)">3. Regional</button>
-                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_demografia&#39;)">4. Demografia</button>
-                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_indicadores_sociais&#39;)">5. Social</button>
-                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_indicadores_economicos&#39;)">6. Economia</button>
-                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_tecnologia_inovacao&#39;)">7. C&amp;T</button>
-                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_meio_ambiente&#39;)">8. Meio Ambiente</button>
-                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_fiscal&#39;)">9. Fiscal</button>
-                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_iniciativas_regionais&#39;)">10. Ações &amp; Convênios</button>
-                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_emendas_parlamentares&#39;)">11. Emendas</button>
-                    </div>
-                  </div>
                   <div id="sec_caracterizacao" class="border-b-2 border-slate-200 pb-2 mb-4 mt-2">
                     <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Caracterização</h2>
                     <p class="text-sm font-bold text-slate-500 mb-0">Principais Informações</p>

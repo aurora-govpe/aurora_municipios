@@ -25,27 +25,6 @@ ui_modulo_ficha <- function() {
       
       tags$div(
         id = "subaba_ficha_municipal",
-        
-              # BARRA DE NAVEGAÇÃO RÁPIDA ENTRE AS 11 SEÇÕES (STICKY SUBNAV)
-      tags$div(
-        class = "sticky-top bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-2 mb-3 shadow-sm d-print-none z-20",
-        style = "top: 6px;",
-        tags$div(
-          class = "d-flex align-items-center gap-1.5 overflow-x-auto py-0.5 px-1 scrollbar-none",
-          tags$span(class = "text-xs font-black text-slate-400 uppercase tracking-wider me-1 flex-shrink-0", tags$i(class = "fas fa-compass text-primary me-1"), "Seções:"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_caracterizacao')", "1. Caracterização"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_resumo_executivo')", "2. Resumo"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_diagnostico_regional')", "3. Regional"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_demografia')", "4. Demografia"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_indicadores_sociais')", "5. Social"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_indicadores_economicos')", "6. Economia"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_tecnologia_inovacao')", "7. C&T"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_meio_ambiente')", "8. Meio Ambiente"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_fiscal')", "9. Fiscal"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_iniciativas_regionais')", "10. Ações & Convênios"),
-          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_emendas_parlamentares')", "11. Emendas")
-        )
-      ),
       
       # SEÇÃO 1: CARACTERIZAÇÃO
       tags$div(

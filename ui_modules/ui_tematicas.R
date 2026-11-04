@@ -72,29 +72,34 @@ ui_modulo_tematicas <- function() {
           tags$div(
             class = "grid grid-cols-2 md:grid-cols-5 gap-3 mb-4",
             tags$div(
-              class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
-              tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Total de Cozinhas"),
-              tags$span(id = "cozinhas_kpi_total", class = "text-lg md:text-xl font-black text-slate-800", "-")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Total de Cozinhas"), tags$div(class = "aurora-kpi-icon", tags$i(class = "fas fa-utensils text-slate-500"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "cozinhas_kpi_total", class = "aurora-kpi-number", "-")),
+              tags$div(class = "aurora-kpi-footer", "Mapeadas no Estado")
             ),
             tags$div(
-              class = "bg-emerald-50/60 p-3 rounded-2xl border border-emerald-200 text-center",
-              tags$span(class = "text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1", "Em Funcionamento"),
-              tags$span(id = "cozinhas_kpi_funcionamento", class = "text-lg md:text-xl font-black text-emerald-700", "-")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Em Funcionamento"), tags$div(class = "aurora-kpi-icon text-emerald-600 bg-emerald-50", tags$i(class = "fas fa-check-circle"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "cozinhas_kpi_funcionamento", class = "aurora-kpi-number text-emerald-700", "-")),
+              tags$div(class = "aurora-kpi-footer", "Servindo Refeições")
             ),
             tags$div(
-              class = "bg-amber-50/60 p-3 rounded-2xl border border-amber-200 text-center",
-              tags$span(class = "text-xs font-bold text-amber-600 uppercase tracking-wider block mb-1", "Em Implantação"),
-              tags$span(id = "cozinhas_kpi_implantacao", class = "text-lg md:text-xl font-black text-amber-700", "-")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Em Implantação"), tags$div(class = "aurora-kpi-icon text-amber-600 bg-amber-50", tags$i(class = "fas fa-clock"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "cozinhas_kpi_implantacao", class = "aurora-kpi-number text-amber-700", "-")),
+              tags$div(class = "aurora-kpi-footer", "Em Preparação")
             ),
             tags$div(
-              class = "bg-blue-50/60 p-3 rounded-2xl border border-blue-200 text-center",
-              tags$span(class = "text-xs font-bold text-blue-600 uppercase tracking-wider block mb-1", "Aguard. Pactuação"),
-              tags$span(id = "cozinhas_kpi_pactuacao", class = "text-lg md:text-xl font-black text-blue-700", "-")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Aguard. Pactuação"), tags$div(class = "aurora-kpi-icon text-blue-600 bg-blue-50", tags$i(class = "fas fa-file-signature"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "cozinhas_kpi_pactuacao", class = "aurora-kpi-number text-blue-700", "-")),
+              tags$div(class = "aurora-kpi-footer", "Fase de Adesão")
             ),
             tags$div(
-              class = "bg-rose-50/60 p-3 rounded-2xl border border-rose-200 text-center",
-              tags$span(class = "text-xs font-bold text-rose-600 uppercase tracking-wider block mb-1", "Não Aderiu"),
-              tags$span(id = "cozinhas_kpi_nao_aderiu", class = "text-lg md:text-xl font-black text-rose-700", "-")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Não Aderiu"), tags$div(class = "aurora-kpi-icon text-rose-600 bg-rose-50", tags$i(class = "fas fa-circle-xmark"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "cozinhas_kpi_nao_aderiu", class = "aurora-kpi-number text-rose-700", "-")),
+              tags$div(class = "aurora-kpi-footer", "Sem Adesão")
             )
           ),
 
@@ -106,24 +111,28 @@ ui_modulo_tematicas <- function() {
           tags$div(
             class = "grid grid-cols-2 md:grid-cols-4 gap-3 mb-4",
             tags$div(
-              class = "bg-pink-50/50 p-3 rounded-2xl border border-pink-200 text-center",
-              tags$span(class = "text-xs font-bold text-pink-500 uppercase tracking-wider block mb-1", "Mães Beneficiadas"),
-              tags$span(id = "maes_kpi_total", class = "text-lg md:text-xl font-black text-pink-700", "-")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Mães Beneficiadas"), tags$div(class = "aurora-kpi-icon text-pink-600 bg-pink-50", tags$i(class = "fas fa-person-breastfeeding"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "maes_kpi_total", class = "aurora-kpi-number text-pink-700", "-")),
+              tags$div(class = "aurora-kpi-footer", "Mães e Crianças")
             ),
             tags$div(
-              class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
-              tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Investimento Acumulado"),
-              tags$span(id = "maes_kpi_investimento", class = "text-lg md:text-xl font-black text-purple-700", "-")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Investimento Acumulado"), tags$div(class = "aurora-kpi-icon text-purple-600 bg-purple-50", tags$i(class = "fas fa-hand-holding-dollar"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "maes_kpi_investimento", class = "aurora-kpi-number text-purple-700", "-")),
+              tags$div(class = "aurora-kpi-footer", "Recursos Pagos")
             ),
             tags$div(
-              class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
-              tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Municípios Atendidos"),
-              tags$span(id = "maes_kpi_municipios", class = "text-lg md:text-xl font-black text-slate-800", "185")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Municípios Atendidos"), tags$div(class = "aurora-kpi-icon text-blue-600 bg-blue-50", tags$i(class = "fas fa-map-location-dot"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "maes_kpi_municipios", class = "aurora-kpi-number", "185")),
+              tags$div(class = "aurora-kpi-footer", "100% de Cobertura Estadual")
             ),
             tags$div(
-              class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
-              tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Benefício Mensal"),
-              tags$span(id = "maes_kpi_auxilio", class = "text-lg md:text-xl font-black text-emerald-700", "R$ 300 / mãe")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Benefício Mensal"), tags$div(class = "aurora-kpi-icon text-emerald-600 bg-emerald-50", tags$i(class = "fas fa-money-bill-transfer"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "maes_kpi_auxilio", class = "aurora-kpi-number text-emerald-700", "R$ 300 / mãe")),
+              tags$div(class = "aurora-kpi-footer", "Transferência Direta")
             )
           ),
 
@@ -135,29 +144,34 @@ ui_modulo_tematicas <- function() {
           tags$div(
             class = "grid grid-cols-2 md:grid-cols-5 gap-3 mb-5",
             tags$div(
-              class = "bg-blue-50/50 p-3 rounded-2xl border border-blue-200 text-center",
-              tags$span(class = "text-xs font-bold text-blue-500 uppercase tracking-wider block mb-1", "Total Pago"),
-              tags$span(id = "cofin_kpi_pago", class = "text-lg md:text-xl font-black text-blue-700", "-")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Total Pago"), tags$div(class = "aurora-kpi-icon text-blue-600 bg-blue-50", tags$i(class = "fas fa-check-double"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "cofin_kpi_pago", class = "aurora-kpi-number text-blue-700", "-")),
+              tags$div(class = "aurora-kpi-footer", "Transferência Concluída")
             ),
             tags$div(
-              class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
-              tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Total Validado"),
-              tags$span(id = "cofin_kpi_validado", class = "text-lg md:text-xl font-black text-slate-800", "-")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Total Validado"), tags$div(class = "aurora-kpi-icon text-slate-600 bg-slate-50", tags$i(class = "fas fa-clipboard-check"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "cofin_kpi_validado", class = "aurora-kpi-number", "-")),
+              tags$div(class = "aurora-kpi-footer", "Pactuado em PE")
             ),
             tags$div(
-              class = "bg-emerald-50/50 p-3 rounded-2xl border border-emerald-200 text-center",
-              tags$span(class = "text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1", "% Executado / Pago"),
-              tags$span(id = "cofin_kpi_percentual", class = "text-lg md:text-xl font-black text-emerald-700", "-")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("% Executado / Pago"), tags$div(class = "aurora-kpi-icon text-emerald-600 bg-emerald-50", tags$i(class = "fas fa-chart-pie"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "cofin_kpi_percentual", class = "aurora-kpi-number text-emerald-700", "-")),
+              tags$div(class = "aurora-kpi-footer", "Execução Orçamentária")
             ),
             tags$div(
-              class = "bg-purple-50/50 p-3 rounded-2xl border border-purple-200 text-center",
-              tags$span(class = "text-xs font-bold text-purple-600 uppercase tracking-wider block mb-1", "Saldo a Pagar"),
-              tags$span(id = "cofin_kpi_a_pagar", class = "text-lg md:text-xl font-black text-purple-700", "-")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Saldo a Pagar"), tags$div(class = "aurora-kpi-icon text-purple-600 bg-purple-50", tags$i(class = "fas fa-hourglass-half"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "cofin_kpi_a_pagar", class = "aurora-kpi-number text-purple-700", "-")),
+              tags$div(class = "aurora-kpi-footer", "Parcelas Futuras")
             ),
             tags$div(
-              class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
-              tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Municípios Cobertos"),
-              tags$span(id = "cofin_kpi_municipios", class = "text-lg md:text-xl font-black text-slate-800", "185")
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Municípios"), tags$div(class = "aurora-kpi-icon text-slate-600 bg-slate-50", tags$i(class = "fas fa-city"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "cofin_kpi_municipios", class = "aurora-kpi-number", "185")),
+              tags$div(class = "aurora-kpi-footer", "Cobertura em Todo PE")
             )
           ),
           
@@ -499,29 +513,34 @@ ui_modulo_tematicas <- function() {
             tags$div(
               class = "grid grid-cols-2 md:grid-cols-5 gap-3 mb-5",
               tags$div(
-                class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
-                tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Investimento Total"),
-                tags$span(id = "aguas_kpi_investimento", class = "text-lg md:text-xl font-black text-blue-700", "R$ 14,8 Bi")
+                class = "aurora-kpi-card",
+                tags$div(class = "aurora-kpi-header", tags$span("Investimento Total"), tags$div(class = "aurora-kpi-icon text-blue-600 bg-blue-50", tags$i(class = "fas fa-faucet-drip"))),
+                tags$div(class = "aurora-kpi-body", tags$span(id = "aguas_kpi_investimento", class = "aurora-kpi-number text-blue-700", "R$ 14,8 Bi")),
+                tags$div(class = "aurora-kpi-footer", "Plano Plurianual")
               ),
               tags$div(
-                class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
-                tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Projetos / Obras"),
-                tags$span(id = "aguas_kpi_projetos", class = "text-lg md:text-xl font-black text-slate-800", "560")
+                class = "aurora-kpi-card",
+                tags$div(class = "aurora-kpi-header", tags$span("Projetos / Obras"), tags$div(class = "aurora-kpi-icon text-slate-600 bg-slate-50", tags$i(class = "fas fa-trowel-bricks"))),
+                tags$div(class = "aurora-kpi-body", tags$span(id = "aguas_kpi_projetos", class = "aurora-kpi-number", "560")),
+                tags$div(class = "aurora-kpi-footer", "Intervenções Mapeadas")
               ),
               tags$div(
-                class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
-                tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Municípios Atendidos"),
-                tags$span(id = "aguas_kpi_municipios", class = "text-lg md:text-xl font-black text-slate-800", "185")
+                class = "aurora-kpi-card",
+                tags$div(class = "aurora-kpi-header", tags$span("Municípios"), tags$div(class = "aurora-kpi-icon text-slate-600 bg-slate-50", tags$i(class = "fas fa-map-location-dot"))),
+                tags$div(class = "aurora-kpi-body", tags$span(id = "aguas_kpi_municipios", class = "aurora-kpi-number", "185")),
+                tags$div(class = "aurora-kpi-footer", "100% dos Territórios")
               ),
               tags$div(
-                class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center",
-                tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Pop. Beneficiada (PE)"),
-                tags$span(id = "aguas_kpi_populacao", class = "text-lg md:text-xl font-black text-emerald-700", "9,5 Mi")
+                class = "aurora-kpi-card",
+                tags$div(class = "aurora-kpi-header", tags$span("Pop. Beneficiada"), tags$div(class = "aurora-kpi-icon text-emerald-600 bg-emerald-50", tags$i(class = "fas fa-users"))),
+                tags$div(class = "aurora-kpi-body", tags$span(id = "aguas_kpi_populacao", class = "aurora-kpi-number text-emerald-700", "9,5 Mi")),
+                tags$div(class = "aurora-kpi-footer", "Alcance Estimado")
               ),
               tags$div(
-                class = "bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center col-span-2 md:col-span-1",
-                tags$span(class = "text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1", "Desembolso Futuro"),
-                tags$span(id = "aguas_kpi_desembolso", class = "text-lg md:text-xl font-black text-purple-700", "R$ 7,7 Bi")
+                class = "aurora-kpi-card col-span-2 md:col-span-1",
+                tags$div(class = "aurora-kpi-header", tags$span("Desembolso Futuro"), tags$div(class = "aurora-kpi-icon text-purple-600 bg-purple-50", tags$i(class = "fas fa-hand-holding-dollar"))),
+                tags$div(class = "aurora-kpi-body", tags$span(id = "aguas_kpi_desembolso", class = "aurora-kpi-number text-purple-700", "R$ 7,7 Bi")),
+                tags$div(class = "aurora-kpi-footer", "Contratos em Andamento")
               )
             ),
             
