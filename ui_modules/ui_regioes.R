@@ -35,10 +35,27 @@ ui_modulo_regioes <- function() {
         tags$div(
           class = "d-flex gap-2 d-print-none",
           tags$button(
-            class = "btn btn-danger btn-sm fw-bold shadow-sm rounded-pill px-3",
+            class = "btn btn-outline-dark btn-sm fw-bold shadow-sm rounded-pill px-3 transition-all",
             onclick = "window.print()",
-            tags$i(class = "fas fa-file-pdf me-1"), "Salvar PDF"
+            tags$i(class = "fas fa-file-pdf me-1 text-danger"), "Salvar PDF"
           )
+        )
+      ),
+      
+            # BARRA DE NAVEGAÇÃO RÁPIDA ENTRE DIMENSÕES DA RD (STICKY SUBNAV)
+      tags$div(
+        class = "sticky-top bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-2 mb-4 shadow-sm d-print-none z-20",
+        style = "top: 6px;",
+        tags$div(
+          class = "d-flex align-items-center gap-1.5 overflow-x-auto py-0.5 px-1 scrollbar-none",
+          tags$span(class = "text-xs font-black text-slate-400 uppercase tracking-wider me-1 flex-shrink-0", tags$i(class = "fas fa-compass text-primary me-1"), "Dimensões:"),
+          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('rd_kpi_qtd_muns')", "Macroindicadores"),
+          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster0')", "Dimensão 0: Redes & REGIC"),
+          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster1')", "Cluster 1: Demografia"),
+          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster2')", "Cluster 2: Vulnerabilidade"),
+          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster3')", "Cluster 3: Produção & Emprego"),
+          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster4')", "Cluster 4: Fiscal"),
+          tags$button(type = "button", class = "btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all", onclick = "window.scrollToSection('sec_cluster5')", "Cluster 5: Investimentos")
         )
       ),
       
@@ -73,6 +90,7 @@ ui_modulo_regioes <- function() {
       
       # CLUSTER 0: DESENVOLVIMENTO REGIONAL E REDES URBANAS
       tags$div(
+        id = "sec_cluster0",
         class = "subsecao-print-break mb-5",
         tags$div(
           class = "border-b-2 border-slate-200 pb-2 mb-3",
@@ -140,6 +158,7 @@ ui_modulo_regioes <- function() {
       
       # CLUSTER 1: TRANSIÇÃO DEMOGRÁFICA
       tags$div(
+        id = "sec_cluster1",
         class = "subsecao-print-break mb-5",
         tags$div(
           class = "border-b-2 border-slate-200 pb-2 mb-3",

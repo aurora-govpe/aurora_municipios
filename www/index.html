@@ -25,12 +25,12 @@
   <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" defer></script>
-  <script src="js/core.js?v=1793749589.86775"></script>
-  <script src="js/landing.js?v=1793749589.8678"></script>
-  <script src="js/ufs.js?v=1793749589.86784"></script>
-  <script src="js/ficha.js?v=1793749589.86789"></script>
-  <script src="js/regioes.js?v=1793749589.86793"></script>
-  <script src="js/app.js?v=1793749589.86796"></script>
+  <script src="js/core.js?v=1793750307.1746"></script>
+  <script src="js/landing.js?v=1793750307.17466"></script>
+  <script src="js/ufs.js?v=1793750307.17471"></script>
+  <script src="js/ficha.js?v=1793750307.17475"></script>
+  <script src="js/regioes.js?v=1793750307.1748"></script>
+  <script src="js/app.js?v=1793750307.17484"></script>
 </head>
 <html lang="pt-br">
   <body class="bg-slate-50 antialiased overflow-hidden m-0 p-0">
@@ -516,10 +516,25 @@
                     <p class="text-sm font-bold text-slate-500 mb-0">Relatório de Diagnóstico Territorial — Arquitetura por Clusters Tipológicos</p>
                   </div>
                   <div class="d-flex gap-2 d-print-none">
-                    <button class="btn btn-danger btn-sm fw-bold shadow-sm rounded-pill px-3" onclick="window.print()">
-                      <i class="fas fa-file-pdf me-1"></i>
+                    <button class="btn btn-outline-dark btn-sm fw-bold shadow-sm rounded-pill px-3 transition-all" onclick="window.print()">
+                      <i class="fas fa-file-pdf me-1 text-danger"></i>
                       Salvar PDF
                     </button>
+                  </div>
+                </div>
+                <div class="sticky-top bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-2 mb-4 shadow-sm d-print-none z-20" style="top: 6px;">
+                  <div class="d-flex align-items-center gap-1.5 overflow-x-auto py-0.5 px-1 scrollbar-none">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-wider me-1 flex-shrink-0">
+                      <i class="fas fa-compass text-primary me-1"></i>
+                      Dimensões:
+                    </span>
+                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;rd_kpi_qtd_muns&#39;)">Macroindicadores</button>
+                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster0&#39;)">Dimensão 0: Redes &amp; REGIC</button>
+                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster1&#39;)">Cluster 1: Demografia</button>
+                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster2&#39;)">Cluster 2: Vulnerabilidade</button>
+                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster3&#39;)">Cluster 3: Produção &amp; Emprego</button>
+                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster4&#39;)">Cluster 4: Fiscal</button>
+                    <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_cluster5&#39;)">Cluster 5: Investimentos</button>
                   </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
@@ -556,7 +571,7 @@
                     <div class="kpi-modern-footer text-uppercase">Recursos Alocados na RD</div>
                   </div>
                 </div>
-                <div class="subsecao-print-break mb-5">
+                <div id="sec_cluster0" class="subsecao-print-break mb-5">
                   <div class="border-b-2 border-slate-200 pb-2 mb-3">
                     <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">Dimensão 0: Desenvolvimento Regional e Redes Urbanas</h3>
                     <p class="text-xs font-bold text-slate-500 mb-0">Análise de Polos (REGIC), Arranjos Populacionais, Acessibilidade e Fluxos</p>
@@ -608,7 +623,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="subsecao-print-break mb-5">
+                <div id="sec_cluster1" class="subsecao-print-break mb-5">
                   <div class="border-b-2 border-slate-200 pb-2 mb-3">
                     <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">Cluster 1: Transição Demográfica &amp; Perfil Populacional</h3>
                     <p class="text-xs font-bold text-slate-500 mb-0">Mapeamento da dinâmica populacional, grau de urbanização e ritmo de envelhecimento</p>
@@ -1402,6 +1417,25 @@
                   <h4 id="capa_tipo_relatorio" class="fw-bold text-secondary mt-4">RELATÓRIO EXECUTIVO</h4>
                 </div>
                 <div id="subaba_ficha_municipal">
+                  <div class="sticky-top bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-2 mb-3 shadow-sm d-print-none z-20" style="top: 6px;">
+                    <div class="d-flex align-items-center gap-1.5 overflow-x-auto py-0.5 px-1 scrollbar-none">
+                      <span class="text-xs font-black text-slate-400 uppercase tracking-wider me-1 flex-shrink-0">
+                        <i class="fas fa-compass text-primary me-1"></i>
+                        Seções:
+                      </span>
+                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_caracterizacao&#39;)">1. Caracterização</button>
+                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_resumo_executivo&#39;)">2. Resumo</button>
+                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_diagnostico_regional&#39;)">3. Regional</button>
+                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_demografia&#39;)">4. Demografia</button>
+                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_indicadores_sociais&#39;)">5. Social</button>
+                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_indicadores_economicos&#39;)">6. Economia</button>
+                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_tecnologia_inovacao&#39;)">7. C&amp;T</button>
+                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_meio_ambiente&#39;)">8. Meio Ambiente</button>
+                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_fiscal&#39;)">9. Fiscal</button>
+                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_iniciativas_regionais&#39;)">10. Ações &amp; Convênios</button>
+                      <button type="button" class="btn btn-xs rounded-pill bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1 flex-shrink-0 transition-all" onclick="window.scrollToSection(&#39;sec_emendas_parlamentares&#39;)">11. Emendas</button>
+                    </div>
+                  </div>
                   <div id="sec_caracterizacao" class="border-b-2 border-slate-200 pb-2 mb-4 mt-2">
                     <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Caracterização</h2>
                     <p class="text-sm font-bold text-slate-500 mb-0">Principais Informações</p>
@@ -1418,10 +1452,14 @@
                           <i class="fas fa-file-contract me-1"></i>
                           Resumo Executivo
                         </button>
-                        <button class="btn btn-danger btn-sm fw-bold shadow-sm rounded-pill px-3 transition-all d-print-none" onclick="window.imprimirRelatorioCompleto()">
-                          <i class="fas fa-file-pdf me-1"></i>
+                        <button class="btn btn-outline-dark btn-sm fw-bold shadow-sm rounded-pill px-3 transition-all d-print-none" onclick="window.imprimirRelatorioCompleto()">
+                          <i class="fas fa-file-pdf me-1 text-danger"></i>
                           Relatório Completo
                         </button>
+                        <span id="ficha_data_atualizacao_container" class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-3 py-1.5 text-xs font-semibold d-inline-flex align-items-center ms-auto d-print-none">
+                          <i class="fas fa-clock me-1.5 text-primary"></i>
+                          <span id="ficha_data_atualizacao_txt">Atualizado em: -</span>
+                        </span>
                       </div>
                       <div class="d-flex flex-wrap gap-2 mt-3">
                         <span class="badge bg-light text-primary border border-primary-subtle px-3 py-2 text-uppercase rounded-pill">
