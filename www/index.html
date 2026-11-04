@@ -25,19 +25,19 @@
   <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" defer></script>
-  <script src="js/core.js?v=1793751493.65687"></script>
-  <script src="js/landing.js?v=1793751493.65694"></script>
-  <script src="js/ufs.js?v=1793751493.65698"></script>
-  <script src="js/ficha.js?v=1793751493.65703"></script>
-  <script src="js/regioes.js?v=1793751493.65707"></script>
-  <script src="js/app.js?v=1793751493.65712"></script>
+  <script src="js/core.js?v=1793795875.11747"></script>
+  <script src="js/landing.js?v=1793795875.11755"></script>
+  <script src="js/ufs.js?v=1793795875.11762"></script>
+  <script src="js/ficha.js?v=1793795875.11769"></script>
+  <script src="js/regioes.js?v=1793795875.11776"></script>
+  <script src="js/app.js?v=1793795875.11782"></script>
 </head>
 <html lang="pt-br">
   <body class="bg-slate-50 antialiased overflow-hidden m-0 p-0">
     <div class="aurora-app-container p-0">
       <nav id="aurora-sidebar" class="d-none"></nav>
       <div class="aurora-main-wrapper">
-        <header class="aurora-topbar d-flex justify-content-between align-items-center gap-2 px-3 py-2" style="flex-wrap: nowrap; min-height: 54px; overflow-x: auto; overflow-y: hidden;">
+        <header class="aurora-topbar d-flex justify-content-between align-items-center gap-2 px-3 py-2" style="flex-wrap: nowrap; min-height: 54px; position: relative; z-index: 1050; overflow: visible !important;">
           <div class="d-flex align-items-center gap-2 flex-nowrap flex-shrink-0" style="flex-shrink: 0;">
             <div class="d-flex align-items-center gap-2 cursor-pointer select-none" onclick="window.mudarAbaAurora(&#39;Início&#39;, null)" title="Ir para o Início">
               <img src="images/aurora.png" class="w-8 h-8 rounded-full border border-slate-200 shadow-xs object-cover"/>
@@ -81,7 +81,7 @@
                 <select id="ufs_f_uf" class="form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0" style="max-width: 170px; font-size: 0.85rem; outline: none; box-shadow: none;"></select>
               </div>
               <div class="dropdown d-none d-md-block">
-                <button class="btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Navegar pelos 5 Eixos do Benchmarking" style="font-size: 0.8rem; height: 32px;">
+                <button class="btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 shadow-sm" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" title="Navegar pelos 5 Eixos do Benchmarking" style="font-size: 0.8rem; height: 32px;">
                   <i class="fas fa-compass text-primary" style="font-size: 0.85rem;"></i>
                   <span>Eixos</span>
                   <i class="fas fa-chevron-down text-slate-400 ms-1" style="font-size: 0.65rem;"></i>
@@ -143,7 +143,7 @@
               </div>
               <div id="ficha_navbar_nav" class="d-none d-md-flex align-items-center gap-1 bg-slate-100 p-1 rounded-pill border border-slate-200 shadow-sm">
                 <div class="dropdown">
-                  <button class="btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Navegar pelas Seções da Ficha" style="font-size: 0.8rem; height: 32px; transition: all 0.2s;">
+                  <button class="btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 shadow-sm" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" title="Navegar pelas Seções da Ficha" style="font-size: 0.8rem; height: 32px; transition: all 0.2s;">
                     <i class="fas fa-compass text-primary" style="font-size: 0.85rem;"></i>
                     <span>Seções</span>
                     <i class="fas fa-chevron-down text-slate-400 ms-1" style="font-size: 0.65rem;"></i>
@@ -948,6 +948,10 @@
                         <i class="fas fa-building-columns me-1.5 text-purple-600"></i>
                         Capacidade de Pagamento
                       </button>
+                      <button id="btn_pauta_resumo_estradas" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;estradas&#39;, this)">
+                        <i class="fas fa-road me-1.5 text-indigo-500"></i>
+                        Estradas de PE
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1532,6 +1536,149 @@
                       </div>
                       <div class="table-responsive">
                         <table id="resumo_aguas_tabela_projetos" class="table table-hover w-100 text-sm"></table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_estradas" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">INFRAESTRUTURA RODOVIÁRIA &amp; LOGÍSTICA</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Estradas de Pernambuco — Obras Rodoviárias e Conectividade Territorial</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-road text-indigo-600 me-1"></i>
+                        DER-PE / SEINFRA • Governo de Pernambuco
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="fas fa-chart-pie text-indigo-500"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Panorama Geral das Obras Rodoviárias</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total de Obras</span>
+                          <div class="aurora-kpi-icon">
+                            <i class="fas fa-trowel-bricks text-slate-500"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="estradas_kpi_total" class="aurora-kpi-number">193</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Contratos DER-PE</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Rodovias</span>
+                          <div class="aurora-kpi-icon text-indigo-600 bg-indigo-50">
+                            <i class="fas fa-road"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="estradas_kpi_rodovias" class="aurora-kpi-number text-indigo-700">81</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Trechos Mapeados</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-sack-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="estradas_kpi_investimento" class="aurora-kpi-number text-emerald-700">R$ 4,72 Bi</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Total Previsto</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Concluídas</span>
+                          <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                            <i class="fas fa-circle-check"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="estradas_kpi_concluidas" class="aurora-kpi-number text-teal-700">129</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Entregues à População</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Execução</span>
+                          <div class="aurora-kpi-icon text-sky-600 bg-sky-50">
+                            <i class="fas fa-person-digging"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="estradas_kpi_execucao" class="aurora-kpi-number text-sky-700">59</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Obras Ativas</div>
+                      </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-3xl p-3 p-md-4 mb-4">
+                      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                        <div>
+                          <h6 class="font-black text-slate-800 text-sm mb-0 uppercase tracking-wider">
+                            <i class="fas fa-map-location-dot text-indigo-600 me-1.5"></i>
+                            Mapa Territorial da Malha Rodoviária
+                          </h6>
+                          <p class="text-xs text-slate-500 mb-0">Traçados georreferenciados coloridos pelo status da intervenção</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                          <div class="d-inline-flex bg-white p-1 rounded-pill border border-slate-200 gap-1">
+                            <button id="filtro_estradas_todos" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs btn-primary text-white" onclick="window.filtrarEstradasStatus(&#39;todos&#39;, this)">Todos</button>
+                            <button id="filtro_estradas_concluida" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.filtrarEstradasStatus(&#39;Concluída&#39;, this)">Concluídas</button>
+                            <button id="filtro_estradas_execucao" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.filtrarEstradasStatus(&#39;Em Execução&#39;, this)">Em Execução</button>
+                            <button id="filtro_estradas_paralisada" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.filtrarEstradasStatus(&#39;Paralisada&#39;, this)">Paralisadas</button>
+                          </div>
+                          <div class="d-flex align-items-center gap-2 bg-white rounded-pill px-3 py-1 border border-slate-200 shadow-xs">
+                            <i class="fas fa-road text-indigo-500 text-xs"></i>
+                            <select id="select_filtro_rodovia" class="form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer" style="max-width: 170px; font-size: 0.8rem; outline: none; box-shadow: none;" onchange="window.selecionarRodoviaFiltro(this.value)">
+                              <option value="">Todas Rodovias</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-100" style="height: 480px;">
+                        <div id="estradas_map_container" style="width: 100%; height: 100%;"></div>
+                        <div id="estradas_map_spinner" class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-white bg-opacity-75 z-10 d-none">
+                          <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+                        <div class="position-absolute bottom-3 start-3 bg-white/95 backdrop-blur-md p-2.5 rounded-xl border border-slate-200 shadow-md text-xs z-10">
+                          <span class="font-extrabold text-slate-700 block mb-1 text-[11px] uppercase tracking-wider">Legenda das Rodovias:</span>
+                          <div class="d-flex flex-column gap-1">
+                            <div class="d-flex align-items-center gap-2">
+                              <span class="w-3 h-3 rounded-full bg-emerald-500 d-inline-block"></span>
+                              <span class="text-slate-600 font-bold text-[11px]">Concluída</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                              <span class="w-3 h-3 rounded-full bg-sky-600 d-inline-block"></span>
+                              <span class="text-slate-600 font-bold text-[11px]">Em Execução</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                              <span class="w-3 h-3 rounded-full bg-rose-500 d-inline-block"></span>
+                              <span class="text-slate-600 font-bold text-[11px]">Paralisada</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4">
+                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                          <h5 class="font-black text-slate-800 text-base mb-0">Portfólio de Obras e Intervenções Rodoviárias</h5>
+                          <p class="text-xs text-slate-400 mb-0">Listagem completa dos contratos do DER-PE com status e avanço físico</p>
+                        </div>
+                        <div id="estradas_filtro_ativo_badge_container" class="d-none align-items-center gap-2">
+                          <span class="badge bg-indigo-100 text-indigo-800 font-bold px-3 py-1.5 rounded-pill" id="estradas_filtro_ativo_badge">Filtro Ativo</span>
+                          <button class="btn btn-outline-secondary btn-sm rounded-pill font-bold text-xs py-0.5 px-2" onclick="window.limparFiltroEstradas()">Limpar Filtro</button>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <table id="tabela_estradas_pe" class="table table-hover w-100 text-sm"></table>
                       </div>
                     </div>
                   </div>

@@ -259,12 +259,19 @@ ul#aurora_tabs, .nav-hidden {
  6. TOPBAR E BADGES DE CABEÇALHO
 ========================================================================== */
 .aurora-topbar {
+  position: relative;
+  z-index: 1050;
+  overflow: visible !important;
   height: var(--topbar-height);
   background-color: #fff;
   border-bottom: 1px solid #E2E8F0;
   padding: 0 1.5rem;
   flex-shrink: 0;
-  z-index: 1040;
+}
+
+.aurora-topbar .dropdown,
+.aurora-topbar .dropdown-menu {
+  z-index: 99999 !important;
 }
 
 .btn-sidebar-toggle {

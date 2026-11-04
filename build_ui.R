@@ -46,7 +46,7 @@ build_ui <- function() {
   
   topbar <- tags$header(
     class = "aurora-topbar d-flex justify-content-between align-items-center gap-2 px-3 py-2",
-    style = "flex-wrap: nowrap; min-height: 54px; overflow-x: auto; overflow-y: hidden;",
+    style = "flex-wrap: nowrap; min-height: 54px; position: relative; z-index: 1050; overflow: visible !important;",
     
     tags$div(
       class = "d-flex align-items-center gap-2 flex-nowrap flex-shrink-0",
@@ -120,6 +120,7 @@ build_ui <- function() {
             class = "btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 shadow-sm",
             type = "button",
             `data-bs-toggle` = "dropdown",
+            `data-bs-display` = "static",
             `aria-expanded` = "false",
             title = "Navegar pelos 5 Eixos do Benchmarking",
             style = "font-size: 0.8rem; height: 32px;",
@@ -202,6 +203,7 @@ build_ui <- function() {
               class = "btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 shadow-sm",
               type = "button",
               `data-bs-toggle` = "dropdown",
+              `data-bs-display` = "static",
               `aria-expanded` = "false",
               title = "Navegar pelas Seções da Ficha",
               style = "font-size: 0.8rem; height: 32px; transition: all 0.2s;",

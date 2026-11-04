@@ -38,6 +38,12 @@ ui_modulo_tematicas <- function() {
               class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
               onclick = "window.alternarPautaResumos('capag', this)",
               tags$i(class = "fas fa-building-columns me-1.5 text-purple-600"), "Capacidade de Pagamento"
+            ),
+            tags$button(
+              id = "btn_pauta_resumo_estradas",
+              class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
+              onclick = "window.alternarPautaResumos('estradas', this)",
+              tags$i(class = "fas fa-road me-1.5 text-indigo-500"), "Estradas de PE"
             )
           )
         )
@@ -719,7 +725,185 @@ ui_modulo_tematicas <- function() {
               )
             )
           )
+      ),
+
+      # BLOCO PAUTA 4: ESTRADAS DE PERNAMBUCO (DER-PE / SEINFRA)
+      tags$div(
+        id = "resumo_pauta_estradas",
+        class = "resumo-pauta-bloco d-none",
+        
+        # CARD PRINCIPAL: ESTRADAS DE PERNAMBUCO
+        tags$div(
+          class = "bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5",
+          
+          # Titulo do Bloco
+          tags$div(
+            class = "d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100",
+            tags$div(
+              tags$span(class = "badge bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-pill px-3 py-1 text-xs font-bold mb-1", "INFRAESTRUTURA RODOVIÁRIA & LOGÍSTICA"),
+              tags$h4(class = "font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight", "Estradas de Pernambuco — Obras Rodoviárias e Conectividade Territorial")
+            ),
+            tags$span(class = "badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold",
+              tags$i(class = "fas fa-road text-indigo-600 me-1"), "DER-PE / SEINFRA • Governo de Pernambuco"
+            )
+          ),
+          
+          # SEÇÃO DE KPIS PADRONIZADOS
+          tags$div(class = "d-flex align-items-center gap-2 mb-2",
+            tags$i(class = "fas fa-chart-pie text-indigo-500"),
+            tags$h6(class = "font-bold text-slate-700 text-xs uppercase tracking-wider mb-0", "Panorama Geral das Obras Rodoviárias")
+          ),
+          tags$div(
+            class = "grid grid-cols-2 md:grid-cols-5 gap-3 mb-4",
+            tags$div(
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Total de Obras"), tags$div(class = "aurora-kpi-icon", tags$i(class = "fas fa-trowel-bricks text-slate-500"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "estradas_kpi_total", class = "aurora-kpi-number", "193")),
+              tags$div(class = "aurora-kpi-footer", "Contratos DER-PE")
+            ),
+            tags$div(
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Rodovias"), tags$div(class = "aurora-kpi-icon text-indigo-600 bg-indigo-50", tags$i(class = "fas fa-road"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "estradas_kpi_rodovias", class = "aurora-kpi-number text-indigo-700", "81")),
+              tags$div(class = "aurora-kpi-footer", "Trechos Mapeados")
+            ),
+            tags$div(
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Investimento"), tags$div(class = "aurora-kpi-icon text-emerald-600 bg-emerald-50", tags$i(class = "fas fa-sack-dollar"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "estradas_kpi_investimento", class = "aurora-kpi-number text-emerald-700", "R$ 4,72 Bi")),
+              tags$div(class = "aurora-kpi-footer", "Total Previsto")
+            ),
+            tags$div(
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Concluídas"), tags$div(class = "aurora-kpi-icon text-teal-600 bg-teal-50", tags$i(class = "fas fa-circle-check"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "estradas_kpi_concluidas", class = "aurora-kpi-number text-teal-700", "129")),
+              tags$div(class = "aurora-kpi-footer", "Entregues à População")
+            ),
+            tags$div(
+              class = "aurora-kpi-card",
+              tags$div(class = "aurora-kpi-header", tags$span("Em Execução"), tags$div(class = "aurora-kpi-icon text-sky-600 bg-sky-50", tags$i(class = "fas fa-person-digging"))),
+              tags$div(class = "aurora-kpi-body", tags$span(id = "estradas_kpi_execucao", class = "aurora-kpi-number text-sky-700", "59")),
+              tags$div(class = "aurora-kpi-footer", "Obras Ativas")
+            )
+          ),
+          
+          # ÁREA DO MAPA INTERATIVO E FILTROS
+          tags$div(
+            class = "bg-slate-50 border border-slate-200 rounded-3xl p-3 p-md-4 mb-4",
+            tags$div(
+              class = "d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3",
+              tags$div(
+                tags$h6(class = "font-black text-slate-800 text-sm mb-0 uppercase tracking-wider",
+                  tags$i(class = "fas fa-map-location-dot text-indigo-600 me-1.5"), "Mapa Territorial da Malha Rodoviária"
+                ),
+                tags$p(class = "text-xs text-slate-500 mb-0", "Traçados georreferenciados coloridos pelo status da intervenção")
+              ),
+              tags$div(
+                class = "d-flex align-items-center gap-2 flex-wrap",
+                # Filtro por Status
+                tags$div(
+                  class = "d-inline-flex bg-white p-1 rounded-pill border border-slate-200 gap-1",
+                  tags$button(
+                    id = "filtro_estradas_todos",
+                    class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs btn-primary text-white",
+                    onclick = "window.filtrarEstradasStatus('todos', this)",
+                    "Todos"
+                  ),
+                  tags$button(
+                    id = "filtro_estradas_concluida",
+                    class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
+                    onclick = "window.filtrarEstradasStatus('Concluída', this)",
+                    "Concluídas"
+                  ),
+                  tags$button(
+                    id = "filtro_estradas_execucao",
+                    class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
+                    onclick = "window.filtrarEstradasStatus('Em Execução', this)",
+                    "Em Execução"
+                  ),
+                  tags$button(
+                    id = "filtro_estradas_paralisada",
+                    class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
+                    onclick = "window.filtrarEstradasStatus('Paralisada', this)",
+                    "Paralisadas"
+                  )
+                ),
+                # Seletor de Rodovia
+                tags$div(
+                  class = "d-flex align-items-center gap-2 bg-white rounded-pill px-3 py-1 border border-slate-200 shadow-xs",
+                  tags$i(class = "fas fa-road text-indigo-500 text-xs"),
+                  tags$select(
+                    id = "select_filtro_rodovia",
+                    class = "form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer",
+                    style = "max-width: 170px; font-size: 0.8rem; outline: none; box-shadow: none;",
+                    onchange = "window.selecionarRodoviaFiltro(this.value)",
+                    tags$option(value = "", "Todas Rodovias")
+                  )
+                )
+              )
+            ),
+            
+            # Contêiner do Mapa MapLibre
+            tags$div(
+              class = "position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-100",
+              style = "height: 480px;",
+              tags$div(id = "estradas_map_container", style = "width: 100%; height: 100%;"),
+              # Spinner
+              tags$div(
+                id = "estradas_map_spinner",
+                class = "position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-white bg-opacity-75 z-10 d-none",
+                tags$div(class = "spinner-border text-primary", role = "status")
+              ),
+              # Legenda flutuante sobre o mapa
+              tags$div(
+                class = "position-absolute bottom-3 start-3 bg-white/95 backdrop-blur-md p-2.5 rounded-xl border border-slate-200 shadow-md text-xs z-10",
+                tags$span(class = "font-extrabold text-slate-700 block mb-1 text-[11px] uppercase tracking-wider", "Legenda das Rodovias:"),
+                tags$div(class = "d-flex flex-column gap-1",
+                  tags$div(class = "d-flex align-items-center gap-2",
+                    tags$span(class = "w-3 h-3 rounded-full bg-emerald-500 d-inline-block"),
+                    tags$span(class = "text-slate-600 font-bold text-[11px]", "Concluída")
+                  ),
+                  tags$div(class = "d-flex align-items-center gap-2",
+                    tags$span(class = "w-3 h-3 rounded-full bg-sky-600 d-inline-block"),
+                    tags$span(class = "text-slate-600 font-bold text-[11px]", "Em Execução")
+                  ),
+                  tags$div(class = "d-flex align-items-center gap-2",
+                    tags$span(class = "w-3 h-3 rounded-full bg-rose-500 d-inline-block"),
+                    tags$span(class = "text-slate-600 font-bold text-[11px]", "Paralisada")
+                  )
+                )
+              )
+            )
+          ),
+          
+          # TABELA DETALHADA DE OBRAS
+          tags$div(
+            class = "mt-4",
+            tags$div(
+              class = "d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2",
+              tags$div(
+                tags$h5(class = "font-black text-slate-800 text-base mb-0", "Portfólio de Obras e Intervenções Rodoviárias"),
+                tags$p(class = "text-xs text-slate-400 mb-0", "Listagem completa dos contratos do DER-PE com status e avanço físico")
+              ),
+              tags$div(
+                id = "estradas_filtro_ativo_badge_container",
+                class = "d-none align-items-center gap-2",
+                tags$span(class = "badge bg-indigo-100 text-indigo-800 font-bold px-3 py-1.5 rounded-pill", id = "estradas_filtro_ativo_badge", "Filtro Ativo"),
+                tags$button(
+                  class = "btn btn-outline-secondary btn-sm rounded-pill font-bold text-xs py-0.5 px-2",
+                  onclick = "window.limparFiltroEstradas()",
+                  "Limpar Filtro"
+                )
+              )
+            ),
+            tags$div(
+              class = "table-responsive",
+              tags$table(id = "tabela_estradas_pe", class = "table table-hover w-100 text-sm")
+            )
+          )
+        )
       )
+
     )
   )
 }

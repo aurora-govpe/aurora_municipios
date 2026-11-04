@@ -3798,7 +3798,8 @@ window.alternarPautaResumos = function (pauta, btn) {
     const topCapag = document.getElementById('topbar_btn_pauta_capag');
     const topAguas = document.getElementById('topbar_btn_pauta_aguas');
     const topCozinhas = document.getElementById('topbar_btn_pauta_cozinhas');
-    [topCapag, topAguas, topCozinhas].forEach(b => {
+    const topEstradas = document.getElementById('topbar_btn_pauta_estradas');
+    [topCapag, topAguas, topCozinhas, topEstradas].forEach(b => {
         if (b) {
             b.classList.remove('btn-primary', 'text-white', 'shadow-xs');
             b.classList.add('text-slate-600', 'bg-transparent', 'border-0');
@@ -3813,23 +3814,28 @@ window.alternarPautaResumos = function (pauta, btn) {
     } else if (p === 'cozinhas' && topCozinhas) {
         topCozinhas.classList.remove('text-slate-600', 'bg-transparent', 'border-0');
         topCozinhas.classList.add('btn-primary', 'text-white', 'shadow-xs');
+    } else if (p === 'estradas' && topEstradas) {
+        topEstradas.classList.remove('text-slate-600', 'bg-transparent', 'border-0');
+        topEstradas.classList.add('btn-primary', 'text-white', 'shadow-xs');
     }
 
     // 2. Sincroniza botões e blocos na página interna
     const btnCapag = document.getElementById('btn_pauta_resumo_capag');
     const btnAguas = document.getElementById('btn_pauta_resumo_aguas');
     const btnCozinhas = document.getElementById('btn_pauta_resumo_cozinhas');
+    const btnEstradas = document.getElementById('btn_pauta_resumo_estradas');
     const blocoCapag = document.getElementById('resumo_pauta_capag');
     const blocoAguas = document.getElementById('resumo_pauta_aguas');
     const blocoCozinhas = document.getElementById('resumo_pauta_cozinhas');
+    const blocoEstradas = document.getElementById('resumo_pauta_estradas');
 
-    [btnCapag, btnAguas, btnCozinhas].forEach(b => {
+    [btnCapag, btnAguas, btnCozinhas, btnEstradas].forEach(b => {
         if (b) {
             b.classList.remove('btn-primary', 'text-white', 'shadow-sm');
             b.classList.add('btn-light', 'text-slate-600');
         }
     });
-    [blocoCapag, blocoAguas, blocoCozinhas].forEach(bl => {
+    [blocoCapag, blocoAguas, blocoCozinhas, blocoEstradas].forEach(bl => {
         if (bl) bl.classList.add('d-none');
     });
 
@@ -3859,6 +3865,15 @@ window.alternarPautaResumos = function (pauta, btn) {
         if (blocoCozinhas) blocoCozinhas.classList.remove('d-none');
         if (typeof window.renderizarResumoCozinhas === 'function') {
             window.renderizarResumoCozinhas();
+        }
+    } else if (p === 'estradas') {
+        if (btnEstradas) {
+            btnEstradas.classList.remove('btn-light', 'text-slate-600');
+            btnEstradas.classList.add('btn-primary', 'text-white', 'shadow-sm');
+        }
+        if (blocoEstradas) blocoEstradas.classList.remove('d-none');
+        if (typeof window.renderizarResumoEstradas === 'function') {
+            window.renderizarResumoEstradas();
         }
     }
 };
@@ -6292,4 +6307,480 @@ window.renderizarResumoCozinhas = function () {
             console.error("Erro ao renderizar Pernambuco sem Fome:", err);
             $('#resumo_cozinhas_spinner').addClass('d-none');
         });
+};
+
+
+/* ==========================================================================
+   RESUMOS TEMÁTICOS - PAUTA 4: ESTRADAS DE PERNAMBUCO (DER-PE / SEINFRA)
+   ========================================================================== */
+let mapResumoEstradas = null;
+let cacheResumoEstradas = null;
+let dtResumoEstradas = null;
+let filtroStatusEstradas = 'todos';
+let filtroRodoviaEstradas = '';
+
+window.renderizarResumoEstradas = function () {
+    const container = document.getElementById('estradas_map_container');
+    if (!container) return;
+
+    if (cacheResumoEstradas) {
+        setTimeout(() => {
+            if (mapResumoEstradas && typeof mapResumoEstradas.resize === 'function') {
+                mapResumoEstradas.resize();
+            }
+            if (dtResumoEstradas && typeof dtResumoEstradas.columns.adjust === 'function') {
+                dtResumoEstradas.columns.adjust();
+            }
+        }, 100);
+        return;
+    }
+
+    const spinner = document.getElementById('estradas_map_spinner');
+    if (spinner) spinner.classList.remove('d-none');
+
+    const apiUrl = `${window.basePath || ''}/municipios/resumo/estradas`.replace(/\/+/g, '/');
+    const fallbackUrl = `${window.basePath || ''}/data/estradas_pe.json`.replace(/\/+/g, '/');
+
+    fetch(apiUrl)
+        .then(res => {
+            if (res.ok) return res.json();
+            return fetch(fallbackUrl).then(r2 => {
+                if (!r2.ok) throw new Error("Erro ao carregar dados de Estradas PE");
+                return r2.json();
+            });
+        })
+        .then(data => {
+            cacheResumoEstradas = data;
+            if (spinner) spinner.classList.add('d-none');
+
+            // 1. Atualizar KPIs no DOM
+            if (data.kpis) {
+                const k = data.kpis;
+                const elTot = document.getElementById('estradas_kpi_total');
+                if (elTot) elTot.innerText = k.total_obras.toLocaleString('pt-BR');
+
+                const elRods = document.getElementById('estradas_kpi_rodovias');
+                if (elRods) elRods.innerText = k.total_rodovias.toLocaleString('pt-BR');
+
+                const elInv = document.getElementById('estradas_kpi_investimento');
+                if (elInv) elInv.innerText = `R$ ${k.valor_total_bi.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bi`;
+
+                const elConc = document.getElementById('estradas_kpi_concluidas');
+                if (elConc) elConc.innerText = k.concluidas.toLocaleString('pt-BR');
+
+                const elExec = document.getElementById('estradas_kpi_execucao');
+                if (elExec) elExec.innerText = k.em_execucao.toLocaleString('pt-BR');
+            }
+
+            // 2. Preencher Select de Rodovias
+            const selRod = document.getElementById('select_filtro_rodovia');
+            if (selRod && data.rodovias_unicas) {
+                selRod.innerHTML = '<option value="">Todas Rodovias</option>';
+                data.rodovias_unicas.forEach(rod => {
+                    const opt = document.createElement('option');
+                    opt.value = rod;
+                    opt.textContent = rod;
+                    selRod.appendChild(opt);
+                });
+            }
+
+            // 3. Inicializar Mapa MapLibre
+            if (!mapResumoEstradas) {
+                mapResumoEstradas = new maplibregl.Map({
+                    container: 'estradas_map_container',
+                    style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                    center: [-37.8, -8.3],
+                    zoom: 7,
+                    preserveDrawingBuffer: true
+                });
+
+                mapResumoEstradas.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+                mapResumoEstradas.on('load', () => {
+                    mapResumoEstradas.resize();
+
+                    // Ajustar bounds
+                    try {
+                        const bounds = new maplibregl.LngLatBounds();
+                        data.geojson.features.forEach(f => {
+                            const geom = f.geometry;
+                            if (!geom) return;
+                            const coords = geom.coordinates;
+                            const expand = (c) => {
+                                if (typeof c[0] === 'number') bounds.extend(c);
+                                else c.forEach(expand);
+                            };
+                            expand(coords);
+                        });
+                        if (!bounds.isEmpty()) {
+                            mapResumoEstradas.fitBounds(bounds, { padding: 40, animate: false });
+                        }
+                    } catch (errBounds) {
+                        console.warn("[Estradas PE] Erro ao ajustar bounds:", errBounds);
+                    }
+
+                    // Source
+                    mapResumoEstradas.addSource('estradas_source', {
+                        type: 'geojson',
+                        data: data.geojson
+                    });
+
+                    // Camada de borda/brilho branco de fundo para destaque
+                    mapResumoEstradas.addLayer({
+                        id: 'estradas_casing',
+                        type: 'line',
+                        source: 'estradas_source',
+                        paint: {
+                            'line-color': '#ffffff',
+                            'line-width': [
+                                'interpolate', ['linear'], ['zoom'],
+                                6, 3.5,
+                                10, 6,
+                                14, 9
+                            ],
+                            'line-opacity': 0.85
+                        }
+                    });
+
+                    // Camada principal com cores de status
+                    mapResumoEstradas.addLayer({
+                        id: 'estradas_lines',
+                        type: 'line',
+                        source: 'estradas_source',
+                        paint: {
+                            'line-color': ['get', 'cor_status'],
+                            'line-width': [
+                                'interpolate', ['linear'], ['zoom'],
+                                6, 2.5,
+                                10, 4.5,
+                                14, 7
+                            ],
+                            'line-opacity': 0.95
+                        }
+                    });
+
+                    // Camada de hover/selecao
+                    mapResumoEstradas.addLayer({
+                        id: 'estradas_hover',
+                        type: 'line',
+                        source: 'estradas_source',
+                        paint: {
+                            'line-color': '#0f172a',
+                            'line-width': [
+                                'interpolate', ['linear'], ['zoom'],
+                                6, 4.5,
+                                10, 7.5,
+                                14, 11
+                            ],
+                            'line-opacity': 0.9
+                        },
+                        filter: ['==', 'rodovia', '']
+                    });
+
+                    // Popups interativos
+                    const popup = new maplibregl.Popup({
+                        closeButton: false,
+                        closeOnClick: false,
+                        offset: 12
+                    });
+
+                    mapResumoEstradas.on('mousemove', 'estradas_lines', (e) => {
+                        mapResumoEstradas.getCanvas().style.cursor = 'pointer';
+                        if (!e.features || !e.features.length) return;
+                        const feat = e.features[0];
+                        const props = feat.properties || {};
+                        const rod = props.rodovia || 'Rodovia';
+
+                        mapResumoEstradas.setFilter('estradas_hover', ['==', 'rodovia', rod]);
+
+                        let corStatus = props.cor_status || '#64748B';
+                        let html = `
+                            <div style="font-family: inherit; font-size: 12px; min-width: 190px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px; margin-bottom: 6px;">
+                                    <span style="font-weight: 900; font-size: 13px; color: #0F172A;">${rod}</span>
+                                    <span style="font-size: 10px; font-weight: 700; background: ${corStatus}15; color: ${corStatus}; border: 1px solid ${corStatus}40; padding: 1px 6px; border-radius: 9999px;">
+                                        ${props.status_predominante || 'Em Andamento'}
+                                    </span>
+                                </div>
+                                <div style="color: #475569; display: flex; flex-direction: column; gap: 3px;">
+                                    <div><strong>Obras DER:</strong> ${props.total_obras || 0}</div>
+                                    <div><strong>Investimento:</strong> ${props.valor_total_fmt || 'R$ 0,00'}</div>
+                                    <div><strong>Avanço Médio:</strong> ${props.avanco_medio || 0}%</div>
+                                    ${props.municipios ? `<div style="font-size: 10px; color: #64748B; margin-top: 2px;"><strong>Cidades:</strong> ${props.municipios}</div>` : ''}
+                                </div>
+                                <div style="margin-top: 6px; font-size: 9px; color: #94A3B8; text-transform: uppercase; font-weight: bold;">
+                                    Clique para filtrar na tabela
+                                </div>
+                            </div>
+                        `;
+
+                        popup.setLngLat(e.lngLat).setHTML(html).addTo(mapResumoEstradas);
+                    });
+
+                    mapResumoEstradas.on('mouseleave', 'estradas_lines', () => {
+                        mapResumoEstradas.getCanvas().style.cursor = '';
+                        mapResumoEstradas.setFilter('estradas_hover', ['==', 'rodovia', '']);
+                        popup.remove();
+                    });
+
+                    mapResumoEstradas.on('click', 'estradas_lines', (e) => {
+                        if (e.features && e.features.length) {
+                            const rod = e.features[0].properties.rodovia;
+                            if (rod) {
+                                window.selecionarRodoviaFiltro(rod);
+                            }
+                        }
+                    });
+                });
+            }
+
+            // 4. Inicializar Tabela DataTable
+            window.inicializarTabelaEstradas(data.obras);
+        })
+        .catch(err => {
+            console.error("[Estradas PE] Erro ao carregar dados:", err);
+            if (spinner) spinner.classList.add('d-none');
+        });
+};
+
+window.inicializarTabelaEstradas = function (obras) {
+    if ($.fn.DataTable.isDataTable('#tabela_estradas_pe')) {
+        $('#tabela_estradas_pe').DataTable().destroy();
+        $('#tabela_estradas_pe').empty();
+    }
+
+    dtResumoEstradas = $('#tabela_estradas_pe').DataTable({
+        data: obras,
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
+        },
+        order: [[6, 'desc']],
+        columns: [
+            {
+                data: 'local',
+                title: 'Rodovia',
+                width: '10%',
+                render: function (data) {
+                    return `<span class="badge bg-slate-100 text-slate-800 border border-slate-300 font-extrabold px-2.5 py-1 rounded-pill cursor-pointer" onclick="window.selecionarRodoviaFiltro('${data}')">${data}</span>`;
+                }
+            },
+            {
+                data: 'iniciativa',
+                title: 'Iniciativa Estratégica / Obra',
+                width: '32%',
+                render: function (data) {
+                    return `<span class="fw-bold text-slate-800">${data}</span>`;
+                }
+            },
+            {
+                data: 'municipio',
+                title: 'Município',
+                width: '14%',
+                render: function (data) {
+                    return `<span class="text-slate-600 font-medium">${data || 'Estadual'}</span>`;
+                }
+            },
+            {
+                data: 'rd',
+                title: 'Região (RD)',
+                width: '12%',
+                render: function (data) {
+                    return `<span class="badge bg-slate-50 text-slate-600 border border-slate-200 rounded-pill px-2 py-0.5 text-[11px]">${data || '-'}</span>`;
+                }
+            },
+            {
+                data: 'status',
+                title: 'Status',
+                width: '12%',
+                render: function (data) {
+                    let badgeClass = 'bg-slate-100 text-slate-700';
+                    if (data === 'Concluída') badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+                    else if (data === 'Em Execução') badgeClass = 'bg-sky-100 text-sky-800 border border-sky-200';
+                    else if (data === 'Paralisada') badgeClass = 'bg-rose-100 text-rose-800 border border-rose-200';
+                    return `<span class="badge ${badgeClass} font-bold px-2 py-1 rounded-pill">${data}</span>`;
+                }
+            },
+            {
+                data: 'percent_execucao',
+                title: 'Avanço Físico',
+                width: '10%',
+                render: function (data) {
+                    const pct = Number(data) || 0;
+                    let barColor = 'bg-sky-500';
+                    if (pct >= 99) barColor = 'bg-emerald-500';
+                    else if (pct < 20) barColor = 'bg-amber-500';
+
+                    return `
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height: 6px; background-color: #E2E8F0; border-radius: 9999px;">
+                                <div class="progress-bar ${barColor} rounded-pill" role="progressbar" style="width: ${pct}%;"></div>
+                            </div>
+                            <span class="text-[11px] font-bold text-slate-700">${pct}%</span>
+                        </div>
+                    `;
+                }
+            },
+            {
+                data: 'valor_total',
+                title: 'Investimento (R$)',
+                width: '10%',
+                className: 'text-end',
+                render: function (data, type, row) {
+                    if (type === 'display') {
+                        return `<span class="fw-bold text-slate-800">${row.valor_total_fmt}</span>`;
+                    }
+                    return data;
+                }
+            }
+        ]
+    });
+};
+
+window.filtrarEstradasStatus = function (status, btn) {
+    filtroStatusEstradas = status;
+
+    // Sincronizar botoes de status
+    const ids = ['filtro_estradas_todos', 'filtro_estradas_concluida', 'filtro_estradas_execucao', 'filtro_estradas_paralisada'];
+    ids.forEach(id => {
+        const b = document.getElementById(id);
+        if (b) {
+            b.classList.remove('btn-primary', 'text-white');
+            b.classList.add('text-slate-600', 'bg-transparent', 'border-0');
+        }
+    });
+
+    if (btn) {
+        btn.classList.remove('text-slate-600', 'bg-transparent', 'border-0');
+        btn.classList.add('btn-primary', 'text-white');
+    }
+
+    window.aplicarFiltrosEstradas();
+};
+
+window.selecionarRodoviaFiltro = function (rodovia) {
+    filtroRodoviaEstradas = rodovia || '';
+    const sel = document.getElementById('select_filtro_rodovia');
+    if (sel) sel.value = filtroRodoviaEstradas;
+
+    window.aplicarFiltrosEstradas();
+
+    // Se selecionou uma rodovia, focar no mapa
+    if (filtroRodoviaEstradas && mapResumoEstradas && cacheResumoEstradas) {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            cacheResumoEstradas.geojson.features.forEach(f => {
+                if (String(f.properties.rodovia).trim().toUpperCase() === filtroRodoviaEstradas.trim().toUpperCase()) {
+                    const coords = f.geometry.coordinates;
+                    const expand = (c) => {
+                        if (typeof c[0] === 'number') bounds.extend(c);
+                        else c.forEach(expand);
+                    };
+                    expand(coords);
+                }
+            });
+            if (!bounds.isEmpty()) {
+                mapResumoEstradas.fitBounds(bounds, { padding: 80, maxZoom: 12, animate: true });
+                mapResumoEstradas.setFilter('estradas_hover', ['==', 'rodovia', filtroRodoviaEstradas]);
+            }
+        } catch (errZoom) {
+            console.warn("[Estradas PE] Erro ao focar rodovia:", errZoom);
+        }
+    } else if (mapResumoEstradas) {
+        mapResumoEstradas.setFilter('estradas_hover', ['==', 'rodovia', '']);
+    }
+};
+
+window.aplicarFiltrosEstradas = function () {
+    // 1. Filtro na Tabela DataTable
+    if (dtResumoEstradas) {
+        // Coluna 4 = Status, Coluna 0 = Rodovia
+        let statusRegex = '';
+        if (filtroStatusEstradas !== 'todos') {
+            statusRegex = '^' + filtroStatusEstradas + '$';
+        }
+        dtResumoEstradas.column(4).search(statusRegex, true, false);
+
+        let rodoviaRegex = '';
+        if (filtroRodoviaEstradas) {
+            rodoviaRegex = '^' + filtroRodoviaEstradas + '$';
+        }
+        dtResumoEstradas.column(0).search(rodoviaRegex, true, false);
+
+        dtResumoEstradas.draw();
+    }
+
+    // 2. Filtro no Mapa
+    if (mapResumoEstradas && mapResumoEstradas.getLayer('estradas_lines')) {
+        let filters = ['all'];
+
+        if (filtroStatusEstradas !== 'todos') {
+            filters.push(['==', 'status_predominante', filtroStatusEstradas]);
+        }
+        if (filtroRodoviaEstradas) {
+            filters.push(['==', 'rodovia', filtroRodoviaEstradas]);
+        }
+
+        if (filters.length > 1) {
+            mapResumoEstradas.setFilter('estradas_lines', filters);
+            mapResumoEstradas.setFilter('estradas_casing', filters);
+        } else {
+            mapResumoEstradas.setFilter('estradas_lines', null);
+            mapResumoEstradas.setFilter('estradas_casing', null);
+        }
+    }
+
+    // 3. Atualizar Badge de Filtro Ativo
+    const badgeContainer = document.getElementById('estradas_filtro_ativo_badge_container');
+    const badgeText = document.getElementById('estradas_filtro_ativo_badge');
+
+    if (badgeContainer && badgeText) {
+        const filtrosAtivos = [];
+        if (filtroStatusEstradas !== 'todos') filtrosAtivos.push(`Status: ${filtroStatusEstradas}`);
+        if (filtroRodoviaEstradas) filtrosAtivos.push(`Rodovia: ${filtroRodoviaEstradas}`);
+
+        if (filtrosAtivos.length > 0) {
+            badgeText.innerText = `Filtros: ${filtrosAtivos.join(' | ')}`;
+            badgeContainer.classList.remove('d-none');
+            badgeContainer.classList.add('d-flex');
+        } else {
+            badgeContainer.classList.remove('d-flex');
+            badgeContainer.classList.add('d-none');
+        }
+    }
+};
+
+window.limparFiltroEstradas = function () {
+    filtroStatusEstradas = 'todos';
+    filtroRodoviaEstradas = '';
+
+    const btnTodos = document.getElementById('filtro_estradas_todos');
+    window.filtrarEstradasStatus('todos', btnTodos);
+
+    const sel = document.getElementById('select_filtro_rodovia');
+    if (sel) sel.value = '';
+
+    window.aplicarFiltrosEstradas();
+
+    if (mapResumoEstradas && cacheResumoEstradas) {
+        try {
+            const bounds = new maplibregl.LngLatBounds();
+            cacheResumoEstradas.geojson.features.forEach(f => {
+                const geom = f.geometry;
+                if (!geom) return;
+                const coords = geom.coordinates;
+                const expand = (c) => {
+                    if (typeof c[0] === 'number') bounds.extend(c);
+                    else c.forEach(expand);
+                };
+                expand(coords);
+            });
+            if (!bounds.isEmpty()) {
+                mapResumoEstradas.fitBounds(bounds, { padding: 40, animate: true });
+                mapResumoEstradas.setFilter('estradas_hover', ['==', 'rodovia', '']);
+            }
+        } catch (e) {}
+    }
 };
