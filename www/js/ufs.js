@@ -2568,17 +2568,27 @@ async function carregarDadosUF(uf) {
 }
 
 // Preenche os selects da topbar
+const NOMES_UFS_COMPLETOS = {
+    "AC": "Acre", "AL": "Alagoas", "AM": "Amazonas", "AP": "Amapá", "BA": "Bahia",
+    "CE": "Ceará", "DF": "Distrito Federal", "ES": "Espírito Santo", "GO": "Goiás",
+    "MA": "Maranhão", "MG": "Minas Gerais", "MS": "Mato Grosso do Sul", "MT": "Mato Grosso",
+    "PA": "Pará", "PB": "Paraíba", "PE": "Pernambuco", "PI": "Piauí", "PR": "Paraná",
+    "RJ": "Rio de Janeiro", "RN": "Rio Grande do Norte", "RO": "Rondônia", "RR": "Roraima",
+    "RS": "Rio Grande do Sul", "SC": "Santa Catarina", "SE": "Sergipe", "SP": "São Paulo", "TO": "Tocantins"
+};
+
 function preencherDropdownsUFs() {
     const listaUFs = [
-        "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO",
-        "MA", "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR",
-        "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO"
+        "PE", "AL", "BA", "CE", "MA", "PB", "PI", "RN", "SE",
+        "AC", "AM", "AP", "DF", "ES", "GO", "MG", "MS", "MT",
+        "PA", "PR", "RJ", "RO", "RR", "RS", "SC", "SP", "TO"
     ];
 
     const $uf = $('#ufs_f_uf');
     $uf.empty();
     listaUFs.forEach(u => {
-        $uf.append($('<option></option>').attr('value', u).text(u === 'PE' ? 'PE (Pernambuco)' : u));
+        const nomeCompleto = NOMES_UFS_COMPLETOS[u] || u;
+        $uf.append($('<option></option>').attr('value', u).text(`${u} — ${nomeCompleto}`));
     });
     $uf.val('PE');
 
@@ -2628,17 +2638,19 @@ function aplicarIPCAUFs(valor, exercicio, isPct) {
 window.filtrarUFsLocal = function() {
     const uf = $('#ufs_f_uf').val() || 'PE';
 
-    // Atualiza cabeçalho visual e bandeira
-    const flagEl = document.getElementById('ufs_header_flag');
+    // Atualiza cabeçalho visual e bandeira oficial do estado selecionado
+    const flagEl = document.getElementById('ufs_img_bandeira') || document.getElementById('ufs_header_flag');
     if (flagEl) {
         flagEl.src = `images/bandeiras/${uf.toUpperCase()}.png`;
+        flagEl.alt = `Bandeira ${uf.toUpperCase()} (${NOMES_UFS_COMPLETOS[uf.toUpperCase()] || uf})`;
         flagEl.style.display = 'inline-block';
     }
 
     const titleEl = document.getElementById('ufs_header_titulo');
     if (titleEl) {
         let textoIPCA = window.usarValoresReaisUFs ? " (Valores Reais / IPCA)" : "";
-        titleEl.innerText = `BENCHMARKING DAS UFs — ${uf}${textoIPCA}`;
+        const nomeExtenso = NOMES_UFS_COMPLETOS[uf.toUpperCase()] ? `${NOMES_UFS_COMPLETOS[uf.toUpperCase()]} (${uf.toUpperCase()})` : uf;
+        titleEl.innerText = `BENCHMARKING DAS UFs — ${nomeExtenso}${textoIPCA}`;
     }
 
     const capaUfEl = document.getElementById('capa_nome_uf');

@@ -4,7 +4,7 @@ library(htmltools)
 ui_modulo_ufs <- function() {
   tags$div(
     class = "tab-pane relative",
-    `data-value` = "Comparativo UFs",
+    `data-value` = "UFs",
     id = "aba_ufs",
     
     tags$div(
@@ -24,17 +24,17 @@ ui_modulo_ufs <- function() {
         tags$h4("RELATÓRIO COMPARATIVO NACIONAL", class = "fw-bold text-secondary mt-4")
       ),
       
-      # CABEÇALHO PRINCIPAL
+            # CABEÇALHO PRINCIPAL COM CONTROLES INTEGRADOS NO TOPO & BANDEIRA OFICIAL
       tags$div(
         class = "d-flex justify-content-between align-items-center border-b-2 border-slate-200 pb-3 mb-4 flex-wrap gap-3",
         tags$div(
           class = "d-flex align-items-center gap-3",
           tags$img(
-            id = "ufs_header_flag",
+            id = "ufs_img_bandeira",
             src = "images/bandeiras/PE.png",
-            onerror = "this.style.display='none'",
-            alt = "Bandeira UF",
-            style = "height: 38px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.18);"
+            alt = "Bandeira Pernambuco",
+            class = "rounded-lg shadow-sm border border-slate-200 object-cover flex-shrink-0 transition-all",
+            style = "width: 52px; height: 36px;"
           ),
           tags$div(
             tags$h2(id = "ufs_header_titulo", class = "text-2xl font-black text-slate-800 uppercase tracking-tight mb-0", "BENCHMARKING DAS UFs — PERNAMBUCO (PE)"),
@@ -42,18 +42,56 @@ ui_modulo_ufs <- function() {
           )
         ),
         tags$div(
+          id = "controles_ufs",
           class = "d-flex align-items-center gap-2 d-print-none flex-wrap",
+          # Seletor de UF com Bandeiras
+          tags$div(
+            class = "d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200 shadow-2xs",
+            tags$i(class = "fas fa-flag text-[#ff5a26]"),
+            tags$select(
+              id = "ufs_f_uf", 
+              class = "form-select form-select-sm fw-bold text-slate-800 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0",
+              style = "max-width: 190px; font-size: 0.85rem; outline: none; box-shadow: none;"
+            )
+          ),
+          # Dropdown de Navegação Rápida pelos 5 Eixos
+          tags$div(
+            class = "dropdown",
+            tags$button(
+              class = "btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1.5 shadow-2xs",
+              type = "button",
+              `data-bs-toggle` = "dropdown",
+              `data-bs-display` = "static",
+              `aria-expanded` = "false",
+              title = "Navegar pelos 5 Eixos do Benchmarking",
+              style = "font-size: 0.8rem; height: 34px;",
+              tags$i(class = "fas fa-compass text-[#ff5a26]", style = "font-size: 0.85rem;"),
+              tags$span("Eixos"),
+              tags$i(class = "fas fa-chevron-down text-slate-400 ms-1", style = "font-size: 0.65rem;")
+            ),
+            tags$ul(
+              class = "dropdown-menu dropdown-menu-end shadow-xl border border-slate-200 py-2 text-xs rounded-2xl",
+              style = "min-width: 260px; z-index: 1060;",
+              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_conhecimento')", tags$i(class = "fas fa-lightbulb text-warning w-4 text-center"), "1. Conhecimento e Inovação")),
+              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_seguranca')", tags$i(class = "fas fa-shield-halved text-danger w-4 text-center"), "2. Segurança e Cidadania")),
+              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_saude')", tags$i(class = "fas fa-heartbeat text-primary w-4 text-center"), "3. Saúde e Qualidade de Vida")),
+              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_sustentabilidade')", tags$i(class = "fas fa-tree text-success w-4 text-center"), "4. Desenvolvimento Sustentável")),
+              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_gestao')", tags$i(class = "fas fa-scale-balanced text-purple-700 w-4 text-center"), "5. Gestão e Transparência"))
+            )
+          ),
+          # Alternador de IPCA
           tags$button(
             id = "ufs_btn_ipca",
-            class = "btn btn-outline-primary btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 shadow-none",
+            class = "btn btn-outline-dark btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 shadow-none",
             onclick = "window.toggleIPCAUFs()",
-            tags$i(class = "fas fa-coins"),
+            tags$i(class = "fas fa-coins text-amber-500"),
             tags$span(id = "ufs_btn_ipca_label", "Valores Nominais")
           ),
+          # Botão Salvar PDF
           tags$button(
-            class = "btn btn-danger btn-sm fw-bold shadow-sm rounded-pill px-3",
+            class = "btn btn-outline-dark btn-sm fw-bold shadow-sm rounded-pill px-3",
             onclick = "window.print()",
-            tags$i(class = "fas fa-file-pdf me-1"), "Salvar PDF"
+            tags$i(class = "fas fa-file-pdf me-1 text-danger"), "Salvar PDF"
           )
         )
       ),

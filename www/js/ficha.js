@@ -110,6 +110,7 @@ window.renderizarBadgeDataAtualizacao = function (txtAtualizacao) {
 
     // Atualiza apenas o texto mantendo o card sempre visível na tela
     $('#ficha_data_atualizacao_txt').text(texto);
+    $('#landing_data_atualizacao_txt').text(texto);
 };
 
 /* ==========================================================================
@@ -3357,11 +3358,12 @@ function renderizarEmendasFicha(dados) {
     renderBarChartEme('ficha_chart_eme_partidos', partidoGroup, '#16A085');
     renderBarChartEme('ficha_chart_eme_temas', temaGroup, '#8E44AD');
 
-    if ($.fn.DataTable.isDataTable('#ficha_tabela_emendas')) {
-        dtFichaEmendas = $('#ficha_tabela_emendas').DataTable();
-        dtFichaEmendas.clear().rows.add(dados).draw(false);
-    } else {
-        dtFichaEmendas = $('#ficha_tabela_emendas').DataTable({
+    if ($('#ficha_tabela_emendas').length) {
+        if ($.fn.DataTable.isDataTable('#ficha_tabela_emendas')) {
+            dtFichaEmendas = $('#ficha_tabela_emendas').DataTable();
+            dtFichaEmendas.clear().rows.add(dados).draw(false);
+        } else {
+            dtFichaEmendas = $('#ficha_tabela_emendas').DataTable({
             data: dados, 
             deferRender: true, 
             language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" }, 
@@ -3447,6 +3449,7 @@ function renderizarEmendasFicha(dados) {
                 }
             ]
         });
+        }
     }
 }
 
@@ -3496,6 +3499,11 @@ window.renderizarAbaMetadados = async function () {
         window.dadosMetadados = [];
     }
 
+    // Atualiza contador de indicadores no badge do topo
+    if (document.getElementById('metadados_contador_badge')) {
+        document.getElementById('metadados_contador_badge').innerText = `${window.dadosMetadados.length} Indicadores Cadastrados`;
+    }
+
     if ($.fn.DataTable.isDataTable('#tabela_metadados') && dtMetadados) {
         dtMetadados.clear().rows.add(window.dadosMetadados).draw(false);
     } else {
@@ -3503,12 +3511,55 @@ window.renderizarAbaMetadados = async function () {
             data: window.dadosMetadados,
             language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
             pageLength: 15,
+            order: [[0, 'asc'], [1, 'asc']],
             columns: [
-                { title: "Subdimensão", data: "subdimensao", className: "align-middle text-muted small fw-bold", defaultContent: "-" },
-                { title: "Indicador", data: "nm_indicador", className: "align-middle", defaultContent: "-", render: (d, t, r) => `<div class="fw-bold text-primary cursor-pointer d-flex align-items-center gap-2 hover:underline" onclick="window.abrirModalMetadado('${r.cd_indicador}')"><span>${d || '-'}</span> <i class="fas fa-external-link-alt text-xs opacity-50"></i></div>` },
-                { title: "Sigla", data: "cd_indicador", className: "align-middle", defaultContent: "-", render: d => `<code class="bg-slate-100 text-slate-800 px-2 py-1 rounded">${d || '-'}</code>` },
-                { title: "Natureza", data: "natureza", className: "align-middle small", defaultContent: "-" },
-                { title: "Limiar / Corte", data: "referencia_analise.limiar_corte", className: "align-middle text-sm", defaultContent: "-" }
+                { 
+                    title: "Subdimensão", 
+                    data: "subdimensao", 
+                    className: "align-middle", 
+                    defaultContent: "-",
+                    render: d => `<span class="badge rounded-pill bg-slate-100 text-slate-700 font-bold px-2.5 py-1 text-xs uppercase tracking-wide border border-slate-200">${d || '-'}</span>`
+                },
+                { 
+                    title: "Indicador", 
+                    data: "nm_indicador", 
+                    className: "align-middle", 
+                    defaultContent: "-", 
+                    render: (d, t, r) => `
+                        <div class="fw-bold cursor-pointer d-flex align-items-center gap-2 group" onclick="window.abrirModalMetadado('${r.cd_indicador}')">
+                            <span class="text-slate-900 group-hover:text-[#ff5a26] transition-colors font-bold">${d || '-'}</span>
+                            <i class="fas fa-arrow-up-right-from-square text-[11px] text-slate-400 group-hover:text-[#ff5a26] transition-colors"></i>
+                        </div>` 
+                },
+                { 
+                    title: "Sigla", 
+                    data: "cd_indicador", 
+                    className: "align-middle", 
+                    defaultContent: "-", 
+                    render: d => `<span class="badge rounded-md bg-orange-50 text-[#c2410c] border border-orange-200 font-mono text-xs px-2 py-0.5">${d || '-'}</span>` 
+                },
+                { 
+                    title: "Natureza", 
+                    data: "natureza", 
+                    className: "align-middle", 
+                    defaultContent: "-",
+                    render: d => {
+                        const norm = String(d || '').toLowerCase();
+                        let bg = 'bg-slate-100 text-slate-700 border-slate-200';
+                        if (norm.includes('percentual') || norm.includes('taxa')) bg = 'bg-blue-50 text-blue-700 border-blue-200';
+                        else if (norm.includes('moeda') || norm.includes('brl') || norm.includes('usd')) bg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                        else if (norm.includes('indice')) bg = 'bg-purple-50 text-purple-700 border-purple-200';
+                        else if (norm.includes('absoluto')) bg = 'bg-amber-50 text-amber-700 border-amber-200';
+                        return `<span class="badge rounded-pill ${bg} border px-2.5 py-1 text-xs font-semibold">${d || '-'}</span>`;
+                    }
+                },
+                { 
+                    title: "Limiar / Corte", 
+                    data: "referencia_analise.limiar_corte", 
+                    className: "align-middle text-sm", 
+                    defaultContent: "-",
+                    render: d => `<span class="text-xs text-slate-600 font-medium">${d || '<span class="text-slate-400 italic">Não especificado</span>'}</span>`
+                }
             ]
         });
     }

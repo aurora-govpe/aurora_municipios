@@ -23,32 +23,58 @@ ui_modulo_ficha <- function() {
         tags$h4(id = "capa_tipo_relatorio", class = "fw-bold text-secondary mt-4", "RELATÓRIO EXECUTIVO")
       ),
       
-      # SELETOR DE SUB-ABAS DE MUNICÍPIOS (FICHA MUNICIPAL vs COMPARATIVO MUNICIPAL)
+      # CONTROLES SUPERIORES: SELETOR DE SUB-ABAS E FILTRO DE MUNICÍPIO
       tags$div(
         class = "d-flex align-items-center justify-content-between mb-3 pb-2 border-b border-slate-200 flex-wrap gap-2 d-print-none",
         tags$div(
-          class = "d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 shadow-2xs",
-          tags$button(
-            id = "btn_subaba_ficha",
-            type = "button",
-            class = "btn btn-sm rounded-pill px-3 py-1 font-bold text-xs shadow-xs btn-primary text-white",
-            onclick = "window.trocarSubabaMunicipios('ficha')",
-            title = "Visualizar Ficha Municipal Completa",
-            tags$i(class = "fas fa-file-invoice me-1.5"), "Ficha Municipal"
+          class = "d-flex align-items-center gap-2 flex-wrap",
+          # Alternador Ficha vs Comparativo
+          tags$div(
+            class = "d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 shadow-2xs",
+            tags$button(
+              id = "btn_subaba_ficha",
+              type = "button",
+              class = "btn btn-sm rounded-pill px-3 py-1 font-bold text-xs shadow-xs btn-primary text-white",
+              onclick = "window.trocarSubabaMunicipios('ficha')",
+              title = "Visualizar Ficha Municipal Completa",
+              tags$i(class = "fas fa-file-invoice me-1.5"), "Ficha Municipal"
+            ),
+            tags$button(
+              id = "btn_subaba_comparacao",
+              type = "button",
+              class = "btn btn-sm rounded-pill px-3 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
+              onclick = "window.trocarSubabaMunicipios('comparacao')",
+              title = "Comparar 2 ou 3 Municípios Multidimensionalmente",
+              tags$i(class = "fas fa-code-compare me-1.5"), "Comparativo Municipal"
+            )
           ),
-          tags$button(
-            id = "btn_subaba_comparacao",
-            type = "button",
-            class = "btn btn-sm rounded-pill px-3 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
-            onclick = "window.trocarSubabaMunicipios('comparacao')",
-            title = "Comparar 2 ou 3 Municípios Multidimensionalmente",
-            tags$i(class = "fas fa-code-compare me-1.5"), "Comparativo Municipal"
+          # Filtro de Município Individual no Topo
+          tags$div(
+            id = "box_filtro_municipio_individual",
+            class = "d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200 shadow-2xs",
+            tags$i(class = "fas fa-location-dot text-[#ff5a26]"),
+            tags$select(
+              id = "ficha_f_municipio", 
+              class = "form-select-municipio",
+              `data-live-search` = "true",
+              `data-live-search-normalize` = "true",
+              `data-live-search-placeholder` = "Buscar município...",
+              `data-none-results-text` = "Nenhum município encontrado",
+              `data-size` = "10",
+              `data-style` = "btn-sm btn-light fw-bold text-slate-800 border-0 bg-transparent py-0 px-1 shadow-none",
+              `data-width` = "240px"
+            )
           )
         ),
         tags$div(
           class = "d-flex align-items-center gap-2",
+          tags$button(
+            class = "btn btn-outline-dark btn-sm fw-bold shadow-sm rounded-pill px-3 transition-all",
+            onclick = "window.print()",
+            tags$i(class = "fas fa-file-pdf me-1 text-danger"), "Salvar PDF"
+          ),
           tags$span(class = "badge bg-orange-50 text-orange-700 border border-orange-200 text-xs font-bold rounded-pill px-3 py-1",
-            tags$i(class = "fas fa-compass me-1 text-[#ff5a26]"), "Módulo de Municípios"
+            tags$i(class = "fas fa-compass me-1 text-[#ff5a26]"), "184 Municípios"
           )
         )
       ),
@@ -72,11 +98,7 @@ ui_modulo_ficha <- function() {
             class = "d-flex align-items-center gap-3 mb-2 flex-wrap",
             tags$h1(id = "ficha_nome_municipio", class = "display-5 fw-black text-dark mb-0 text-uppercase tracking-tight", "MUNICÍPIO"),
             
-            tags$button(
-              class = "btn btn-outline-primary btn-sm fw-bold shadow-sm rounded-pill px-3 transition-all d-print-none",
-              onclick = "window.baixarDadosCompletosFicha()",
-              tags$i(class = "fas fa-download me-1"), "Dados"
-            ),
+            
             
             tags$button(
               class = "btn btn-primary btn-sm fw-bold shadow-sm rounded-pill px-3 transition-all d-print-none",
@@ -90,12 +112,7 @@ ui_modulo_ficha <- function() {
               tags$i(class = "fas fa-file-pdf me-1 text-danger"), "Relatório Completo"
             ),
             
-            tags$span(
-              id = "ficha_data_atualizacao_container",
-              class = "badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-3 py-1.5 text-xs font-semibold d-inline-flex align-items-center ms-auto d-print-none",
-              tags$i(class = "fas fa-clock me-1.5 text-primary"),
-              tags$span(id = "ficha_data_atualizacao_txt", "Atualizado em: -")
-            )
+            
           ),
           
           tags$div(
@@ -706,10 +723,7 @@ ui_modulo_ficha <- function() {
         tags$div(class = "col-md-4", tags$div(class = "bg-white rounded-2xl border border-slate-100 shadow-sm p-4 h-100", tags$h6(class = "font-extrabold text-slate-600 uppercase text-xs tracking-wider mb-2", "Recursos por Tema"), tags$div(id = "ficha_chart_eme_temas", style = "width: 100%; height: 250px;")))
       ),
       
-      tags$div(
-        class = "bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-5",
-        tags$table(id = "ficha_tabela_emendas", class = "table w-100")
-      )
+
       ), # Fim de ficha_bloco_secoes_detalhadas
       ), # Fim de subaba_ficha_municipal
       

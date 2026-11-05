@@ -129,7 +129,16 @@ ui_modulo_landing <- function() {
             tags$h3(class = "text-xl font-black text-slate-800 uppercase tracking-tight mb-0", tags$i(class = "fas fa-chart-line text-primary me-2"), "Grandes Números de Pernambuco"),
             tags$p(class = "text-xs font-bold text-slate-500 mb-0", "Principais macroindicadores socioeconômicos e territoriais consolidados do Estado")
           ),
-          tags$span(class = "badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-3 py-1 text-xs font-bold", "Base Oficial")
+                    tags$div(
+            class = "d-flex align-items-center gap-2",
+            tags$span(
+              id = "tag_atualizacao_dados",
+              class = "badge bg-white text-slate-700 border border-slate-200 rounded-pill px-3 py-1.5 text-xs font-bold shadow-2xs d-inline-flex align-items-center gap-1.5",
+              tags$i(class = "fas fa-clock text-[#ff5a26]"),
+              tags$span(id = "landing_data_atualizacao_txt", "Atualizado em: Novembro/2026")
+            ),
+            tags$span(class = "badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-3 py-1 text-xs font-bold", "Base Oficial")
+          )
         ),
         
         tags$div(
@@ -299,15 +308,15 @@ ui_modulo_landing <- function() {
                 tags$i(class = "fas fa-chart-column")
               ),
               tags$span(class = "badge bg-indigo-50 text-indigo-800 border border-indigo-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1", "Escala Inter-Regional / Nacional"),
-              tags$h4(class = "font-black text-slate-800 text-lg mb-2", "Comparativo UFs (Benchmarking)"),
+              tags$h4(class = "font-black text-slate-800 text-lg mb-2", "UFs (Benchmarking Nacional)"),
               tags$p(class = "text-slate-600 text-sm leading-relaxed mb-4", 
                      "Benchmarking das 27 Unidades da Federação estruturado em 5 Eixos Estratégicos: Conhecimento e Inovação (IDEB), Segurança e Cidadania, Saúde e Qualidade de Vida, Desenvolvimento Sustentável e Gestão Fiscal.")
             ),
             tags$button(
               type = "button",
               class = "btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2",
-              onclick = "window.mudarAbaAurora('Comparativo UFs', null)",
-              tags$i(class = "fas fa-arrow-right"), "Abrir Comparativo Nacional"
+              onclick = "window.mudarAbaAurora('UFs', null)",
+              tags$i(class = "fas fa-arrow-right"), "Explorar UFs"
             )
           ),
           
@@ -420,7 +429,7 @@ ui_modulo_landing <- function() {
               tags$p(class = "text-xs text-slate-600 leading-relaxed mb-3", 
                      "Compare Pernambuco frente aos outros estados do Nordeste e do Brasil em segurança pública, educação básica (IDEB), investimentos em C&T e equilíbrio fiscal.")
             ),
-            tags$button(class = "btn btn-xs btn-outline-indigo border-indigo-500 text-indigo-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-indigo-50", onclick = "window.mudarAbaAurora('Comparativo UFs', null)", "Ir para Comparativo UFs")
+            tags$button(class = "btn btn-xs btn-outline-indigo border-indigo-500 text-indigo-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-indigo-50", onclick = "window.mudarAbaAurora('UFs', null)", "Ir para UFs")
           )
         )
       )

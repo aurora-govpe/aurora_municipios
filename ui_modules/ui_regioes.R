@@ -25,15 +25,47 @@ ui_modulo_regioes <- function() {
         tags$h4("RELATÓRIO EXECUTIVO", class = "fw-bold text-secondary mt-4")
       ),
       
-      # CABEÇALHO PRINCIPAL
+      # CABEÇALHO PRINCIPAL COM CONTROLES INTEGRADOS NO TOPO
       tags$div(
-        class = "d-flex justify-content-between align-items-center border-b-2 border-slate-200 pb-3 mb-4",
+        class = "d-flex justify-content-between align-items-center border-b-2 border-slate-200 pb-3 mb-4 flex-wrap gap-3",
         tags$div(
           tags$h2(id = "regional_titulo_rd", class = "text-2xl font-black text-slate-800 uppercase tracking-tight mb-0", "REGIÃO DE DESENVOLVIMENTO"),
           tags$p(class = "text-sm font-bold text-slate-500 mb-0", "Relatório de Diagnóstico Territorial — Arquitetura por Clusters Tipológicos")
         ),
         tags$div(
-          class = "d-flex gap-2 d-print-none",
+          id = "controles_regioes",
+          class = "d-flex align-items-center gap-2 flex-wrap d-print-none",
+          # Alternador RD vs Consórcio
+          tags$div(
+            class = "d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 shadow-2xs",
+            tags$button(
+              id = "regioes_btn_tipo_rd",
+              type = "button",
+              class = "btn btn-xs rounded-pill px-3 py-1 font-bold text-xs shadow-xs btn-primary text-white",
+              onclick = "window.trocarTipoAgrupamentoRegioes('rd')",
+              title = "Filtrar por Região de Desenvolvimento",
+              tags$i(class = "fas fa-layer-group me-1"), "RD"
+            ),
+            tags$button(
+              id = "regioes_btn_tipo_consorcio",
+              type = "button",
+              class = "btn btn-xs rounded-pill px-3 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
+              onclick = "window.trocarTipoAgrupamentoRegioes('consorcio')",
+              title = "Filtrar por Consórcios Intermunicipais",
+              tags$i(class = "fas fa-handshake me-1"), "Consórcios"
+            )
+          ),
+          # Seletor de Região / Consórcio
+          tags$div(
+            class = "d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200 shadow-2xs",
+            tags$i(id = "regioes_filtro_icone", class = "fas fa-location-dot text-[#ff5a26]"),
+            tags$select(
+              id = "regioes_f_rd", 
+              class = "form-select form-select-sm fw-bold text-slate-800 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0",
+              style = "max-width: 260px; font-size: 0.85rem; outline: none; box-shadow: none;"
+            )
+          ),
+          # Botão Salvar PDF
           tags$button(
             class = "btn btn-outline-dark btn-sm fw-bold shadow-sm rounded-pill px-3 transition-all",
             onclick = "window.print()",

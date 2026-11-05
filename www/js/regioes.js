@@ -842,30 +842,71 @@ function renderizarModuloRegional(data) {
         regioesObserver = null;
     }
 
-    // Renderiza todos os clusters (0 a 5) imediatamente sem travar spinners
-    [0, 1, 2, 3, 4, 5].forEach(cNum => {
-        try {
-            renderizarClusterEspecifico(cNum);
-        } catch (eClust) {
-            console.error(`[Regiões] Erro ao renderizar cluster ${cNum}:`, eClust);
-            ocultarSpinnerRD(`rd_spinner_map_cluster${cNum}`);
-            ocultarSpinnerRD(`rd_spinner_chart_cluster${cNum}`);
-            if (cNum > 0) ocultarSpinnerRD(`rd_spinner_hist_cluster${cNum}`);
-        }
-    });
-
+    // 1. Renderiza IMEDIATAMENTE apenas o Cluster 0 (topo visível na tela)
     try {
-        renderizarMatrizMunicipiosRD(muns, ind);
-        matrizRenderizada = true;
-    } catch (eMatriz) {
-        console.error('[Regiões] Erro ao renderizar matriz:', eMatriz);
-        ocultarSpinnerRD('rd_spinner_matriz');
+        renderizarClusterEspecifico(0);
+    } catch (eClust0) {
+        console.error("[Regiões] Erro ao renderizar cluster 0:", eClust0);
+        ocultarSpinnerRD("rd_spinner_map_cluster0");
+        ocultarSpinnerRD("rd_spinner_chart_cluster0");
     }
 
-    // Garante que nenhum spinner fique ativo
+    // 2. LAZY LOADING PROGRESSIVO: Clusters 1 a 5 e Matriz só inicializam quando entram no viewport
+    if ('IntersectionObserver' in window) {
+        regioesObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const targetId = entry.target.id;
+                    const matchCluster = targetId.match(/cluster(\d)/);
+                    if (matchCluster) {
+                        const num = parseInt(matchCluster[1]);
+                        if (!clusterRenderizado[num]) {
+                            renderizarClusterEspecifico(num);
+                        }
+                    } else if (targetId.includes('matriz') || targetId.includes('tabela')) {
+                        if (!matrizRenderizada) {
+                            renderizarMatrizMunicipiosRD(muns, ind);
+                            matrizRenderizada = true;
+                        }
+                    }
+                    regioesObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            root: document.querySelector('.aurora-content-area') || null,
+            rootMargin: '350px 0px',
+            threshold: 0.01
+        });
+
+        // Observa os blocos de cada cluster
+        [1, 2, 3, 4, 5].forEach(num => {
+            const el = document.getElementById(`rd_map_cluster${num}`);
+            if (el) regioesObserver.observe(el);
+        });
+
+        const elMatriz = document.getElementById('rd_tabela_matriz') || document.getElementById('rd_container_matriz_muns');
+        if (elMatriz) regioesObserver.observe(elMatriz);
+
+    } else {
+        // Fallback progressivo sem travar a thread principal
+        [1, 2, 3, 4, 5].forEach((num, idx) => {
+            setTimeout(() => {
+                if (!clusterRenderizado[num]) renderizarClusterEspecifico(num);
+            }, (idx + 1) * 150);
+        });
+        setTimeout(() => {
+            if (!matrizRenderizada) {
+                renderizarMatrizMunicipiosRD(muns, ind);
+                matrizRenderizada = true;
+            }
+        }, 1000);
+    }
+
+    // Spinners do cluster 0 são liberados
     setTimeout(() => {
-        ocultarTodosSpinnersRD();
-    }, 200);
+        ocultarSpinnerRD("rd_spinner_map_cluster0");
+        ocultarSpinnerRD("rd_spinner_chart_cluster0");
+    }, 150);
 }
 
 // Garante hidratação de todos os elementos para impressão em PDF
@@ -1904,7 +1945,7 @@ function renderizarMapaClusterRD(cNum, containerId, legendaId, siglaChave, geojs
             if (cNum === 0) {
                 instMapa.setPaintProperty('rd_cluster_line_' + containerId, 'line-color', [
                     'case',
-                    ['boolean', ['get', 'pertence_rd'], false], '#ff5a26',
+                    ['boolean', ['get', 'pertence_rd'], false], '#1c1917',
                     '#94A3B8'
                 ]);
                 instMapa.setPaintProperty('rd_cluster_line_' + containerId, 'line-width', [
@@ -1952,9 +1993,9 @@ function renderizarMapaClusterRD(cNum, containerId, legendaId, siglaChave, geojs
             paint: { 
                 'line-color': cNum === 0 ? [
                     'case',
-                    ['boolean', ['get', 'pertence_rd'], false], '#ff5a26',
+                    ['boolean', ['get', 'pertence_rd'], false], '#1c1917',
                     '#94A3B8'
-                ] : '#ff5a26', 
+                ] : '#1c1917', 
                 'line-width': cNum === 0 ? [
                     'case',
                     ['boolean', ['get', 'pertence_rd'], false], 2.2,
@@ -2000,13 +2041,13 @@ function renderizarMapaClusterRD(cNum, containerId, legendaId, siglaChave, geojs
             let arranjoTag = '';
             if (cNum === 0 && p.arranjo_nome) {
                 const badgeText = isCons ? 'Consorciado' : 'RD Selecionada';
-                const badgeRD = p.pertence_rd ? `<span style="background:#ff5a26; color:#fff; font-size:9px; padding:2px 6px; border-radius:10px; margin-left:4px;">${badgeText}</span>` : '';
+                const badgeRD = p.pertence_rd ? `<span style="background:#1c1917; color:#fff; font-size:9px; padding:2px 6px; border-radius:10px; margin-left:4px;">${badgeText}</span>` : '';
                 arranjoTag = `<div style="font-size: 10px; color: #8E44AD; font-weight: 800; margin-bottom: 6px; text-transform: uppercase;"><i class="fas fa-network-wired"></i> Polo: ${p.arranjo_nome} ${badgeRD}<br/><span style="color:#64748b;">Nível: ${p.hierarquia || 'N/I'}</span></div>`;
             }
 
             popup.setLngLat(e.lngLat).setHTML(`
                 <div style="font-family: Jost, sans-serif; padding: 4px; min-width: 200px;">
-                  <div style="font-weight: 900; color: #ff5a26; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 8px; text-transform: uppercase; font-size: 13px;">${p.municipio || p.name}</div>
+                  <div style="font-weight: 900; color: #1c1917; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 8px; text-transform: uppercase; font-size: 13px;">${p.municipio || p.name}</div>
                   ${arranjoTag}
                   <div style="background-color: #f0f9ff; padding: 6px 8px; border-radius: 6px; border: 1px solid #bae6fd;">
                     <span style="color:#0369a1; font-weight:800; font-size: 12px;">${obterNomeAmigavel(siglaChave)}:</span> 

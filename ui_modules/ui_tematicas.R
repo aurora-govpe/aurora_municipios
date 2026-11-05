@@ -25,25 +25,25 @@ ui_modulo_tematicas <- function() {
               id = "btn_pauta_resumo_cozinhas",
               class = "btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all",
               onclick = "window.alternarPautaResumos('cozinhas', this)",
-              tags$i(class = "fas fa-utensils me-1.5 text-amber-500"), "Superação da Pobreza, Segurança Alimentar e Proteção Social"
+              tags$i(class = "fas fa-utensils me-1.5 text-slate-900"), "Superação da Pobreza, Segurança Alimentar e Proteção Social"
             ),
             tags$button(
               id = "btn_pauta_resumo_aguas",
               class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
               onclick = "window.alternarPautaResumos('aguas', this)",
-              tags$i(class = "fas fa-droplet me-1.5 text-sky-500"), "Segurança Hídrica e Saneamento Básico"
+              tags$i(class = "fas fa-droplet me-1.5 text-slate-900"), "Segurança Hídrica e Saneamento Básico"
             ),
             tags$button(
               id = "btn_pauta_resumo_capag",
               class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
               onclick = "window.alternarPautaResumos('capag', this)",
-              tags$i(class = "fas fa-building-columns me-1.5 text-purple-600"), "Governança e Sustentabilidade Fiscal, Parcerias e Apoio aos Municípios"
+              tags$i(class = "fas fa-building-columns me-1.5 text-slate-900"), "Governança e Sustentabilidade Fiscal, Parcerias e Apoio aos Municípios"
             ),
             tags$button(
               id = "btn_pauta_resumo_estradas",
               class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
               onclick = "window.alternarPautaResumos('estradas', this)",
-              tags$i(class = "fas fa-road me-1.5 text-indigo-500"), "Conectividade Logística, Eixos Viários e Mobilidade Regional"
+              tags$i(class = "fas fa-road me-1.5 text-slate-900"), "Conectividade Logística, Eixos Viários e Mobilidade Regional"
             )
           )
         )
@@ -87,7 +87,7 @@ ui_modulo_tematicas <- function() {
           
           # SEÇÃO DE KPIS: COZINHAS COMUNITÁRIAS
           tags$div(class = "d-flex align-items-center gap-2 mb-2",
-            tags$i(class = "fas fa-utensils text-amber-500"),
+            tags$i(class = "fas fa-utensils text-slate-900"),
             tags$h6(class = "font-bold text-slate-700 text-xs uppercase tracking-wider mb-0", "Rede de Cozinhas Comunitárias")
           ),
           tags$div(
@@ -139,7 +139,7 @@ ui_modulo_tematicas <- function() {
             ),
             tags$div(
               class = "aurora-kpi-card",
-              tags$div(class = "aurora-kpi-header", tags$span("Investimento Acumulado"), tags$div(class = "aurora-kpi-icon text-purple-600 bg-purple-50", tags$i(class = "fas fa-hand-holding-dollar"))),
+              tags$div(class = "aurora-kpi-header", tags$span("Investimento Acumulado"), tags$div(class = "aurora-kpi-icon text-slate-900 bg-purple-50", tags$i(class = "fas fa-hand-holding-dollar"))),
               tags$div(class = "aurora-kpi-body", tags$span(id = "maes_kpi_investimento", class = "aurora-kpi-number text-purple-700", "-")),
               tags$div(class = "aurora-kpi-footer", "Recursos Pagos")
             ),
@@ -184,7 +184,7 @@ ui_modulo_tematicas <- function() {
             ),
             tags$div(
               class = "aurora-kpi-card",
-              tags$div(class = "aurora-kpi-header", tags$span("Saldo a Pagar"), tags$div(class = "aurora-kpi-icon text-purple-600 bg-purple-50", tags$i(class = "fas fa-hourglass-half"))),
+              tags$div(class = "aurora-kpi-header", tags$span("Saldo a Pagar"), tags$div(class = "aurora-kpi-icon text-slate-900 bg-purple-50", tags$i(class = "fas fa-hourglass-half"))),
               tags$div(class = "aurora-kpi-body", tags$span(id = "cofin_kpi_a_pagar", class = "aurora-kpi-number text-purple-700", "-")),
               tags$div(class = "aurora-kpi-footer", "Parcelas Futuras")
             ),
@@ -231,7 +231,7 @@ ui_modulo_tematicas <- function() {
                   id = "btn_visao_sem_fome_ivcad",
                   class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
                   onclick = "window.alternarVisaoSemFome('ivcad', this)",
-                  tags$i(class = "fas fa-shield-heart me-1.5 text-indigo-500"), "Vulnerabilidade (IVCAD)"
+                  tags$i(class = "fas fa-shield-heart me-1.5 text-slate-900"), "Vulnerabilidade (IVCAD)"
                 )
               ),
               
@@ -395,7 +395,7 @@ ui_modulo_tematicas <- function() {
               tags$span(
                 id = "cozinhas_badge_total_muns",
                 class = "badge bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 text-xs rounded-pill font-bold",
-                tags$i(class = "fas fa-map-pin text-amber-500 me-1"), "185 Municípios Mapeados"
+                tags$i(class = "fas fa-map-pin text-slate-900 me-1"), "185 Municípios Mapeados"
               )
             ),
             tags$div(
@@ -559,7 +559,7 @@ ui_modulo_tematicas <- function() {
               ),
               tags$div(
                 class = "aurora-kpi-card col-span-2 md:col-span-1",
-                tags$div(class = "aurora-kpi-header", tags$span("Desembolso Futuro"), tags$div(class = "aurora-kpi-icon text-purple-600 bg-purple-50", tags$i(class = "fas fa-hand-holding-dollar"))),
+                tags$div(class = "aurora-kpi-header", tags$span("Desembolso Futuro"), tags$div(class = "aurora-kpi-icon text-slate-900 bg-purple-50", tags$i(class = "fas fa-hand-holding-dollar"))),
                 tags$div(class = "aurora-kpi-body", tags$span(id = "aguas_kpi_desembolso", class = "aurora-kpi-number text-purple-700", "R$ 7,7 Bi")),
                 tags$div(class = "aurora-kpi-footer", "Contratos em Andamento")
               )
@@ -765,7 +765,7 @@ ui_modulo_tematicas <- function() {
           
           # SEÇÃO DE KPIS PADRONIZADOS
           tags$div(class = "d-flex align-items-center gap-2 mb-2",
-            tags$i(class = "fas fa-chart-pie text-indigo-500"),
+            tags$i(class = "fas fa-chart-pie text-slate-900"),
             tags$h6(class = "font-bold text-slate-700 text-xs uppercase tracking-wider mb-0", "Panorama Geral das Obras Rodoviárias")
           ),
           tags$div(
@@ -846,7 +846,7 @@ ui_modulo_tematicas <- function() {
                 # Seletor de Rodovia
                 tags$div(
                   class = "d-flex align-items-center gap-2 bg-white rounded-pill px-3 py-1 border border-slate-200 shadow-xs",
-                  tags$i(class = "fas fa-road text-indigo-500 text-xs"),
+                  tags$i(class = "fas fa-road text-slate-900 text-xs"),
                   tags$select(
                     id = "select_filtro_rodovia",
                     class = "form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer",

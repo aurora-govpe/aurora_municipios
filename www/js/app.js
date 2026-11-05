@@ -144,7 +144,7 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
     alvo = document.getElementById('aba_tematicas');
   } else if (norm.includes('municip') || norm.includes('ficha')) {
     alvo = document.getElementById('aba_ficha');
-  } else if (norm.includes('uf') || norm.includes('comparativ') || norm.includes('bench')) {
+  } else if (norm.includes('uf') || norm.includes('uf') || norm.includes('comparativ') || norm.includes('bench')) {
     alvo = document.getElementById('aba_ufs');
   } else if (norm.includes('meta')) {
     alvo = document.getElementById('aba_metadados');
@@ -199,7 +199,7 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
   const isAbaRegioes = norm.includes('regio');
   const isAbaProgramas = norm.includes('programa') || norm.includes('temat') || norm.includes('pauta');
   const isAbaMunicipios = norm.includes('municip') || norm.includes('ficha');
-  const isAbaUFs = norm.includes('uf') || norm.includes('comparativ') || norm.includes('bench');
+  const isAbaUFs = norm.includes('uf') || norm.includes('uf') || norm.includes('comparativ') || norm.includes('bench');
   const isAbaMetadados = norm.includes('meta');
 
   if (controlesRegional) {

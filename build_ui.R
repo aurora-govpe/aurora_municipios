@@ -98,8 +98,8 @@ build_ui <- function() {
         ),
         tags$button(
           class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
-          onclick = "mudarAbaAurora('Comparativo UFs', this)",
-          tags$i(class = "fas fa-chart-column me-1"), "Comparativo UFs"
+          onclick = "mudarAbaAurora('UFs', this)",
+          tags$i(class = "fas fa-chart-column me-1"), "UFs"
         ),
         tags$button(
           class = "btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0",
@@ -109,156 +109,10 @@ build_ui <- function() {
       )
     ),
     
-    tags$div(
+        tags$div(
       class = "d-flex align-items-center gap-2 flex-nowrap flex-shrink-0 d-print-none",
-      # CONTROLES DA ABA UFs (Benchmarking)
-      tags$div(
-        id = "controles_ufs",
-        class = "d-none align-items-center gap-2 flex-nowrap",
-        tags$div(
-          class = "d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200",
-          tags$i(class = "fas fa-flag text-primary"),
-          tags$select(
-            id = "ufs_f_uf", 
-            class = "form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0",
-            style = "max-width: 170px; font-size: 0.85rem; outline: none; box-shadow: none;"
-          )
-        ),
-        tags$div(
-          class = "dropdown d-none d-md-block",
-          tags$button(
-            class = "btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 shadow-sm",
-            type = "button",
-            `data-bs-toggle` = "dropdown",
-            `data-bs-display` = "static",
-            `aria-expanded` = "false",
-            title = "Navegar pelos 5 Eixos do Benchmarking",
-            style = "font-size: 0.8rem; height: 32px;",
-            tags$i(class = "fas fa-compass text-primary", style = "font-size: 0.85rem;"),
-            tags$span("Eixos"),
-            tags$i(class = "fas fa-chevron-down text-slate-400 ms-1", style = "font-size: 0.65rem;")
-          ),
-          tags$ul(
-            class = "dropdown-menu dropdown-menu-end shadow-xl border border-slate-200 py-2 text-xs rounded-2xl",
-            style = "min-width: 250px; z-index: 1060;",
-            tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_conhecimento')", tags$i(class = "fas fa-lightbulb text-warning w-4 text-center"), "1. Conhecimento e Inovação")),
-            tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_seguranca')", tags$i(class = "fas fa-shield-halved text-danger w-4 text-center"), "2. Segurança e Cidadania")),
-            tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_saude')", tags$i(class = "fas fa-heartbeat text-primary w-4 text-center"), "3. Saúde e Qualidade de Vida")),
-            tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_sustentabilidade')", tags$i(class = "fas fa-tree text-success w-4 text-center"), "4. Desenvolvimento Sustentável")),
-            tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_ufs_gestao')", tags$i(class = "fas fa-scale-balanced text-purple-700 w-4 text-center"), "5. Gestão e Transparência"))
-          )
-        )
-      ),
-      
-      # CONTROLES DA ABA REGIÕES
-      tags$div(
-        id = "controles_regioes",
-        class = "d-none align-items-center gap-2 flex-nowrap",
-        tags$div(
-          class = "d-inline-flex bg-slate-100 p-0.5 rounded-pill border border-slate-200",
-          tags$button(
-            id = "regioes_btn_tipo_rd",
-            type = "button",
-            class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs shadow-xs btn-primary text-white",
-            onclick = "window.trocarTipoAgrupamentoRegioes('rd')",
-            title = "Filtrar por Região de Desenvolvimento",
-            tags$i(class = "fas fa-layer-group me-1"), "RD"
-          ),
-          tags$button(
-            id = "regioes_btn_tipo_consorcio",
-            type = "button",
-            class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
-            onclick = "window.trocarTipoAgrupamentoRegioes('consorcio')",
-            title = "Filtrar por Consórcios Intermunicipais",
-            tags$i(class = "fas fa-handshake me-1"), "Consórcios"
-          )
-        ),
-        tags$div(
-          class = "d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200",
-          tags$i(id = "regioes_filtro_icone", class = "fas fa-location-dot text-primary"),
-          tags$select(
-            id = "regioes_f_rd", 
-            class = "form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0",
-            style = "max-width: 170px; font-size: 0.8rem; outline: none; box-shadow: none;"
-          )
-        )
-      ),
-      
-      # CONTROLES DA ABA MUNICÍPIOS
-      tags$div(
-        id = "controles_ficha_municipal",
-        class = "d-none align-items-center gap-2 flex-nowrap",
-        tags$div(
-          class = "d-inline-flex bg-slate-100 p-0.5 rounded-pill border border-slate-200",
-          tags$button(
-            id = "nav_btn_subaba_ficha",
-            type = "button",
-            class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs shadow-xs btn-primary text-white",
-            onclick = "window.trocarSubabaMunicipios('ficha')",
-            title = "Ficha Municipal Individual",
-            tags$i(class = "fas fa-file-invoice me-1"), "Ficha"
-          ),
-          tags$button(
-            id = "nav_btn_subaba_comparacao",
-            type = "button",
-            class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
-            onclick = "window.trocarSubabaMunicipios('comparacao')",
-            title = "Comparativo Municipal (2 ou 3 Municípios)",
-            tags$i(class = "fas fa-code-compare me-1"), "Comparar"
-          )
-        ),
-        tags$div(
-          id = "box_filtro_municipio_individual",
-          class = "d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200",
-          tags$i(class = "fas fa-location-dot text-primary"),
-          tags$select(
-            id = "ficha_f_municipio", 
-            class = "form-select-municipio",
-            `data-live-search` = "true",
-            `data-live-search-normalize` = "true",
-            `data-live-search-placeholder` = "Buscar município...",
-            `data-none-results-text` = "Nenhum município encontrado",
-            `data-size` = "10",
-            `data-style` = "btn-sm btn-light fw-bold text-slate-700 border-0 bg-transparent py-0 px-1 shadow-none",
-            `data-width` = "230px"
-          )
-        ),
-        tags$div(
-          id = "ficha_navbar_nav",
-          class = "d-none d-md-flex align-items-center gap-1 bg-slate-100 p-1 rounded-pill border border-slate-200 shadow-sm",
-          tags$div(
-            class = "dropdown",
-            tags$button(
-              class = "btn btn-sm btn-white bg-white border border-slate-200 text-slate-700 fw-bold rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 shadow-sm",
-              type = "button",
-              `data-bs-toggle` = "dropdown",
-              `data-bs-display` = "static",
-              `aria-expanded` = "false",
-              title = "Navegar pelas Seções da Ficha",
-              style = "font-size: 0.8rem; height: 32px; transition: all 0.2s;",
-              tags$i(class = "fas fa-compass text-primary", style = "font-size: 0.85rem;"),
-              tags$span("Seções"),
-              tags$i(class = "fas fa-chevron-down text-slate-400 ms-1", style = "font-size: 0.65rem;")
-            ),
-            tags$ul(
-              class = "dropdown-menu dropdown-menu-end shadow-xl border border-slate-200 py-2 text-xs rounded-2xl",
-              style = "min-width: 280px; z-index: 1060;",
-              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_caracterizacao')", tags$i(class = "fas fa-city text-primary w-4 text-center"), "1. Caracterização")),
-              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_resumo_executivo')", tags$i(class = "fas fa-file-lines text-primary w-4 text-center"), "2. Resumo Executivo (5 Dimensões)")),
-              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_diagnostico_regional')", tags$i(class = "fas fa-compass text-purple-600 w-4 text-center"), "3. Diagnóstico de Des. Regional")),
-              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_demografia')", tags$i(class = "fas fa-users text-blue-500 w-4 text-center"), "4. Demografia")),
-              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_indicadores_sociais')", tags$i(class = "fas fa-shield-halved text-emerald-600 w-4 text-center"), "5. Indicadores Sociais")),
-              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_indicadores_economicos')", tags$i(class = "fas fa-lightbulb text-amber-500 w-4 text-center"), "6. Indicadores Econômicos")),
-              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_tecnologia_inovacao')", tags$i(class = "fas fa-microchip text-indigo-500 w-4 text-center"), "7. Tecnologia e Inovação")),
-              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_meio_ambiente')", tags$i(class = "fas fa-tree text-green-600 w-4 text-center"), "8. Meio Ambiente")),
-              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_fiscal')", tags$i(class = "fas fa-calculator text-cyan-600 w-4 text-center"), "9. Fiscal")),
-              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_iniciativas_regionais')", tags$i(class = "fas fa-tasks text-teal-600 w-4 text-center"), "10. Ações Governamentais e Convênios")),
-              tags$li(tags$a(class = "dropdown-item py-1.5 px-3 fw-bold text-slate-700 d-flex align-items-center gap-2", href = "javascript:void(0)", onclick = "window.scrollToSection('sec_emendas_parlamentares')", tags$i(class = "fas fa-coins text-warning w-4 text-center"), "11. Emendas Parlamentares"))
-            )
-          )
-        )
-      )
-    )
+      # Navbar limpa - controles contextuais residem no cabeçalho de cada aba
+    ),
   )
   
   main_content <- tags$main(
