@@ -25,31 +25,46 @@ ui_modulo_tematicas <- function() {
               id = "btn_pauta_resumo_cozinhas",
               class = "btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all",
               onclick = "window.alternarPautaResumos('cozinhas', this)",
-              tags$i(class = "fas fa-utensils me-1.5 text-amber-500"), "Pernambuco sem Fome"
+              tags$i(class = "fas fa-utensils me-1.5 text-amber-500"), "Superação da Pobreza, Segurança Alimentar e Proteção Social"
             ),
             tags$button(
               id = "btn_pauta_resumo_aguas",
               class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
               onclick = "window.alternarPautaResumos('aguas', this)",
-              tags$i(class = "fas fa-droplet me-1.5 text-blue-500"), "Águas de Pernambuco"
+              tags$i(class = "fas fa-droplet me-1.5 text-sky-500"), "Segurança Hídrica e Saneamento Básico"
             ),
             tags$button(
               id = "btn_pauta_resumo_capag",
               class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
               onclick = "window.alternarPautaResumos('capag', this)",
-              tags$i(class = "fas fa-building-columns me-1.5 text-purple-600"), "Capacidade de Pagamento"
+              tags$i(class = "fas fa-building-columns me-1.5 text-purple-600"), "Governança e Sustentabilidade Fiscal, Parcerias e Apoio aos Municípios"
             ),
             tags$button(
               id = "btn_pauta_resumo_estradas",
               class = "btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all",
               onclick = "window.alternarPautaResumos('estradas', this)",
-              tags$i(class = "fas fa-road me-1.5 text-indigo-500"), "Estradas de PE"
+              tags$i(class = "fas fa-road me-1.5 text-indigo-500"), "Conectividade Logística, Eixos Viários e Mobilidade Regional"
             )
           )
         )
       ),
       
             # BLOCO PAUTA 1: PERNAMBUCO SEM FOME (COZINHAS, MÃES DE PE & COFINANCIAMENTO)
+      # =========================================================================
+      # SEÇÃO: RESUMO EXECUTIVO INTEGRADO (PROGRAMAS PRIORITÁRIOS)
+      # =========================================================================
+      tags$div(
+        id = "sec_tematicas_resumo_executivo",
+        class = "border-b-2 border-slate-200 pb-2 mb-4 mt-2",
+        tags$h2(class = "text-2xl font-black text-slate-800 uppercase tracking-tight mb-0", "Painel Executivo de Programas"),
+        tags$p(class = "text-sm font-bold text-slate-500 mb-0", "Visão Transversal Integrada das Entregas e Investimentos Estruturadores no Estado")
+      ),
+      
+      tags$div(
+        id = "tematicas_container_resumo_executivo",
+        class = "mb-5"
+      ),
+      
       tags$div(
         id = "resumo_pauta_cozinhas",
         class = "resumo-pauta-bloco",
@@ -63,7 +78,7 @@ ui_modulo_tematicas <- function() {
             class = "d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100",
             tags$div(
               tags$span(class = "badge bg-amber-50 text-amber-700 border border-amber-200 rounded-pill px-3 py-1 text-xs font-bold mb-1", "SEGURANÇA ALIMENTAR & ASSISTÊNCIA SOCIAL"),
-              tags$h4(class = "font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight", "Pernambuco sem Fome — Cozinhas, Mães de Pernambuco & Cofinanciamento")
+              tags$h4(class = "font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight", "Superação da Pobreza, Segurança Alimentar e Proteção Social")
             ),
             tags$span(class = "badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold",
               tags$i(class = "fas fa-shield-heart text-amber-600 me-1"), "SAS / Governo de Pernambuco"
@@ -405,7 +420,7 @@ ui_modulo_tematicas <- function() {
             class = "d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100",
             tags$div(
               tags$span(class = "badge bg-purple-50 text-purple-700 border border-purple-200 rounded-pill px-3 py-1 text-xs font-bold mb-1", "GESTÃO FISCAL & CRÉDITO"),
-              tags$h4(class = "font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight", "Capacidade de Pagamento dos Municípios (CAPAG)")
+              tags$h4(class = "font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight", "Governança e Sustentabilidade Fiscal, Parcerias e Apoio aos Municípios")
             ),
             tags$span(class = "badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold",
               tags$i(class = "fas fa-building-columns text-primary me-1"), "Secretaria do Tesouro Nacional (STN)"
@@ -508,7 +523,7 @@ ui_modulo_tematicas <- function() {
               class = "d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100",
               tags$div(
                 tags$span(class = "badge bg-blue-50 text-blue-700 border border-blue-200 rounded-pill px-3 py-1 text-xs font-bold mb-1", "SANEAMENTO & RECURSOS HÍDRICOS"),
-                tags$h4(class = "font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight", "Águas de Pernambuco — Investimentos e Obras Estruturantes")
+                tags$h4(class = "font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight", "Segurança Hídrica e Saneamento Básico")
               ),
               tags$span(class = "badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold",
                 tags$i(class = "fas fa-water text-primary me-1"), "COMPESA / SRHS"
@@ -741,7 +756,7 @@ ui_modulo_tematicas <- function() {
             class = "d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100",
             tags$div(
               tags$span(class = "badge bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-pill px-3 py-1 text-xs font-bold mb-1", "INFRAESTRUTURA RODOVIÁRIA & LOGÍSTICA"),
-              tags$h4(class = "font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight", "Estradas de Pernambuco — Obras Rodoviárias e Conectividade Territorial")
+              tags$h4(class = "font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight", "Conectividade Logística, Eixos Viários e Mobilidade Regional")
             ),
             tags$span(class = "badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold",
               tags$i(class = "fas fa-road text-indigo-600 me-1"), "DER-PE / SEINFRA • Governo de Pernambuco"

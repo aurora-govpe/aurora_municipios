@@ -60,6 +60,21 @@ ui_modulo_ufs <- function() {
 
       
       # =========================================================================
+      # SEÇÃO: RESUMO EXECUTIVO DAS UFs (5 EIXOS ESTRATÉGICOS)
+      # =========================================================================
+      tags$div(
+        id = "sec_ufs_resumo_executivo",
+        class = "border-b-2 border-slate-200 pb-2 mb-4 mt-2",
+        tags$h2(class = "text-2xl font-black text-slate-800 uppercase tracking-tight mb-0", "Resumo Executivo de Benchmarking"),
+        tags$p(class = "text-sm font-bold text-slate-500 mb-0", "Síntese Estratégica Comparativa pelos 5 Eixos do Planejamento Governamental")
+      ),
+      
+      tags$div(
+        id = "ufs_container_resumo_executivo",
+        class = "mb-5"
+      ),
+      
+      # =========================================================================
       # EIXO 1: CONHECIMENTO E INOVAÇÃO
       # =========================================================================
       tags$div(

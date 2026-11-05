@@ -51,18 +51,29 @@ build_ui <- function() {
     tags$div(
       class = "d-flex align-items-center gap-2 flex-nowrap flex-shrink-0",
       style = "flex-shrink: 0;",
-      tags$div(
-        class = "d-flex align-items-center gap-2 cursor-pointer select-none",
+            tags$div(
+        class = "d-flex align-items-center gap-2.5 cursor-pointer select-none",
         onclick = "window.mudarAbaAurora('Início', null)",
         title = "Ir para o Início",
-        tags$img(src = "images/aurora.png", class = "w-8 h-8 rounded-full border border-slate-200 shadow-xs object-cover"),
         tags$div(
-          class = "d-none d-lg-flex flex-column",
-          tags$span(class = "fw-black text-slate-800 leading-tight tracking-tight", style = "font-size: 0.95rem;", "Aurora"),
-          tags$span(class = "text-[10px] text-slate-500 font-bold uppercase tracking-wider", "Pernambuco")
+          class = "rounded-full d-flex align-items-center justify-content-center shadow-xs flex-shrink-0",
+          style = "width: 38px; height: 38px; background: linear-gradient(135deg, #f59e0b, #ff5a26); padding: 6px; box-sizing: border-box; box-shadow: 0 2px 6px rgba(0,0,0,0.15);",
+          tags$div(
+            style = "width: 100%; height: 100%;",
+            HTML('<svg viewBox="0 0 100 100" style="width: 100%; height: 100%; fill: #231b18;"><circle cx="50" cy="45" r="28" fill="#ffaa00" /><path d="M50 8 L50 2M22 22 L17 17M8 50 L2 50M78 22 L83 17M92 50 L98 50" stroke="#ffaa00" stroke-width="4" stroke-linecap="round"/><path d="M10 75 Q 35 60, 60 75 T 100 70 L 100 90 Z" fill="#231b18"/><path d="M28 75 V 52 Q 28 50 30 50 Q 32 50 32 52 V 75 M25 60 H 35 M25 60 V 55 M35 60 V 57" stroke="#231b18" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M72 75 V 46 Q 72 44 74 44 Q 76 44 76 46 V 75 M68 56 H 80 M68 56 V 51 M80 56 V 53" stroke="#231b18" stroke-width="3" stroke-linecap="round" fill="none"/></svg>')
+          )
+        ),
+        tags$div(
+          class = "d-none d-md-flex flex-column justify-content-center",
+          tags$div(
+            class = "d-flex align-items-center leading-none",
+            tags$span(class = "fw-black text-slate-900 tracking-tight", style = "font-size: 1.15rem; letter-spacing: -0.3px;", "Plataforma"),
+            tags$span(class = "fw-black ms-1.5 tracking-tight", style = "font-size: 1.15rem; letter-spacing: -0.3px; color: #ff5a26;", "Aurora")
+          ),
+          tags$span(class = "font-black text-slate-500 uppercase", style = "font-size: 0.62rem; letter-spacing: 0.12em; margin-top: 2px;", "INTELIGÊNCIA GOVERNAMENTAL")
         )
       ),
-      tags$div(class = "d-none d-lg-block vr my-1 bg-slate-300", style = "width: 1px; height: 24px;"),
+      tags$div(class = "d-none d-md-block vr my-1 bg-slate-300 ms-1 me-1", style = "width: 1px; height: 26px; opacity: 0.45;"),
       tags$div(
         class = "d-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1 d-print-none aurora-topbar-tabs flex-shrink-0 flex-nowrap",
         tags$button(
@@ -100,7 +111,6 @@ build_ui <- function() {
     
     tags$div(
       class = "d-flex align-items-center gap-2 flex-nowrap flex-shrink-0 d-print-none",
-      
       # CONTROLES DA ABA UFs (Benchmarking)
       tags$div(
         id = "controles_ufs",
@@ -179,6 +189,26 @@ build_ui <- function() {
         id = "controles_ficha_municipal",
         class = "d-none align-items-center gap-2 flex-nowrap",
         tags$div(
+          class = "d-inline-flex bg-slate-100 p-0.5 rounded-pill border border-slate-200",
+          tags$button(
+            id = "nav_btn_subaba_ficha",
+            type = "button",
+            class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs shadow-xs btn-primary text-white",
+            onclick = "window.trocarSubabaMunicipios('ficha')",
+            title = "Ficha Municipal Individual",
+            tags$i(class = "fas fa-file-invoice me-1"), "Ficha"
+          ),
+          tags$button(
+            id = "nav_btn_subaba_comparacao",
+            type = "button",
+            class = "btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
+            onclick = "window.trocarSubabaMunicipios('comparacao')",
+            title = "Comparativo Municipal (2 ou 3 Municípios)",
+            tags$i(class = "fas fa-code-compare me-1"), "Comparar"
+          )
+        ),
+        tags$div(
+          id = "box_filtro_municipio_individual",
           class = "d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200",
           tags$i(class = "fas fa-location-dot text-primary"),
           tags$select(
@@ -189,7 +219,6 @@ build_ui <- function() {
             `data-live-search-placeholder` = "Buscar município...",
             `data-none-results-text` = "Nenhum município encontrado",
             `data-size` = "10",
-            `data-container` = "body",
             `data-style` = "btn-sm btn-light fw-bold text-slate-700 border-0 bg-transparent py-0 px-1 shadow-none",
             `data-width` = "230px"
           )
@@ -251,10 +280,10 @@ build_ui <- function() {
     style = "height: 520px; max-height: 82vh;",
     
     tags$div(
-      class = "bg-[#0C2856] text-white p-3 px-4 flex justify-between items-center flex-shrink-0",
+      class = "text-white p-3 px-4 flex justify-between items-center flex-shrink-0", style = "background: linear-gradient(135deg, #1c1917 0%, #292524 60%, #431407 100%); border-bottom: 2px solid #ff5a26;",
       tags$div(
         class = "flex items-center gap-3",
-        tags$img(src = "images/aurora.png", class = "w-10 h-10 rounded-full border-2 border-white object-cover"),
+        tags$img(src = "images/aurora_simbolo.svg", class = "w-10 h-10 rounded-full border-2 border-white object-cover"),
         tags$div(
           tags$h4(class = "font-bold m-0 text-sm", "Aurora"),
           tags$span(class = "text-xs text-blue-200", "Assistente de Dados")
@@ -275,15 +304,15 @@ build_ui <- function() {
     
     tags$div(
       class = "p-3 bg-white border-t border-slate-200 flex items-center gap-2 flex-shrink-0",
-      tags$input(id = "aurora-chat-input", type = "text", class = "flex-1 border border-slate-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#00B7FF]", placeholder = "Pergunte aos dados..."),
-      tags$button(onclick = "enviarMensagemAurora()", class = "bg-[#00B7FF] text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#0066FF] transition-colors flex-shrink-0", tags$i(class = "fas fa-paper-plane"))
+      tags$input(id = "aurora-chat-input", type = "text", class = "flex-1 border border-slate-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#ff5a26]", placeholder = "Pergunte aos dados..."),
+      tags$button(onclick = "enviarMensagemAurora()", class = "bg-[#ff5a26] text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#e04010] shadow-sm transition-all flex-shrink-0", tags$i(class = "fas fa-paper-plane"))
     )
   )
   
   chat_button <- tags$button(
     onclick = "toggleAuroraChat()",
-    class = "fixed bottom-6 right-6 w-14 h-14 bg-[#0C2856] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#0066FF] transition-all z-[9998]",
-    tags$img(src = "images/aurora.png", class = "w-14 h-14 rounded-full border-2 border-[#0C2856] object-cover hover:scale-110 transition-transform")
+    class = "fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all z-[9998] hover:scale-105", style = "background: linear-gradient(135deg, #ff5a26 0%, #ea580c 100%); box-shadow: 0 8px 24px rgba(255, 90, 38, 0.45); border: 2px solid #ffffff;",
+    tags$img(src = "images/aurora_simbolo.svg", class = "w-14 h-14 rounded-full border-0 object-cover hover:scale-110 transition-transform")
   )
   
   ui <- tags$html(

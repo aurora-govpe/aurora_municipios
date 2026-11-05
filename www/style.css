@@ -16,4 +16,4 @@
 /* FORÇAR RENDERIZAÇÃO DO MARKDOWN DA AURORA NO TAILWIND */
 .aurora-markdown p { margin-bottom: 0.5rem; }
 .aurora-markdown ul { list-style-type: disc !important; padding-left: 1.5rem !important; margin-bottom: 0.5rem; }
-.aurora-markdown strong { font-weight: 700; color: #0C2856; }
+.aurora-markdown strong { font-weight: 700; color: #c2410c; }

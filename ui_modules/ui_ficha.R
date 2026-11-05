@@ -23,6 +23,36 @@ ui_modulo_ficha <- function() {
         tags$h4(id = "capa_tipo_relatorio", class = "fw-bold text-secondary mt-4", "RELATÓRIO EXECUTIVO")
       ),
       
+      # SELETOR DE SUB-ABAS DE MUNICÍPIOS (FICHA MUNICIPAL vs COMPARATIVO MUNICIPAL)
+      tags$div(
+        class = "d-flex align-items-center justify-content-between mb-3 pb-2 border-b border-slate-200 flex-wrap gap-2 d-print-none",
+        tags$div(
+          class = "d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 shadow-2xs",
+          tags$button(
+            id = "btn_subaba_ficha",
+            type = "button",
+            class = "btn btn-sm rounded-pill px-3 py-1 font-bold text-xs shadow-xs btn-primary text-white",
+            onclick = "window.trocarSubabaMunicipios('ficha')",
+            title = "Visualizar Ficha Municipal Completa",
+            tags$i(class = "fas fa-file-invoice me-1.5"), "Ficha Municipal"
+          ),
+          tags$button(
+            id = "btn_subaba_comparacao",
+            type = "button",
+            class = "btn btn-sm rounded-pill px-3 py-1 font-bold text-xs text-slate-600 bg-transparent border-0",
+            onclick = "window.trocarSubabaMunicipios('comparacao')",
+            title = "Comparar 2 ou 3 Municípios Multidimensionalmente",
+            tags$i(class = "fas fa-code-compare me-1.5"), "Comparativo Municipal"
+          )
+        ),
+        tags$div(
+          class = "d-flex align-items-center gap-2",
+          tags$span(class = "badge bg-orange-50 text-orange-700 border border-orange-200 text-xs font-bold rounded-pill px-3 py-1",
+            tags$i(class = "fas fa-compass me-1 text-[#ff5a26]"), "Módulo de Municípios"
+          )
+        )
+      ),
+
       tags$div(
         id = "subaba_ficha_municipal",
       
@@ -622,7 +652,7 @@ ui_modulo_ficha <- function() {
         tags$div(class = "kpi-modern-card", style = "border-left-color: #27AE60;", tags$div(class = "kpi-modern-header", "EM EXECUÇÃO"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-tools kpi-modern-icon", style = "color: #27AE60;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_execucao", "0")), tags$div(class = "kpi-modern-footer text-truncate", id="ficha_kpi_ini_top_status", "Outros status...")),
         tags$div(class = "kpi-modern-card", style = "border-left-color: #2980B9;", tags$div(class = "kpi-modern-header", "VALOR TOTAL"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-sack-dollar kpi-modern-icon", style = "color: #2980B9;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_val_tot", "R$ 0")), tags$div(class = "kpi-modern-footer", "Estimativa de Investimento")),
         tags$div(class = "kpi-modern-card", style = "border-left-color: #8E44AD;", tags$div(class = "kpi-modern-header", "TOTAL PAGO"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hand-holding-usd kpi-modern-icon", style = "color: #8E44AD;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_val_pag", "R$ 0")), tags$div(class = "kpi-modern-footer", "Desembolso Financeiro")),
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #F59E0B;", tags$div(class = "kpi-modern-header", "COZINHAS COMUNITÁRIAS"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-utensils kpi-modern-icon", style = "color: #F59E0B;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_cozinhas", "0")), tags$div(class = "kpi-modern-footer text-truncate", id = "ficha_kpi_ini_cozinhas_sub", "Pernambuco sem Fome"))
+        tags$div(class = "kpi-modern-card", style = "border-left-color: #F59E0B;", tags$div(class = "kpi-modern-header", "COZINHAS COMUNITÁRIAS"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-utensils kpi-modern-icon", style = "color: #F59E0B;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_cozinhas", "0")), tags$div(class = "kpi-modern-footer text-truncate", id = "ficha_kpi_ini_cozinhas_sub", "Superação da Pobreza, Segurança Alimentar e Proteção Social"))
       ),
       
       tags$div(
@@ -631,8 +661,7 @@ ui_modulo_ficha <- function() {
         tags$div(class = "col-md-6", tags$div(class = "bg-white rounded-2xl border border-slate-100 shadow-sm p-4 h-100 overflow-hidden", tags$h6(class = "font-extrabold text-slate-600 uppercase text-xs tracking-wider mb-2", "Volume de Recursos por Secretaria (Top 5)"), tags$div(id = "ficha_chart_valor_sec", style = "width: 100%; height: 250px;")))
       ),
       
-      tags$div(class = "bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-5", tags$table(id = "ficha_tabela_iniciativas", class = "table w-100")),
-      
+            
       tags$h5(class = "font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-8", "Convênios de Despesa"),
       tags$div(
         class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5",
@@ -642,8 +671,7 @@ ui_modulo_ficha <- function() {
         tags$div(class = "kpi-modern-card", style = "border-left-color: #8E44AD;", tags$div(class = "kpi-modern-header", "TOTAL PAGO"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hand-holding-usd kpi-modern-icon", style = "color: #8E44AD;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_conv_val_pag", "R$ 0")), tags$div(class = "kpi-modern-footer", "Recurso Repassado"))
       ),
       
-      tags$div(class = "bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-5", tags$table(id = "ficha_tabela_convenios", class = "table w-100")),
-      
+            
       # SEÇÃO 5: EMENDAS PARLAMENTARES
       tags$div(
         id = "sec_emendas_parlamentares",
@@ -684,6 +712,239 @@ ui_modulo_ficha <- function() {
       )
       ), # Fim de ficha_bloco_secoes_detalhadas
       ), # Fim de subaba_ficha_municipal
+      
+      # =========================================================================
+      # SUB-ABA 2: COMPARATIVO MUNICIPAL (2 A 3 MUNICÍPIOS)
+      # =========================================================================
+      tags$div(
+        id = "subaba_comparacao_municipal",
+        class = "d-none",
+        
+        # 1. CABEÇALHO E CONTROLES DE SELEÇÃO DOS MUNICÍPIOS
+        tags$div(
+          class = "bg-white rounded-3xl border border-slate-200 shadow-sm p-4 mb-4",
+          tags$div(
+            class = "d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-b border-slate-100",
+            tags$div(
+              tags$span(class = "badge bg-orange-100 text-orange-950 font-bold px-3 py-1.5 rounded-pill uppercase tracking-wider text-xs mb-1 d-inline-block",
+                tags$i(class = "fas fa-code-compare me-1 text-[#ff5a26]"), "Benchmarking Municipal"
+              ),
+              tags$h3(class = "text-xl font-black text-slate-800 tracking-tight mb-0", "Comparativo Multidimensional de Municípios"),
+              tags$p(class = "text-xs font-medium text-slate-500 mb-0", "Compare 2 ou 3 municípios de Pernambuco lado a lado pelas 5 dimensões estratégicas do Aurora.")
+            ),
+            tags$div(
+              class = "d-flex align-items-center gap-2",
+              tags$button(
+                type = "button",
+                class = "btn btn-sm btn-outline-secondary rounded-pill px-3 font-bold text-xs shadow-2xs",
+                onclick = "window.trocarOrdemMunicipiosComparacao()",
+                tags$i(class = "fas fa-arrow-right-arrow-left me-1"), "Inverter 1 & 2"
+              ),
+              tags$button(
+                type = "button",
+                class = "btn btn-sm btn-primary rounded-pill px-3.5 font-bold text-xs shadow-xs text-white",
+                onclick = "window.atualizarComparacaoMunicipal()",
+                tags$i(class = "fas fa-rotate me-1"), "Atualizar Comparação"
+              )
+            )
+          ),
+          
+          # 3 CARDS SELETORES DE MUNICÍPIO
+          tags$div(
+            class = "row g-3",
+            
+            # Município 1 (Base - Azul #2563EB)
+            tags$div(
+              class = "col-md-4",
+              tags$div(
+                class = "p-3 rounded-2xl border-2 border-[#ff5a26] bg-orange-50/40 h-100 transition-all",
+                tags$div(
+                  class = "d-flex align-items-center justify-content-between mb-2",
+                  tags$span(class = "badge bg-[#ff5a26] text-white rounded-pill px-2.5 py-1 text-xs font-bold", "Município 1 (Base)"),
+                  tags$span(id = "comp_badge_rd_mun1", class = "badge bg-orange-100 text-orange-900 text-[11px] font-semibold", "-")
+                ),
+                tags$select(
+                  id = "comp_select_mun1",
+                  class = "form-select form-select-sm fw-bold border-orange-200 text-orange-950 rounded-xl",
+                  onchange = "window.aoMudarMunicipioComparacao(1)"
+                ),
+                tags$div(
+                  id = "comp_meta_mun1",
+                  class = "mt-2.5 pt-2 border-t border-orange-200/60 d-flex justify-content-between text-xs text-orange-950",
+                  tags$span("População:", tags$strong(id = "comp_pop_mun1", class = "ms-1", "-")),
+                  tags$span("PIB pc:", tags$strong(id = "comp_pibpc_mun1", class = "ms-1", "-"))
+                )
+              )
+            ),
+            
+            # Município 2 (Comparativo - Verde #10B981)
+            tags$div(
+              class = "col-md-4",
+              tags$div(
+                class = "p-3 rounded-2xl border-2 border-emerald-500 bg-emerald-50/40 h-100 transition-all",
+                tags$div(
+                  class = "d-flex align-items-center justify-content-between mb-2",
+                  tags$span(class = "badge bg-emerald-600 text-white rounded-pill px-2.5 py-1 text-xs font-bold", "Município 2"),
+                  tags$span(id = "comp_badge_rd_mun2", class = "badge bg-emerald-100 text-emerald-800 text-[11px] font-semibold", "-")
+                ),
+                tags$select(
+                  id = "comp_select_mun2",
+                  class = "form-select form-select-sm fw-bold border-emerald-200 text-emerald-900 rounded-xl",
+                  onchange = "window.aoMudarMunicipioComparacao(2)"
+                ),
+                tags$div(
+                  id = "comp_meta_mun2",
+                  class = "mt-2.5 pt-2 border-t border-emerald-200/60 d-flex justify-content-between text-xs text-emerald-950",
+                  tags$span("População:", tags$strong(id = "comp_pop_mun2", class = "ms-1", "-")),
+                  tags$span("PIB pc:", tags$strong(id = "comp_pibpc_mun2", class = "ms-1", "-"))
+                )
+              )
+            ),
+            
+            # Município 3 (Opcional - Roxo #8B5CF6)
+            tags$div(
+              class = "col-md-4",
+              tags$div(
+                class = "p-3 rounded-2xl border-2 border-purple-400 bg-purple-50/40 h-100 transition-all",
+                tags$div(
+                  class = "d-flex align-items-center justify-content-between mb-2",
+                  tags$span(class = "badge bg-purple-600 text-white rounded-pill px-2.5 py-1 text-xs font-bold", "Município 3 (Opcional)"),
+                  tags$span(id = "comp_badge_rd_mun3", class = "badge bg-purple-100 text-purple-800 text-[11px] font-semibold", "-")
+                ),
+                tags$select(
+                  id = "comp_select_mun3",
+                  class = "form-select form-select-sm fw-bold border-purple-200 text-purple-900 rounded-xl",
+                  onchange = "window.aoMudarMunicipioComparacao(3)"
+                ),
+                tags$div(
+                  id = "comp_meta_mun3",
+                  class = "mt-2.5 pt-2 border-t border-purple-200/60 d-flex justify-content-between text-xs text-purple-950",
+                  tags$span("População:", tags$strong(id = "comp_pop_mun3", class = "ms-1", "-")),
+                  tags$span("PIB pc:", tags$strong(id = "comp_pibpc_mun3", class = "ms-1", "-"))
+                )
+              )
+            )
+          )
+        ),
+        
+        # 2. SÍNTESE EXECUTIVA MULTIDIMENSIONAL COMPARATIVA
+        tags$div(id = "comp_container_resumo_executivo", class = "mb-4"),
+        
+        # 3. GRÁFICOS COMPLEXOS (RADIAL / RADAR E PIRULITO / LOLLIPOP)
+        tags$div(
+          class = "row g-4 mb-4",
+          
+          # GRÁFICO RADIAL / RADAR DAS 5 DIMENSÕES
+          tags$div(
+            class = "col-lg-6",
+            tags$div(
+              class = "bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100",
+              tags$div(
+                class = "d-flex align-items-center justify-content-between mb-2",
+                tags$div(
+                  tags$h5(class = "font-black text-slate-800 text-sm uppercase tracking-tight mb-0",
+                    tags$i(class = "fas fa-hexagon-nodes text-blue-600 me-2"), "Perfil Radial Multidimensional (5 Dimensões)"
+                  ),
+                  tags$span(class = "text-[11px] text-slate-500 font-medium", "Escala Normalizada 0-100 (Benchmarking Estadual)")
+                ),
+                tags$span(class = "badge bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold rounded-pill px-2.5 py-1", "Radar")
+              ),
+              tags$p(class = "text-xs text-slate-500 mb-3", "Compara os polígonos de capacidade em Demografia, Economia, Social, Fiscal e Inovação."),
+              tags$div(id = "comp_chart_radar_dimensoes", style = "width: 100%; height: 380px;")
+            )
+          ),
+          
+          # GRÁFICO DE PIRULITO (LOLLIPOP) - INDICADORES ESTRATÉGICOS
+          tags$div(
+            class = "col-lg-6",
+            tags$div(
+              class = "bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100",
+              tags$div(
+                class = "d-flex align-items-center justify-content-between mb-2",
+                tags$div(
+                  tags$h5(class = "font-black text-slate-800 text-sm uppercase tracking-tight mb-0",
+                    tags$i(class = "fas fa-chart-column text-emerald-600 me-2"), "Gráfico de Pirulito (Lollipop): Confronto Direto"
+                  ),
+                  tags$span(class = "text-[11px] text-slate-500 font-medium", "Valores relativos e absolutos por indicador")
+                ),
+                tags$span(class = "badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-pill px-2.5 py-1", "Lollipop")
+              ),
+              tags$p(class = "text-xs text-slate-500 mb-3", "Visualização da distância exata entre os municípios nas principais métricas do Estado."),
+              tags$div(id = "comp_chart_lollipop_principais", style = "width: 100%; height: 380px;")
+            )
+          )
+        ),
+        
+        # 4. DIMENSÕES ORIENTADORAS DA FICHA (DETALHAMENTO GRÁFICO)
+        tags$div(
+          class = "row g-4 mb-4",
+          
+          # DIMENSÃO ECONOMIA: VAB SETORIAL COMPARATIVO
+          tags$div(
+            class = "col-lg-6",
+            tags$div(
+              class = "bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100",
+              tags$div(
+                class = "d-flex align-items-center justify-content-between mb-2",
+                tags$h5(class = "font-black text-slate-800 text-sm uppercase tracking-tight mb-0",
+                  tags$i(class = "fas fa-chart-pie text-amber-500 me-2"), "Dimensão 2 (Economia): Composição do VAB (%)"
+                ),
+                tags$span(class = "badge bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-pill px-2", "Agro / Ind / Serv / Adm")
+              ),
+              tags$div(id = "comp_chart_vab_setorial", style = "width: 100%; height: 320px;")
+            )
+          ),
+          
+          # DIMENSÃO FISCAL: GESTÃO FISCAL, CUSTEIO, PESSOAL E INVESTIMENTOS (PIRULITO FISCAL)
+          tags$div(
+            class = "col-lg-6",
+            tags$div(
+              class = "bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100",
+              tags$div(
+                class = "d-flex align-items-center justify-content-between mb-2",
+                tags$h5(class = "font-black text-slate-800 text-sm uppercase tracking-tight mb-0",
+                  tags$i(class = "fas fa-landmark text-purple-600 me-2"), "Dimensão 4 (Fiscal): Custeio, Pessoal, Investimentos e Dívida"
+                ),
+                tags$span(class = "badge bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold rounded-pill px-2", "Lollipop Fiscal")
+              ),
+              tags$div(id = "comp_chart_lollipop_fiscal", style = "width: 100%; height: 320px;")
+            )
+          )
+        ),
+        
+        # 5. QUADRO COMPARATIVO COMPLETO POR DIMENSÃO (TABELA DE CONFRONTO HEAD-TO-HEAD)
+        tags$div(
+          class = "bg-white rounded-3xl border border-slate-200 shadow-sm p-4 mb-5",
+          tags$div(
+            class = "d-flex align-items-center justify-content-between mb-3 pb-2 border-b border-slate-100",
+            tags$div(
+              tags$h5(class = "font-black text-slate-800 text-base uppercase tracking-tight mb-0",
+                tags$i(class = "fas fa-table-list text-primary me-2"), "Matriz de Confronto Direto por Dimensões"
+              ),
+              tags$span(class = "text-xs text-slate-500", "Detalhamento de todos os indicadores das 5 dimensões estratégicas da Ficha Municipal")
+            ),
+            tags$span(class = "badge bg-orange-50 text-orange-700 border border-orange-200 text-xs font-bold rounded-pill px-3 py-1", "Benchmarking")
+          ),
+          tags$div(
+            class = "table-responsive",
+            tags$table(
+              id = "comp_tabela_confronto",
+              class = "table table-hover align-middle mb-0 text-sm w-100",
+              tags$thead(
+                class = "table-light text-xs text-slate-600 uppercase font-black",
+                tags$tr(
+                  tags$th("Dimensão & Indicador", style = "width: 32%;"),
+                  tags$th(id = "comp_th_mun1", class = "text-center text-blue-700", style = "width: 20%;", "Município 1"),
+                  tags$th(id = "comp_th_mun2", class = "text-center text-emerald-700", style = "width: 20%;", "Município 2"),
+                  tags$th(id = "comp_th_mun3", class = "text-center text-purple-700", style = "width: 20%;", "Município 3"),
+                  tags$th(class = "text-center text-slate-600", style = "width: 8%;", "Destaque")
+                )
+              ),
+              tags$tbody(id = "comp_tbody_confronto")
+            )
+          )
+        )
+      ),
       
       # MODAL DE DETALHES DA FONTE BIBLIOGRÁFICA
       tags$div(

@@ -120,8 +120,9 @@ table.dataTable.display > tbody > tr.even > * {
 }
 
 .btn-nav-topbar:hover {
-  background-color: #0C2856;
+  background-color: #ff5a26;
   color: #ffffff;
+
   transform: scale(1.1);
 }
 
@@ -389,18 +390,23 @@ table.dataTable.display > tbody > tr.even > * {
 ========================================================================== */
 
 .resumo-exec-banner {
-  background: linear-gradient(135deg, #0C2856 0%, #1e3a8a 100%);
-  color: #ffffff;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(12, 40, 86, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, #ff5a26 0%, #ea580c 55%, #c2410c 100%) !important;
+  color: #ffffff !important;
+  border-radius: 1.25rem !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 10px 25px -5px rgba(255, 90, 38, 0.35), 0 8px 10px -6px rgba(255, 90, 38, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+
+
+
+
+
 }
 
 .resumo-dim-card {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 1rem;
+
   padding: 1.25rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
   transition: all 0.25s ease;
@@ -418,7 +424,7 @@ table.dataTable.display > tbody > tr.even > * {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 1.25rem;
-  padding: 1.5rem;
+
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
   display: flex;
@@ -466,7 +472,7 @@ table.dataTable.display > tbody > tr.even > * {
 
 .diag-fonte-badge:hover {
   background-color: #0c2856;
-  color: #ffffff;
+
   border-color: #0c2856;
   transform: scale(1.05);
 }

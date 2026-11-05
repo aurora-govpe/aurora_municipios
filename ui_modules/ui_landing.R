@@ -15,28 +15,42 @@ ui_modulo_landing <- function() {
       # =========================================================================
       tags$div(
         class = "relative rounded-3xl p-6 md:p-10 mb-5 overflow-hidden shadow-xl text-white",
-        style = "background: linear-gradient(135deg, #0C2856 0%, #153e7e 60%, #081c3d 100%); border: 1px solid rgba(255, 255, 255, 0.12);",
+        style = "background: linear-gradient(135deg, #ff5a26 0%, #ea580c 55%, #c2410c 100%); border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: 0 16px 36px -8px rgba(255, 90, 38, 0.35);",
         
         # Elemento decorativo de fundo
         tags$div(
           class = "absolute -right-12 -bottom-16 w-80 h-80 rounded-full opacity-10 pointer-events-none",
-          style = "background: radial-gradient(circle, #00B7FF 0%, transparent 70%); filter: blur(25px);"
+          style = "background: radial-gradient(circle, #fbbf24 0%, transparent 70%); filter: blur(30px); opacity: 0.18;"
         ),
         
-        # Badges Institucionais
+        # Badges Institucionais e Botão de Retorno ao Hub Digital SEPLAG
         tags$div(
-          class = "d-flex align-items-center gap-2 mb-3 flex-wrap",
-          tags$span(
-            class = "badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-white shadow-sm",
-            style = "background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.25);",
-            tags$i(class = "fas fa-landmark me-1.5 text-amber-300"),
-            "Governo de Pernambuco"
+          class = "d-flex align-items-center justify-content-between gap-3 mb-3 flex-wrap",
+          tags$div(
+            class = "d-flex align-items-center gap-2 flex-wrap",
+            tags$span(
+              class = "badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-white shadow-sm",
+              style = "background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.25);",
+              tags$i(class = "fas fa-landmark me-1.5 text-amber-300"),
+              "Governo de Pernambuco"
+            ),
+            tags$span(
+              class = "badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-white shadow-sm",
+              style = "background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.25);",
+              tags$i(class = "fas fa-shield-halved me-1.5 text-amber-200"),
+              "Secretaria de Planejamento, Gestão e Desenvolvimento Regional"
+            )
           ),
-          tags$span(
-            class = "badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-blue-200 shadow-sm",
-            style = "background: rgba(0, 183, 255, 0.15); border: 1px solid rgba(0, 183, 255, 0.3);",
-            tags$i(class = "fas fa-shield-halved me-1.5 text-blue-300"),
-            "Secretaria de Planejamento, Gestão e Desenvolvimento Regional"
+          tags$a(
+            href = "https://digital.seplag.pe.gov.br/",
+            target = "_blank",
+            rel = "noopener noreferrer",
+            class = "btn btn-sm rounded-pill px-4 py-2 font-black text-xs text-orange-950 d-inline-flex align-items-center gap-2 shadow-md transition-all hover:scale-105",
+            style = "background: #ffffff; color: #c2410c; border: 1px solid #ffffff; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); text-decoration: none;",
+            title = "Acessar o Hub Geral de Aplicativos SEPLAG Digital",
+            tags$i(class = "fas fa-arrow-left text-[#ff5a26]"),
+            tags$span("Hub SEPLAG Digital"),
+            tags$i(class = "fas fa-external-link-alt text-[10px] text-amber-600 opacity-90 ms-0.5")
           )
         ),
         
@@ -50,7 +64,7 @@ ui_modulo_landing <- function() {
               "Aurora Desenvolvimento Regional"
             ),
             tags$p(
-              class = "text-sm md:text-base text-blue-100 max-w-3xl leading-relaxed mb-0 font-medium",
+              class = "text-sm md:text-base text-white max-w-3xl leading-relaxed mb-0 font-medium",
               "A plataforma estratégica de inteligência de dados e apoio ao planejamento governamental do Estado de Pernambuco. ",
               "Monitore indicadores socioeconômicos, avalie a convergência inter e intra-regional e acesse o diagnóstico dos 184 municípios e 12 Regiões de Desenvolvimento."
             )
@@ -79,7 +93,7 @@ ui_modulo_landing <- function() {
                 tags$input(
                   id = "landing_search_input",
                   type = "text",
-                  class = "w-full bg-white text-slate-800 placeholder-slate-400 pl-11 pr-28 py-3 rounded-2xl text-sm font-semibold shadow-lg focus:outline-none focus:ring-2 focus:ring-[#00B7FF] border-0 transition-all",
+                  class = "w-full bg-white text-slate-800 placeholder-slate-400 pl-11 pr-28 py-3 rounded-2xl text-sm font-semibold shadow-lg focus:outline-none focus:ring-2 focus:ring-[#ff5a26] border-0 transition-all",
                   placeholder = "Buscar município (ex: Caruaru, Petrolina, Serra Talhada) ou Região (ex: Agreste Central)...",
                   onkeydown = "if(event.key==='Enter') window.executarBuscaLanding();"
                 ),
@@ -94,7 +108,7 @@ ui_modulo_landing <- function() {
             ),
             tags$div(
               class = "col-md-5 col-lg-4 d-flex align-items-center gap-1.5 flex-wrap",
-              tags$span(class = "text-xs font-bold text-blue-200 uppercase tracking-wider me-1", "Acesso Rápido:"),
+              tags$span(class = "text-xs font-bold text-white uppercase tracking-wider me-1 opacity-90", "Acesso Rápido:"),
               tags$button(type = "button", class = "btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all", onclick = "window.irParaMunicipio('Recife')", "Recife"),
               tags$button(type = "button", class = "btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all", onclick = "window.irParaMunicipio('Caruaru')", "Caruaru"),
               tags$button(type = "button", class = "btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all", onclick = "window.irParaMunicipio('Petrolina')", "Petrolina"),
@@ -245,7 +259,7 @@ ui_modulo_landing <- function() {
               tags$span(class = "badge bg-amber-50 text-amber-800 border border-amber-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1", "Pautas Estruturadoras"),
               tags$h4(class = "font-black text-slate-800 text-lg mb-2", "Programas Prioritários"),
               tags$p(class = "text-slate-600 text-sm leading-relaxed mb-4", 
-                     "Acompanhamento em profundidade dos programas centrais do Governo de Pernambuco: Pernambuco sem Fome (Cozinhas Comunitárias e Mães de PE), Águas de Pernambuco (Compesa e Adutoras) e Saúde Fiscal (CAPAG).")
+                     "Acompanhamento em profundidade dos programas centrais do Governo de Pernambuco: Superação da Pobreza, Segurança Alimentar e Proteção Social (Cozinhas e Mães de PE), Segurança Hídrica e Saneamento Básico (Compesa e Adutoras), Governança e Sustentabilidade Fiscal (CAPAG) e Conectividade Logística, Eixos Viários e Mobilidade Regional.")
             ),
             tags$button(
               type = "button",
@@ -318,24 +332,30 @@ ui_modulo_landing <- function() {
             )
           ),
           
-          # Módulo 6: Assistente IA Aurora
+          # Módulo 6: Assistente IA Aurora (Tema Aurora Dark Oficial)
           tags$div(
-            class = "bg-gradient-to-br from-[#0C2856] to-[#153e7e] rounded-3xl p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between text-white",
+            class = "rounded-3xl p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between text-white",
+            style = "background: linear-gradient(135deg, #1c1917 0%, #292524 50%, #431407 100%); border: 1px solid rgba(255, 90, 38, 0.35); box-shadow: 0 10px 25px -5px rgba(28, 25, 23, 0.3);",
             tags$div(
               tags$div(
-                class = "w-12 h-12 rounded-2xl bg-white/10 text-cyan-300 flex items-center justify-center text-xl mb-4 border border-white/20",
+                class = "w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-4 shadow-xs",
+                style = "background: rgba(255, 90, 38, 0.15); color: #ff5a26; border: 1px solid rgba(255, 90, 38, 0.3);",
                 tags$i(class = "fas fa-robot")
               ),
-              tags$span(class = "badge bg-cyan-400/20 text-cyan-200 border border-cyan-300/30 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1", "Inteligência Artificial"),
+              tags$span(
+                class = "badge rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1",
+                style = "background: rgba(255, 90, 38, 0.15); color: #fdba74; border: 1px solid rgba(255, 90, 38, 0.3);",
+                "Inteligência Artificial"
+              ),
               tags$h4(class = "font-black text-white text-lg mb-2", "Assistente de Dados Aurora"),
-              tags$p(class = "text-blue-100 text-sm leading-relaxed mb-4", 
+              tags$p(class = "text-stone-300 text-sm leading-relaxed mb-4", 
                      "Converse diretamente com os dados de Pernambuco em linguagem natural. Obtenha comparativos imediatos, sínteses territoriais e respostas rápidas sobre qualquer município ou região.")
             ),
             tags$button(
               type = "button",
-              class = "btn btn-light rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2 text-slate-900 shadow-sm",
+              class = "btn btn-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2 shadow-sm text-white",
               onclick = "window.toggleAuroraChat()",
-              tags$i(class = "fas fa-comments text-primary"), "Conversar com a Aurora"
+              tags$i(class = "fas fa-comments text-white"), "Conversar com a Aurora"
             )
           )
         )
@@ -386,7 +406,7 @@ ui_modulo_landing <- function() {
               tags$div(class = "text-amber-600 font-black text-sm mb-1 d-flex align-items-center gap-1.5", tags$i(class = "fas fa-utensils"), "Programas de Governo"),
               tags$h5(class = "font-black text-slate-800 text-sm mb-2", "Ações Estruturantes de Estado"),
               tags$p(class = "text-xs text-slate-600 leading-relaxed mb-3", 
-                     "Consulte o mapa de cozinhas comunitárias do Pernambuco sem Fome, a malha de adutoras e municípios atendidos pela Compesa e o diagnóstico fiscal.")
+                     "Consulte o mapa de cozinhas comunitárias do Superação da Pobreza e Segurança Alimentar, a malha de adutoras de Segurança Hídrica, os eixos de Conectividade Logística e a Sustentabilidade Fiscal dos municípios.")
             ),
             tags$button(class = "btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50", onclick = "window.mudarAbaAurora('Programas', null)", "Ir para Programas")
           ),

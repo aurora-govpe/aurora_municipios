@@ -25,6 +25,11 @@ function mostrarTodosSpinnersRD() {
     $('.rd-cluster-spinner').removeClass('d-none');
 }
 
+function ocultarTodosSpinnersRD() {
+    $('.rd-cluster-spinner').addClass('d-none');
+}
+window.ocultarTodosSpinnersRD = ocultarTodosSpinnersRD;
+
 const INDICADORES_CLUSTER0_PADRAO = [
     'indice_acessibilidade_from', 'indice_acessibilidade_to', 'cgt', 'ia', 'indice_centralidade_interm_tempo', 'indice_centralidade_interm_dist'
 ];
@@ -817,6 +822,13 @@ function renderizarModuloRegional(data) {
         $('#rd_fisc_kpi_capag').text(`Grau ${modaCapag} (${contagemCapag[modaCapag] || 0} muns)`);
     }
 
+    // Renderiza a Análise Dimensional Integrada da RD (6 Dimensões)
+    try {
+        renderizarResumoExecutivoRegional(data, nomeRD, isCons);
+    } catch (errResumo) {
+        console.error("[Regioes] Erro nao fatal no resumo executivo:", errResumo);
+    }
+
     [0, 1, 2, 3, 4, 5].forEach(cNum => {
         $(`#rd_sintese_cluster${cNum}`).html(gerarSinteseCluster(cNum, muns, ind, nomeRD));
     });
@@ -824,73 +836,36 @@ function renderizarModuloRegional(data) {
     // Reset dos estados de hidratação dos clusters e ativação de spinners
     clusterRenderizado = { 0: false, 1: false, 2: false, 3: false, 4: false, 5: false };
     matrizRenderizada = false;
-    mostrarTodosSpinnersRD();
 
     if (regioesObserver) {
         regioesObserver.disconnect();
         regioesObserver = null;
     }
 
-    const isElementInViewport = (el) => {
-        if (!el) return false;
-        const rect = el.getBoundingClientRect();
-        const vh = window.innerHeight || document.documentElement.clientHeight;
-        return (rect.top <= vh + 250 && rect.bottom >= -250);
-    };
-
-    const scrollContainer = document.querySelector('.aurora-content-area');
-
-    if ('IntersectionObserver' in window) {
-        regioesObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const id = entry.target.id;
-                    if (id.startsWith('rd_map_cluster')) {
-                        const num = parseInt(id.replace('rd_map_cluster', ''), 10);
-                        if (!isNaN(num) && !clusterRenderizado[num]) {
-                            renderizarClusterEspecifico(num);
-                        }
-                    } else if (id === 'rd_tabela_matriz_municipios') {
-                        if (!matrizRenderizada && dadosBrutosRD) {
-                            renderizarMatrizMunicipiosRD(dadosBrutosRD.demografia_rd || [], dadosBrutosRD.indicadores_rd || []);
-                            matrizRenderizada = true;
-                        }
-                    }
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, {
-            root: scrollContainer,
-            rootMargin: '250px 0px',
-            threshold: 0.01
-        });
-
-        // Dimensão 0 sempre renderiza de imediato (topo da página)
-        renderizarClusterEspecifico(0);
-
-        // Clusters 1 a 5 e Matriz: se já visíveis renderiza agora; senão agenda via observer
-        [1, 2, 3, 4, 5].forEach(cNum => {
-            const el = document.getElementById(`rd_map_cluster${cNum}`);
-            if (isElementInViewport(el)) {
-                renderizarClusterEspecifico(cNum);
-            } else if (el) {
-                regioesObserver.observe(el);
-            }
-        });
-
-        const tabEl = document.getElementById('rd_tabela_matriz_municipios');
-        if (isElementInViewport(tabEl)) {
-            renderizarMatrizMunicipiosRD(muns, ind);
-            matrizRenderizada = true;
-        } else if (tabEl) {
-            regioesObserver.observe(tabEl);
+    // Renderiza todos os clusters (0 a 5) imediatamente sem travar spinners
+    [0, 1, 2, 3, 4, 5].forEach(cNum => {
+        try {
+            renderizarClusterEspecifico(cNum);
+        } catch (eClust) {
+            console.error(`[Regiões] Erro ao renderizar cluster ${cNum}:`, eClust);
+            ocultarSpinnerRD(`rd_spinner_map_cluster${cNum}`);
+            ocultarSpinnerRD(`rd_spinner_chart_cluster${cNum}`);
+            if (cNum > 0) ocultarSpinnerRD(`rd_spinner_hist_cluster${cNum}`);
         }
-    } else {
-        // Fallback se não suportar IntersectionObserver
-        [0, 1, 2, 3, 4, 5].forEach(cNum => renderizarClusterEspecifico(cNum));
+    });
+
+    try {
         renderizarMatrizMunicipiosRD(muns, ind);
         matrizRenderizada = true;
+    } catch (eMatriz) {
+        console.error('[Regiões] Erro ao renderizar matriz:', eMatriz);
+        ocultarSpinnerRD('rd_spinner_matriz');
     }
+
+    // Garante que nenhum spinner fique ativo
+    setTimeout(() => {
+        ocultarTodosSpinnersRD();
+    }, 200);
 }
 
 // Garante hidratação de todos os elementos para impressão em PDF
@@ -1287,7 +1262,7 @@ function renderizarChartEvolucaoRD(cNum, siglaChave, indicadores) {
                 let q3 = q1 + params[1].data;
                 let med = params[2].data;
                 return `<div style="font-family: Jost;">
-                            <div style="font-weight: 800; color: #0C2856; border-bottom: 1px solid #eee; padding-bottom: 2px; margin-bottom: 4px;">Série de ${ano}</div>
+                            <div style="font-weight: 800; color: #ff5a26; border-bottom: 1px solid #eee; padding-bottom: 2px; margin-bottom: 4px;">Série de ${ano}</div>
                             <span style="color:#64748b; font-size: 11px;">75º Percentil (Q3):</span> <b>${labelFmt(q3)}</b><br/>
                             <span style="color:#0C2856; font-size: 12px; font-weight:800;">Mediana: ${labelFmt(med)}</span><br/>
                             <span style="color:#64748b; font-size: 11px;">25º Percentil (Q1):</span> <b>${labelFmt(q1)}</b>
@@ -1594,7 +1569,7 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
                         <div style="font-size: 10px; color: #7c3aed; font-weight: 800; text-transform: uppercase; margin-bottom: 3px;">
                             <i class="fas fa-route"></i> Fluxo Territorial REGIC
                         </div>
-                        <div style="font-size: 12px; font-weight: 900; color: #0C2856; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 6px;">
+                        <div style="font-size: 12px; font-weight: 900; color: #ff5a26; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 6px;">
                             ${p.origem_nome} <span style="color:#7c3aed;">➔</span> ${p.destino_nome}
                         </div>
                         <div style="background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 6px; padding: 4px 8px;">
@@ -1651,7 +1626,7 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
                         <div style="font-size: 10px; color: #4A235A; font-weight: 800; text-transform: uppercase;">
                             <i class="fas fa-bullseye"></i> Polo de Atração / Destino
                         </div>
-                        <div style="font-size: 13px; font-weight: 900; color: #0C2856; margin: 3px 0;">
+                        <div style="font-size: 13px; font-weight: 900; color: #ff5a26; margin: 3px 0;">
                             ${p.destino_nome}
                         </div>
                         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 12px;">
@@ -1929,7 +1904,7 @@ function renderizarMapaClusterRD(cNum, containerId, legendaId, siglaChave, geojs
             if (cNum === 0) {
                 instMapa.setPaintProperty('rd_cluster_line_' + containerId, 'line-color', [
                     'case',
-                    ['boolean', ['get', 'pertence_rd'], false], '#0C2856',
+                    ['boolean', ['get', 'pertence_rd'], false], '#ff5a26',
                     '#94A3B8'
                 ]);
                 instMapa.setPaintProperty('rd_cluster_line_' + containerId, 'line-width', [
@@ -1977,9 +1952,9 @@ function renderizarMapaClusterRD(cNum, containerId, legendaId, siglaChave, geojs
             paint: { 
                 'line-color': cNum === 0 ? [
                     'case',
-                    ['boolean', ['get', 'pertence_rd'], false], '#0C2856',
+                    ['boolean', ['get', 'pertence_rd'], false], '#ff5a26',
                     '#94A3B8'
-                ] : '#0C2856', 
+                ] : '#ff5a26', 
                 'line-width': cNum === 0 ? [
                     'case',
                     ['boolean', ['get', 'pertence_rd'], false], 2.2,
@@ -2025,13 +2000,13 @@ function renderizarMapaClusterRD(cNum, containerId, legendaId, siglaChave, geojs
             let arranjoTag = '';
             if (cNum === 0 && p.arranjo_nome) {
                 const badgeText = isCons ? 'Consorciado' : 'RD Selecionada';
-                const badgeRD = p.pertence_rd ? `<span style="background:#0C2856; color:#fff; font-size:9px; padding:2px 6px; border-radius:10px; margin-left:4px;">${badgeText}</span>` : '';
+                const badgeRD = p.pertence_rd ? `<span style="background:#ff5a26; color:#fff; font-size:9px; padding:2px 6px; border-radius:10px; margin-left:4px;">${badgeText}</span>` : '';
                 arranjoTag = `<div style="font-size: 10px; color: #8E44AD; font-weight: 800; margin-bottom: 6px; text-transform: uppercase;"><i class="fas fa-network-wired"></i> Polo: ${p.arranjo_nome} ${badgeRD}<br/><span style="color:#64748b;">Nível: ${p.hierarquia || 'N/I'}</span></div>`;
             }
 
             popup.setLngLat(e.lngLat).setHTML(`
                 <div style="font-family: Jost, sans-serif; padding: 4px; min-width: 200px;">
-                  <div style="font-weight: 900; color: #0C2856; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 8px; text-transform: uppercase; font-size: 13px;">${p.municipio || p.name}</div>
+                  <div style="font-weight: 900; color: #ff5a26; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 8px; text-transform: uppercase; font-size: 13px;">${p.municipio || p.name}</div>
                   ${arranjoTag}
                   <div style="background-color: #f0f9ff; padding: 6px 8px; border-radius: 6px; border: 1px solid #bae6fd;">
                     <span style="color:#0369a1; font-weight:800; font-size: 12px;">${obterNomeAmigavel(siglaChave)}:</span> 
@@ -2055,6 +2030,7 @@ function renderizarMapaClusterRD(cNum, containerId, legendaId, siglaChave, geojs
 }
 
 function renderizarMatrizMunicipiosRD(muns, ind) {
+    const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
     const dadosMatriz = muns.map(m => {
         const normName = String(m.municipio || '').toUpperCase().trim();
         const getInd = (s) => {
@@ -2105,4 +2081,359 @@ function renderizarMatrizMunicipiosRD(muns, ind) {
         });
     }
     ocultarSpinnerRD('rd_spinner_matriz');
+}
+
+/* ==========================================================================
+   RESUMO EXECUTIVO REGIONAL INTEGRADO (6 DIMENSÕES DE DESENVOLVIMENTO)
+   ========================================================================== */
+function renderizarResumoExecutivoRegional(data, nomeRD, isCons) {
+    try {
+        const $container = $('#rd_container_resumo_executivo');
+        if (!$container.length) return;
+        $container.empty();
+
+        if (!data) return;
+        const muns = data.demografia_rd || [];
+        const ind = data.indicadores_rd || [];
+        const inis = data.iniciativas_rd || [];
+        const fisc = data.fiscais_rd || [];
+        const regic = data.regic_rd || [];
+
+        if (!muns.length) return;
+
+        const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+
+        const safeNum = (v, fallback = 0) => {
+            if (v === null || v === undefined) return fallback;
+            const n = parseFloat(String(v).replace(',', '.'));
+            return isNaN(n) ? fallback : n;
+        };
+
+        const safeFmt = (v, dec = 1, suffix = '') => {
+            const n = safeNum(v, null);
+            return (n !== null && n > 0) ? (n.toFixed(dec) + suffix) : '-';
+        };
+
+        // Helper: formatador de valores monetários compactos
+        const formataMoedaCompacta = (v) => {
+            const num = safeNum(v, 0);
+            if (num === 0) return 'R$ 0';
+            const abs = Math.abs(num);
+            const sinal = num < 0 ? '-' : '';
+            if (abs >= 1e9) return `${sinal}R$ ${(abs / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Bi`;
+            if (abs >= 1e6) return `${sinal}R$ ${(abs / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Mi`;
+            if (abs >= 1e3) return `${sinal}R$ ${(abs / 1e3).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mil`;
+            return `${sinal}R$ ${abs.toLocaleString('pt-BR')}`;
+        };
+
+        // Helper: calcular mediana de um indicador
+        const getMed = (sigla) => {
+            let vals = [];
+            const sigAlvo = String(sigla || '').toLowerCase().trim();
+            muns.forEach(m => {
+                const normName = normText(m.municipio || '');
+                if (!normName) return;
+                const items = (ind || []).filter(i => {
+                    const munMatch = normText(i.nm_municipio).includes(normName) || (m.ibge6 && i.ibge6 && String(i.ibge6).slice(0, 6) === String(m.ibge6).slice(0, 6));
+                    return munMatch && String(i.sigla_indicador || '').toLowerCase().trim() === sigAlvo;
+                }).sort((a, b) => (Number(b.ano) || 0) - (Number(a.ano) || 0));
+                if (items.length) {
+                    let v = safeNum(items[0].indicador, NaN);
+                    if (!isNaN(v)) vals.push(v);
+                }
+            });
+            if (!vals.length) return 0;
+            vals.sort((a, b) => a - b);
+            let mid = Math.floor(vals.length / 2);
+            return vals.length % 2 !== 0 ? vals[mid] : (vals[mid - 1] + vals[mid]) / 2;
+        };
+
+        // Helper: calcular média ponderada por população
+        const getMediaPondPop = (sigla) => {
+            let somaValPond = 0;
+            let somaPop = 0;
+            const sigAlvo = String(sigla || '').toLowerCase().trim();
+            muns.forEach(m => {
+                const pop = safeNum(m.pop_2026, 0);
+                const normName = normText(m.municipio || '');
+                if (!normName || pop <= 0) return;
+                const items = (ind || []).filter(i => {
+                    const munMatch = normText(i.nm_municipio).includes(normName) || (m.ibge6 && i.ibge6 && String(i.ibge6).slice(0, 6) === String(m.ibge6).slice(0, 6));
+                    return munMatch && String(i.sigla_indicador || '').toLowerCase().trim() === sigAlvo;
+                }).sort((a, b) => (Number(b.ano) || 0) - (Number(a.ano) || 0));
+                if (items.length) {
+                    let v = safeNum(items[0].indicador, NaN);
+                    if (!isNaN(v)) {
+                        somaValPond += (v * pop);
+                        somaPop += pop;
+                    }
+                }
+            });
+            return somaPop > 0 ? (somaValPond / somaPop) : 0;
+        };
+
+        // 1. Dados Macro
+        let popTotal = 0;
+        let poloPrincipal = '-';
+        let maxPopMun = 0;
+        muns.forEach(m => {
+            let p = safeNum(m.pop_2026, 0);
+            popTotal += p;
+            if (p > maxPopMun) {
+                maxPopMun = p;
+                poloPrincipal = m.municipio || '-';
+            }
+        });
+
+        let pibTotal = 0;
+        (ind || []).filter(i => String(i.sigla_indicador || '').toLowerCase() === 'pib_1000').forEach(i => {
+            pibTotal += (safeNum(i.indicador, 0) * 1000);
+        });
+
+        const pctPopPE = (popTotal / 9058931 * 100).toFixed(1);
+        const pctPibPE = pibTotal > 0 ? (pibTotal / 254800000000 * 100).toFixed(1) : '0.0';
+
+        // 2. Dimensão 0: Redes & Centralidade
+        const cgtMed = getMed('cgt');
+        const acessMed = getMed('indice_acessibilidade_from');
+        const arranjosQtd = muns.filter(m => (m.arranjos_produtivos_locais && m.arranjos_produtivos_locais !== '-' && m.arranjos_produtivos_locais !== '')).length;
+
+        let textoRedes = `A articulação da rede urbana regional tem como polo estruturador o município de <strong>${poloPrincipal}</strong> (maior contingente com ${maxPopMun > 0 ? maxPopMun.toLocaleString('pt-BR') : '-'} habitantes). Apresenta Índice Médio de Acessibilidade Rodoviária de <strong>${acessMed > 0 ? acessMed.toFixed(2) : '1,00'}</strong> e Centralidade de Gestão (CGT) de <strong>${cgtMed > 0 ? cgtMed.toFixed(2) : '-'}</strong>, definindo o alcance de busca de serviços de alta complexidade e a polarização intermunicipal.`;
+
+        // 3. Dimensão 1: Demografia Regional
+        let pctUrbMed = getMediaPondPop('perc_pop_urb') || getMed('perc_pop_urb');
+        const rdPopMed = getMed('rd_pop');
+        const indEnvMed = getMed('ind_envelhecimento');
+        const pctPiaMed = getMed('pct_pia');
+
+        let estagioRegional = 'janela favorável de bônus demográfico';
+        if (indEnvMed > 70) estagioRegional = 'transição demográfica adiantada com envelhecimento acelerado';
+        else if (pctPiaMed > 65) estagioRegional = 'amplo contingente populacional em idade produtiva (PIA)';
+
+        let textoDemo = `Composta por <strong>${muns.length} municípios</strong> e <strong>${popTotal.toLocaleString('pt-BR')} habitantes</strong> (${pctPopPE}% de PE), a região registra taxa média de urbanização de <strong>${safeFmt(pctUrbMed, 1, '%')}</strong>. A Razão de Dependência situa-se em <strong>${safeFmt(rdPopMed, 1)}</strong> com Índice de Envelhecimento mediano de <strong>${safeFmt(indEnvMed, 1)}</strong>, caracterizando ${estagioRegional}.`;
+
+        // 4. Dimensão 2: Dinâmica Econômica
+        const pibpcMed = getMed('pibpc');
+        const vAgro = getMed('vab_agro');
+        const vInd = getMed('vab_ind');
+        const vServ = getMed('vab_serv');
+        const vAdm = getMed('vab_adm');
+        const totalVab = (vAgro + vInd + vServ + vAdm) || 1;
+        const pctAgro = ((vAgro / totalVab) * 100).toFixed(1);
+        const pctInd = ((vInd / totalVab) * 100).toFixed(1);
+        const pctServ = ((vServ / totalVab) * 100).toFixed(1);
+        const pctAdm = ((vAdm / totalVab) * 100).toFixed(1);
+
+        let setorLider = 'Serviços';
+        let maxV = vServ;
+        if (vInd > maxV) { setorLider = 'Indústria'; maxV = vInd; }
+        if (vAgro > maxV) { setorLider = 'Agropecuária'; maxV = vAgro; }
+        if (vAdm > maxV) { setorLider = 'Adm. Pública'; maxV = vAdm; }
+
+        let cobFibra = getMed('cob_fibra');
+        if (cobFibra <= 1 && cobFibra > 0) cobFibra *= 100;
+
+        let qlIndVal = (parseFloat(pctInd) / 10.672);
+        let qlIndFmt = isNaN(qlIndVal) ? '-' : qlIndVal.toFixed(2);
+
+        let textoEcon = `A economia regional movimenta um PIB de <strong>${formataMoedaCompacta(pibTotal)}</strong> (${pctPibPE}% da riqueza de PE), com PIB per capita mediano de <strong>${pibpcMed > 0 ? 'R$ ' + pibpcMed.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '-'}</strong>. A matriz do VAB tem liderança de <strong>${setorLider}</strong> (Serviços: ${pctServ}%, Adm. Pública: ${pctAdm}%, Indústria: ${pctInd}%, Agropecuária: ${pctAgro}%). Cobertura por fibra óptica em <strong>${safeFmt(cobFibra, 1, '%')}</strong> dos domicílios e QL Indústria em <strong>${qlIndFmt}</strong>.`;
+
+        // 5. Dimensão 3: Capital Humano & Educação
+        const ideb5Med = getMed('ideb_5ano');
+        const ideb9Med = getMed('ideb_9ano');
+        const tdiMed = getMed('tdi_9ano');
+        const idhmMed = getMed('idhm');
+
+        let textoEdu = `Na educação básica, a região atinge nota mediana no IDEB de <strong>${safeFmt(ideb5Med, 1)}</strong> nos Anos Iniciais e <strong>${safeFmt(ideb9Med, 1)}</strong> nos Anos Finais, com distorção idade-série de <strong>${safeFmt(tdiMed, 1, '%')}</strong> no ensino fundamental. O IDHM médio situa-se em <strong>${safeFmt(idhmMed, 3)}</strong>, demandando políticas de equalização educacional e retenção juvenil.`;
+
+        // 6. Dimensão 4: Vulnerabilidade Social
+        const ivcadMed = getMed('ivcad');
+        const txCadMed = getMed('tx_cad_pessoas');
+        let drMed = getMed('ivcad_dr');
+        if (drMed <= 1 && drMed > 0) drMed *= 100;
+        const aguaMed = getMed('pct_agua_rede');
+
+        let textoSocial = `O Índice de Vulnerabilidade Social (IVCAD) registra mediana regional de <strong>${safeFmt(ivcadMed, 3)}</strong>, com <strong>${safeFmt(txCadMed, 1, '% da população')}</strong> inscrita no CadÚnico. A dimensão de Disponibilidade de Recursos (IVCAD-DR) em <strong>${safeFmt(drMed, 1, '%')}</strong> reflete dependência de transferências de renda. O abastecimento de água pela rede geral atende <strong>${safeFmt(aguaMed, 1, '%')}</strong> dos domicílios.`;
+
+        // 7. Dimensão 5: Gestão & Finanças Públicas
+        const anoRef = (typeof obterAnoFiscalReferencia === 'function') ? obterAnoFiscalReferencia(fisc) : 2024;
+        let totalRCL = 0, totalInvest = 0, totalRec = 0, totalTransf = 0;
+        let countCapag = { 'A': 0, 'B': 0, 'C': 0, 'D': 0 };
+
+        muns.forEach(m => {
+            const normName = normText(m.municipio || '');
+            let rcl = (typeof extrairValorFiscal === 'function') ? safeNum(extrairValorFiscal(normName, 'fisc_rcl', anoRef, fisc), 0) : 0;
+            let inv = (typeof extrairValorFiscal === 'function') ? safeNum(extrairValorFiscal(normName, 'fisc_investimentos', anoRef, fisc), 0) : 0;
+            let rec = (typeof extrairValorFiscal === 'function') ? safeNum(extrairValorFiscal(normName, 'fisc_rec_total', anoRef, fisc), 0) : 0;
+            let tu = (typeof extrairValorFiscal === 'function') ? safeNum(extrairValorFiscal(normName, 'fisc_transf_uniao_corr', anoRef, fisc), 0) : 0;
+
+            totalRCL += rcl;
+            totalInvest += inv;
+            totalRec += rec;
+            totalTransf += tu;
+
+            let cLetter = String(m.capag || m.CAPAG || '').trim().toUpperCase();
+            if (!cLetter || cLetter === 'N.D.' || cLetter === 'UNDEFINED' || cLetter === '-') {
+                const itemC = (ind || []).find(i => {
+                    const matchMun = (m.ibge6 && i.ibge6 && String(i.ibge6).slice(0, 6) === String(m.ibge6).slice(0, 6)) || normText(i.nm_municipio) === normName;
+                    return matchMun && (String(i.nm_indicador || '').toLowerCase().trim() === 'capag' || String(i.sigla_indicador || '').toLowerCase().trim() === 'capag');
+                });
+                if (itemC && itemC.indicador) cLetter = String(itemC.indicador).trim().toUpperCase();
+            }
+            if (countCapag[cLetter] !== undefined) countCapag[cLetter]++;
+        });
+
+        const capagAptos = (countCapag['A'] || 0) + (countCapag['B'] || 0);
+        const pctCapagAptos = muns.length > 0 ? ((capagAptos / muns.length) * 100).toFixed(0) : '0';
+        let pctDep = totalRec > 0 ? (totalTransf / totalRec) * 100 : 0;
+
+        let modaCapag = 'B';
+        let maxC = -1;
+        Object.keys(countCapag).forEach(k => {
+            if (countCapag[k] > maxC && countCapag[k] > 0) {
+                maxC = countCapag[k];
+                modaCapag = k;
+            }
+        });
+
+        let textoFiscal = `No equilíbrio fiscal, as administrações da RD somam Receita Corrente Líquida de <strong>${formataMoedaCompacta(totalRCL)}</strong> e <strong>${formataMoedaCompacta(totalInvest)}</strong> em investimentos. Apresenta <strong>${capagAptos} municípios (${pctCapagAptos}%)</strong> habilitados com CAPAG A ou B perante o Tesouro Nacional, com dependência média de transferências correntes em <strong>${pctDep.toFixed(1)}%</strong> da receita total.`;
+
+        const htmlResumo = `
+            <div class="resumo-exec-banner mb-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-white text-orange-950 font-black px-3 py-1.5 rounded-pill uppercase tracking-wider text-xs shadow-xs">
+                            <i class="fas fa-cubes me-1 text-[#ff5a26]"></i> Síntese Multidimensional
+                        </span>
+                        <span class="text-orange-100 font-semibold text-xs">${nomeRD} &bull; Planejamento Regional Integrado</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-city me-1 text-blue-300"></i> Polo: ${poloPrincipal}
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-users me-1 text-teal-300"></i> ${popTotal.toLocaleString('pt-BR')} hab (${pctPopPE}%)
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-sack-dollar me-1 text-emerald-300"></i> PIB: ${formataMoedaCompacta(pibTotal)} (${pctPibPE}%)
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-landmark me-1 text-amber-300"></i> CAPAG A/B: ${capagAptos} (${pctCapagAptos}%)
+                        </span>
+                    </div>
+                </div>
+                <p class="text-sm text-white leading-relaxed mb-0 font-medium" style="text-align: justify;">
+                    A Região de Desenvolvimento <strong>${nomeRD}</strong> congrega <strong>${muns.length} municípios</strong> e polarização central exercida por <strong>${poloPrincipal}</strong>. Representa <strong>${pctPopPE}% da população</strong> e <strong>${pctPibPE}% da economia</strong> pernambucana, com taxa de urbanização de <strong>${safeFmt(pctUrbMed, 1, '%')}</strong> e dinamismo produtivo liderado pelo setor de <strong>${setorLider}</strong>. No campo das capacidades estatais, registra <strong>${capagAptos} prefeituras com solvência fiscal A ou B</strong> e cobertura de fibra óptica em <strong>${safeFmt(cobFibra, 1, '%')}</strong> dos domicílios.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
+                <!-- 0. REDES & CENTRALIDADE -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #0284C7;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-diagram-project text-sky-500 me-1.5"></i> Redes &amp; Cent.</span>
+                        <span class="badge bg-sky-50 text-sky-700 border border-sky-200 text-[10px] font-bold rounded-pill px-2">Acessib: ${acessMed > 0 ? acessMed.toFixed(2) : '1,00'}</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Polo Estruturador:</span> <strong class="text-slate-800">${poloPrincipal}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Acessibilidade:</span> <strong class="text-slate-800">${acessMed > 0 ? acessMed.toFixed(2) : '1,00'}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Centralidade (CGT):</span> <strong class="text-slate-800">${cgtMed > 0 ? cgtMed.toFixed(2) : '-'}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Arranjos (APL):</span> <strong class="text-slate-800">${arranjosQtd} muns</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoRedes}
+                    </div>
+                </div>
+
+                <!-- 1. DEMOGRAFIA -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #2563EB;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-users text-blue-600 me-1.5"></i> Demografia</span>
+                        <span class="badge bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold rounded-pill px-2">${pctPopPE}% de PE</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">População Total:</span> <strong class="text-slate-800">${popTotal.toLocaleString('pt-BR')}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Taxa Urbanização:</span> <strong class="text-slate-800">${safeFmt(pctUrbMed, 1, '%')}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Razão Dependência:</span> <strong class="text-slate-800">${safeFmt(rdPopMed, 1)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Índ. Envelhecimento:</span> <strong class="text-slate-800">${safeFmt(indEnvMed, 1)}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoDemo}
+                    </div>
+                </div>
+
+                <!-- 2. ECONOMIA -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #059669;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-chart-line text-emerald-600 me-1.5"></i> Economia</span>
+                        <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-pill px-2">Setor: ${setorLider}</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIB Regional:</span> <strong class="text-slate-800">${formataMoedaCompacta(pibTotal)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIB per Capita:</span> <strong class="text-slate-800">${pibpcMed > 0 ? 'R$ ' + pibpcMed.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '-'}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Fibra Óptica:</span> <strong class="text-slate-800">${safeFmt(cobFibra, 1, '%')}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">QL Indústria:</span> <strong class="text-slate-800">${qlIndFmt}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoEcon}
+                    </div>
+                </div>
+
+                <!-- 3. CAPITAL HUMANO -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #D97706;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-graduation-cap text-amber-500 me-1.5"></i> Capital Humano</span>
+                        <span class="badge bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-pill px-2">IDEB: ${safeFmt(ideb5Med, 1)}</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">IDEB Iniciais (5º):</span> <strong class="text-slate-800">${safeFmt(ideb5Med, 1)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">IDEB Finais (9º):</span> <strong class="text-slate-800">${safeFmt(ideb9Med, 1)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Distorção (TDI):</span> <strong class="text-slate-800">${safeFmt(tdiMed, 1, '%')}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">IDHM Médio:</span> <strong class="text-slate-800">${safeFmt(idhmMed, 3)}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoEdu}
+                    </div>
+                </div>
+
+                <!-- 4. VULNERABILIDADE SOCIAL -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #8B5CF6;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-hand-holding-heart text-purple-500 me-1.5"></i> Social &amp; San.</span>
+                        <span class="badge bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold rounded-pill px-2">IVCAD: ${safeFmt(ivcadMed, 3)}</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">IVCAD Regional:</span> <strong class="text-slate-800">${safeFmt(ivcadMed, 3)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">CadÚnico:</span> <strong class="text-slate-800">${safeFmt(txCadMed, 1, '%')}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Dep. Renda (DR):</span> <strong class="text-slate-800">${safeFmt(drMed, 1, '%')}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Água Tratada:</span> <strong class="text-slate-800">${safeFmt(aguaMed, 1, '%')}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoSocial}
+                    </div>
+                </div>
+
+                <!-- 5. GESTÃO FISCAL -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #0D9488;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-landmark text-teal-600 me-1.5"></i> Gestão Fiscal</span>
+                        <span class="badge bg-teal-50 text-teal-700 border border-teal-200 text-[10px] font-bold rounded-pill px-2">CAPAG: ${modaCapag}</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">RCL Total:</span> <strong class="text-slate-800">${formataMoedaCompacta(totalRCL)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Investimentos:</span> <strong class="text-slate-800">${formataMoedaCompacta(totalInvest)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">CAPAG A/B:</span> <strong class="text-slate-800">${capagAptos} (${pctCapagAptos}%)</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Dep. Repasses:</span> <strong class="text-slate-800">${pctDep.toFixed(1)}%</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoFiscal}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        $container.html(htmlResumo);
+    } catch (errResumo) {
+        console.error("[Regioes] Erro ao renderizar resumo executivo regional:", errResumo);
+    }
 }

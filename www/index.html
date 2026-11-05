@@ -25,12 +25,12 @@
   <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" defer></script>
-  <script src="js/core.js?v=1793795875.11747"></script>
-  <script src="js/landing.js?v=1793795875.11755"></script>
-  <script src="js/ufs.js?v=1793795875.11762"></script>
-  <script src="js/ficha.js?v=1793795875.11769"></script>
-  <script src="js/regioes.js?v=1793795875.11776"></script>
-  <script src="js/app.js?v=1793795875.11782"></script>
+  <script src="js/core.js?v=1793902855.78576"></script>
+  <script src="js/landing.js?v=1793902855.78584"></script>
+  <script src="js/ufs.js?v=1793902855.7859"></script>
+  <script src="js/ficha.js?v=1793902855.78595"></script>
+  <script src="js/regioes.js?v=1793902855.78601"></script>
+  <script src="js/app.js?v=1793902855.78606"></script>
 </head>
 <html lang="pt-br">
   <body class="bg-slate-50 antialiased overflow-hidden m-0 p-0">
@@ -39,14 +39,19 @@
       <div class="aurora-main-wrapper">
         <header class="aurora-topbar d-flex justify-content-between align-items-center gap-2 px-3 py-2" style="flex-wrap: nowrap; min-height: 54px; position: relative; z-index: 1050; overflow: visible !important;">
           <div class="d-flex align-items-center gap-2 flex-nowrap flex-shrink-0" style="flex-shrink: 0;">
-            <div class="d-flex align-items-center gap-2 cursor-pointer select-none" onclick="window.mudarAbaAurora(&#39;Início&#39;, null)" title="Ir para o Início">
-              <img src="images/aurora.png" class="w-8 h-8 rounded-full border border-slate-200 shadow-xs object-cover"/>
-              <div class="d-none d-lg-flex flex-column">
-                <span class="fw-black text-slate-800 leading-tight tracking-tight" style="font-size: 0.95rem;">Aurora</span>
-                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Pernambuco</span>
+            <div class="d-flex align-items-center gap-2.5 cursor-pointer select-none" onclick="window.mudarAbaAurora(&#39;Início&#39;, null)" title="Ir para o Início">
+              <div class="rounded-full d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 38px; height: 38px; background: linear-gradient(135deg, #f59e0b, #ff5a26); padding: 6px; box-sizing: border-box; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+                <div style="width: 100%; height: 100%;"><svg viewBox="0 0 100 100" style="width: 100%; height: 100%; fill: #231b18;"><circle cx="50" cy="45" r="28" fill="#ffaa00" /><path d="M50 8 L50 2M22 22 L17 17M8 50 L2 50M78 22 L83 17M92 50 L98 50" stroke="#ffaa00" stroke-width="4" stroke-linecap="round"/><path d="M10 75 Q 35 60, 60 75 T 100 70 L 100 90 Z" fill="#231b18"/><path d="M28 75 V 52 Q 28 50 30 50 Q 32 50 32 52 V 75 M25 60 H 35 M25 60 V 55 M35 60 V 57" stroke="#231b18" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M72 75 V 46 Q 72 44 74 44 Q 76 44 76 46 V 75 M68 56 H 80 M68 56 V 51 M80 56 V 53" stroke="#231b18" stroke-width="3" stroke-linecap="round" fill="none"/></svg></div>
+              </div>
+              <div class="d-none d-md-flex flex-column justify-content-center">
+                <div class="d-flex align-items-center leading-none">
+                  <span class="fw-black text-slate-900 tracking-tight" style="font-size: 1.15rem; letter-spacing: -0.3px;">Plataforma</span>
+                  <span class="fw-black ms-1.5 tracking-tight" style="font-size: 1.15rem; letter-spacing: -0.3px; color: #ff5a26;">Aurora</span>
+                </div>
+                <span class="font-black text-slate-500 uppercase" style="font-size: 0.62rem; letter-spacing: 0.12em; margin-top: 2px;">INTELIGÊNCIA GOVERNAMENTAL</span>
               </div>
             </div>
-            <div class="d-none d-lg-block vr my-1 bg-slate-300" style="width: 1px; height: 24px;"></div>
+            <div class="d-none d-md-block vr my-1 bg-slate-300 ms-1 me-1" style="width: 1px; height: 26px; opacity: 0.45;"></div>
             <div class="d-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1 d-print-none aurora-topbar-tabs flex-shrink-0 flex-nowrap">
               <button class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm aurora-default-tab" onclick="mudarAbaAurora(&#39;Início&#39;, this)">
                 <i class="fas fa-house me-1"></i>
@@ -137,9 +142,19 @@
               </div>
             </div>
             <div id="controles_ficha_municipal" class="d-none align-items-center gap-2 flex-nowrap">
-              <div class="d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200">
+              <div class="d-inline-flex bg-slate-100 p-0.5 rounded-pill border border-slate-200">
+                <button id="nav_btn_subaba_ficha" type="button" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs shadow-xs btn-primary text-white" onclick="window.trocarSubabaMunicipios(&#39;ficha&#39;)" title="Ficha Municipal Individual">
+                  <i class="fas fa-file-invoice me-1"></i>
+                  Ficha
+                </button>
+                <button id="nav_btn_subaba_comparacao" type="button" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.trocarSubabaMunicipios(&#39;comparacao&#39;)" title="Comparativo Municipal (2 ou 3 Municípios)">
+                  <i class="fas fa-code-compare me-1"></i>
+                  Comparar
+                </button>
+              </div>
+              <div id="box_filtro_municipio_individual" class="d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200">
                 <i class="fas fa-location-dot text-primary"></i>
-                <select id="ficha_f_municipio" class="form-select-municipio" data-live-search="true" data-live-search-normalize="true" data-live-search-placeholder="Buscar município..." data-none-results-text="Nenhum município encontrado" data-size="10" data-container="body" data-style="btn-sm btn-light fw-bold text-slate-700 border-0 bg-transparent py-0 px-1 shadow-none" data-width="230px"></select>
+                <select id="ficha_f_municipio" class="form-select-municipio" data-live-search="true" data-live-search-normalize="true" data-live-search-placeholder="Buscar município..." data-none-results-text="Nenhum município encontrado" data-size="10" data-style="btn-sm btn-light fw-bold text-slate-700 border-0 bg-transparent py-0 px-1 shadow-none" data-width="230px"></select>
               </div>
               <div id="ficha_navbar_nav" class="d-none d-md-flex align-items-center gap-1 bg-slate-100 p-1 rounded-pill border border-slate-200 shadow-sm">
                 <div class="dropdown">
@@ -225,22 +240,29 @@
           <div class="tab-content">
             <div class="tab-pane active show relative" data-value="Início" id="aba_inicio">
               <div class="container-fluid mt-3 px-4 pb-5">
-                <div class="relative rounded-3xl p-6 md:p-10 mb-5 overflow-hidden shadow-xl text-white" style="background: linear-gradient(135deg, #0C2856 0%, #153e7e 60%, #081c3d 100%); border: 1px solid rgba(255, 255, 255, 0.12);">
-                  <div class="absolute -right-12 -bottom-16 w-80 h-80 rounded-full opacity-10 pointer-events-none" style="background: radial-gradient(circle, #00B7FF 0%, transparent 70%); filter: blur(25px);"></div>
-                  <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                    <span class="badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-white shadow-sm" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.25);">
-                      <i class="fas fa-landmark me-1.5 text-amber-300"></i>
-                      Governo de Pernambuco
-                    </span>
-                    <span class="badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-blue-200 shadow-sm" style="background: rgba(0, 183, 255, 0.15); border: 1px solid rgba(0, 183, 255, 0.3);">
-                      <i class="fas fa-shield-halved me-1.5 text-blue-300"></i>
-                      Secretaria de Planejamento, Gestão e Desenvolvimento Regional
-                    </span>
+                <div class="relative rounded-3xl p-6 md:p-10 mb-5 overflow-hidden shadow-xl text-white" style="background: linear-gradient(135deg, #ff5a26 0%, #ea580c 55%, #c2410c 100%); border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: 0 16px 36px -8px rgba(255, 90, 38, 0.35);">
+                  <div class="absolute -right-12 -bottom-16 w-80 h-80 rounded-full opacity-10 pointer-events-none" style="background: radial-gradient(circle, #fbbf24 0%, transparent 70%); filter: blur(30px); opacity: 0.18;"></div>
+                  <div class="d-flex align-items-center justify-content-between gap-3 mb-3 flex-wrap">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <span class="badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-white shadow-sm" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.25);">
+                        <i class="fas fa-landmark me-1.5 text-amber-300"></i>
+                        Governo de Pernambuco
+                      </span>
+                      <span class="badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-white shadow-sm" style="background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.25);">
+                        <i class="fas fa-shield-halved me-1.5 text-amber-200"></i>
+                        Secretaria de Planejamento, Gestão e Desenvolvimento Regional
+                      </span>
+                    </div>
+                    <a href="https://digital.seplag.pe.gov.br/" target="_blank" rel="noopener noreferrer" class="btn btn-sm rounded-pill px-4 py-2 font-black text-xs text-orange-950 d-inline-flex align-items-center gap-2 shadow-md transition-all hover:scale-105" style="background: #ffffff; color: #c2410c; border: 1px solid #ffffff; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); text-decoration: none;" title="Acessar o Hub Geral de Aplicativos SEPLAG Digital">
+                      <i class="fas fa-arrow-left text-[#ff5a26]"></i>
+                      <span>Hub SEPLAG Digital</span>
+                      <i class="fas fa-external-link-alt text-[10px] text-amber-600 opacity-90 ms-0.5"></i>
+                    </a>
                   </div>
                   <div class="row align-items-center mb-4">
                     <div class="col-lg-9">
                       <h1 class="text-3xl md:text-5xl font-black tracking-tight mb-3 text-white leading-tight">Aurora Desenvolvimento Regional</h1>
-                      <p class="text-sm md:text-base text-blue-100 max-w-3xl leading-relaxed mb-0 font-medium">
+                      <p class="text-sm md:text-base text-white max-w-3xl leading-relaxed mb-0 font-medium">
                         A plataforma estratégica de inteligência de dados e apoio ao planejamento governamental do Estado de Pernambuco. 
                         Monitore indicadores socioeconômicos, avalie a convergência inter e intra-regional e acesse o diagnóstico dos 184 municípios e 12 Regiões de Desenvolvimento.
                       </p>
@@ -254,12 +276,12 @@
                       <div class="col-md-7 col-lg-8">
                         <div class="relative flex items-center">
                           <i class="fas fa-search absolute left-4 text-slate-400 text-sm pointer-events-none"></i>
-                          <input id="landing_search_input" type="text" class="w-full bg-white text-slate-800 placeholder-slate-400 pl-11 pr-28 py-3 rounded-2xl text-sm font-semibold shadow-lg focus:outline-none focus:ring-2 focus:ring-[#00B7FF] border-0 transition-all" placeholder="Buscar município (ex: Caruaru, Petrolina, Serra Talhada) ou Região (ex: Agreste Central)..." onkeydown="if(event.key===&#39;Enter&#39;) window.executarBuscaLanding();"/>
+                          <input id="landing_search_input" type="text" class="w-full bg-white text-slate-800 placeholder-slate-400 pl-11 pr-28 py-3 rounded-2xl text-sm font-semibold shadow-lg focus:outline-none focus:ring-2 focus:ring-[#ff5a26] border-0 transition-all" placeholder="Buscar município (ex: Caruaru, Petrolina, Serra Talhada) ou Região (ex: Agreste Central)..." onkeydown="if(event.key===&#39;Enter&#39;) window.executarBuscaLanding();"/>
                           <button id="btn_executar_busca_landing" type="button" class="absolute right-2 btn btn-primary btn-sm rounded-xl px-3.5 py-1.5 font-bold text-xs shadow-sm cursor-pointer" onclick="window.executarBuscaLanding()">Acessar</button>
                         </div>
                       </div>
                       <div class="col-md-5 col-lg-4 d-flex align-items-center gap-1.5 flex-wrap">
-                        <span class="text-xs font-bold text-blue-200 uppercase tracking-wider me-1">Acesso Rápido:</span>
+                        <span class="text-xs font-bold text-white uppercase tracking-wider me-1 opacity-90">Acesso Rápido:</span>
                         <button type="button" class="btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all" onclick="window.irParaMunicipio(&#39;Recife&#39;)">Recife</button>
                         <button type="button" class="btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all" onclick="window.irParaMunicipio(&#39;Caruaru&#39;)">Caruaru</button>
                         <button type="button" class="btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all" onclick="window.irParaMunicipio(&#39;Petrolina&#39;)">Petrolina</button>
@@ -376,7 +398,7 @@
                         </div>
                         <span class="badge bg-amber-50 text-amber-800 border border-amber-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Pautas Estruturadoras</span>
                         <h4 class="font-black text-slate-800 text-lg mb-2">Programas Prioritários</h4>
-                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Acompanhamento em profundidade dos programas centrais do Governo de Pernambuco: Pernambuco sem Fome (Cozinhas Comunitárias e Mães de PE), Águas de Pernambuco (Compesa e Adutoras) e Saúde Fiscal (CAPAG).</p>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Acompanhamento em profundidade dos programas centrais do Governo de Pernambuco: Superação da Pobreza, Segurança Alimentar e Proteção Social (Cozinhas e Mães de PE), Segurança Hídrica e Saneamento Básico (Compesa e Adutoras), Governança e Sustentabilidade Fiscal (CAPAG) e Conectividade Logística, Eixos Viários e Mobilidade Regional.</p>
                       </div>
                       <button type="button" class="btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Programas&#39;, null)">
                         <i class="fas fa-arrow-right"></i>
@@ -425,17 +447,17 @@
                         Ver Metadados
                       </button>
                     </div>
-                    <div class="bg-gradient-to-br from-[#0C2856] to-[#153e7e] rounded-3xl p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between text-white">
+                    <div class="rounded-3xl p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between text-white" style="background: linear-gradient(135deg, #1c1917 0%, #292524 50%, #431407 100%); border: 1px solid rgba(255, 90, 38, 0.35); box-shadow: 0 10px 25px -5px rgba(28, 25, 23, 0.3);">
                       <div>
-                        <div class="w-12 h-12 rounded-2xl bg-white/10 text-cyan-300 flex items-center justify-center text-xl mb-4 border border-white/20">
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-4 shadow-xs" style="background: rgba(255, 90, 38, 0.15); color: #ff5a26; border: 1px solid rgba(255, 90, 38, 0.3);">
                           <i class="fas fa-robot"></i>
                         </div>
-                        <span class="badge bg-cyan-400/20 text-cyan-200 border border-cyan-300/30 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Inteligência Artificial</span>
+                        <span class="badge rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1" style="background: rgba(255, 90, 38, 0.15); color: #fdba74; border: 1px solid rgba(255, 90, 38, 0.3);">Inteligência Artificial</span>
                         <h4 class="font-black text-white text-lg mb-2">Assistente de Dados Aurora</h4>
-                        <p class="text-blue-100 text-sm leading-relaxed mb-4">Converse diretamente com os dados de Pernambuco em linguagem natural. Obtenha comparativos imediatos, sínteses territoriais e respostas rápidas sobre qualquer município ou região.</p>
+                        <p class="text-stone-300 text-sm leading-relaxed mb-4">Converse diretamente com os dados de Pernambuco em linguagem natural. Obtenha comparativos imediatos, sínteses territoriais e respostas rápidas sobre qualquer município ou região.</p>
                       </div>
-                      <button type="button" class="btn btn-light rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2 text-slate-900 shadow-sm" onclick="window.toggleAuroraChat()">
-                        <i class="fas fa-comments text-primary"></i>
+                      <button type="button" class="btn btn-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2 shadow-sm text-white" onclick="window.toggleAuroraChat()">
+                        <i class="fas fa-comments text-white"></i>
                         Conversar com a Aurora
                       </button>
                     </div>
@@ -479,7 +501,7 @@
                           Programas de Governo
                         </div>
                         <h5 class="font-black text-slate-800 text-sm mb-2">Ações Estruturantes de Estado</h5>
-                        <p class="text-xs text-slate-600 leading-relaxed mb-3">Consulte o mapa de cozinhas comunitárias do Pernambuco sem Fome, a malha de adutoras e municípios atendidos pela Compesa e o diagnóstico fiscal.</p>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3">Consulte o mapa de cozinhas comunitárias do Superação da Pobreza e Segurança Alimentar, a malha de adutoras de Segurança Hídrica, os eixos de Conectividade Logística e a Sustentabilidade Fiscal dos municípios.</p>
                       </div>
                       <button class="btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50" onclick="window.mudarAbaAurora(&#39;Programas&#39;, null)">Ir para Programas</button>
                     </div>
@@ -523,18 +545,18 @@
                   </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-                  <div class="kpi-modern-card" style="border-left-color: #0C2856;">
+                  <div class="kpi-modern-card" style="border-left-color: #ff5a26;">
                     <div class="kpi-modern-header">MUNICÍPIOS NA RD</div>
                     <div class="kpi-modern-body">
-                      <i class="fas fa-city kpi-modern-icon" style="color: #0C2856;"></i>
+                      <i class="fas fa-city kpi-modern-icon" style="color: #ff5a26;"></i>
                       <span class="kpi-modern-number" id="rd_kpi_qtd_muns">0</span>
                     </div>
                     <div class="kpi-modern-footer text-uppercase">Municípios Integrantes</div>
                   </div>
-                  <div class="kpi-modern-card" style="border-left-color: #3498DB;">
+                  <div class="kpi-modern-card" style="border-left-color: #f59e0b;">
                     <div class="kpi-modern-header">POPULAÇÃO REGIONAL</div>
                     <div class="kpi-modern-body">
-                      <i class="fas fa-users kpi-modern-icon" style="color: #3498DB;"></i>
+                      <i class="fas fa-users kpi-modern-icon" style="color: #f59e0b;"></i>
                       <span class="kpi-modern-number" id="rd_kpi_pop_total">0</span>
                     </div>
                     <div class="kpi-modern-footer text-uppercase">Habitantes Estimados (2026)</div>
@@ -556,6 +578,11 @@
                     <div class="kpi-modern-footer text-uppercase">Recursos Alocados na RD</div>
                   </div>
                 </div>
+                <div id="sec_rd_resumo_executivo" class="border-b-2 border-slate-200 pb-2 mb-4 mt-2">
+                  <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Resumo Executivo Integrado</h2>
+                  <p class="text-sm font-bold text-slate-500 mb-0">Síntese Estratégica Multidimensional: Redes Urbanas, Demografia, Economia, Capital Humano, Vulnerabilidade e Fiscal</p>
+                </div>
+                <div id="rd_container_resumo_executivo" class="mb-5"></div>
                 <div id="sec_cluster0" class="subsecao-print-break mb-5">
                   <div class="border-b-2 border-slate-200 pb-2 mb-3">
                     <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">Dimensão 0: Desenvolvimento Regional e Redes Urbanas</h3>
@@ -938,29 +965,34 @@
                     <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1">
                       <button id="btn_pauta_resumo_cozinhas" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.alternarPautaResumos(&#39;cozinhas&#39;, this)">
                         <i class="fas fa-utensils me-1.5 text-amber-500"></i>
-                        Pernambuco sem Fome
+                        Superação da Pobreza, Segurança Alimentar e Proteção Social
                       </button>
                       <button id="btn_pauta_resumo_aguas" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;aguas&#39;, this)">
-                        <i class="fas fa-droplet me-1.5 text-blue-500"></i>
-                        Águas de Pernambuco
+                        <i class="fas fa-droplet me-1.5 text-sky-500"></i>
+                        Segurança Hídrica e Saneamento Básico
                       </button>
                       <button id="btn_pauta_resumo_capag" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;capag&#39;, this)">
                         <i class="fas fa-building-columns me-1.5 text-purple-600"></i>
-                        Capacidade de Pagamento
+                        Governança e Sustentabilidade Fiscal, Parcerias e Apoio aos Municípios
                       </button>
                       <button id="btn_pauta_resumo_estradas" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;estradas&#39;, this)">
                         <i class="fas fa-road me-1.5 text-indigo-500"></i>
-                        Estradas de PE
+                        Conectividade Logística, Eixos Viários e Mobilidade Regional
                       </button>
                     </div>
                   </div>
                 </div>
+                <div id="sec_tematicas_resumo_executivo" class="border-b-2 border-slate-200 pb-2 mb-4 mt-2">
+                  <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Painel Executivo de Programas</h2>
+                  <p class="text-sm font-bold text-slate-500 mb-0">Visão Transversal Integrada das Entregas e Investimentos Estruturadores no Estado</p>
+                </div>
+                <div id="tematicas_container_resumo_executivo" class="mb-5"></div>
                 <div id="resumo_pauta_cozinhas" class="resumo-pauta-bloco">
                   <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
                       <div>
                         <span class="badge bg-amber-50 text-amber-700 border border-amber-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">SEGURANÇA ALIMENTAR &amp; ASSISTÊNCIA SOCIAL</span>
-                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Pernambuco sem Fome — Cozinhas, Mães de Pernambuco &amp; Cofinanciamento</h4>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Superação da Pobreza, Segurança Alimentar e Proteção Social</h4>
                       </div>
                       <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
                         <i class="fas fa-shield-heart text-amber-600 me-1"></i>
@@ -1294,7 +1326,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
                       <div>
                         <span class="badge bg-purple-50 text-purple-700 border border-purple-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">GESTÃO FISCAL &amp; CRÉDITO</span>
-                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Capacidade de Pagamento dos Municípios (CAPAG)</h4>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Governança e Sustentabilidade Fiscal, Parcerias e Apoio aos Municípios</h4>
                       </div>
                       <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
                         <i class="fas fa-building-columns text-primary me-1"></i>
@@ -1360,7 +1392,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
                       <div>
                         <span class="badge bg-blue-50 text-blue-700 border border-blue-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">SANEAMENTO &amp; RECURSOS HÍDRICOS</span>
-                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Águas de Pernambuco — Investimentos e Obras Estruturantes</h4>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Segurança Hídrica e Saneamento Básico</h4>
                       </div>
                       <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
                         <i class="fas fa-water text-primary me-1"></i>
@@ -1545,7 +1577,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
                       <div>
                         <span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">INFRAESTRUTURA RODOVIÁRIA &amp; LOGÍSTICA</span>
-                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Estradas de Pernambuco — Obras Rodoviárias e Conectividade Territorial</h4>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Conectividade Logística, Eixos Viários e Mobilidade Regional</h4>
                       </div>
                       <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
                         <i class="fas fa-road text-indigo-600 me-1"></i>
@@ -1699,6 +1731,24 @@
                   <h1 class="display-4 fw-black text-primary">MUNICÍPIOS</h1>
                   <h2 id="capa_nome_municipio" class="fw-bold text-secondary mb-5">MUNICÍPIO</h2>
                   <h4 id="capa_tipo_relatorio" class="fw-bold text-secondary mt-4">RELATÓRIO EXECUTIVO</h4>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-b border-slate-200 flex-wrap gap-2 d-print-none">
+                  <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 shadow-2xs">
+                    <button id="btn_subaba_ficha" type="button" class="btn btn-sm rounded-pill px-3 py-1 font-bold text-xs shadow-xs btn-primary text-white" onclick="window.trocarSubabaMunicipios(&#39;ficha&#39;)" title="Visualizar Ficha Municipal Completa">
+                      <i class="fas fa-file-invoice me-1.5"></i>
+                      Ficha Municipal
+                    </button>
+                    <button id="btn_subaba_comparacao" type="button" class="btn btn-sm rounded-pill px-3 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.trocarSubabaMunicipios(&#39;comparacao&#39;)" title="Comparar 2 ou 3 Municípios Multidimensionalmente">
+                      <i class="fas fa-code-compare me-1.5"></i>
+                      Comparativo Municipal
+                    </button>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-orange-50 text-orange-700 border border-orange-200 text-xs font-bold rounded-pill px-3 py-1">
+                      <i class="fas fa-compass me-1 text-[#ff5a26]"></i>
+                      Módulo de Municípios
+                    </span>
+                  </div>
                 </div>
                 <div id="subaba_ficha_municipal">
                   <div id="sec_caracterizacao" class="border-b-2 border-slate-200 pb-2 mb-4 mt-2">
@@ -2623,7 +2673,7 @@
                           <i class="fas fa-utensils kpi-modern-icon" style="color: #F59E0B;"></i>
                           <span class="kpi-modern-number" id="ficha_kpi_ini_cozinhas">0</span>
                         </div>
-                        <div class="kpi-modern-footer text-truncate" id="ficha_kpi_ini_cozinhas_sub">Pernambuco sem Fome</div>
+                        <div class="kpi-modern-footer text-truncate" id="ficha_kpi_ini_cozinhas_sub">Superação da Pobreza, Segurança Alimentar e Proteção Social</div>
                       </div>
                     </div>
                     <div class="row g-4 mb-5">
@@ -2639,9 +2689,6 @@
                           <div id="ficha_chart_valor_sec" style="width: 100%; height: 250px;"></div>
                         </div>
                       </div>
-                    </div>
-                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-5">
-                      <table id="ficha_tabela_iniciativas" class="table w-100"></table>
                     </div>
                     <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-8">Convênios de Despesa</h5>
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
@@ -2677,9 +2724,6 @@
                         </div>
                         <div class="kpi-modern-footer">Recurso Repassado</div>
                       </div>
-                    </div>
-                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-5">
-                      <table id="ficha_tabela_convenios" class="table w-100"></table>
                     </div>
                     <div id="sec_emendas_parlamentares" class="border-t-2 border-slate-100 pt-4 pb-2 mb-4 mt-8">
                       <h4 class="font-black text-slate-700 uppercase tracking-tight mb-1 text-lg">Emendas Parlamentares</h4>
@@ -2770,6 +2814,176 @@
                     </div>
                     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-5">
                       <table id="ficha_tabela_emendas" class="table w-100"></table>
+                    </div>
+                  </div>
+                </div>
+                <div id="subaba_comparacao_municipal" class="d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 mb-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-orange-100 text-orange-950 font-bold px-3 py-1.5 rounded-pill uppercase tracking-wider text-xs mb-1 d-inline-block">
+                          <i class="fas fa-code-compare me-1 text-[#ff5a26]"></i>
+                          Benchmarking Municipal
+                        </span>
+                        <h3 class="text-xl font-black text-slate-800 tracking-tight mb-0">Comparativo Multidimensional de Municípios</h3>
+                        <p class="text-xs font-medium text-slate-500 mb-0">Compare 2 ou 3 municípios de Pernambuco lado a lado pelas 5 dimensões estratégicas do Aurora.</p>
+                      </div>
+                      <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 font-bold text-xs shadow-2xs" onclick="window.trocarOrdemMunicipiosComparacao()">
+                          <i class="fas fa-arrow-right-arrow-left me-1"></i>
+                          Inverter 1 &amp; 2
+                        </button>
+                        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3.5 font-bold text-xs shadow-xs text-white" onclick="window.atualizarComparacaoMunicipal()">
+                          <i class="fas fa-rotate me-1"></i>
+                          Atualizar Comparação
+                        </button>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-4">
+                        <div class="p-3 rounded-2xl border-2 border-[#ff5a26] bg-orange-50/40 h-100 transition-all">
+                          <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-[#ff5a26] text-white rounded-pill px-2.5 py-1 text-xs font-bold">Município 1 (Base)</span>
+                            <span id="comp_badge_rd_mun1" class="badge bg-orange-100 text-orange-900 text-[11px] font-semibold">-</span>
+                          </div>
+                          <select id="comp_select_mun1" class="form-select form-select-sm fw-bold border-orange-200 text-orange-950 rounded-xl" onchange="window.aoMudarMunicipioComparacao(1)"></select>
+                          <div id="comp_meta_mun1" class="mt-2.5 pt-2 border-t border-orange-200/60 d-flex justify-content-between text-xs text-orange-950">
+                            <span>
+                              População:
+                              <strong id="comp_pop_mun1" class="ms-1">-</strong>
+                            </span>
+                            <span>
+                              PIB pc:
+                              <strong id="comp_pibpc_mun1" class="ms-1">-</strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="p-3 rounded-2xl border-2 border-emerald-500 bg-emerald-50/40 h-100 transition-all">
+                          <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-emerald-600 text-white rounded-pill px-2.5 py-1 text-xs font-bold">Município 2</span>
+                            <span id="comp_badge_rd_mun2" class="badge bg-emerald-100 text-emerald-800 text-[11px] font-semibold">-</span>
+                          </div>
+                          <select id="comp_select_mun2" class="form-select form-select-sm fw-bold border-emerald-200 text-emerald-900 rounded-xl" onchange="window.aoMudarMunicipioComparacao(2)"></select>
+                          <div id="comp_meta_mun2" class="mt-2.5 pt-2 border-t border-emerald-200/60 d-flex justify-content-between text-xs text-emerald-950">
+                            <span>
+                              População:
+                              <strong id="comp_pop_mun2" class="ms-1">-</strong>
+                            </span>
+                            <span>
+                              PIB pc:
+                              <strong id="comp_pibpc_mun2" class="ms-1">-</strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="p-3 rounded-2xl border-2 border-purple-400 bg-purple-50/40 h-100 transition-all">
+                          <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-purple-600 text-white rounded-pill px-2.5 py-1 text-xs font-bold">Município 3 (Opcional)</span>
+                            <span id="comp_badge_rd_mun3" class="badge bg-purple-100 text-purple-800 text-[11px] font-semibold">-</span>
+                          </div>
+                          <select id="comp_select_mun3" class="form-select form-select-sm fw-bold border-purple-200 text-purple-900 rounded-xl" onchange="window.aoMudarMunicipioComparacao(3)"></select>
+                          <div id="comp_meta_mun3" class="mt-2.5 pt-2 border-t border-purple-200/60 d-flex justify-content-between text-xs text-purple-950">
+                            <span>
+                              População:
+                              <strong id="comp_pop_mun3" class="ms-1">-</strong>
+                            </span>
+                            <span>
+                              PIB pc:
+                              <strong id="comp_pibpc_mun3" class="ms-1">-</strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="comp_container_resumo_executivo" class="mb-4"></div>
+                  <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                          <div>
+                            <h5 class="font-black text-slate-800 text-sm uppercase tracking-tight mb-0">
+                              <i class="fas fa-hexagon-nodes text-blue-600 me-2"></i>
+                              Perfil Radial Multidimensional (5 Dimensões)
+                            </h5>
+                            <span class="text-[11px] text-slate-500 font-medium">Escala Normalizada 0-100 (Benchmarking Estadual)</span>
+                          </div>
+                          <span class="badge bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold rounded-pill px-2.5 py-1">Radar</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-3">Compara os polígonos de capacidade em Demografia, Economia, Social, Fiscal e Inovação.</p>
+                        <div id="comp_chart_radar_dimensoes" style="width: 100%; height: 380px;"></div>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                          <div>
+                            <h5 class="font-black text-slate-800 text-sm uppercase tracking-tight mb-0">
+                              <i class="fas fa-chart-column text-emerald-600 me-2"></i>
+                              Gráfico de Pirulito (Lollipop): Confronto Direto
+                            </h5>
+                            <span class="text-[11px] text-slate-500 font-medium">Valores relativos e absolutos por indicador</span>
+                          </div>
+                          <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-pill px-2.5 py-1">Lollipop</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-3">Visualização da distância exata entre os municípios nas principais métricas do Estado.</p>
+                        <div id="comp_chart_lollipop_principais" style="width: 100%; height: 380px;"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                          <h5 class="font-black text-slate-800 text-sm uppercase tracking-tight mb-0">
+                            <i class="fas fa-chart-pie text-amber-500 me-2"></i>
+                            Dimensão 2 (Economia): Composição do VAB (%)
+                          </h5>
+                          <span class="badge bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-pill px-2">Agro / Ind / Serv / Adm</span>
+                        </div>
+                        <div id="comp_chart_vab_setorial" style="width: 100%; height: 320px;"></div>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                          <h5 class="font-black text-slate-800 text-sm uppercase tracking-tight mb-0">
+                            <i class="fas fa-landmark text-purple-600 me-2"></i>
+                            Dimensão 4 (Fiscal): Custeio, Pessoal, Investimentos e Dívida
+                          </h5>
+                          <span class="badge bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold rounded-pill px-2">Lollipop Fiscal</span>
+                        </div>
+                        <div id="comp_chart_lollipop_fiscal" style="width: 100%; height: 320px;"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 mb-5">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-b border-slate-100">
+                      <div>
+                        <h5 class="font-black text-slate-800 text-base uppercase tracking-tight mb-0">
+                          <i class="fas fa-table-list text-primary me-2"></i>
+                          Matriz de Confronto Direto por Dimensões
+                        </h5>
+                        <span class="text-xs text-slate-500">Detalhamento de todos os indicadores das 5 dimensões estratégicas da Ficha Municipal</span>
+                      </div>
+                      <span class="badge bg-orange-50 text-orange-700 border border-orange-200 text-xs font-bold rounded-pill px-3 py-1">Benchmarking</span>
+                    </div>
+                    <div class="table-responsive">
+                      <table id="comp_tabela_confronto" class="table table-hover align-middle mb-0 text-sm w-100">
+                        <thead class="table-light text-xs text-slate-600 uppercase font-black">
+                          <tr>
+                            <th style="width: 32%;">Dimensão &amp; Indicador</th>
+                            <th id="comp_th_mun1" class="text-center text-blue-700" style="width: 20%;">Município 1</th>
+                            <th id="comp_th_mun2" class="text-center text-emerald-700" style="width: 20%;">Município 2</th>
+                            <th id="comp_th_mun3" class="text-center text-purple-700" style="width: 20%;">Município 3</th>
+                            <th class="text-center text-slate-600" style="width: 8%;">Destaque</th>
+                          </tr>
+                        </thead>
+                        <tbody id="comp_tbody_confronto"></tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
@@ -2876,6 +3090,11 @@
                     </button>
                   </div>
                 </div>
+                <div id="sec_ufs_resumo_executivo" class="border-b-2 border-slate-200 pb-2 mb-4 mt-2">
+                  <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Resumo Executivo de Benchmarking</h2>
+                  <p class="text-sm font-bold text-slate-500 mb-0">Síntese Estratégica Comparativa pelos 5 Eixos do Planejamento Governamental</p>
+                </div>
+                <div id="ufs_container_resumo_executivo" class="mb-5"></div>
                 <div id="sec_ufs_conhecimento" class="subsecao-print-break mb-5">
                   <div class="border-b-2 border-slate-200 pb-2 mb-3">
                     <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
@@ -3065,9 +3284,9 @@
       </div>
     </div>
     <div id="aurora-chat-container" class="fixed bottom-24 right-6 w-[580px] max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden transition-all duration-300 transform scale-0 origin-bottom-right z-[9999]" style="height: 520px; max-height: 82vh;">
-      <div class="bg-[#0C2856] text-white p-3 px-4 flex justify-between items-center flex-shrink-0">
+      <div class="text-white p-3 px-4 flex justify-between items-center flex-shrink-0" style="background: linear-gradient(135deg, #1c1917 0%, #292524 60%, #431407 100%); border-bottom: 2px solid #ff5a26;">
         <div class="flex items-center gap-3">
-          <img src="images/aurora.png" class="w-10 h-10 rounded-full border-2 border-white object-cover"/>
+          <img src="images/aurora_simbolo.svg" class="w-10 h-10 rounded-full border-2 border-white object-cover"/>
           <div>
             <h4 class="font-bold m-0 text-sm">Aurora</h4>
             <span class="text-xs text-blue-200">Assistente de Dados</span>
@@ -3085,14 +3304,14 @@
         <button onclick="usarPerguntaPronta(&#39;Como está minha RD?&#39;)" class="bg-white border border-slate-300 text-slate-700 px-2.5 py-1 rounded-full hover:bg-blue-50 hover:border-blue-400 transition-colors cursor-pointer">Como está minha RD?</button>
       </div>
       <div class="p-3 bg-white border-t border-slate-200 flex items-center gap-2 flex-shrink-0">
-        <input id="aurora-chat-input" type="text" class="flex-1 border border-slate-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#00B7FF]" placeholder="Pergunte aos dados..."/>
-        <button onclick="enviarMensagemAurora()" class="bg-[#00B7FF] text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#0066FF] transition-colors flex-shrink-0">
+        <input id="aurora-chat-input" type="text" class="flex-1 border border-slate-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#ff5a26]" placeholder="Pergunte aos dados..."/>
+        <button onclick="enviarMensagemAurora()" class="bg-[#ff5a26] text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#e04010] shadow-sm transition-all flex-shrink-0">
           <i class="fas fa-paper-plane"></i>
         </button>
       </div>
     </div>
-    <button onclick="toggleAuroraChat()" class="fixed bottom-6 right-6 w-14 h-14 bg-[#0C2856] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#0066FF] transition-all z-[9998]">
-      <img src="images/aurora.png" class="w-14 h-14 rounded-full border-2 border-[#0C2856] object-cover hover:scale-110 transition-transform"/>
+    <button onclick="toggleAuroraChat()" class="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all z-[9998] hover:scale-105" style="background: linear-gradient(135deg, #ff5a26 0%, #ea580c 100%); box-shadow: 0 8px 24px rgba(255, 90, 38, 0.45); border: 2px solid #ffffff;">
+      <img src="images/aurora_simbolo.svg" class="w-14 h-14 rounded-full border-0 object-cover hover:scale-110 transition-transform"/>
     </button>
   </body>
 </html>

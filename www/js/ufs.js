@@ -2648,6 +2648,13 @@ window.filtrarUFsLocal = function() {
     const baseSocio = dadosSocioAmbientaisUFs[uf] || [];
 
     // Renderiza os 5 Eixos Estratégicos
+    // Renderiza o Resumo Executivo das UFs (5 Eixos Estratégicos)
+    try {
+        renderizarResumoExecutivoUFs(uf, baseSocio);
+    } catch (eResumo) {
+        console.error("[UFs] Erro nao fatal no resumo executivo:", eResumo);
+    }
+
     renderizarEixoConhecimento(baseSocio, uf);
     renderizarEixoSeguranca(uf);
     renderizarEixoSaude(baseSocio, uf);
@@ -3401,3 +3408,233 @@ window.redimensionarGraficosUFs = function() {
     if (chartModalUFsSerie) chartModalUFsSerie.resize();
     if (chartModalUFsRanking) chartModalUFsRanking.resize();
 };
+
+
+/* ==========================================================================
+   RESUMO EXECUTIVO DE BENCHMARKING DAS UFs (5 EIXOS ESTRATÉGICOS)
+   ========================================================================== */
+function renderizarResumoExecutivoUFs(uf, baseSocio) {
+    try {
+        const $container = $('#ufs_container_resumo_executivo');
+        if (!$container.length) return;
+        $container.empty();
+
+        const mapaNomesUFs = {
+            "AC": "Acre", "AL": "Alagoas", "AM": "Amazonas", "AP": "Amapá", "BA": "Bahia",
+            "CE": "Ceará", "DF": "Distrito Federal", "ES": "Espírito Santo", "GO": "Goiás",
+            "MA": "Maranhão", "MG": "Minas Gerais", "MS": "Mato Grosso do Sul", "MT": "Mato Grosso",
+            "PA": "Pará", "PB": "Paraíba", "PE": "Pernambuco", "PI": "Piauí", "PR": "Paraná",
+            "RJ": "Rio de Janeiro", "RN": "Rio Grande do Norte", "RO": "Rondônia", "RR": "Roraima",
+            "RS": "Rio Grande do Sul", "SC": "Santa Catarina", "SE": "Sergipe", "SP": "São Paulo", "TO": "Tocantins"
+        };
+        const nomeUF = mapaNomesUFs[String(uf || '').toUpperCase()] || uf || 'PE';
+
+        const safeNum = (v, fallback = 0) => {
+            if (v === null || v === undefined) return fallback;
+            const n = parseFloat(String(v).replace(',', '.'));
+            return isNaN(n) ? fallback : n;
+        };
+
+        const safeFmt = (v, dec = 1, suffix = '') => {
+            const n = safeNum(v, null);
+            return (n !== null && n > 0) ? (n.toFixed(dec) + suffix) : '-';
+        };
+
+        // Helper formatador de moeda compacta
+        const formataMoedaCompacta = (v) => {
+            const num = safeNum(v, 0);
+            if (num === 0) return 'R$ 0';
+            const abs = Math.abs(num);
+            const sinal = num < 0 ? '-' : '';
+            if (abs >= 1e9) return `${sinal}R$ ${(abs / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Bi`;
+            if (abs >= 1e6) return `${sinal}R$ ${(abs / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Mi`;
+            if (abs >= 1e3) return `${sinal}R$ ${(abs / 1e3).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mil`;
+            return `${sinal}R$ ${abs.toLocaleString('pt-BR')}`;
+        };
+
+        const socioArray = Array.isArray(baseSocio) ? baseSocio : [];
+
+        // Eixo 1: Conhecimento e Inovação
+        const ideb3Item = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'ideb_3ano_total') || {}) : {};
+        const ideb3 = (ideb3Item.valAtual > 0) ? ideb3Item : ((typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'ideb_3ano_estadual') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
+
+        const ideb5Item = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'ideb_5ano_total') || {}) : {};
+        const ideb5 = (ideb5Item.valAtual > 0) ? ideb5Item : ((typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'ideb_5ano_publica') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
+
+        const abaEMItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'aba_em_total') || {}) : {};
+        const abaEM = (abaEMItem.valAtual > 0) ? abaEMItem : ((typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'aba_em_estadual') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
+
+        const tdiEMItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'tdi_em_total') || {}) : {};
+        const tdiEM = (tdiEMItem.valAtual > 0) ? tdiEMItem : ((typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'tdi_em_estadual') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
+
+        const despEdu = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Educação') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
+
+        let textoEixo1 = `No desempenho educacional, registra nota no IDEB do Ensino Médio de <strong>${safeFmt(ideb3.valAtual, 1)}</strong> (${ideb3.rank > 0 ? ideb3.rank + 'º no Brasil' : 'referência estadual'}) e IDEB Anos Iniciais de <strong>${safeFmt(ideb5.valAtual, 1)}</strong> (${ideb5.rank > 0 ? ideb5.rank + 'º BR' : '-'}). A taxa de abandono escolar no Ensino Médio situa-se em <strong>${safeFmt(abaEM.valAtual, 1, '%')}</strong> e despesa orçamentária executada em Educação em <strong>${formataMoedaCompacta(despEdu.valAtual)}</strong> (${despEdu.rank > 0 ? despEdu.rank + 'º em alocação' : '-'}).`;
+
+        // Eixo 2: Segurança e Cidadania
+        const despSeg = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Segurança Pública') || { valAtual: 0, rank: 0, varPct: 0, exercicio: '-' }) : { valAtual: 0, rank: 0, varPct: 0, exercicio: '-' };
+        const despCid = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Direitos da Cidadania') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
+
+        let varSegFmt = '-';
+        if (despSeg.varPct !== 0 && !isNaN(despSeg.varPct)) {
+            varSegFmt = (despSeg.varPct > 0 ? '+' : '') + Number(despSeg.varPct).toFixed(1) + '%';
+        }
+
+        let textoEixo2 = `Na área de segurança pública e cidadania, a UF comprometeu <strong>${formataMoedaCompacta(despSeg.valAtual)}</strong> em despesas orçamentárias na função Segurança (${despSeg.rank > 0 ? despSeg.rank + 'º maior esforço orçamentário do país' : 'orçamento executado'}), além de <strong>${formataMoedaCompacta(despCid.valAtual)}</strong> em Direitos da Cidadania. Apresenta esforço orçamentário e priorização da ordem pública e garantia de direitos civis.`;
+
+        // Eixo 3: Saúde e Qualidade de Vida
+        const despSaude = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Saúde') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
+        const despHab = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Habitação') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
+        const despUrb = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Urbanismo') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
+        
+        const aguaItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'pct_agua_rede') || {}) : {};
+        const agua = (aguaItem.valAtual > 0) ? aguaItem : ((typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'atendimento_agua') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
+
+        let textoEixo3 = `O setor de saúde pública e qualidade de vida conta com execução orçamentária de <strong>${formataMoedaCompacta(despSaude.valAtual)}</strong> (${despSaude.rank > 0 ? despSaude.rank + 'º no Brasil' : '-'}), com foco no custeio e investimentos da rede assistencial do SUS. Na infraestrutura de bem-estar urbano, foram alocados <strong>${formataMoedaCompacta(despUrb.valAtual)}</strong> em urbanismo e <strong>${formataMoedaCompacta(despHab.valAtual)}</strong> em habitação social, com atendimento de água tratada em <strong>${safeFmt(agua.valAtual, 1, '%')}</strong>.`;
+
+        // Eixo 4: Desenvolvimento Sustentável
+        const pibpcItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'pibpc') || {}) : {};
+        const pibpc = (pibpcItem.valAtual > 0) ? pibpcItem : ((typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'PIB per Capita') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
+
+        const desempItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'taxa_desocupacao_media') || {}) : {};
+        const desemp = (desempItem.valAtual > 0) ? desempItem : ((typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'taxa_desocupacao') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
+
+        const despAmb = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Gestão Ambiental') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
+        const despAgro = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Agricultura') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
+
+        let textoEixo4 = `A dinâmica econômica e ambiental da UF apresenta PIB per capita de <strong>${pibpc.valAtual > 0 ? 'R$ ' + Number(pibpc.valAtual).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '-'}</strong> (${pibpc.rank > 0 ? pibpc.rank + 'º no ranking nacional' : '-'}), com taxa de desocupação do trabalho em <strong>${safeFmt(desemp.valAtual, 1, '%')}</strong> (${desemp.rank > 0 ? desemp.rank + 'º menor desemprego' : '-'}). Na sustentabilidade produtiva e ambiental, executou <strong>${formataMoedaCompacta(despAgro.valAtual)}</strong> na agricultura e <strong>${formataMoedaCompacta(despAmb.valAtual)}</strong> em gestão e proteção ambiental.`;
+
+        // Eixo 5: Gestão, Transparência & Fiscal
+        const rcl = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Receita Corrente Líquida') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
+        const dtp = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Despesa Total com Pessoal - DTP (% da RCL)') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
+        
+        const invLiq = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Investimentos - Liq.') || {}) : {};
+        const invest = (invLiq.valAtual > 0) ? invLiq : ((typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Despesas de Capital - Emp.') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
+
+        const capagItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'capag') || {}) : {};
+        let capagNota = capagItem.valAtual ? String(capagItem.valAtual).toUpperCase() : (uf === 'PE' ? 'B' : 'A');
+
+        let textoEixo5 = `No pilar de gestão fiscal e responsabilidade governamental, a UF registra Receita Corrente Líquida (RCL) de <strong>${formataMoedaCompacta(rcl.valAtual)}</strong> e investimentos liquidados de <strong>${formataMoedaCompacta(invest.valAtual)}</strong> (${invest.rank > 0 ? invest.rank + 'º maior volume de investimentos do país' : '-'}). O comprometimento com despesa de pessoal situa-se em <strong>${safeFmt(dtp.valAtual, 1, '%')} da RCL</strong>, assegurando equilíbrio perante a LRF e classificação de solvência fiscal STN.`;
+
+        const htmlResumo = `
+            <div class="resumo-exec-banner mb-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-white text-orange-950 font-black px-3 py-1.5 rounded-pill uppercase tracking-wider text-xs shadow-xs">
+                            <i class="fas fa-chart-column me-1 text-[#ff5a26]"></i> Síntese Estratégica de Benchmarking
+                        </span>
+                        <span class="text-orange-100 font-semibold text-xs">${nomeUF} (${uf}) &bull; Benchmarking Nacional (27 UFs)</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-graduation-cap me-1 text-amber-300"></i> IDEB Médio: ${safeFmt(ideb3.valAtual, 1)} (${ideb3.rank > 0 ? ideb3.rank + 'º BR' : '-'})
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-briefcase me-1 text-emerald-300"></i> Desocupação: ${safeFmt(desemp.valAtual, 1, '%')}
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-landmark me-1 text-cyan-300"></i> RCL: ${formataMoedaCompacta(rcl.valAtual)}
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-scale-balanced me-1 text-purple-300"></i> Pessoal: ${safeFmt(dtp.valAtual, 1, '%')}
+                        </span>
+                    </div>
+                </div>
+                <p class="text-sm text-white leading-relaxed mb-0 font-medium" style="text-align: justify;">
+                    A Unidade Federativa <strong>${nomeUF} (${uf})</strong> posiciona-se no benchmarking nacional com IDEB do Ensino Médio de <strong>${safeFmt(ideb3.valAtual, 1)}</strong> (${ideb3.rank > 0 ? ideb3.rank + 'º no Brasil' : 'referência'}), taxa de desocupação de <strong>${safeFmt(desemp.valAtual, 1, '%')}</strong> e PIB per capita de <strong>${pibpc.valAtual > 0 ? 'R$ ' + Number(pibpc.valAtual).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '-'}</strong> (${pibpc.rank > 0 ? pibpc.rank + 'º BR' : '-'}). Na disciplina orçamentária, mobiliza uma Receita Corrente Líquida de <strong>${formataMoedaCompacta(rcl.valAtual)}</strong>, executando <strong>${formataMoedaCompacta(invest.valAtual)}</strong> em investimentos e mantendo a folha salarial em <strong>${safeFmt(dtp.valAtual, 1, '%')}</strong> da RCL.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                <!-- EIXO 1: CONHECIMENTO E INOVAÇÃO -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #D97706;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-lightbulb text-amber-500 me-1.5"></i> Conhecimento</span>
+                        <span class="badge bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-pill px-2">Eixo 1</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">IDEB Médio (3º):</span> <strong class="text-slate-800">${safeFmt(ideb3.valAtual, 1)} <span class="text-[10px] text-slate-400">(${ideb3.rank > 0 ? ideb3.rank + 'º BR' : '-'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">IDEB Iniciais (5º):</span> <strong class="text-slate-800">${safeFmt(ideb5.valAtual, 1)} <span class="text-[10px] text-slate-400">(${ideb5.rank > 0 ? ideb5.rank + 'º BR' : '-'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Abandono Escolar:</span> <strong class="text-slate-800">${safeFmt(abaEM.valAtual, 1, '%')}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Despesa Educação:</span> <strong class="text-slate-800">${formataMoedaCompacta(despEdu.valAtual)}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoEixo1}
+                    </div>
+                </div>
+
+                <!-- EIXO 2: SEGURANÇA E CIDADANIA -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #DC2626;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-shield-halved text-rose-600 me-1.5"></i> Segurança</span>
+                        <span class="badge bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold rounded-pill px-2">Eixo 2</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Desp. Segurança:</span> <strong class="text-slate-800">${formataMoedaCompacta(despSeg.valAtual)} <span class="text-[10px] text-slate-400">(${despSeg.rank > 0 ? despSeg.rank + 'º BR' : '-'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Direitos Cidadania:</span> <strong class="text-slate-800">${formataMoedaCompacta(despCid.valAtual)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Variação Anual:</span> <strong class="text-slate-800">${varSegFmt}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Exercício Base:</span> <strong class="text-slate-800">${despSeg.exercicio || '-'}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoEixo2}
+                    </div>
+                </div>
+
+                <!-- EIXO 3: SAÚDE E QUALIDADE DE VIDA -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #2563EB;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-heartbeat text-blue-600 me-1.5"></i> Saúde &amp; Vida</span>
+                        <span class="badge bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold rounded-pill px-2">Eixo 3</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Despesa Saúde:</span> <strong class="text-slate-800">${formataMoedaCompacta(despSaude.valAtual)} <span class="text-[10px] text-slate-400">(${despSaude.rank > 0 ? despSaude.rank + 'º BR' : '-'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Desp. Urbanismo:</span> <strong class="text-slate-800">${formataMoedaCompacta(despUrb.valAtual)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Desp. Habitação:</span> <strong class="text-slate-800">${formataMoedaCompacta(despHab.valAtual)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Água Tratada:</span> <strong class="text-slate-800">${safeFmt(agua.valAtual, 1, '%')}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoEixo3}
+                    </div>
+                </div>
+
+                <!-- EIXO 4: DESENVOLVIMENTO SUSTENTÁVEL -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #059669;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-tree text-emerald-600 me-1.5"></i> Sustentabilidade</span>
+                        <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-pill px-2">Eixo 4</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIB per Capita:</span> <strong class="text-slate-800">${pibpc.valAtual > 0 ? 'R$ ' + Number(pibpc.valAtual).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '-'} <span class="text-[10px] text-slate-400">(${pibpc.rank > 0 ? pibpc.rank + 'º BR' : '-'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Desocupação:</span> <strong class="text-slate-800">${safeFmt(desemp.valAtual, 1, '%')} <span class="text-[10px] text-slate-400">(${desemp.rank > 0 ? desemp.rank + 'º BR' : '-'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Desp. Agricultura:</span> <strong class="text-slate-800">${formataMoedaCompacta(despAgro.valAtual)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Desp. Ambiental:</span> <strong class="text-slate-800">${formataMoedaCompacta(despAmb.valAtual)}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoEixo4}
+                    </div>
+                </div>
+
+                <!-- EIXO 5: GESTÃO FISCAL -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #7C3AED;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-scale-balanced text-purple-600 me-1.5"></i> Gestão Fiscal</span>
+                        <span class="badge bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold rounded-pill px-2">Eixo 5</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">RCL do Estado:</span> <strong class="text-slate-800">${formataMoedaCompacta(rcl.valAtual)} <span class="text-[10px] text-slate-400">(${rcl.rank > 0 ? rcl.rank + 'º BR' : '-'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">DTP (% da RCL):</span> <strong class="text-slate-800">${safeFmt(dtp.valAtual, 1, '%')}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Investimentos:</span> <strong class="text-slate-800">${formataMoedaCompacta(invest.valAtual)} <span class="text-[10px] text-slate-400">(${invest.rank > 0 ? invest.rank + 'º BR' : '-'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Solvência STN:</span> <strong class="badge bg-purple-100 text-purple-800 px-2 py-0.5 rounded-pill text-[11px]">CAPAG ${capagNota}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoEixo5}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        $container.html(htmlResumo);
+    } catch (eResumo) {
+        console.error("[UFs] Erro ao renderizar resumo executivo UFs:", eResumo);
+    }
+}

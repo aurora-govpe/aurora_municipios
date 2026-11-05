@@ -281,346 +281,361 @@ window.alternarMetricaTrabalho = function (metrica) {
    ========================================================================== */
 
 function renderizarResumoExecutivo(nomeMun, demo, ind, fiscais, vocacoes, diagMun, rankPop, pibValMil, rankPib, pibFormatado) {
-    const $container = $('#ficha_container_resumo_executivo');
-    if (!$container.length) return;
-    $container.empty();
+    try {
+        const $container = $('#ficha_container_resumo_executivo');
+        if (!$container.length) return;
+        $container.empty();
 
-    const extrairValor = (obj, key, fallback) => (obj && obj[key] && obj[key][0] !== undefined) ? obj[key][0] : fallback;
-    const extrairIndRecente = (sigla) => {
-        const itens = (ind || []).filter(i => String(i.sigla_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
-        if (!itens.length) return null;
-        itens.sort((a, b) => b.ano - a.ano);
-        return itens[0];
-    };
-    const extrairNumInd = (sigla, fallback = 0) => {
-        const it = extrairIndRecente(sigla);
-        if (!it) return fallback;
-        const val = parseFloat(String(it.indicador).replace(',', '.'));
-        return isNaN(val) ? fallback : val;
-    };
+        const safeNum = (v, fallback = 0) => {
+            if (v === null || v === undefined || v === '') return fallback;
+            const n = parseFloat(String(v).replace(',', '.'));
+            return isNaN(n) ? fallback : n;
+        };
 
-    const formatarMoedaCompacta = (v) => {
-        const num = parseFloat(v) || 0;
-        if (num === 0) return 'R$ 0';
-        const abs = Math.abs(num);
-        const sinal = num < 0 ? '-' : '';
-        if (abs >= 1e9) return `${sinal}R$ ${(abs / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Bi`;
-        if (abs >= 1e6) return `${sinal}R$ ${(abs / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Mi`;
-        if (abs >= 1e3) return `${sinal}R$ ${(abs / 1e3).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mil`;
-        return `${sinal}R$ ${abs.toLocaleString('pt-BR')}`;
-    };
+        const safeFmt = (v, dec = 1, fallback = '-') => {
+            if (v === null || v === undefined || v === '') return fallback;
+            const n = parseFloat(String(v).replace(',', '.'));
+            if (isNaN(n)) return fallback;
+            return n.toFixed(dec);
+        };
 
-    // 1. DIMENSÃO DEMOGRAFIA
-    const popVal = parseFloat(extrairValor(demo, 'pop_2026', 0)) || 0;
-    const areaVal = parseFloat(extrairValor(demo, 'area_km2', 0)) || 0;
-    const densidade = areaVal > 0 ? (popVal / areaVal).toFixed(1) : '-';
-    const pctUrb = extrairNumInd('perc_pop_urb', 0);
-    const pctPia = extrairNumInd('pct_pia', 0);
-    const indEnvelhecimento = extrairNumInd('ind_envelhecimento', 0);
-    const rdPop = extrairNumInd('rd_pop', 0);
+        const extrairValor = (obj, key, fallback) => (obj && obj[key] && obj[key][0] !== undefined) ? obj[key][0] : fallback;
+        const extrairIndRecente = (sigla) => {
+            const itens = (ind || []).filter(i => String(i.sigla_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
+            if (!itens.length) return null;
+            itens.sort((a, b) => b.ano - a.ano);
+            return itens[0];
+        };
+        const extrairNumInd = (sigla, fallback = 0) => {
+            const it = extrairIndRecente(sigla);
+            if (!it) return fallback;
+            const val = parseFloat(String(it.indicador).replace(',', '.'));
+            return isNaN(val) ? fallback : val;
+        };
 
-    let perfilUrbano = 'equilibrado entre campo e cidade';
-    if (pctUrb >= 80) perfilUrbano = 'fortemente urbanizado';
-    else if (pctUrb >= 50) perfilUrbano = 'predominantemente urbano';
-    else perfilUrbano = 'com expressiva presença rural';
+        const formatarMoedaCompacta = (v) => {
+            const num = safeNum(v, 0);
+            if (num === 0) return 'R$ 0';
+            const abs = Math.abs(num);
+            const sinal = num < 0 ? '-' : '';
+            if (abs >= 1e9) return `${sinal}R$ ${(abs / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Bi`;
+            if (abs >= 1e6) return `${sinal}R$ ${(abs / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Mi`;
+            if (abs >= 1e3) return `${sinal}R$ ${(abs / 1e3).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mil`;
+            return `${sinal}R$ ${abs.toLocaleString('pt-BR')}`;
+        };
 
-    let estagioDemografico = 'bônus demográfico em maturação';
-    if (indEnvelhecimento > 70) estagioDemografico = 'transição demográfica acelerada com envelhecimento populacional';
-    else if (pctPia > 65) estagioDemografico = 'janela de oportunidade demográfica favorável (alta PIA)';
+        // 1. DIMENSÃO DEMOGRAFIA
+        const popVal = safeNum(extrairValor(demo, 'pop_2026', 0), 0);
+        const areaVal = safeNum(extrairValor(demo, 'area_km2', 0), 0);
+        const densidade = (areaVal > 0 && popVal > 0) ? (popVal / areaVal).toFixed(1) : '-';
+        const pctUrb = extrairNumInd('perc_pop_urb', 0);
+        const pctPia = extrairNumInd('pct_pia', 0);
+        const indEnvelhecimento = extrairNumInd('ind_envelhecimento', 0);
 
-    const textoDemografia = `Com população estimada em <strong>${popVal.toLocaleString('pt-BR')} habitantes</strong> (${rankPop}º maior contingente de Pernambuco) e densidade de <strong>${densidade} hab/km²</strong>, o município apresenta perfil <em>${perfilUrbano}</em> (${pctUrb.toFixed(1)}% urbana). Sua estrutura etária revela <strong>${pctPia.toFixed(1)}%</strong> da população em idade produtiva (PIA) e índice de envelhecimento de <strong>${indEnvelhecimento.toFixed(1)}</strong>, caracterizando ${estagioDemografico}.`;
+        let perfilUrbano = 'equilibrado entre campo e cidade';
+        if (pctUrb >= 80) perfilUrbano = 'fortemente urbanizado';
+        else if (pctUrb >= 50) perfilUrbano = 'predominantemente urbano';
+        else perfilUrbano = 'com expressiva presença rural';
 
-    // 2. DIMENSÃO ECONOMIA
-    const pibpcVal = extrairNumInd('pibpc', 0);
-    const pibPctVal = extrairNumInd('pib_pct', 0);
-    const rankPibpc = extrairIndRecente('pibpc')?.rank_pe || '-';
+        let estagioDemografico = 'bônus demográfico em maturação';
+        if (indEnvelhecimento > 70) estagioDemografico = 'transição demográfica acelerada com envelhecimento populacional';
+        else if (pctPia > 65) estagioDemografico = 'janela de oportunidade demográfica favorável (alta PIA)';
 
-    const vabAgro = extrairNumInd('vab_agro', 0);
-    const vabInd = extrairNumInd('vab_ind', 0);
-    const vabServ = extrairNumInd('vab_serv', 0);
-    const vabAdm = extrairNumInd('vab_adm', 0);
-    const totalVab = (vabAgro + vabInd + vabServ + vabAdm) || 1;
-    const pctVabAgro = ((vabAgro / totalVab) * 100).toFixed(1);
-    const pctVabInd = ((vabInd / totalVab) * 100).toFixed(1);
-    const pctVabServ = ((vabServ / totalVab) * 100).toFixed(1);
-    const pctVabAdm = ((vabAdm / totalVab) * 100).toFixed(1);
+        const textoDemografia = `Com população estimada em <strong>${popVal.toLocaleString('pt-BR')} habitantes</strong> (${rankPop || '-'}º maior contingente de Pernambuco) e densidade de <strong>${densidade} hab/km²</strong>, o município apresenta perfil <em>${perfilUrbano}</em> (${safeFmt(pctUrb, 1, '0.0')}% urbana). Sua estrutura etária revela <strong>${safeFmt(pctPia, 1, '0.0')}%</strong> da população em idade produtiva (PIA) e índice de envelhecimento de <strong>${safeFmt(indEnvelhecimento, 1, '0.0')}</strong>, caracterizando ${estagioDemografico}.`;
 
-    let setorLider = 'Serviços';
-    let maxVab = vabServ;
-    if (vabInd > maxVab) { setorLider = 'Indústria'; maxVab = vabInd; }
-    if (vabAgro > maxVab) { setorLider = 'Agropecuária'; maxVab = vabAgro; }
-    if (vabAdm > maxVab) { setorLider = 'Administração Pública'; maxVab = vabAdm; }
+        // 2. DIMENSÃO ECONOMIA
+        const pibpcVal = extrairNumInd('pibpc', 0);
+        const pibPctVal = extrairNumInd('pib_pct', 0);
+        const rankPibpc = extrairIndRecente('pibpc')?.rank_pe || '-';
 
-    const vocacoesTexto = (vocacoes && vocacoes.length > 0)
-        ? vocacoes.slice(0, 3).map(v => v.nm_vocacao || v.nm_cnae_divisao).filter(Boolean).join(', ')
-        : (extrairValor(demo, 'arranjos_produtivos_locais', '') || 'Comércio e serviços');
+        const vabAgro = extrairNumInd('vab_agro', 0);
+        const vabInd = extrairNumInd('vab_ind', 0);
+        const vabServ = extrairNumInd('vab_serv', 0);
+        const vabAdm = extrairNumInd('vab_adm', 0);
+        const totalVab = (vabAgro + vabInd + vabServ + vabAdm) || 1;
+        const pctVabAgro = safeFmt((vabAgro / totalVab) * 100, 1, '0.0');
+        const pctVabInd = safeFmt((vabInd / totalVab) * 100, 1, '0.0');
+        const pctVabServ = safeFmt((vabServ / totalVab) * 100, 1, '0.0');
+        const pctVabAdm = safeFmt((vabAdm / totalVab) * 100, 1, '0.0');
 
-    // Quociente Locacional da Indústria (QL Ind padrão - média PE = 10.672%)
-    const qlIndVal = (parseFloat(pctVabInd) / 10.672);
-    const qlIndFmt = isNaN(qlIndVal) ? '-' : qlIndVal.toFixed(2);
-    const isQLEspecializado = !isNaN(qlIndVal) && qlIndVal >= 1.0;
+        let setorLider = 'Serviços';
+        let maxVab = vabServ;
+        if (vabInd > maxVab) { setorLider = 'Indústria'; maxVab = vabInd; }
+        if (vabAgro > maxVab) { setorLider = 'Agropecuária'; maxVab = vabAgro; }
+        if (vabAdm > maxVab) { setorLider = 'Administração Pública'; maxVab = vabAdm; }
 
-    // Qualificação do tipo de serviços (Infocom / alto valor vs Varejo / consumo vs Adm Pública)
-    const cnaesInfocom = [62, 63, 64, 72];
-    const temInfocomVoc = (vocacoes || []).some(v => cnaesInfocom.includes(Number(v.cnae_divisao)));
-    const numEmpTi = (diagMun && diagMun.empresas_ti_infocom !== undefined) ? diagMun.empresas_ti_infocom : extrairNumInd('total_emp_infocom', 0);
-    
-    let perfilServico = '';
-    let rotuloServico = 'Comércio / Varejo';
-    if (numEmpTi > 15 || temInfocomVoc) {
-        rotuloServico = 'Infocom / Conhecimento';
-        perfilServico = `serviços especializados e intensivos em tecnologia (Infocom, pesquisa e serviços corporativos, contando com ${numEmpTi > 0 ? numEmpTi + ' estabelecimentos do segmento' : 'polo regional ativo'})`;
-    } else if (parseFloat(pctVabAdm) > 45) {
-        rotuloServico = 'Adm. Pública';
-        perfilServico = `terciário dependente do setor público (Administração Pública respondendo por expressivos ${pctVabAdm}% do VAB), com comércio e serviços locais de menor valor agregado`;
-    } else {
-        rotuloServico = 'Comércio / Varejo';
-        perfilServico = `comércio varejista tradicional e serviços locais voltados ao abastecimento imediato e consumo das famílias`;
-    }
+        const vocacoesTexto = (vocacoes && vocacoes.length > 0)
+            ? vocacoes.slice(0, 3).map(v => v.nm_vocacao || v.nm_cnae_divisao).filter(Boolean).join(', ')
+            : (extrairValor(demo, 'arranjos_produtivos_locais', '') || 'Comércio e serviços');
 
-    const textoEconomia = `A economia municipal movimenta um PIB de <strong>${pibFormatado}</strong> (${rankPib}º no ranking estadual), correspondendo a <strong>${pibPctVal.toFixed(2)}%</strong> da riqueza de Pernambuco, com PIB per capita de <strong>R$ ${pibpcVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> (${rankPibpc}º em PE). O Valor Adicionado Bruto tem liderança de <strong>${setorLider}</strong> (Serviços: ${pctVabServ}%, Adm. Pública: ${pctVabAdm}%, Indústria: ${pctVabInd}%, Agropecuária: ${pctVabAgro}%). Na indústria, apresenta Quociente Locacional de <strong>QL Ind. = ${qlIndFmt}</strong> (${isQLEspecializado ? 'especialização acima da média do Estado' : 'sem especialização industrial relativa'}). No setor terciário, diferencia-se por <em>${perfilServico}</em>, com vocações locais em: <em>${vocacoesTexto}</em>.`;
+        // Quociente Locacional da Indústria (QL Ind padrão - média PE = 10.672%)
+        const qlIndVal = (safeNum(pctVabInd, 0) / 10.672);
+        const qlIndFmt = isNaN(qlIndVal) ? '-' : qlIndVal.toFixed(2);
+        const isQLEspecializado = !isNaN(qlIndVal) && qlIndVal >= 1.0;
 
-    // 3. DIMENSÃO SOCIAL
-    const idhmVal = extrairNumInd('idhm', 0);
-    const rankIdhm = extrairIndRecente('idhm')?.rank_pe || '-';
-    let faixaIdhm = 'Médio';
-    if (idhmVal >= 0.8) faixaIdhm = 'Muito Alto';
-    else if (idhmVal >= 0.7) faixaIdhm = 'Alto';
-    else if (idhmVal >= 0.6) faixaIdhm = 'Médio';
-    else if (idhmVal > 0) faixaIdhm = 'Baixo';
-
-    // Taxa de pessoas no CadÚnico e dependência de recursos (IVCAD-DR)
-    const itemTxCad = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'tx_cad_pessoas');
-    let txCadVal = itemTxCad ? parseFloat(String(itemTxCad.indicador).replace(',', '.')) : 0;
-    if (txCadVal === 0) {
-        const itemPessoas = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'cad_pessoas');
-        if (itemPessoas && popVal > 0) {
-            txCadVal = (parseFloat(String(itemPessoas.indicador).replace(',', '.')) / popVal) * 100;
+        // Qualificação do tipo de serviços (Infocom / alto valor vs Varejo / consumo vs Adm Pública)
+        const cnaesInfocom = [62, 63, 64, 72];
+        const temInfocomVoc = (vocacoes || []).some(v => cnaesInfocom.includes(Number(v.cnae_divisao)));
+        const numEmpTi = (diagMun && diagMun.empresas_ti_infocom !== undefined) ? diagMun.empresas_ti_infocom : extrairNumInd('total_emp_infocom', 0);
+        
+        let perfilServico = '';
+        let rotuloServico = 'Comércio / Varejo';
+        if (numEmpTi > 15 || temInfocomVoc) {
+            rotuloServico = 'Infocom / Conhecimento';
+            perfilServico = `serviços especializados e intensivos em tecnologia (Infocom, pesquisa e serviços corporativos, contando com ${numEmpTi > 0 ? numEmpTi + ' estabelecimentos do segmento' : 'polo regional ativo'})`;
+        } else if (parseFloat(pctVabAdm) > 45) {
+            rotuloServico = 'Adm. Pública';
+            perfilServico = `terciário dependente do setor público (Administração Pública respondendo por expressivos ${pctVabAdm}% do VAB), com comércio e serviços locais de menor valor agregado`;
+        } else {
+            rotuloServico = 'Comércio / Varejo';
+            perfilServico = `comércio varejista tradicional e serviços locais voltados ao abastecimento imediato e consumo das famílias`;
         }
-    }
 
-    const itemDr = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'ivcad_dr');
-    let drVal = itemDr ? parseFloat(String(itemDr.indicador).replace(',', '.')) : 0;
-    if (drVal === 0) {
-        drVal = extrairNumInd('ivcad_taxa', 0);
-    }
-    const drPctStr = drVal > 1 ? drVal.toFixed(1) + '%' : (drVal * 100).toFixed(1) + '%';
+        const textoEconomia = `A economia municipal movimenta um PIB de <strong>${pibFormatado || '-'}</strong> (${rankPib || '-'}º no ranking estadual), correspondendo a <strong>${safeFmt(pibPctVal, 2, '0.00')}%</strong> da riqueza de Pernambuco, com PIB per capita de <strong>R$ ${pibpcVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> (${rankPibpc}º em PE). O Valor Adicionado Bruto tem liderança de <strong>${setorLider}</strong> (Serviços: ${pctVabServ}%, Adm. Pública: ${pctVabAdm}%, Indústria: ${pctVabInd}%, Agropecuária: ${pctVabAgro}%). Na indústria, apresenta Quociente Locacional de <strong>QL Ind. = ${qlIndFmt}</strong> (${isQLEspecializado ? 'especialização acima da média do Estado' : 'sem especialização industrial relativa'}). No setor terciário, diferencia-se por <em>${perfilServico}</em>, com vocações locais em: <em>${vocacoesTexto}</em>.`;
 
-    const idebVal = extrairNumInd('ideb_5ano', 0);
-    const aguaVal = extrairNumInd('pct_agua_rede', 0);
+        // 3. DIMENSÃO SOCIAL
+        const idhmVal = extrairNumInd('idhm', 0);
+        const rankIdhm = extrairIndRecente('idhm')?.rank_pe || '-';
+        let faixaIdhm = 'Médio';
+        if (idhmVal >= 0.8) faixaIdhm = 'Muito Alto';
+        else if (idhmVal >= 0.7) faixaIdhm = 'Alto';
+        else if (idhmVal >= 0.6) faixaIdhm = 'Médio';
+        else if (idhmVal > 0) faixaIdhm = 'Baixo';
 
-    let textoSocial = `O Índice de Desenvolvimento Humano Municipal (IDHM) registra <strong>${idhmVal.toFixed(3)}</strong> (Faixa ${faixaIdhm}, ${rankIdhm}º em PE). `;
-    if (txCadVal > 0) {
-        textoSocial += `No panorama de vulnerabilidade social, <strong>${txCadVal.toFixed(1)}% da população</strong> encontra-se cadastrada no CadÚnico. `;
-    }
-    if (drVal > 0) {
-        textoSocial += `A dimensão de Disponibilidade de Recursos (IVCAD-DR) situa-se em <strong>${drPctStr}</strong>, evidenciando expressiva necessidade de recursos e forte dependência de transferências de renda governamentais (como Bolsa Família, Mães de Pernambuco e BPC) para manutenção do poder de compra e subsistência das famílias. `;
-    }
-    if (aguaVal > 0) {
-        textoSocial += `O abastecimento de água pela rede geral atende <strong>${aguaVal.toFixed(1)}%</strong> dos domicílios. `;
-    }
-    if (idebVal > 0) {
-        textoSocial += `Na educação básica, a proficiência no IDEB (Anos Iniciais) alcança nota <strong>${idebVal.toFixed(1)}</strong>.`;
-    }
+        // Taxa de pessoas no CadÚnico e dependência de recursos (IVCAD-DR)
+        const itemTxCad = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'tx_cad_pessoas');
+        let txCadVal = itemTxCad ? parseFloat(String(itemTxCad.indicador).replace(',', '.')) : 0;
+        if (isNaN(txCadVal) || txCadVal === 0) {
+            const itemPessoas = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'cad_pessoas');
+            if (itemPessoas && popVal > 0) {
+                const valPess = parseFloat(String(itemPessoas.indicador).replace(',', '.'));
+                if (!isNaN(valPess)) txCadVal = (valPess / popVal) * 100;
+            }
+        }
 
-    // 4. DIMENSÃO FISCAL
-    let capagNota = '-';
-    const itemCapag = (ind || []).find(i => {
-        const s = String(i.sigla_indicador || '').toLowerCase().trim();
-        const nm = String(i.nm_indicador || '').toLowerCase().trim();
-        return s === 'capag' || nm === 'capag';
-    });
-    if (itemCapag && itemCapag.indicador && String(itemCapag.indicador).trim() !== '' && String(itemCapag.indicador).trim() !== 'NA') {
-        capagNota = String(itemCapag.indicador).trim().toUpperCase();
-    } else if (demo && (demo.capag || demo.CAPAG) && String(demo.capag || demo.CAPAG).trim() !== 'n.d.') {
-        capagNota = String(demo.capag || demo.CAPAG).trim().toUpperCase();
-    } else if (diagMun && diagMun.capacidade_fiscal_capag) {
-        capagNota = String(diagMun.capacidade_fiscal_capag).trim().toUpperCase();
-    }
+        const itemDr = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'ivcad_dr');
+        let drVal = itemDr ? parseFloat(String(itemDr.indicador).replace(',', '.')) : 0;
+        if (isNaN(drVal) || drVal === 0) {
+            drVal = extrairNumInd('ivcad_taxa', 0);
+        }
+        const drPctStr = drVal > 1 ? safeFmt(drVal, 1) + '%' : safeFmt(drVal * 100, 1) + '%';
 
-    // Dados de investimento e serviço da dívida (fiscais)
-    let maxExFisc = 0;
-    (fiscais || []).forEach(f => {
-        const ex = parseInt(f.exercicio) || 0;
-        if (ex > maxExFisc) maxExFisc = ex;
-    });
-    const fiscaisRecentes = (fiscais || []).filter(f => parseInt(f.exercicio) === maxExFisc);
+        const idebVal = extrairNumInd('ideb_5ano', 0);
+        const aguaVal = extrairNumInd('pct_agua_rede', 0);
 
-    const obterValorFiscal = (nomeInd) => {
-        const itens = fiscaisRecentes.filter(f => String(f.indicador || '').toLowerCase().trim() === nomeInd.toLowerCase().trim());
-        if (!itens.length) return 0;
-        itens.sort((a, b) => (parseInt(b.periodo) || 0) - (parseInt(a.periodo) || 0));
-        return parseFloat(itens[0].valor) || 0;
-    };
+        let textoSocial = `O Índice de Desenvolvimento Humano Municipal (IDHM) registra <strong>${safeFmt(idhmVal, 3, '-')}</strong> (Faixa ${faixaIdhm}, ${rankIdhm}º em PE). `;
+        if (txCadVal > 0) {
+            textoSocial += `No panorama de vulnerabilidade social, <strong>${safeFmt(txCadVal, 1)}% da população</strong> encontra-se cadastrada no CadÚnico. `;
+        }
+        if (drVal > 0) {
+            textoSocial += `A dimensão de Disponibilidade de Recursos (IVCAD-DR) situa-se em <strong>${drPctStr}</strong>, evidenciando expressiva necessidade de recursos e forte dependência de transferências de renda governamentais (como Bolsa Família, Mães de Pernambuco e BPC) para manutenção do poder de compra e subsistência das famílias. `;
+        }
+        if (aguaVal > 0) {
+            textoSocial += `O abastecimento de água pela rede geral atende <strong>${safeFmt(aguaVal, 1)}%</strong> dos domicílios. `;
+        }
+        if (idebVal > 0) {
+            textoSocial += `Na educação básica, a proficiência no IDEB (Anos Iniciais) alcança nota <strong>${safeFmt(idebVal, 1)}</strong>.`;
+        }
 
-    const amortizacao = obterValorFiscal('Amortização da Dívida - Liq.');
-    const jurosDivida = obterValorFiscal('Juros e Encargos - Liq.');
-    const totalDespesaDivida = amortizacao + jurosDivida;
-    const despInvestimento = obterValorFiscal('Investimentos - Liq.') || obterValorFiscal('Despesas de Capital - Emp.');
-    const recInvestimento = obterValorFiscal('Receitas de Capital');
+        // 4. DIMENSÃO FISCAL
+        let capagNota = '-';
+        const itemCapag = (ind || []).find(i => {
+            const s = String(i.sigla_indicador || '').toLowerCase().trim();
+            const nm = String(i.nm_indicador || '').toLowerCase().trim();
+            return s === 'capag' || nm === 'capag';
+        });
+        if (itemCapag && itemCapag.indicador && String(itemCapag.indicador).trim() !== '' && String(itemCapag.indicador).trim() !== 'NA') {
+            capagNota = String(itemCapag.indicador).trim().toUpperCase();
+        } else if (demo && (demo.capag || demo.CAPAG) && String(demo.capag || demo.CAPAG).trim() !== 'n.d.') {
+            capagNota = String(demo.capag || demo.CAPAG).trim().toUpperCase();
+        } else if (diagMun && diagMun.capacidade_fiscal_capag) {
+            capagNota = String(diagMun.capacidade_fiscal_capag).trim().toUpperCase();
+        }
 
-    const dividaFmt = formatarMoedaCompacta(totalDespesaDivida);
-    const despInvestFmt = formatarMoedaCompacta(despInvestimento);
-    const recInvestFmt = formatarMoedaCompacta(recInvestimento);
+        let maxExFisc = 0;
+        (fiscais || []).forEach(f => {
+            const ex = parseInt(f.exercicio) || 0;
+            if (ex > maxExFisc) maxExFisc = ex;
+        });
+        const fiscaisRecentes = (fiscais || []).filter(f => parseInt(f.exercicio) === maxExFisc);
 
-    let textoFiscal = `A gestão fiscal do município apresenta classificação <strong>CAPAG ${capagNota}</strong> junto à Secretaria do Tesouro Nacional (STN)`;
-    if (capagNota.startsWith('A') || capagNota.startsWith('B')) {
-        textoFiscal += `, indicando boa capacidade de pagamento, saúde financeira equilibrada e aptidão para operações de crédito com garantia da União. `;
-    } else if (capagNota.startsWith('C') || capagNota.startsWith('D')) {
-        textoFiscal += `, sinalizando restrições na liquidez e endividamento, demandando rigor no custeio e foco na ampliação de receitas próprias. `;
-    } else {
-        textoFiscal += `, exigindo acompanhamento contínuo dos indicadores da LRF, resultado primário e transferências constitucionais. `;
-    }
-    if (maxExFisc > 0 && (despInvestimento > 0 || recInvestimento > 0 || totalDespesaDivida > 0)) {
-        textoFiscal += `No exercício recente (${maxExFisc}), registrou <strong>${despInvestFmt}</strong> em investimentos liquidados e <strong>${recInvestFmt}</strong> em receitas de capital, destinando <strong>${dividaFmt}</strong> ao serviço da dívida (amortização e encargos).`;
-    }
+        const obterValorFiscal = (nomeInd) => {
+            const itens = fiscaisRecentes.filter(f => String(f.indicador || '').toLowerCase().trim() === nomeInd.toLowerCase().trim());
+            if (!itens.length) return 0;
+            itens.sort((a, b) => (parseInt(b.periodo) || 0) - (parseInt(a.periodo) || 0));
+            return parseFloat(itens[0].valor) || 0;
+        };
 
-    // 5. DIMENSÃO TECNOLOGIA & INOVAÇÃO (INFOCOM EM RELAÇÃO A SERVIÇOS)
-    const fibraVal = extrairNumInd('cob_fibra', 0);
-    const fibraPct = fibraVal <= 1 && fibraVal > 0 ? (fibraVal * 100).toFixed(1) : fibraVal.toFixed(1);
+        const amortizacao = obterValorFiscal('Amortização da Dívida - Liq.');
+        const jurosDivida = obterValorFiscal('Juros e Encargos - Liq.');
+        const totalDespesaDivida = amortizacao + jurosDivida;
+        const despInvestimento = obterValorFiscal('Investimentos - Liq.') || obterValorFiscal('Despesas de Capital - Emp.');
+        const recInvestimento = obterValorFiscal('Receitas de Capital');
 
-    const pctVabInfocomServ = extrairNumInd('pct_vab_infocom_serv', 0);
-    const pctEstabInfocomServ = extrairNumInd('pct_estab_infocom_serv', 0);
-    const pctEmpInfocomServ = extrairNumInd('pct_emp_infocom_serv', 0);
-    const qlInfocomServ = extrairNumInd('ql_infocom_serv', 0);
-    const estabInfocomTot = extrairNumInd('estab_infocom', 0);
-    const empInfocomTot = extrairNumInd('emp_infocom', 0);
-    const rankVabInfocom = extrairIndRecente('pct_vab_infocom_serv')?.rank_pe || '-';
-    const isQlInfocomEspec = qlInfocomServ >= 1.0;
+        const dividaFmt = formatarMoedaCompacta(totalDespesaDivida);
+        const despInvestFmt = formatarMoedaCompacta(despInvestimento);
+        const recInvestFmt = formatarMoedaCompacta(recInvestimento);
 
-    let empresasTi = estabInfocomTot;
-    if (empresasTi === 0 && diagMun && diagMun.empresas_ti_infocom !== undefined) {
-        empresasTi = diagMun.empresas_ti_infocom;
-    }
+        let textoFiscal = `A gestão fiscal do município apresenta classificação <strong>CAPAG ${capagNota}</strong> junto à Secretaria do Tesouro Nacional (STN)`;
+        if (capagNota.startsWith('A') || capagNota.startsWith('B')) {
+            textoFiscal += `, indicando boa capacidade de pagamento, saúde financeira equilibrada e aptidão para operações de crédito com garantia da União. `;
+        } else if (capagNota.startsWith('C') || capagNota.startsWith('D')) {
+            textoFiscal += `, sinalizando restrições na liquidez e endividamento, demandando rigor no custeio e foco na ampliação de receitas próprias. `;
+        } else {
+            textoFiscal += `, exigindo acompanhamento contínuo dos indicadores da LRF, resultado primário e transferências constitucionais. `;
+        }
+        if (maxExFisc > 0 && (despInvestimento > 0 || recInvestimento > 0 || totalDespesaDivida > 0)) {
+            textoFiscal += `No exercício recente (${maxExFisc}), registrou <strong>${despInvestFmt}</strong> em investimentos liquidados e <strong>${recInvestFmt}</strong> em receitas de capital, destinando <strong>${dividaFmt}</strong> ao serviço da dívida (amortização e encargos).`;
+        }
 
-    let textoTech = `No eixo de inovação, as atividades de Informação e Comunicação (InfoCom) representam <strong>${pctVabInfocomServ.toFixed(2)}% do VAB de Serviços</strong> (${rankVabInfocom}º em PE), concentrando <strong>${pctEstabInfocomServ.toFixed(2)}% dos estabelecimentos</strong> (${empresasTi} empresas) e <strong>${pctEmpInfocomServ.toFixed(2)}% dos empregados formais</strong> (${empInfocomTot} vínculos) do setor terciário, com Quociente Locacional de <strong>QL = ${qlInfocomServ.toFixed(2)}</strong> (${isQlInfocomEspec ? 'especialização acima da média estadual' : 'sem especialização relativa em PE'}). Cobertura por fibra óptica em <strong>${fibraPct}%</strong>.`;
+        // 5. DIMENSÃO TECNOLOGIA & INOVAÇÃO
+        const fibraVal = extrairNumInd('cob_fibra', 0);
+        const fibraPct = fibraVal <= 1 && fibraVal > 0 ? safeFmt(fibraVal * 100, 1) : safeFmt(fibraVal, 1);
 
-    // Extração de dados de PIB per capita e IVCAD para a Síntese Executiva
-    const ivcadVal = extrairNumInd('ivcad', 0);
-    const rankIvcad = extrairIndRecente('ivcad')?.rank_pe || '-';
-    const pibpcFmt = pibpcVal > 0 ? `R$ ${pibpcVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
-    const ivcadFmt = ivcadVal > 0 ? ivcadVal.toFixed(3) : '-';
+        const pctVabInfocomServ = extrairNumInd('pct_vab_infocom_serv', 0);
+        const pctEstabInfocomServ = extrairNumInd('pct_estab_infocom_serv', 0);
+        const pctEmpInfocomServ = extrairNumInd('pct_emp_infocom_serv', 0);
+        const qlInfocomServ = extrairNumInd('ql_infocom_serv', 0);
+        const estabInfocomTot = extrairNumInd('estab_infocom', 0);
+        const empInfocomTot = extrairNumInd('emp_infocom', 0);
+        const rankVabInfocom = extrairIndRecente('pct_vab_infocom_serv')?.rank_pe || '-';
+        const isQlInfocomEspec = qlInfocomServ >= 1.0;
 
-    const htmlResumo = `
-        <div class="resumo-exec-banner mb-4">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-white text-blue-900 font-bold px-3 py-1.5 rounded-pill uppercase tracking-wider text-xs shadow-xs">
-                        <i class="fas fa-file-signature me-1 text-blue-600"></i> Síntese Estratégica Executiva
-                    </span>
-                    <span class="text-blue-100 font-semibold text-xs">${nomeMun} &bull; Região de Desenvolvimento ${extrairValor(demo, 'regiao_de_desenvolvimento', '-')}</span>
+        let empresasTi = estabInfocomTot;
+        if (empresasTi === 0 && diagMun && diagMun.empresas_ti_infocom !== undefined) {
+            empresasTi = diagMun.empresas_ti_infocom;
+        }
+
+        let textoTech = `No eixo de inovação, as atividades de Informação e Comunicação (InfoCom) representam <strong>${safeFmt(pctVabInfocomServ, 2, '0.00')}% do VAB de Serviços</strong> (${rankVabInfocom}º em PE), concentrando <strong>${safeFmt(pctEstabInfocomServ, 2, '0.00')}% dos estabelecimentos</strong> (${empresasTi} empresas) e <strong>${safeFmt(pctEmpInfocomServ, 2, '0.00')}% dos empregados formais</strong> (${empInfocomTot} vínculos) do setor terciário, com Quociente Locacional de <strong>QL = ${safeFmt(qlInfocomServ, 2, '0.00')}</strong> (${isQlInfocomEspec ? 'especialização acima da média estadual' : 'sem especialização relativa em PE'}). Cobertura por fibra óptica em <strong>${fibraPct}%</strong>.`;
+
+        // Extração de dados de PIB per capita e IVCAD para a Síntese Executiva
+        const ivcadVal = extrairNumInd('ivcad', 0);
+        const rankIvcad = extrairIndRecente('ivcad')?.rank_pe || '-';
+        const pibpcFmt = pibpcVal > 0 ? `R$ ${pibpcVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+        const ivcadFmt = ivcadVal > 0 ? safeFmt(ivcadVal, 3) : '-';
+
+        const htmlResumo = `
+            <div class="resumo-exec-banner mb-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-white text-orange-950 font-black px-3 py-1.5 rounded-pill uppercase tracking-wider text-xs shadow-xs">
+                            <i class="fas fa-file-signature me-1 text-[#ff5a26]"></i> Síntese Estratégica Executiva
+                        </span>
+                        <span class="text-orange-100 font-semibold text-xs">${nomeMun} &bull; Região de Desenvolvimento ${extrairValor(demo, 'regiao_de_desenvolvimento', '-')}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-users me-1 text-cyan-300"></i> Pop: ${popVal.toLocaleString('pt-BR')} (${rankPop || '-'}º PE)
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-sack-dollar me-1 text-emerald-300"></i> PIB: ${pibFormatado || '-'} (${rankPib || '-'}º PE)
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-user-tag me-1 text-amber-300"></i> PIB pc: ${pibpcFmt} (${rankPibpc}º PE)
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-shield-heart me-1 text-purple-300"></i> IVCAD: ${ivcadFmt} (${rankIvcad}º PE)
+                        </span>
+                    </div>
                 </div>
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="badge bg-blue-900/60 text-blue-100 border border-blue-400/30 rounded-pill px-3 py-1 text-xs">
-                        <i class="fas fa-users me-1 text-cyan-300"></i> Pop: ${popVal.toLocaleString('pt-BR')} (${rankPop}º PE)
-                    </span>
-                    <span class="badge bg-blue-900/60 text-blue-100 border border-blue-400/30 rounded-pill px-3 py-1 text-xs">
-                        <i class="fas fa-sack-dollar me-1 text-emerald-300"></i> PIB: ${pibFormatado} (${rankPib}º PE)
-                    </span>
-                    <span class="badge bg-blue-900/60 text-blue-100 border border-blue-400/30 rounded-pill px-3 py-1 text-xs">
-                        <i class="fas fa-user-tag me-1 text-amber-300"></i> PIB pc: ${pibpcFmt} (${rankPibpc}º PE)
-                    </span>
-                    <span class="badge bg-blue-900/60 text-blue-100 border border-blue-400/30 rounded-pill px-3 py-1 text-xs">
-                        <i class="fas fa-shield-heart me-1 text-purple-300"></i> IVCAD: ${ivcadFmt} (${rankIvcad}º PE)
-                    </span>
-                </div>
-            </div>
-            <p class="text-sm text-blue-50 leading-relaxed mb-0 font-medium" style="text-align: justify;">
-                ${nomeMun} consolida-se como a <strong>${rankPop}ª maior população</strong> e o <strong>${rankPib}º maior PIB</strong> de Pernambuco, com PIB per capita de <strong>${pibpcFmt}</strong> (${rankPibpc}º no Estado) e forte inserção na RD ${extrairValor(demo, 'regiao_de_desenvolvimento', '-')}. Apresenta matriz produtiva com liderança de <strong>${setorLider}</strong>, IDHM de <strong>${idhmVal.toFixed(3)}</strong> (${faixaIdhm}), vulnerabilidade social aferida pelo IVCAD em <strong>${ivcadFmt}</strong> (${rankIvcad}º em PE), capacidade fiscal classificada como <strong>CAPAG ${capagNota}</strong> e taxa de cobertura por fibra de <strong>${fibraPct}%</strong>.
-            </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-            <!-- 1. DEMOGRAFIA -->
-            <div class="resumo-dim-card" style="border-top: 4px solid #3B82F6;">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-users text-blue-500 me-1.5"></i> Demografia</span>
-                    <span class="badge bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold rounded-pill px-2">${rankPop}º em PE</span>
-                </div>
-                <div class="space-y-1 mb-2.5">
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Pop. 2026:</span> <strong class="text-slate-800">${popVal.toLocaleString('pt-BR')}</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Densidade:</span> <strong class="text-slate-800">${densidade} hab/km²</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Urbanização:</span> <strong class="text-slate-800">${pctUrb.toFixed(1)}%</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIA (15-64):</span> <strong class="text-slate-800">${pctPia.toFixed(1)}%</strong></div>
-                </div>
-                <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
-                    ${textoDemografia}
-                </div>
-            </div>
-
-            <!-- 2. ECONOMIA -->
-            <div class="resumo-dim-card" style="border-top: 4px solid #10B981;">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-chart-line text-emerald-500 me-1.5"></i> Economia</span>
-                    <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-pill px-2">${rankPib}º em PE</span>
-                </div>
-                <div class="space-y-1 mb-2.5">
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIB Total:</span> <strong class="text-slate-800">${pibFormatado}</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIB per Capita:</span> <strong class="text-slate-800">R$ ${pibpcVal.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">QL Indústria:</span> <strong class="text-slate-800">${qlIndFmt} <span class="text-[10px] ${isQLEspecializado ? 'text-emerald-600 font-bold' : 'text-slate-400'}">(${isQLEspecializado ? 'Espec. >1' : '< 1'})</span></strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Tipo Terciário:</span> <strong class="text-slate-800" title="${perfilServico}">${rotuloServico}</strong></div>
-                </div>
-                <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
-                    ${textoEconomia}
-                </div>
+                <p class="text-sm text-white leading-relaxed mb-0 font-medium" style="text-align: justify;">
+                    ${nomeMun} consolida-se como a <strong>${rankPop || '-'}ª maior população</strong> e o <strong>${rankPib || '-'}º maior PIB</strong> de Pernambuco, com PIB per capita de <strong>${pibpcFmt}</strong> (${rankPibpc}º no Estado) e forte inserção na RD ${extrairValor(demo, 'regiao_de_desenvolvimento', '-')}. Apresenta matriz produtiva com liderança de <strong>${setorLider}</strong>, IDHM de <strong>${safeFmt(idhmVal, 3, '-')}</strong> (${faixaIdhm}), vulnerabilidade social aferida pelo IVCAD em <strong>${ivcadFmt}</strong> (${rankIvcad}º em PE), capacidade fiscal classificada como <strong>CAPAG ${capagNota}</strong> e taxa de cobertura por fibra de <strong>${fibraPct}%</strong>.
+                </p>
             </div>
 
-            <!-- 3. SOCIAL -->
-            <div class="resumo-dim-card" style="border-top: 4px solid #F59E0B;">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-hand-holding-heart text-amber-500 me-1.5"></i> Social</span>
-                    <span class="badge bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-pill px-2">IDHM: ${idhmVal.toFixed(3)}</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                <!-- 1. DEMOGRAFIA -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #3B82F6;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-users text-blue-500 me-1.5"></i> Demografia</span>
+                        <span class="badge bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold rounded-pill px-2">${rankPop || '-'}º em PE</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Pop. 2026:</span> <strong class="text-slate-800">${popVal.toLocaleString('pt-BR')}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Densidade:</span> <strong class="text-slate-800">${densidade} hab/km²</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Urbanização:</span> <strong class="text-slate-800">${safeFmt(pctUrb, 1, '0.0')}%</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIA (15-64):</span> <strong class="text-slate-800">${safeFmt(pctPia, 1, '0.0')}%</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoDemografia}
+                    </div>
                 </div>
-                <div class="space-y-1 mb-2.5">
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">IDHM:</span> <strong class="text-slate-800">${idhmVal.toFixed(3)} (${faixaIdhm})</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Pop. no CadÚnico:</span> <strong class="text-slate-800">${txCadVal > 0 ? txCadVal.toFixed(1) + '%' : '-'}</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Dep. Recursos (DR):</span> <strong class="text-slate-800">${drVal > 0 ? drPctStr : '-'}</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Água Tratada:</span> <strong class="text-slate-800">${aguaVal > 0 ? aguaVal.toFixed(1) + '%' : '-'}</strong></div>
+
+                <!-- 2. ECONOMIA -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #10B981;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-chart-line text-emerald-500 me-1.5"></i> Economia</span>
+                        <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-pill px-2">${rankPib || '-'}º em PE</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIB Total:</span> <strong class="text-slate-800">${pibFormatado || '-'}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">PIB per Capita:</span> <strong class="text-slate-800">R$ ${pibpcVal.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">QL Indústria:</span> <strong class="text-slate-800">${qlIndFmt} <span class="text-[10px] ${isQLEspecializado ? 'text-emerald-600 font-bold' : 'text-slate-400'}">(${isQLEspecializado ? 'Espec. >1' : '< 1'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Tipo Terciário:</span> <strong class="text-slate-800" title="${perfilServico}">${rotuloServico}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoEconomia}
+                    </div>
                 </div>
-                <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
-                    ${textoSocial}
+
+                <!-- 3. SOCIAL -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #F59E0B;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-hand-holding-heart text-amber-500 me-1.5"></i> Social</span>
+                        <span class="badge bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-pill px-2">IDHM: ${safeFmt(idhmVal, 3, '-')}</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">IDHM:</span> <strong class="text-slate-800">${safeFmt(idhmVal, 3, '-')} (${faixaIdhm})</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Pop. no CadÚnico:</span> <strong class="text-slate-800">${txCadVal > 0 ? safeFmt(txCadVal, 1) + '%' : '-'}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Dep. Recursos (DR):</span> <strong class="text-slate-800">${drVal > 0 ? drPctStr : '-'}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Água Tratada:</span> <strong class="text-slate-800">${aguaVal > 0 ? safeFmt(aguaVal, 1) + '%' : '-'}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoSocial}
+                    </div>
+                </div>
+
+                <!-- 4. FISCAL -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #8B5CF6;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-landmark text-purple-500 me-1.5"></i> Fiscal</span>
+                        <span class="badge text-white text-[10px] font-bold rounded-pill px-2.5 py-1" style="background-color: ${obterCorCapag(capagNota)};">CAPAG: ${capagNota}</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">CAPAG STN:</span> <strong class="badge text-white px-2 py-0.5 rounded-pill" style="background-color: ${obterCorCapag(capagNota)}; font-size: 11px;">${capagNota}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Desp. Investimento:</span> <strong class="text-slate-800">${despInvestFmt}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Rec. Investimento:</span> <strong class="text-slate-800">${recInvestFmt}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Despesa c/ Dívida:</span> <strong class="text-slate-800">${dividaFmt}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoFiscal}
+                    </div>
+                </div>
+
+                <!-- 5. TECNOLOGIA & INOVAÇÃO -->
+                <div class="resumo-dim-card" style="border-top: 4px solid #06B6D4;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-microchip text-cyan-500 me-1.5"></i> Inovação &amp; TI</span>
+                        <span class="badge ${isQlInfocomEspec ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-cyan-50 text-cyan-700 border-cyan-200'} border text-[10px] font-bold rounded-pill px-2">QL InfoCom: ${safeFmt(qlInfocomServ, 2, '0.00')}</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5">
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Participação de InfoCom em relação a Serviços no VAB">% InfoCom / Serv (VAB):</span> <strong class="text-slate-800">${safeFmt(pctVabInfocomServ, 2, '0.00')}%</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Participação de InfoCom nos Estabelecimentos de Serviços">% InfoCom / Serv (Estab.):</span> <strong class="text-slate-800">${safeFmt(pctEstabInfocomServ, 2, '0.00')}% <span class="text-[10px] text-slate-400">(${empresasTi})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Participação de InfoCom nos Empregados de Serviços">% InfoCom / Serv (Empreg.):</span> <strong class="text-slate-800">${safeFmt(pctEmpInfocomServ, 2, '0.00')}% <span class="text-[10px] text-slate-400">(${empInfocomTot})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Quociente Locacional específico de InfoCom em relação a Serviços">QL InfoCom / Serviços:</span> <strong class="text-slate-800">${safeFmt(qlInfocomServ, 2, '0.00')} <span class="text-[10px] ${isQlInfocomEspec ? 'text-emerald-600 font-bold' : 'text-slate-400'}">(${isQlInfocomEspec ? 'Espec. ≥1' : '< 1'})</span></strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
+                        ${textoTech}
+                    </div>
                 </div>
             </div>
+        `;
 
-            <!-- 4. FISCAL -->
-            <div class="resumo-dim-card" style="border-top: 4px solid #8B5CF6;">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-landmark text-purple-500 me-1.5"></i> Fiscal</span>
-                    <span class="badge text-white text-[10px] font-bold rounded-pill px-2.5 py-1" style="background-color: ${obterCorCapag(capagNota)};">CAPAG: ${capagNota}</span>
-                </div>
-                <div class="space-y-1 mb-2.5">
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">CAPAG STN:</span> <strong class="badge text-white px-2 py-0.5 rounded-pill" style="background-color: ${obterCorCapag(capagNota)}; font-size: 11px;">${capagNota}</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Desp. Investimento:</span> <strong class="text-slate-800">${despInvestFmt}</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Rec. Investimento:</span> <strong class="text-slate-800">${recInvestFmt}</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Despesa c/ Dívida:</span> <strong class="text-slate-800">${dividaFmt}</strong></div>
-                </div>
-                <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
-                    ${textoFiscal}
-                </div>
-            </div>
-
-            <!-- 5. TECNOLOGIA & INOVAÇÃO -->
-            <div class="resumo-dim-card" style="border-top: 4px solid #06B6D4;">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-microchip text-cyan-500 me-1.5"></i> Inovação &amp; TI</span>
-                    <span class="badge ${isQlInfocomEspec ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-cyan-50 text-cyan-700 border-cyan-200'} border text-[10px] font-bold rounded-pill px-2">QL InfoCom: ${qlInfocomServ.toFixed(2)}</span>
-                </div>
-                <div class="space-y-1 mb-2.5">
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Participação de InfoCom em relação a Serviços no VAB">% InfoCom / Serv (VAB):</span> <strong class="text-slate-800">${pctVabInfocomServ.toFixed(2)}%</strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Participação de InfoCom nos Estabelecimentos de Serviços">% InfoCom / Serv (Estab.):</span> <strong class="text-slate-800">${pctEstabInfocomServ.toFixed(2)}% <span class="text-[10px] text-slate-400">(${empresasTi})</span></strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Participação de InfoCom nos Empregados de Serviços">% InfoCom / Serv (Empreg.):</span> <strong class="text-slate-800">${pctEmpInfocomServ.toFixed(2)}% <span class="text-[10px] text-slate-400">(${empInfocomTot})</span></strong></div>
-                    <div class="d-flex justify-content-between text-xs"><span class="text-slate-500" title="Quociente Locacional específico de InfoCom em relação a Serviços">QL InfoCom / Serviços:</span> <strong class="text-slate-800">${qlInfocomServ.toFixed(2)} <span class="text-[10px] ${isQlInfocomEspec ? 'text-emerald-600 font-bold' : 'text-slate-400'}">(${isQlInfocomEspec ? 'Espec. ≥1' : '< 1'})</span></strong></div>
-                </div>
-                <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
-                    ${textoTech}
-                </div>
-            </div>
-        </div>
-    `;
-
-    $container.html(htmlResumo);
+        $container.html(htmlResumo);
+    } catch (errResumo) {
+        console.error("[Ficha] Erro ao renderizar Resumo Executivo:", errResumo);
+    }
 }
-
 function renderizarDiagnosticoRegional(nomeMun, diagMun, fontesRef) {
     const $container = $('#ficha_container_diagnostico_regional');
     const $headerBadges = $('#ficha_diag_badges_header');
@@ -762,20 +777,19 @@ window.abrirModalFonteReferencia = function (sigla) {
 window.iniciarModuloFicha = async function () {
     if (typeof window.mostrarCarregamento === 'function') window.mostrarCarregamento("Carregando Painel...");
 
-    try {
-        // Agora fazemos apenas UMA única chamada para a API! Muito mais amigável ao Ruscker.
-        const resMeta = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/metadados`.replace(/\/+/g, '/'));
+    // Limpar imediatamente quaisquer dropdowns órfãos gerados no body
+    $('.bs-container').remove();
+    $('body > .dropdown-menu').remove();
 
+    try {
+        const resMeta = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/metadados`.replace(/\/+/g, '/'));
         if (resMeta && resMeta.ok) {
             const j = await resMeta.json();
-            // Recebemos a massa consolidada perfeitamente preservada
             window.dadosMetadados = j.indicadores_dicionario || [];
         } else {
             console.warn("Falha ao carregar os metadados da API.");
         }
-
         if (typeof window.renderizarAbaMetadados === 'function') window.renderizarAbaMetadados();
-
     } catch (e) {
         console.warn("Erro ao carregar metadados unificados:", e);
     }
@@ -800,18 +814,40 @@ window.iniciarModuloFicha = async function () {
         iniciarDraggableNav();
         configurarStickyNavbarMetrics();
 
+        const $select = $('#ficha_f_municipio');
+
+        // Se os filtros já foram inicializados e contêm todos os municípios, reaproveitar e evitar recriação
+        if (window.fichaFiltrosCarregados && $select.length && $select.find('option').length >= 180) {
+            let targetMun = $select.val() || 'Recife';
+            if (window.municipioAlvoBusca) {
+                const alvoNorm = String(window.municipioAlvoBusca).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const optFound = $select.find('option').filter(function() {
+                    return $(this).text().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === alvoNorm;
+                }).val();
+                if (optFound) targetMun = optFound;
+                window.municipioAlvoBusca = null;
+            }
+            $select.val(targetMun);
+            if (typeof $select.selectpicker === 'function') {
+                try { $select.selectpicker('val', targetMun); $select.selectpicker('refresh'); } catch(e) {}
+            }
+            window.sincronizarBotaoFiltroMunicipio(targetMun);
+            if (!window.dadosFichaCarregados || window.municipioAtualFicha !== targetMun) {
+                await window.carregarDadosFicha(targetMun);
+            }
+            return;
+        }
+
         const res = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/filtros`.replace(/\/+/g, '/'));
         if (!res.ok) throw new Error("Erro ao buscar filtros da API");
 
         const json = await res.json();
-        const $select = $('#ficha_f_municipio');
 
         if ($select.length && json.municipios && json.municipios.length > 0) {
             if ($select.data('selectpicker')) {
                 try { $select.selectpicker('destroy'); } catch (e) {}
             }
             
-            // Padrão canônico de inicialização: Recife se disponível, senão primeiro da lista
             let defaultMun = "Recife";
             if (window.municipioAlvoBusca) {
                 const alvoNorm = String(window.municipioAlvoBusca).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -823,7 +859,10 @@ window.iniciarModuloFicha = async function () {
             } else {
                 defaultMun = json.municipios[0];
             }
-            $select.empty().html(json.municipios.map(m => `<option value="${m}" ${m === defaultMun ? 'selected' : ''}>${m}</option>`).join(''));
+            
+            // Elimina qualquer duplicata na lista da API garantindo unicidade rigorosa
+            const munsUnicos = Array.from(new Set(json.municipios));
+            $select.empty().html(munsUnicos.map(m => `<option value="${m}" ${m === defaultMun ? 'selected' : ''}>${m}</option>`).join(''));
             $select.val(defaultMun);
 
             if (typeof $select.selectpicker === 'function') {
@@ -833,7 +872,6 @@ window.iniciarModuloFicha = async function () {
                         liveSearchNormalize: true,
                         liveSearchPlaceholder: "Buscar município...",
                         noneResultsText: "Nenhum município encontrado",
-                        container: 'body',
                         size: 10,
                         style: 'btn-sm btn-light fw-bold text-slate-700 border-0 bg-transparent py-0 px-1 shadow-none',
                         width: '230px'
@@ -848,6 +886,7 @@ window.iniciarModuloFicha = async function () {
                 $select.val(defaultMun);
             }
 
+            window.fichaFiltrosCarregados = true;
             window.sincronizarBotaoFiltroMunicipio(defaultMun);
 
             $select.off('change').on('change', function () { 
@@ -1079,7 +1118,7 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
         }
 
         $(`#ficha_kpi_${elemBase}`).text(textoValor);
-        $(`#ficha_ano_${elemBase}`).html(`${unidadeTag} &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${itemRecente.ano}</span>${getRankBadge(itemRecente.rank_pe)}${obterBadgePolaridade(sigla)}`);
+        $(`#ficha_ano_${elemBase}`).html(`${unidadeTag} &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${itemRecente.ano}</span>${getRankBadge(itemRecente.rank_pe)}${obterBadgePolaridade(sigla)}`);
 
         const meta = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
         window.configurarBotoesKPI(elemBase, sigla, meta ? meta.nm_indicador : null, 'socio');
@@ -1116,7 +1155,7 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
             }
             const pct = (val / totalVab) * 100;
             $(`#ficha_kpi_${elemBase}`).text(pct.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%");
-            $(`#ficha_ano_${elemBase}`).html(`% do VAB &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${item.ano}</span>${getRankBadge(item.rank_pe)}${obterBadgePolaridade(sigla)}`);
+            $(`#ficha_ano_${elemBase}`).html(`% do VAB &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${item.ano}</span>${getRankBadge(item.rank_pe)}${obterBadgePolaridade(sigla)}`);
 
             // Cálculo e renderização do Quociente Locacional (QL)
             const refMedia = qlMediaPE[sigla.toLowerCase()] || 0;
@@ -1216,30 +1255,22 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
     const diagMun = diagApi || (window.diagnosticoRegional ? window.diagnosticoRegional[munKey] : null);
     const fontesRef = fontesApi || window.fontesReferenciaRegional || {};
 
-    renderizarResumoExecutivo(nomeMun, demo, ind, fiscais, vocacoes, diagMun, rankPop, pibValMil, rankPib, pibFormatado);
-    renderizarDiagnosticoRegional(nomeMun, diagMun, fontesRef);
+    try { renderizarResumoExecutivo(nomeMun, demo, ind, fiscais, vocacoes, diagMun, rankPop, pibValMil, rankPib, pibFormatado); } catch(e) { console.error("[Ficha] Erro em renderizarResumoExecutivo:", e); }
+    try { renderizarDiagnosticoRegional(nomeMun, diagMun, fontesRef); } catch(e) { console.error("[Ficha] Erro em renderizarDiagnosticoRegional:", e); }
 
-    renderizarIndicadoresSociais(demo, ind);
-    
-    renderizarVocacoes(vocacoes);
-    renderizarIndicadoresTrabalho(ind, demo);
-    renderizarIndicadoresConectividade(ind, demo);
-    renderizarIndicadoresInovacao(ind, demo);
-    renderizarIndicadoresComercio(ind, demo);
+    try { renderizarIndicadoresSociais(demo, ind); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresSociais:", e); }
+    try { renderizarVocacoes(vocacoes || []); } catch(e) { console.error("[Ficha] Erro em renderizarVocacoes:", e); }
+    try { renderizarIndicadoresTrabalho(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresTrabalho:", e); }
+    try { renderizarIndicadoresConectividade(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresConectividade:", e); }
+    try { renderizarIndicadoresInovacao(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresInovacao:", e); }
+    try { renderizarIndicadoresComercio(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresComercio:", e); }
     
     window.dadosFiscaisMun = fiscais || [];
-    renderizarDadosFiscais(fiscais || [], ind || [], demo || {});
+    try { renderizarDadosFiscais(fiscais || [], ind || [], demo || {}); } catch(e) { console.error("[Ficha] Erro em renderizarDadosFiscais:", e); }
 
-    // $('#ficha_transf_rd_titulo').text(`Municípios da RD ${rdNome}`);
-    renderizarTransferenciasRenda(iniciativas || [], pcp || []);
-    // renderizarMapaTransfRD();
-    renderizarIniciativasFicha(iniciativas || [], demo || {});
-    renderizarEmendasFicha(emendas || []);
-    
-    renderizarVocacoes(vocacoes || []);
-    renderizarIndicadoresTrabalho(ind, demo);
-
-    // Garante que TODOS os KPIs recebam o botão de série histórica e metadados
+    try { renderizarTransferenciasRenda(iniciativas || [], pcp || []); } catch(e) { console.error("[Ficha] Erro em renderizarTransferenciasRenda:", e); }
+    try { renderizarIniciativasFicha(iniciativas || [], demo || {}); } catch(e) { console.error("[Ficha] Erro em renderizarIniciativasFicha:", e); }
+    try { renderizarEmendasFicha(emendas || []); } catch(e) { console.error("[Ficha] Erro em renderizarEmendasFicha:", e); }
     if (typeof window.garantirBotoesTodosKPIs === 'function') {
         window.garantirBotoesTodosKPIs();
     }
@@ -1315,7 +1346,7 @@ function renderizarMapaTrabalhoRD() {
         mapTrabalhoFicha.resize();
         mapTrabalhoFicha.addSource('rd_trabalho_source', { type: 'geojson', data: geoData });
         mapTrabalhoFicha.addLayer({ id: 'rd_trabalho_fill', type: 'fill', source: 'rd_trabalho_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
-        mapTrabalhoFicha.addLayer({ id: 'rd_trabalho_line', type: 'line', source: 'rd_trabalho_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+        mapTrabalhoFicha.addLayer({ id: 'rd_trabalho_line', type: 'line', source: 'rd_trabalho_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#ff5a26', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
 
         const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
         mapTrabalhoFicha.on('mousemove', 'rd_trabalho_fill', (e) => {
@@ -1408,7 +1439,7 @@ function renderizarMapaDemografiaRD() {
         mapDemografiaFicha.resize();
         mapDemografiaFicha.addSource('rd_demografia_source', { type: 'geojson', data: geoData });
         mapDemografiaFicha.addLayer({ id: 'rd_demografia_fill', type: 'fill', source: 'rd_demografia_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
-        mapDemografiaFicha.addLayer({ id: 'rd_demografia_line', type: 'line', source: 'rd_demografia_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+        mapDemografiaFicha.addLayer({ id: 'rd_demografia_line', type: 'line', source: 'rd_demografia_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#ff5a26', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
 
         const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
         mapDemografiaFicha.on('mousemove', 'rd_demografia_fill', (e) => {
@@ -1459,13 +1490,13 @@ function renderizarIndicadoresSociais(demo, ind) {
     const refMviFmt = (mviData.mes && mviData.mes !== '-') ? `${mviData.mes}/${mviData.ano}` : mviData.ano;
 
     $('#ficha_kpi_mvi_abs').text(mviData.val.toLocaleString('pt-BR'));
-    $('#ficha_ano_mvi_abs').html(`Casos &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(mviData.rank)}${obterBadgePolaridade('mvi')}`);
+    $('#ficha_ano_mvi_abs').html(`Casos &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(mviData.rank)}${obterBadgePolaridade('mvi')}`);
     $('#ficha_kpi_mvi_taxa').text(mviTaxa.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
-    $('#ficha_ano_mvi_taxa').html(`/ 100k hab. &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(txMviData.rank || mviData.rank)}${obterBadgePolaridade('tx_mvi')}`);
+    $('#ficha_ano_mvi_taxa').html(`/ 100k hab. &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(txMviData.rank || mviData.rank)}${obterBadgePolaridade('tx_mvi')}`);
     $('#ficha_kpi_cvp_abs').text(cvpData.val.toLocaleString('pt-BR'));
-    $('#ficha_ano_cvp_abs').html(`Ocorrências &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(cvpData.rank)}${obterBadgePolaridade('cvp')}`);
+    $('#ficha_ano_cvp_abs').html(`Ocorrências &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(cvpData.rank)}${obterBadgePolaridade('cvp')}`);
     $('#ficha_kpi_cvp_taxa').text(cvpTaxa.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
-    $('#ficha_ano_cvp_taxa').html(`/ 100k hab. &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(txCvpData.rank || cvpData.rank)}${obterBadgePolaridade('tx_cvp')}`);
+    $('#ficha_ano_cvp_taxa').html(`/ 100k hab. &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(txCvpData.rank || cvpData.rank)}${obterBadgePolaridade('tx_cvp')}`);
 
     // Formatador Universal
     const aplicarKPI_Universal = (sigla, elemBase, sufixo) => {
@@ -1482,7 +1513,7 @@ function renderizarIndicadoresSociais(demo, ind) {
         }
 
         $(`#ficha_kpi_${elemBase}`).text(valFmt);
-        $(`#ficha_ano_${elemBase}`).html(`${sufixo} &bull; <span style="color: #0C2856; font-weight: 800;">REF: ${item.ano}</span>${getRankBadge(item.rank)}${obterBadgePolaridade(sigla)}`);
+        $(`#ficha_ano_${elemBase}`).html(`${sufixo} &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${item.ano}</span>${getRankBadge(item.rank)}${obterBadgePolaridade(sigla)}`);
 
         const metaSub = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
         window.configurarBotoesKPI(elemBase, sigla, metaSub ? metaSub.nm_indicador : null, 'socio');
@@ -1592,7 +1623,7 @@ function renderizarMapaSociaisRD() {
         mapSociaisFicha.resize();
         mapSociaisFicha.addSource('rd_sociais_source', { type: 'geojson', data: geoData });
         mapSociaisFicha.addLayer({ id: 'rd_sociais_fill', type: 'fill', source: 'rd_sociais_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.8 } });
-        mapSociaisFicha.addLayer({ id: 'rd_sociais_line', type: 'line', source: 'rd_sociais_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+        mapSociaisFicha.addLayer({ id: 'rd_sociais_line', type: 'line', source: 'rd_sociais_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#ff5a26', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
 
         const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
         mapSociaisFicha.on('mousemove', 'rd_sociais_fill', (e) => {
@@ -1688,7 +1719,7 @@ function renderizarMapaEducacaoRD() {
         mapEducacaoFicha.resize();
         mapEducacaoFicha.addSource('rd_educacao_source', { type: 'geojson', data: geoData });
         mapEducacaoFicha.addLayer({ id: 'rd_educacao_fill', type: 'fill', source: 'rd_educacao_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
-        mapEducacaoFicha.addLayer({ id: 'rd_educacao_line', type: 'line', source: 'rd_educacao_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+        mapEducacaoFicha.addLayer({ id: 'rd_educacao_line', type: 'line', source: 'rd_educacao_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#ff5a26', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
 
         const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
         mapEducacaoFicha.on('mousemove', 'rd_educacao_fill', (e) => {
@@ -1779,7 +1810,7 @@ function renderizarMapaSaudeRD() {
         mapSaudeFicha.resize();
         mapSaudeFicha.addSource('rd_saude_source', { type: 'geojson', data: geoData });
         mapSaudeFicha.addLayer({ id: 'rd_saude_fill', type: 'fill', source: 'rd_saude_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
-        mapSaudeFicha.addLayer({ id: 'rd_saude_line', type: 'line', source: 'rd_saude_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+        mapSaudeFicha.addLayer({ id: 'rd_saude_line', type: 'line', source: 'rd_saude_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#ff5a26', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
 
         const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
         mapSaudeFicha.on('mousemove', 'rd_saude_fill', (e) => {
@@ -1910,7 +1941,7 @@ function renderizarMapaCadUnicoRD() {
         mapCadUnicoFicha.resize();
         mapCadUnicoFicha.addSource('rd_cad_unico_source', { type: 'geojson', data: geoData });
         mapCadUnicoFicha.addLayer({ id: 'rd_cad_unico_fill', type: 'fill', source: 'rd_cad_unico_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
-        mapCadUnicoFicha.addLayer({ id: 'rd_cad_unico_line', type: 'line', source: 'rd_cad_unico_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+        mapCadUnicoFicha.addLayer({ id: 'rd_cad_unico_line', type: 'line', source: 'rd_cad_unico_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#ff5a26', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
 
         const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
         mapCadUnicoFicha.on('mousemove', 'rd_cad_unico_fill', (e) => {
@@ -2025,7 +2056,7 @@ function renderizarMapaSaneamentoRD() {
         mapSaneamentoFicha.resize();
         mapSaneamentoFicha.addSource('rd_saneamento_source', { type: 'geojson', data: geoData });
         mapSaneamentoFicha.addLayer({ id: 'rd_saneamento_fill', type: 'fill', source: 'rd_saneamento_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
-        mapSaneamentoFicha.addLayer({ id: 'rd_saneamento_line', type: 'line', source: 'rd_saneamento_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+        mapSaneamentoFicha.addLayer({ id: 'rd_saneamento_line', type: 'line', source: 'rd_saneamento_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#ff5a26', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
 
         const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
         mapSaneamentoFicha.on('mousemove', 'rd_saneamento_fill', (e) => {
@@ -2198,7 +2229,7 @@ function renderizarIndicadoresInovacao(ind, demo) {
             <div class="kpi-modern-card bg-white shadow-xs" style="border-left: 4px solid ${cfg.cor};">
               <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: #1E293B; font-weight: 800;" title="${item.nm_indicador}">${cfg.titulo}${iconInfo}</div>
               <div class="kpi-modern-body"><i class="fas ${cfg.icone} kpi-modern-icon" style="color: ${cfg.cor};"></i><span class="kpi-modern-number" id="ficha_kpi_${cfg.sigla}">${valFmt}</span></div>
-              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #0C2856; font-weight: 800;">${item.ano}</span>${rankBadge}${cfg.isQL ? extraBadge : obterBadgePolaridade(cfg.sigla)}${!cfg.isQL ? extraBadge : ''}</div>
+              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #c2410c; font-weight: 800;">${item.ano}</span>${rankBadge}${cfg.isQL ? extraBadge : obterBadgePolaridade(cfg.sigla)}${!cfg.isQL ? extraBadge : ''}</div>
             </div>
         `);
     });
@@ -2246,7 +2277,7 @@ function renderizarIndicadoresInovacao(ind, demo) {
             <div class="kpi-modern-card" style="border-left-color: #00B7FF;">
               <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
               <div class="kpi-modern-body"><i class="fas fa-laptop-code kpi-modern-icon" style="color: #00B7FF;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${valFmt}</span></div>
-              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #0C2856; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #c2410c; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
             </div>
         `);
     });
@@ -2322,7 +2353,7 @@ function renderizarMapaInovacaoRD() {
         mapInovacaoFicha.resize();
         mapInovacaoFicha.addSource('rd_inovacao_source', { type: 'geojson', data: geoData });
         mapInovacaoFicha.addLayer({ id: 'rd_inovacao_fill', type: 'fill', source: 'rd_inovacao_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
-        mapInovacaoFicha.addLayer({ id: 'rd_inovacao_line', type: 'line', source: 'rd_inovacao_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+        mapInovacaoFicha.addLayer({ id: 'rd_inovacao_line', type: 'line', source: 'rd_inovacao_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#ff5a26', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
 
         const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
         mapInovacaoFicha.on('mousemove', 'rd_inovacao_fill', (e) => {
@@ -2391,7 +2422,7 @@ function renderizarIndicadoresComercio(ind, demo) {
             <div class="kpi-modern-card" style="border-left-color: #E67E22;">
               <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
               <div class="kpi-modern-body"><i class="fas fa-globe kpi-modern-icon" style="color: #E67E22;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${valFmt}</span></div>
-              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #0C2856; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #c2410c; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
             </div>
         `);
 
@@ -2469,7 +2500,7 @@ function renderizarMapaComercioRD() {
         mapComercioFicha.resize();
         mapComercioFicha.addSource('rd_comercio_source', { type: 'geojson', data: geoData });
         mapComercioFicha.addLayer({ id: 'rd_comercio_fill', type: 'fill', source: 'rd_comercio_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
-        mapComercioFicha.addLayer({ id: 'rd_comercio_line', type: 'line', source: 'rd_comercio_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+        mapComercioFicha.addLayer({ id: 'rd_comercio_line', type: 'line', source: 'rd_comercio_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#ff5a26', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
 
         const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
         mapComercioFicha.on('mousemove', 'rd_comercio_fill', (e) => {
@@ -2531,7 +2562,7 @@ function renderizarIndicadoresConectividade(ind, demo) {
             <div class="kpi-modern-card" style="border-left-color: #3F51B5;">
               <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
               <div class="kpi-modern-body"><i class="fas fa-wifi kpi-modern-icon" style="color: #3F51B5;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${textoValor}</span></div>
-              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #0C2856; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #c2410c; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
             </div>
         `);
 
@@ -2609,7 +2640,7 @@ function renderizarMapaConectividadeRD() {
         mapConectividadeFicha.resize();
         mapConectividadeFicha.addSource('rd_conectividade_source', { type: 'geojson', data: geoData });
         mapConectividadeFicha.addLayer({ id: 'rd_conectividade_fill', type: 'fill', source: 'rd_conectividade_source', paint: { 'fill-color': fillColorExpression, 'fill-opacity': 0.85 } });
-        mapConectividadeFicha.addLayer({ id: 'rd_conectividade_line', type: 'line', source: 'rd_conectividade_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#0C2856', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
+        mapConectividadeFicha.addLayer({ id: 'rd_conectividade_line', type: 'line', source: 'rd_conectividade_source', paint: { 'line-color': ['case', ['boolean', ['get', 'is_selected'], false], '#ff5a26', '#ffffff'], 'line-width': ['case', ['boolean', ['get', 'is_selected'], false], 3, 1] } });
 
         const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
         mapConectividadeFicha.on('mousemove', 'rd_conectividade_fill', (e) => {
@@ -2824,7 +2855,7 @@ function renderizarIndicadoresTrabalho(ind, demo) {
             <div class="kpi-modern-card" style="border-left-color: ${corSetor};">
               <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
               <div class="kpi-modern-body"><i class="fas ${iconeSetor} kpi-modern-icon" style="color: ${corSetor};"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${textoValor}</span></div>
-              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #0C2856; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #c2410c; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
             </div>
         `);
 
@@ -2943,9 +2974,48 @@ function renderizarDadosFiscais(fiscais, ind, demo) {
             }
         });
 
-        let lista = Object.values(indUnicos).sort((a, b) => {
-            const posA = config.ordem.findIndex(o => normText(a.indicador).includes(normText(o)));
-            const posB = config.ordem.findIndex(o => normText(b.indicador).includes(normText(o)));
+        let lista = Object.values(indUnicos);
+
+        if (chaveGrp === 'Despesas_Tipo') {
+            // Juntar Serviço da Dívida (Juros + Amortizações)
+            let itemAmort = null;
+            let itemJuros = null;
+            const novaLista = [];
+
+            lista.forEach(it => {
+                const n = normText(it.indicador);
+                if (n.includes('AMORTIZACAO')) {
+                    itemAmort = it;
+                } else if (n.includes('JUROS')) {
+                    itemJuros = it;
+                } else {
+                    novaLista.push(it);
+                }
+            });
+
+            if (itemAmort || itemJuros) {
+                const valAmort = (itemAmort && !isNaN(itemAmort.valor)) ? itemAmort.valor : 0;
+                const valJuros = (itemJuros && !isNaN(itemJuros.valor)) ? itemJuros.valor : 0;
+                const totalServico = valAmort + valJuros;
+                const anoServ = (itemAmort?.ex || itemJuros?.ex || anoAlvo);
+
+                novaLista.push({
+                    indicador: 'Serviço da Dívida (Juros + Amortizações)',
+                    valor: totalServico,
+                    ex: anoServ,
+                    mes: Math.max(itemAmort?.mes || 0, itemJuros?.mes || 0),
+                    rank: null,
+                    isServicoDivida: true
+                });
+            }
+
+            lista = novaLista;
+        }
+
+        lista.sort((a, b) => {
+            const ordemNorm = ["DESPESAS CORRENTES", "CUSTEIO", "DESPESAS DE PESSOAL", "PESSOAL", "INVESTIMENTOS", "INVERSOES", "SERVICO DA DIVIDA", "AMORTIZACAO DA DIVIDA", "JUROS E ENCARGOS"];
+            const posA = (chaveGrp === 'Despesas_Tipo' ? ordemNorm : config.ordem).findIndex(o => normText(a.indicador).includes(normText(o)));
+            const posB = (chaveGrp === 'Despesas_Tipo' ? ordemNorm : config.ordem).findIndex(o => normText(b.indicador).includes(normText(o)));
             return (posA === -1 ? 99 : posA) - (posB === -1 ? 99 : posB);
         });
 
@@ -2982,7 +3052,15 @@ function renderizarDadosFiscais(fiscais, ind, demo) {
             const badgePolaridade = meta ? obterBadgePolaridade(cdMeta) : '';
 
             let nomeIndicadorExib = item.indicador;
-            if (nomeIndicadorExib === 'DTP/RCL' || nomeIndicadorExib.toLowerCase().includes('dtp')) {
+            const nIndNorm = normText(nomeIndicadorExib);
+
+            // a) Trocar "Despesas Correntes" por "Custeio – Outras Despesas Correntes"
+            if (nIndNorm.includes('DESPESAS CORRENTES') && !nIndNorm.includes('PESSOAL')) {
+                nomeIndicadorExib = 'Custeio – Outras Despesas Correntes';
+            }
+
+            // b) Trocar DTC / RCL ou DTP / RCL por "Pessoal"
+            if (nIndNorm === 'DTP/RCL' || nIndNorm === 'DTC/RCL' || nIndNorm.includes('DTP') || nIndNorm.includes('DTC') || (nIndNorm.includes('PESSOAL') && nIndNorm.includes('RCL'))) {
                 nomeIndicadorExib = 'Pessoal';
             }
             const cdMetaEscaped = String(cdMeta || '').replace(/'/g, "\\'");
@@ -3006,7 +3084,7 @@ function renderizarDadosFiscais(fiscais, ind, demo) {
                     </div>
                   </div>
                   <div class="kpi-modern-body"><i class="fas ${iconesFiscais[chaveGrp]} kpi-modern-icon" style="color: ${corBarra};"></i><span class="kpi-modern-number" style="font-size: 1.4rem;">${valFmt}</span></div>
-                  <div class="kpi-modern-footer text-uppercase">Exercício: <span style="color: #0C2856; font-weight: 800;">${item.ex || '-'}</span>${item.rank ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank}º em PE</span>` : ''}${badgePolaridade}</div>
+                  <div class="kpi-modern-footer text-uppercase">Exercício: <span style="color: #c2410c; font-weight: 800;">${item.ex || '-'}</span>${item.rank ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank}º em PE</span>` : ''}${badgePolaridade}</div>
                 </div>
             `);
         });
@@ -3063,7 +3141,7 @@ function renderizarIniciativasFicha(dados, demo) {
             grid: { left: '3%', right: '22%', bottom: '8%', top: '5%', containLabel: true },
             xAxis: { type: 'value', max: maxVal > 0 ? maxVal * 1.3 : 'dataMax', axisLabel: { formatter: (val) => (prefix === 'R$' && val >= 1e6) ? (val / 1e6).toFixed(1) + ' Mi' : val, fontSize: 9 }, splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } } },
             yAxis: { type: 'category', data: arr.map(x => x[0]), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { fontSize: 9, width: 70, overflow: 'truncate' } },
-            series: [{ type: 'bar', data: arr.map(x => x[1]), itemStyle: { color: '#0066FF', borderRadius: [0, 4, 4, 0] }, label: { show: true, position: 'right', formatter: (p) => prefix === 'R$' ? formataBi(p.value) : p.value, fontSize: 9, color: '#333333' } }],
+            series: [{ type: 'bar', data: arr.map(x => x[1]), itemStyle: { color: '#ff5a26', borderRadius: [0, 4, 4, 0] }, label: { show: true, position: 'right', formatter: (p) => prefix === 'R$' ? formataBi(p.value) : p.value, fontSize: 9, color: '#333333' } }],
             tooltip: { trigger: 'axis', formatter: (p) => `<b>${p[0].name}</b><br/>${prefix} ${p[0].value.toLocaleString('pt-BR')}` }
         }, true);
         chart.resize();
@@ -3074,10 +3152,11 @@ function renderizarIniciativasFicha(dados, demo) {
     renderBarChart('ficha_chart_valor_sec', secValAcoes, 'R$');
 
     // DataTables Ações
-    if ($.fn.DataTable.isDataTable('#ficha_tabela_iniciativas') && dtFichaIniciativas) {
+    if ($('#ficha_tabela_iniciativas').length && $.fn.DataTable.isDataTable('#ficha_tabela_iniciativas') && dtFichaIniciativas) {
         dtFichaIniciativas.clear().rows.add(dadosAcoes).draw(false);
+
     } else {
-        dtFichaIniciativas = $('#ficha_tabela_iniciativas').DataTable({
+        if ($('#ficha_tabela_iniciativas').length) dtFichaIniciativas = $('#ficha_tabela_iniciativas').DataTable({
             data: dadosAcoes, deferRender: true, language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" }, pageLength: 5, scrollX: true,
             columns: [
                 { title: "Órgão", data: null, className: "align-middle", width: "110px", render: (d, t, r) => t !== 'display' ? r.secretaria : `<div class="dt-cell-card d-flex align-items-center justify-content-center"><span class="badge bg-black text-white rounded-pill px-3 py-2 shadow-sm" style="font-size:11px;">${(r.secretaria || "").trim() || '-'}</span></div>` },
@@ -3130,10 +3209,10 @@ function renderizarIniciativasFicha(dados, demo) {
     let outStatusConv = Object.entries(statusCountConv).filter(k => k[0].toUpperCase() !== 'EM EXECUÇÃO').sort((a, b) => b[1] - a[1]).slice(0, 2).map(k => `${k[1]} ${k[0]}`).join(' | ');
     $('#ficha_kpi_conv_top_status').text(outStatusConv || "Nenhum outro status");
 
-    if ($.fn.DataTable.isDataTable('#ficha_tabela_convenios') && dtFichaConvenios) {
+    if ($('#ficha_tabela_convenios').length && $.fn.DataTable.isDataTable('#ficha_tabela_convenios') && dtFichaConvenios) {
         dtFichaConvenios.clear().rows.add(dadosConvenios).draw(false);
     } else {
-        dtFichaConvenios = $('#ficha_tabela_convenios').DataTable({
+        if ($('#ficha_tabela_convenios').length) dtFichaConvenios = $('#ficha_tabela_convenios').DataTable({
             data: dadosConvenios, deferRender: true, language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" }, pageLength: 5, scrollX: true,
             columns: [
                 { title: "Órgão", data: null, className: "align-middle", width: "110px", render: (d, t, r) => t !== 'display' ? r.secretaria : `<div class="dt-cell-card d-flex align-items-center justify-content-center"><span class="badge bg-black text-white rounded-pill px-3 py-2 shadow-sm" style="font-size:11px;">${(r.secretaria || "").trim() || '-'}</span></div>` },
@@ -3580,6 +3659,7 @@ window.alternarSubabaMunicipios = function (subaba, elemento) {
 };
 
 let mapResumoCapag = null;
+window.cacheResumoCapag = null;
 let cacheResumoCapag = null;
 
 window.renderizarResumoCapag = function () {
@@ -3605,6 +3685,7 @@ window.renderizarResumoCapag = function () {
         })
         .then(data => {
             cacheResumoCapag = data;
+            window.cacheResumoCapag = data;
             $('#resumo_capag_spinner').addClass('d-none');
 
             // 1. Atualizar Tabela 8 com contagens reais
@@ -3879,6 +3960,7 @@ window.alternarPautaResumos = function (pauta, btn) {
 };
 
 let mapResumoAguas = null;
+window.cacheResumoAguas = null;
 let cacheResumoAguas = null;
 let dtResumoAguas = null;
 let camadaAtivaAguas = 'Cenario: Geral';
@@ -3913,6 +3995,7 @@ window.renderizarResumoAguas = function () {
         })
         .then(data => {
             cacheResumoAguas = data;
+            window.cacheResumoAguas = data;
             $('#resumo_aguas_spinner').addClass('d-none');
 
             const projetos = data.projetos || [];
@@ -4944,8 +5027,8 @@ function renderGraficoLinhaModalMun(anos, valores, nomeExib, mun, isPct, isMoeda
             data: valores,
             smooth: true,
             symbolSize: 8,
-            lineStyle: { width: 3.5, color: '#0C2856' },
-            itemStyle: { color: '#0C2856' },
+            lineStyle: { width: 3.5, color: '#ff5a26' },
+            itemStyle: { color: '#ff5a26' },
             areaStyle: {
                 color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                     { offset: 0, color: 'rgba(12, 40, 86, 0.35)' },
@@ -4978,7 +5061,7 @@ function renderGraficoBarrasModalMun(rankingArr, munAlvo, nomeExib, rdNome, isPc
     const categorias = dadosReversos.map(d => d.municipio);
     const valores = dadosReversos.map(d => {
         const isAlvo = normTextMun(d.municipio) === normTextMun(munAlvo);
-        const cor = isAlvo ? '#0C2856' : '#94A3B8';
+        const cor = isAlvo ? '#ff5a26' : '#94A3B8';
         return {
             value: d.valor,
             itemStyle: {
@@ -5082,6 +5165,7 @@ window.atualizarKpiCozinhasMunicipio = function(nomeMun, codIbge) {
 };
 
 let mapResumoCozinhas = null;
+window.cacheResumoCozinhas = null;
 let cacheResumoCozinhas = null;
 let chartResumoCozinhasMuns = null;
 let chartCofinSerieHistorica = null;
@@ -5973,6 +6057,7 @@ window.renderizarResumoCozinhas = function () {
         })
         .then(data => {
             cacheResumoCozinhas = data;
+            window.cacheResumoCozinhas = data;
             $('#resumo_cozinhas_spinner').addClass('d-none');
 
             const cozinhas = data.cozinhas || [];
@@ -6314,6 +6399,7 @@ window.renderizarResumoCozinhas = function () {
    RESUMOS TEMÁTICOS - PAUTA 4: ESTRADAS DE PERNAMBUCO (DER-PE / SEINFRA)
    ========================================================================== */
 let mapResumoEstradas = null;
+window.cacheResumoEstradas = null;
 let cacheResumoEstradas = null;
 let dtResumoEstradas = null;
 let filtroStatusEstradas = 'todos';
@@ -6351,6 +6437,7 @@ window.renderizarResumoEstradas = function () {
         })
         .then(data => {
             cacheResumoEstradas = data;
+            window.cacheResumoEstradas = data;
             if (spinner) spinner.classList.add('d-none');
 
             // 1. Atualizar KPIs no DOM
@@ -6784,3 +6871,878 @@ window.limparFiltroEstradas = function () {
         } catch (e) {}
     }
 };
+
+
+/* ==========================================================================
+   7. MÓDULO DE COMPARAÇÃO MUNICIPAL (BENCHMARKING 2 A 3 MUNICÍPIOS)
+   ========================================================================== */
+window.cacheComparacaoMunicipios = window.cacheComparacaoMunicipios || {};
+window.chartsComparacao = {
+    radar: null,
+    lollipopGeral: null,
+    lollipopFiscal: null,
+    vab: null
+};
+
+window.trocarSubabaMunicipios = function(subaba) {
+    if (subaba === 'comparacao') {
+        $('#subaba_ficha_municipal').addClass('d-none');
+        $('#subaba_comparacao_municipal').removeClass('d-none');
+
+        // Botões de navegação
+        $('#btn_subaba_ficha, #nav_btn_subaba_ficha').removeClass('btn-primary text-white shadow-xs').addClass('text-slate-600 bg-transparent border-0');
+        $('#btn_subaba_comparacao, #nav_btn_subaba_comparacao').removeClass('text-slate-600 bg-transparent border-0').addClass('btn-primary text-white shadow-xs');
+
+        // Ajuste no navbar
+        $('#box_filtro_municipio_individual').addClass('d-none');
+        $('#ficha_navbar_nav').addClass('d-none');
+
+        window.iniciarModuloComparacaoMunicipal();
+
+        setTimeout(() => {
+            Object.values(window.chartsComparacao).forEach(c => {
+                if (c && typeof c.resize === 'function') c.resize();
+            });
+        }, 150);
+    } else {
+        $('#subaba_comparacao_municipal').addClass('d-none');
+        $('#subaba_ficha_municipal').removeClass('d-none');
+
+        $('#btn_subaba_comparacao, #nav_btn_subaba_comparacao').removeClass('btn-primary text-white shadow-xs').addClass('text-slate-600 bg-transparent border-0');
+        $('#btn_subaba_ficha, #nav_btn_subaba_ficha').removeClass('text-slate-600 bg-transparent border-0').addClass('btn-primary text-white shadow-xs');
+
+        $('#box_filtro_municipio_individual').removeClass('d-none');
+        $('#ficha_navbar_nav').removeClass('d-none');
+
+        setTimeout(() => {
+            if (mapFicha && typeof mapFicha.resize === 'function') mapFicha.resize();
+        }, 150);
+    }
+};
+
+window.iniciarModuloComparacaoMunicipal = async function() {
+    const $sel1 = $('#comp_select_mun1');
+    const $sel2 = $('#comp_select_mun2');
+    const $sel3 = $('#comp_select_mun3');
+
+    // Se já foram preenchidos com options, atualiza os dados
+    if ($sel1.find('option').length >= 180) {
+        await window.atualizarComparacaoMunicipal();
+        return;
+    }
+
+    // Carrega a lista completa de municípios
+    let listaMuns = [];
+    const $selectOriginal = $('#ficha_f_municipio');
+    if ($selectOriginal.length && $selectOriginal.find('option').length >= 180) {
+        $selectOriginal.find('option').each(function() {
+            const v = $(this).val();
+            if (v) listaMuns.push(v);
+        });
+    } else {
+        try {
+            const res = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/filtros`.replace(/\/+/g, '/'));
+            if (res && res.ok) {
+                const j = await res.json();
+                listaMuns = j.municipios || [];
+            }
+        } catch(e) {}
+    }
+
+    if (!listaMuns.length) return;
+
+    // Valores padrão inteligentes: Mun 1 atual da Ficha, Mun 2 Caruaru, Mun 3 Petrolina
+    const currentMunFicha = $('#ficha_f_municipio').val() || 'Recife';
+    const defMun1 = currentMunFicha;
+    const defMun2 = listaMuns.includes('Caruaru') && defMun1 !== 'Caruaru' ? 'Caruaru' : (listaMuns.find(m => m !== defMun1) || 'Olinda');
+    const defMun3 = listaMuns.includes('Petrolina') && defMun1 !== 'Petrolina' && defMun2 !== 'Petrolina' ? 'Petrolina' : '';
+
+    const optsHtml1 = listaMuns.map(m => `<option value="${m}" ${m === defMun1 ? 'selected' : ''}>${m}</option>`).join('');
+    const optsHtml2 = listaMuns.map(m => `<option value="${m}" ${m === defMun2 ? 'selected' : ''}>${m}</option>`).join('');
+    const optsHtml3 = `<option value="">(Nenhum - Comparar apenas 2)</option>` + listaMuns.map(m => `<option value="${m}" ${m === defMun3 ? 'selected' : ''}>${m}</option>`).join('');
+
+    $sel1.html(optsHtml1).val(defMun1);
+    $sel2.html(optsHtml2).val(defMun2);
+    $sel3.html(optsHtml3).val(defMun3);
+
+    await window.atualizarComparacaoMunicipal();
+};
+
+window.aoMudarMunicipioComparacao = function(num) {
+    window.atualizarComparacaoMunicipal();
+};
+
+window.trocarOrdemMunicipiosComparacao = function() {
+    const val1 = $('#comp_select_mun1').val();
+    const val2 = $('#comp_select_mun2').val();
+    $('#comp_select_mun1').val(val2);
+    $('#comp_select_mun2').val(val1);
+    window.atualizarComparacaoMunicipal();
+};
+
+window.obterDadosMunicipioComparacao = async function(nomeMun) {
+    if (!nomeMun) return null;
+    if (window.cacheComparacaoMunicipios[nomeMun]) {
+        return window.cacheComparacaoMunicipios[nomeMun];
+    }
+
+    try {
+        const res = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/data`.replace(/\/+/g, '/'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ municipio: nomeMun })
+        });
+        if (res && res.ok) {
+            const data = await res.json();
+            window.cacheComparacaoMunicipios[nomeMun] = data;
+            return data;
+        }
+    } catch(e) {
+        console.error(`[Comparação] Erro ao carregar dados de ${nomeMun}:`, e);
+    }
+    return null;
+};
+
+window.atualizarComparacaoMunicipal = async function() {
+    const mun1 = $('#comp_select_mun1').val();
+    const mun2 = $('#comp_select_mun2').val();
+    const mun3 = $('#comp_select_mun3').val();
+
+    if (!mun1 || !mun2) return;
+
+    if (typeof window.mostrarCarregamento === 'function') window.mostrarCarregamento("CARREGANDO COMPARATIVO MUNICIPAL...");
+
+    try {
+        const [d1, d2, d3] = await Promise.all([
+            window.obterDadosMunicipioComparacao(mun1),
+            window.obterDadosMunicipioComparacao(mun2),
+            mun3 ? window.obterDadosMunicipioComparacao(mun3) : Promise.resolve(null)
+        ]);
+
+        if (d1 && d2) {
+            renderizarPainelComparativo(mun1, d1, mun2, d2, mun3, d3);
+        }
+    } catch(err) {
+        console.error("[Comparação] Erro ao renderizar comparativo:", err);
+    } finally {
+        if (typeof window.ocultarCarregamento === 'function') window.ocultarCarregamento();
+    }
+};
+
+function extrairMetricasComparacao(nomeMun, rawData) {
+    if (!rawData) return null;
+    const demo = rawData.demografia || {};
+    const ind = rawData.indicadores || [];
+    const fiscais = rawData.fiscais || [];
+    const vocacoes = rawData.vocacoes || [];
+
+    const extrairValDemo = (k, fb = 0) => (demo && demo[k] && demo[k][0] !== undefined) ? demo[k][0] : fb;
+    const extrairInd = (sigla, fb = 0) => {
+        const itens = ind.filter(i => String(i.sigla_indicador || '').toLowerCase().trim() === String(sigla).toLowerCase().trim());
+        if (!itens.length) return fb;
+        itens.sort((a, b) => b.ano - a.ano);
+        const val = parseFloat(String(itens[0].indicador).replace(',', '.'));
+        return isNaN(val) ? fb : val;
+    };
+    const extrairIndRecenteObj = (sigla) => {
+        const itens = ind.filter(i => String(i.sigla_indicador || '').toLowerCase().trim() === String(sigla).toLowerCase().trim());
+        if (!itens.length) return null;
+        itens.sort((a, b) => b.ano - a.ano);
+        return itens[0];
+    };
+
+    // 1. Demografia
+    const pop = parseFloat(extrairValDemo('pop_2026', 0)) || 0;
+    const area = parseFloat(extrairValDemo('area_km2', 0)) || 0;
+    const densidade = (area > 0 && pop > 0) ? (pop / area) : 0;
+    const pctUrb = extrairInd('perc_pop_urb', 0);
+    const pctPia = extrairInd('pct_pia', 0);
+    const indEnvelhecimento = extrairInd('ind_envelhecimento', 0);
+    const rd = extrairValDemo('regiao_de_desenvolvimento', '-');
+
+    // 2. Economia
+    const pibpc = extrairInd('pibpc', 0);
+    const pibTotalMil = extrairInd('pib_1000', 0);
+    const pibPct = extrairInd('pib_pct', 0);
+    const vabAgro = extrairInd('vab_agro', 0);
+    const vabInd = extrairInd('vab_ind', 0);
+    const vabServ = extrairInd('vab_serv', 0);
+    const vabAdm = extrairInd('vab_adm', 0);
+    const totalVab = (vabAgro + vabInd + vabServ + vabAdm) || 1;
+    const pctVabAgro = (vabAgro / totalVab) * 100;
+    const pctVabInd = (vabInd / totalVab) * 100;
+    const pctVabServ = (vabServ / totalVab) * 100;
+    const pctVabAdm = (vabAdm / totalVab) * 100;
+    const qlInd = pctVabInd / 10.672;
+
+    // 3. Social
+    const idhm = extrairInd('idhm', 0);
+    let txCad = extrairInd('tx_cad_pessoas', 0);
+    if (txCad === 0 && pop > 0) {
+        const cadPessoas = extrairInd('cad_pessoas', 0);
+        if (cadPessoas > 0) txCad = (cadPessoas / pop) * 100;
+    }
+    const ivcadDr = extrairInd('ivcad_dr', extrairInd('ivcad_taxa', 0));
+    const agua = extrairInd('pct_agua_rede', 0);
+    const ideb = extrairInd('ideb_5ano', 0);
+
+    // 4. Fiscal
+    let capag = '-';
+    const itemCapag = ind.find(i => String(i.sigla_indicador || i.nm_indicador || '').toLowerCase().trim() === 'capag');
+    if (itemCapag && itemCapag.indicador && String(itemCapag.indicador).trim() !== 'NA') {
+        capag = String(itemCapag.indicador).trim().toUpperCase();
+    } else if (demo && (demo.capag || demo.CAPAG)) {
+        capag = String(demo.capag || demo.CAPAG).trim().toUpperCase();
+    }
+
+    let maxEx = 0;
+    fiscais.forEach(f => {
+        const ex = parseInt(f.exercicio) || 0;
+        if (ex > maxEx) maxEx = ex;
+    });
+    const fiscaisRecentes = fiscais.filter(f => parseInt(f.exercicio) === maxEx);
+    const getFisc = (term) => {
+        const matches = fiscaisRecentes.filter(f => String(f.indicador || '').toLowerCase().includes(term.toLowerCase()));
+        if (!matches.length) return 0;
+        matches.sort((a, b) => (parseInt(b.periodo) || 0) - (parseInt(a.periodo) || 0));
+        return parseFloat(matches[0].valor) || 0;
+    };
+
+    const custeio = getFisc('Despesas Correntes') || getFisc('Custeio');
+    const pessoal = getFisc('Pessoal') || getFisc('DTP');
+    const investimentos = getFisc('Investimentos') || getFisc('Despesas de Capital');
+    const amortizacao = getFisc('Amortização');
+    const juros = getFisc('Juros');
+    const servicoDivida = amortizacao + juros;
+    const recCapital = getFisc('Receitas de Capital');
+
+    // 5. Inovação & Fibra
+    const fibraVal = extrairInd('cob_fibra', 0);
+    const fibraPct = fibraVal <= 1 && fibraVal > 0 ? (fibraVal * 100) : fibraVal;
+    const pctVabInfocom = extrairInd('pct_vab_infocom_serv', 0);
+    const qlInfocom = extrairInd('ql_infocom_serv', 0);
+    const estabInfocom = extrairInd('estab_infocom', 0);
+
+    return {
+        nome: nomeMun,
+        rd,
+        pop,
+        area,
+        densidade,
+        pctUrb,
+        pctPia,
+        indEnvelhecimento,
+        pibpc,
+        pibTotalMil,
+        pibPct,
+        pctVabAgro,
+        pctVabInd,
+        pctVabServ,
+        pctVabAdm,
+        qlInd,
+        idhm,
+        txCad,
+        ivcadDr,
+        agua,
+        ideb,
+        capag,
+        custeio,
+        pessoal,
+        investimentos,
+        servicoDivida,
+        recCapital,
+        fibraPct,
+        pctVabInfocom,
+        qlInfocom,
+        estabInfocom
+    };
+}
+
+function renderizarPainelComparativo(m1Nome, d1Raw, m2Nome, d2Raw, m3Nome, d3Raw) {
+    const m1 = extrairMetricasComparacao(m1Nome, d1Raw);
+    const m2 = extrairMetricasComparacao(m2Nome, d2Raw);
+    const m3 = m3Nome ? extrairMetricasComparacao(m3Nome, d3Raw) : null;
+
+    if (!m1 || !m2) return;
+
+    // Atualiza badges e metadados nos 3 cards do topo
+    $('#comp_badge_rd_mun1').text(m1.rd);
+    $('#comp_pop_mun1').text(m1.pop > 0 ? m1.pop.toLocaleString('pt-BR') + ' hab.' : '-');
+    $('#comp_pibpc_mun1').text(m1.pibpc > 0 ? 'R$ ' + m1.pibpc.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '-');
+
+    $('#comp_badge_rd_mun2').text(m2.rd);
+    $('#comp_pop_mun2').text(m2.pop > 0 ? m2.pop.toLocaleString('pt-BR') + ' hab.' : '-');
+    $('#comp_pibpc_mun2').text(m2.pibpc > 0 ? 'R$ ' + m2.pibpc.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '-');
+
+    if (m3) {
+        $('#comp_badge_rd_mun3').text(m3.rd).removeClass('d-none');
+        $('#comp_pop_mun3').text(m3.pop > 0 ? m3.pop.toLocaleString('pt-BR') + ' hab.' : '-');
+        $('#comp_pibpc_mun3').text(m3.pibpc > 0 ? 'R$ ' + m3.pibpc.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '-');
+        $('#comp_th_mun3').text(m3.nome).removeClass('d-none');
+    } else {
+        $('#comp_badge_rd_mun3').text('-').addClass('d-none');
+        $('#comp_pop_mun3').text('-');
+        $('#comp_pibpc_mun3').text('-');
+        $('#comp_th_mun3').text('Município 3 (Desativado)').addClass('d-none');
+    }
+
+    $('#comp_th_mun1').text(m1.nome);
+    $('#comp_th_mun2').text(m2.nome);
+
+    // 1. Resumo Executivo Multidimensional Comparativo
+    renderizarResumoExecutivoComparativo(m1, m2, m3);
+
+    // 2. Gráfico Radial / Radar das 5 Dimensões
+    renderizarRadarComparativo(m1, m2, m3);
+
+    // 3. Gráfico de Pirulito (Lollipop) Estratégico
+    renderizarLollipopSocioeconomico(m1, m2, m3);
+
+    // 4. Gráfico de VAB Setorial
+    renderizarVabComparativo(m1, m2, m3);
+
+    // 5. Gráfico de Pirulito (Lollipop) Fiscal
+    renderizarLollipopFiscal(m1, m2, m3);
+
+    // 6. Matriz de Confronto Direto por Dimensões
+    renderizarTabelaConfronto(m1, m2, m3);
+}
+
+function renderizarResumoExecutivoComparativo(m1, m2, m3) {
+    const $container = $('#comp_container_resumo_executivo');
+    if (!$container.length) return;
+
+    const lista = [m1, m2, m3].filter(Boolean);
+    const liderPibpc = [...lista].sort((a, b) => b.pibpc - a.pibpc)[0];
+    const liderIdhm = [...lista].sort((a, b) => b.idhm - a.idhm)[0];
+    const liderPop = [...lista].sort((a, b) => b.pop - a.pop)[0];
+    const liderFibra = [...lista].sort((a, b) => b.fibraPct - a.fibraPct)[0];
+
+    const badgesHtml = lista.map((m, idx) => {
+        const cores = ['#ff5a26', '#059669', '#7c3aed'];
+        const cor = cores[idx % cores.length];
+        return `
+            <span class="badge rounded-pill px-3 py-1.5 text-xs font-bold text-white shadow-2xs" style="background-color: ${cor};">
+                <i class="fas fa-city me-1"></i> ${m.nome} (Pop: ${m.pop.toLocaleString('pt-BR')} &bull; PIB pc: R$ ${m.pibpc.toLocaleString('pt-BR', { maximumFractionDigits: 0 })})
+            </span>
+        `;
+    }).join('');
+
+    const html = `
+        <div class="resumo-exec-banner mb-2">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-white text-orange-950 font-black px-3 py-1.5 rounded-pill uppercase tracking-wider text-xs shadow-xs">
+                        <i class="fas fa-balance-scale me-1 text-[#ff5a26]"></i> Síntese Estratégica Comparativa
+                    </span>
+                    <span class="text-orange-100 font-semibold text-xs">Confronto Multidimensional de Indicadores Oficiais</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    ${badgesHtml}
+                </div>
+            </div>
+            <p class="text-sm text-white leading-relaxed mb-0 font-medium" style="text-align: justify;">
+                No confronto direto entre <strong>${lista.map(m => m.nome).join(', ')}</strong>, 
+                o município de <strong>${liderPibpc.nome}</strong> destaca-se com o maior PIB per capita (<strong>R$ ${liderPibpc.pibpc.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</strong>), 
+                enquanto <strong>${liderIdhm.nome}</strong> lidera o Índice de Desenvolvimento Humano (<strong>IDHM ${liderIdhm.idhm.toFixed(3)}</strong>). 
+                Em escala demográfica, <strong>${liderPop.nome}</strong> concentra o maior contingente populacional (<strong>${liderPop.pop.toLocaleString('pt-BR')} habitantes</strong>). 
+                Na infraestrutura digital, <strong>${liderFibra.nome}</strong> atinge a maior cobertura de fibra óptica (<strong>${liderFibra.fibraPct.toFixed(1)}%</strong>). 
+                A análise das 5 dimensões evidencia perfis complementares em estrutura produtiva, capacidade fiscal e bem-estar social.
+            </p>
+        </div>
+    `;
+
+    $container.html(html);
+}
+
+function calcularScoreDimensao(m, dim) {
+    if (!m) return 0;
+    if (dim === 'demografia') {
+        const scorePop = Math.min(100, (Math.log10(Math.max(1000, m.pop)) / Math.log10(1700000)) * 100);
+        const scoreUrb = Math.min(100, m.pctUrb);
+        return Math.round((scorePop * 0.5) + (scoreUrb * 0.5));
+    }
+    if (dim === 'economia') {
+        const scorePibpc = Math.min(100, (m.pibpc / 60000) * 100);
+        const scoreQl = Math.min(100, (m.qlInd / 2.5) * 100);
+        return Math.round((scorePibpc * 0.6) + (scoreQl * 0.4));
+    }
+    if (dim === 'social') {
+        const scoreIdhm = Math.min(100, (m.idhm / 0.85) * 100);
+        const scoreIdeb = Math.min(100, (m.ideb / 7.5) * 100);
+        return Math.round((scoreIdhm * 0.6) + (scoreIdeb * 0.4));
+    }
+    if (dim === 'fiscal') {
+        const capScore = m.capag.startsWith('A') ? 95 : m.capag.startsWith('B') ? 80 : m.capag.startsWith('C') ? 55 : m.capag.startsWith('D') ? 35 : 60;
+        return capScore;
+    }
+    if (dim === 'inovacao') {
+        const scoreFibra = Math.min(100, m.fibraPct);
+        const scoreVabInfo = Math.min(100, (m.pctVabInfocom / 15) * 100);
+        return Math.round((scoreFibra * 0.6) + (scoreVabInfo * 0.4));
+    }
+    return 50;
+}
+
+function renderizarRadarComparativo(m1, m2, m3) {
+    const dom = document.getElementById('comp_chart_radar_dimensoes');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    if (window.chartsComparacao.radar) {
+        window.chartsComparacao.radar.dispose();
+    }
+    const chart = echarts.init(dom);
+    window.chartsComparacao.radar = chart;
+
+    const lista = [
+        { mun: m1, cor: '#ff5a26' },
+        { mun: m2, cor: '#059669' },
+        m3 ? { mun: m3, cor: '#7c3aed' } : null
+    ].filter(Boolean);
+
+    const dims = ['demografia', 'economia', 'social', 'fiscal', 'inovacao'];
+    const seriesData = lista.map(it => {
+        const vals = dims.map(d => calcularScoreDimensao(it.mun, d));
+        return {
+            name: it.mun.nome,
+            value: vals,
+            itemStyle: { color: it.cor },
+            lineStyle: { width: 3, color: it.cor },
+            areaStyle: { opacity: 0.22, color: it.cor }
+        };
+    });
+
+    const option = {
+        tooltip: {
+            trigger: 'item',
+            confine: true,
+            formatter: function(params) {
+                const names = ['1. Demografia & Escala', '2. Economia & Riqueza', '3. Social & IDHM', '4. Gestão Fiscal', '5. Inovação & Fibra'];
+                let out = `<div class="font-bold text-xs mb-1" style="color: ${params.color};">${params.name}</div>`;
+                params.value.forEach((v, idx) => {
+                    out += `<div class="d-flex justify-content-between gap-3 text-xs"><span>${names[idx]}:</span> <strong>${v}/100</strong></div>`;
+                });
+                return out;
+            }
+        },
+        legend: {
+            bottom: 0,
+            textStyle: { fontSize: 11, fontWeight: 'bold' }
+        },
+        radar: {
+            indicator: [
+                { name: '1. Demografia', max: 100 },
+                { name: '2. Economia', max: 100 },
+                { name: '3. Social', max: 100 },
+                { name: '4. Fiscal', max: 100 },
+                { name: '5. Inovação', max: 100 }
+            ],
+            splitNumber: 4,
+            radius: '68%',
+            axisName: {
+                color: '#334155',
+                fontWeight: 'bold',
+                fontSize: 11
+            },
+            splitArea: {
+                areaStyle: {
+                    color: ['#f8fafc', '#ffffff', '#f1f5f9', '#ffffff']
+                }
+            }
+        },
+        series: [{
+            type: 'radar',
+            data: seriesData
+        }]
+    };
+
+    chart.setOption(option);
+}
+
+function renderizarLollipopSocioeconomico(m1, m2, m3) {
+    const dom = document.getElementById('comp_chart_lollipop_principais');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    if (window.chartsComparacao.lollipopGeral) {
+        window.chartsComparacao.lollipopGeral.dispose();
+    }
+    const chart = echarts.init(dom);
+    window.chartsComparacao.lollipopGeral = chart;
+
+    const lista = [
+        { mun: m1, cor: '#ff5a26' },
+        { mun: m2, cor: '#059669' },
+        m3 ? { mun: m3, cor: '#7c3aed' } : null
+    ].filter(Boolean);
+
+    const categories = [
+        'IDEB Anos Iniciais (x10)',
+        'QL Indústria (x10)',
+        'PIA Produtiva (%)',
+        'Taxa Urbanização (%)',
+        'Cob. Fibra Óptica (%)',
+        'IDHM (x100)'
+    ];
+
+    const extrairValoresLollipop = (m) => [
+        Math.round(m.ideb * 10),
+        Math.round(m.qlInd * 10),
+        Math.round(m.pctPia),
+        Math.round(m.pctUrb),
+        Math.round(m.fibraPct),
+        Math.round(m.idhm * 100)
+    ];
+
+    const series = lista.map(it => {
+        const vals = extrairValoresLollipop(it.mun);
+        return {
+            name: it.mun.nome,
+            type: 'bar',
+            barWidth: 4,
+            barGap: '40%',
+            itemStyle: { color: it.cor, borderRadius: [0, 4, 4, 0] },
+            data: vals,
+            markPoint: {
+                symbol: 'circle',
+                symbolSize: 13,
+                itemStyle: { color: it.cor },
+                label: { show: false },
+                data: vals.map((v, i) => ({ coord: [v, i], value: v }))
+            }
+        };
+    });
+
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
+            confine: true
+        },
+        legend: {
+            bottom: 0,
+            textStyle: { fontSize: 11, fontWeight: 'bold' }
+        },
+        grid: {
+            top: 20,
+            left: '3%',
+            right: '4%',
+            bottom: 45,
+            containLabel: true
+        },
+        xAxis: {
+            type: 'value',
+            splitLine: { lineStyle: { stroke: '#f1f5f9' } },
+            axisLabel: { fontSize: 10 }
+        },
+        yAxis: {
+            type: 'category',
+            data: categories,
+            axisLabel: { fontSize: 11, fontWeight: 'bold', color: '#1e293b' }
+        },
+        series: series
+    };
+
+    chart.setOption(option);
+}
+
+function renderizarLollipopFiscal(m1, m2, m3) {
+    const dom = document.getElementById('comp_chart_lollipop_fiscal');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    if (window.chartsComparacao.lollipopFiscal) {
+        window.chartsComparacao.lollipopFiscal.dispose();
+    }
+    const chart = echarts.init(dom);
+    window.chartsComparacao.lollipopFiscal = chart;
+
+    const lista = [
+        { mun: m1, cor: '#ff5a26' },
+        { mun: m2, cor: '#059669' },
+        m3 ? { mun: m3, cor: '#7c3aed' } : null
+    ].filter(Boolean);
+
+    const categories = [
+        'Rec. Capital (R$ Mi)',
+        'Serviço Dívida (R$ Mi)',
+        'Investimentos (R$ Mi)',
+        'Pessoal (R$ Mi)',
+        'Custeio (R$ Mi)'
+    ];
+
+    const toMi = (val) => Math.round((val / 1e6) * 10) / 10;
+
+    const series = lista.map(it => {
+        const vals = [
+            toMi(it.mun.recCapital),
+            toMi(it.mun.servicoDivida),
+            toMi(it.mun.investimentos),
+            toMi(it.mun.pessoal),
+            toMi(it.mun.custeio)
+        ];
+        return {
+            name: it.mun.nome,
+            type: 'bar',
+            barWidth: 4,
+            barGap: '40%',
+            itemStyle: { color: it.cor, borderRadius: [0, 4, 4, 0] },
+            data: vals,
+            markPoint: {
+                symbol: 'circle',
+                symbolSize: 13,
+                itemStyle: { color: it.cor },
+                label: { show: false },
+                data: vals.map((v, i) => ({ coord: [v, i], value: v }))
+            }
+        };
+    });
+
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
+            confine: true,
+            formatter: function(params) {
+                let out = `<div class="font-bold text-xs mb-1">${params[0].name}</div>`;
+                params.forEach(p => {
+                    out += `<div class="d-flex justify-content-between gap-3 text-xs"><span style="color:${p.color}; font-weight:bold;">${p.seriesName}:</span> <strong>R$ ${p.value.toLocaleString('pt-BR', { minimumFractionDigits: 1 })} Mi</strong></div>`;
+                });
+                return out;
+            }
+        },
+        legend: {
+            bottom: 0,
+            textStyle: { fontSize: 11, fontWeight: 'bold' }
+        },
+        grid: {
+            top: 20,
+            left: '3%',
+            right: '4%',
+            bottom: 45,
+            containLabel: true
+        },
+        xAxis: {
+            type: 'value',
+            splitLine: { lineStyle: { stroke: '#f1f5f9' } },
+            axisLabel: {
+                fontSize: 10,
+                formatter: 'R$ {value}M'
+            }
+        },
+        yAxis: {
+            type: 'category',
+            data: categories,
+            axisLabel: { fontSize: 11, fontWeight: 'bold', color: '#1e293b' }
+        },
+        series: series
+    };
+
+    chart.setOption(option);
+}
+
+function renderizarVabComparativo(m1, m2, m3) {
+    const dom = document.getElementById('comp_chart_vab_setorial');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    if (window.chartsComparacao.vab) {
+        window.chartsComparacao.vab.dispose();
+    }
+    const chart = echarts.init(dom);
+    window.chartsComparacao.vab = chart;
+
+    const lista = [
+        { mun: m1, cor: '#ff5a26' },
+        { mun: m2, cor: '#059669' },
+        m3 ? { mun: m3, cor: '#7c3aed' } : null
+    ].filter(Boolean);
+
+    const categories = ['Agropecuária', 'Indústria', 'Serviços', 'Adm. Pública'];
+
+    const series = lista.map(it => {
+        const vals = [
+            Math.round(it.mun.pctVabAgro * 10) / 10,
+            Math.round(it.mun.pctVabInd * 10) / 10,
+            Math.round(it.mun.pctVabServ * 10) / 10,
+            Math.round(it.mun.pctVabAdm * 10) / 10
+        ];
+        return {
+            name: it.mun.nome,
+            type: 'bar',
+            itemStyle: { color: it.cor, borderRadius: [4, 4, 0, 0] },
+            data: vals,
+            label: {
+                show: true,
+                position: 'top',
+                formatter: '{c}%',
+                fontSize: 10,
+                fontWeight: 'bold',
+                color: '#334155'
+            }
+        };
+    });
+
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
+            confine: true,
+            formatter: function(params) {
+                let out = `<div class="font-bold text-xs mb-1">${params[0].name} (% do VAB)</div>`;
+                params.forEach(p => {
+                    out += `<div class="d-flex justify-content-between gap-3 text-xs"><span style="color:${p.color}; font-weight:bold;">${p.seriesName}:</span> <strong>${p.value.toFixed(1)}%</strong></div>`;
+                });
+                return out;
+            }
+        },
+        legend: {
+            bottom: 0,
+            textStyle: { fontSize: 11, fontWeight: 'bold' }
+        },
+        grid: {
+            top: 30,
+            left: '3%',
+            right: '4%',
+            bottom: 45,
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            data: categories,
+            axisLabel: { fontSize: 11, fontWeight: 'bold', color: '#1e293b' }
+        },
+        yAxis: {
+            type: 'value',
+            max: 100,
+            splitLine: { lineStyle: { stroke: '#f1f5f9' } },
+            axisLabel: {
+                formatter: '{value}%',
+                fontSize: 10
+            }
+        },
+        series: series
+    };
+
+    chart.setOption(option);
+}
+
+function renderizarTabelaConfronto(m1, m2, m3) {
+    const $tbody = $('#comp_tbody_confronto');
+    if (!$tbody.length) return;
+    $tbody.empty();
+
+    const temM3 = Boolean(m3);
+
+    const fmtMoeda = (val) => {
+        if (!val || isNaN(val)) return '-';
+        if (val >= 1e9) return 'R$ ' + (val / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Bi';
+        if (val >= 1e6) return 'R$ ' + (val / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Mi';
+        return 'R$ ' + val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+    };
+
+    const metricas = [
+        // 1. DEMOGRAFIA
+        { dim: 'Demografia', nome: 'População Estimada (2026)', u1: m1.pop.toLocaleString('pt-BR') + ' hab.', u2: m2.pop.toLocaleString('pt-BR') + ' hab.', u3: temM3 ? m3.pop.toLocaleString('pt-BR') + ' hab.' : '-', v1: m1.pop, v2: m2.pop, v3: temM3 ? m3.pop : -1 },
+        { dim: 'Demografia', nome: 'Densidade Demográfica', u1: m1.densidade.toFixed(1) + ' hab/km²', u2: m2.densidade.toFixed(1) + ' hab/km²', u3: temM3 ? m3.densidade.toFixed(1) + ' hab/km²' : '-', v1: m1.densidade, v2: m2.densidade, v3: temM3 ? m3.densidade : -1 },
+        { dim: 'Demografia', nome: 'Taxa de Urbanização', u1: m1.pctUrb.toFixed(1) + '%', u2: m2.pctUrb.toFixed(1) + '%', u3: temM3 ? m3.pctUrb.toFixed(1) + '%' : '-', v1: m1.pctUrb, v2: m2.pctUrb, v3: temM3 ? m3.pctUrb : -1 },
+        { dim: 'Demografia', nome: 'Pop. Idade Produtiva (PIA)', u1: m1.pctPia.toFixed(1) + '%', u2: m2.pctPia.toFixed(1) + '%', u3: temM3 ? m3.pctPia.toFixed(1) + '%' : '-', v1: m1.pctPia, v2: m2.pctPia, v3: temM3 ? m3.pctPia : -1 },
+        { dim: 'Demografia', nome: 'Índice de Envelhecimento', u1: m1.indEnvelhecimento.toFixed(1), u2: m2.indEnvelhecimento.toFixed(1), u3: temM3 ? m3.indEnvelhecimento.toFixed(1) : '-', v1: m1.indEnvelhecimento, v2: m2.indEnvelhecimento, v3: temM3 ? m3.indEnvelhecimento : -1 },
+
+        // 2. ECONOMIA
+        { dim: 'Economia', nome: 'PIB Total', u1: fmtMoeda(m1.pibTotalMil * 1000), u2: fmtMoeda(m2.pibTotalMil * 1000), u3: temM3 ? fmtMoeda(m3.pibTotalMil * 1000) : '-', v1: m1.pibTotalMil, v2: m2.pibTotalMil, v3: temM3 ? m3.pibTotalMil : -1 },
+        { dim: 'Economia', nome: 'PIB per Capita', u1: 'R$ ' + m1.pibpc.toLocaleString('pt-BR', { maximumFractionDigits: 0 }), u2: 'R$ ' + m2.pibpc.toLocaleString('pt-BR', { maximumFractionDigits: 0 }), u3: temM3 ? 'R$ ' + m3.pibpc.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '-', v1: m1.pibpc, v2: m2.pibpc, v3: temM3 ? m3.pibpc : -1 },
+        { dim: 'Economia', nome: 'Participação no PIB Estadual', u1: m1.pibPct.toFixed(2) + '%', u2: m2.pibPct.toFixed(2) + '%', u3: temM3 ? m3.pibPct.toFixed(2) + '%' : '-', v1: m1.pibPct, v2: m2.pibPct, v3: temM3 ? m3.pibPct : -1 },
+        { dim: 'Economia', nome: 'Quociente Locacional Indústria (QL)', u1: m1.qlInd.toFixed(2), u2: m2.qlInd.toFixed(2), u3: temM3 ? m3.qlInd.toFixed(2) : '-', v1: m1.qlInd, v2: m2.qlInd, v3: temM3 ? m3.qlInd : -1 },
+
+        // 3. SOCIAL
+        { dim: 'Social', nome: 'IDHM (Desenvolvimento Humano)', u1: m1.idhm.toFixed(3), u2: m2.idhm.toFixed(3), u3: temM3 ? m3.idhm.toFixed(3) : '-', v1: m1.idhm, v2: m2.idhm, v3: temM3 ? m3.idhm : -1 },
+        { dim: 'Social', nome: 'População no CadÚnico (%)', u1: m1.txCad.toFixed(1) + '%', u2: m2.txCad.toFixed(1) + '%', u3: temM3 ? m3.txCad.toFixed(1) + '%' : '-', v1: m1.txCad, v2: m2.txCad, v3: temM3 ? m3.txCad : -1, lowerIsBetter: true },
+        { dim: 'Social', nome: 'Dep. Recursos Transferência (IVCAD-DR)', u1: (m1.ivcadDr > 1 ? m1.ivcadDr.toFixed(1) + '%' : (m1.ivcadDr * 100).toFixed(1) + '%'), u2: (m2.ivcadDr > 1 ? m2.ivcadDr.toFixed(1) + '%' : (m2.ivcadDr * 100).toFixed(1) + '%'), u3: temM3 ? (m3.ivcadDr > 1 ? m3.ivcadDr.toFixed(1) + '%' : (m3.ivcadDr * 100).toFixed(1) + '%') : '-', v1: m1.ivcadDr, v2: m2.ivcadDr, v3: temM3 ? m3.ivcadDr : -1, lowerIsBetter: true },
+        { dim: 'Social', nome: 'Água pela Rede Geral (%)', u1: m1.agua.toFixed(1) + '%', u2: m2.agua.toFixed(1) + '%', u3: temM3 ? m3.agua.toFixed(1) + '%' : '-', v1: m1.agua, v2: m2.agua, v3: temM3 ? m3.agua : -1 },
+        { dim: 'Social', nome: 'IDEB (Anos Iniciais)', u1: m1.ideb.toFixed(1), u2: m2.ideb.toFixed(1), u3: temM3 ? m3.ideb.toFixed(1) : '-', v1: m1.ideb, v2: m2.ideb, v3: temM3 ? m3.ideb : -1 },
+
+        // 4. FISCAL
+        { dim: 'Fiscal', nome: 'CAPAG STN (Solvência Fiscal)', u1: m1.capag, u2: m2.capag, u3: temM3 ? m3.capag : '-', isCapag: true },
+        { dim: 'Fiscal', nome: 'Custeio – Outras Despesas Correntes', u1: fmtMoeda(m1.custeio), u2: fmtMoeda(m2.custeio), u3: temM3 ? fmtMoeda(m3.custeio) : '-', v1: m1.custeio, v2: m2.custeio, v3: temM3 ? m3.custeio : -1 },
+        { dim: 'Fiscal', nome: 'Pessoal (Despesa / Folha)', u1: fmtMoeda(m1.pessoal), u2: fmtMoeda(m2.pessoal), u3: temM3 ? fmtMoeda(m3.pessoal) : '-', v1: m1.pessoal, v2: m2.pessoal, v3: temM3 ? m3.pessoal : -1 },
+        { dim: 'Fiscal', nome: 'Investimentos Liquidados', u1: fmtMoeda(m1.investimentos), u2: fmtMoeda(m2.investimentos), u3: temM3 ? fmtMoeda(m3.investimentos) : '-', v1: m1.investimentos, v2: m2.investimentos, v3: temM3 ? m3.investimentos : -1 },
+        { dim: 'Fiscal', nome: 'Serviço da Dívida (Juros + Amortizações)', u1: fmtMoeda(m1.servicoDivida), u2: fmtMoeda(m2.servicoDivida), u3: temM3 ? fmtMoeda(m3.servicoDivida) : '-', v1: m1.servicoDivida, v2: m2.servicoDivida, v3: temM3 ? m3.servicoDivida : -1 },
+
+        // 5. INOVAÇÃO & FIBRA
+        { dim: 'Inovação', nome: 'Cobertura por Fibra Óptica (%)', u1: m1.fibraPct.toFixed(1) + '%', u2: m2.fibraPct.toFixed(1) + '%', u3: temM3 ? m3.fibraPct.toFixed(1) + '%' : '-', v1: m1.fibraPct, v2: m2.fibraPct, v3: temM3 ? m3.fibraPct : -1 },
+        { dim: 'Inovação', nome: 'Participação InfoCom no VAB Serv. (%)', u1: m1.pctVabInfocom.toFixed(2) + '%', u2: m2.pctVabInfocom.toFixed(2) + '%', u3: temM3 ? m3.pctVabInfocom.toFixed(2) + '%' : '-', v1: m1.pctVabInfocom, v2: m2.pctVabInfocom, v3: temM3 ? m3.pctVabInfocom : -1 },
+        { dim: 'Inovação', nome: 'Quociente Locacional InfoCom (QL)', u1: m1.qlInfocom.toFixed(2), u2: m2.qlInfocom.toFixed(2), u3: temM3 ? m3.qlInfocom.toFixed(2) : '-', v1: m1.qlInfocom, v2: m2.qlInfocom, v3: temM3 ? m3.qlInfocom : -1 },
+        { dim: 'Inovação', nome: 'Empresas / Estabelecimentos TI', u1: m1.estabInfocom.toLocaleString('pt-BR'), u2: m2.estabInfocom.toLocaleString('pt-BR'), u3: temM3 ? m3.estabInfocom.toLocaleString('pt-BR') : '-', v1: m1.estabInfocom, v2: m2.estabInfocom, v3: temM3 ? m3.estabInfocom : -1 }
+    ];
+
+    let ultDim = '';
+
+    metricas.forEach(row => {
+        if (row.dim !== ultDim) {
+            ultDim = row.dim;
+            const coresDim = {
+                'Demografia': '#3B82F6',
+                'Economia': '#10B981',
+                'Social': '#F59E0B',
+                'Fiscal': '#8B5CF6',
+                'Inovação': '#06B6D4'
+            };
+            const cor = coresDim[row.dim] || '#64748B';
+            $tbody.append(`
+                <tr class="bg-slate-100/70 border-top-2 border-slate-300">
+                    <td colspan="${temM3 ? 5 : 4}" class="fw-black text-xs text-uppercase tracking-wider py-2" style="color: ${cor};">
+                        <i class="fas fa-folder-open me-1.5"></i> Dimensão: ${row.dim}
+                    </td>
+                </tr>
+            `);
+        }
+
+        // Determinar o líder
+        let liderNome = '-';
+        let liderCor = 'slate';
+        if (!row.isCapag && row.v1 !== undefined && row.v2 !== undefined) {
+            const vals = [
+                { nome: m1.nome, val: row.v1, cor: '#2563EB' },
+                { nome: m2.nome, val: row.v2, cor: '#10B981' }
+            ];
+            if (temM3 && row.v3 >= 0) {
+                vals.push({ nome: m3.nome, val: row.v3, cor: '#8B5CF6' });
+            }
+            if (row.lowerIsBetter) {
+                vals.sort((a, b) => a.val - b.val);
+            } else {
+                vals.sort((a, b) => b.val - a.val);
+            }
+            if (vals[0].val > 0) {
+                liderNome = vals[0].nome;
+                liderCor = vals[0].cor;
+            }
+        } else if (row.isCapag) {
+            const rankCap = { 'A': 4, 'B': 3, 'C': 2, 'D': 1 };
+            const r1 = rankCap[m1.capag] || 0;
+            const r2 = rankCap[m2.capag] || 0;
+            const r3 = temM3 ? (rankCap[m3.capag] || 0) : 0;
+            const maxR = Math.max(r1, r2, r3);
+            if (maxR > 0) {
+                if (r1 === maxR && r2 < maxR && r3 < maxR) { liderNome = m1.nome; liderCor = '#2563EB'; }
+                else if (r2 === maxR && r1 < maxR && r3 < maxR) { liderNome = m2.nome; liderCor = '#10B981'; }
+                else if (r3 === maxR && r1 < maxR && r2 < maxR) { liderNome = m3.nome; liderCor = '#8B5CF6'; }
+                else { liderNome = 'Empate'; liderCor = '#64748B'; }
+            }
+        }
+
+        const badgeLider = liderNome !== '-' && liderNome !== 'Empate'
+            ? `<span class="badge rounded-pill text-[10px] font-bold text-white px-2 py-0.5" style="background-color: ${liderCor};">${liderNome}</span>`
+            : (liderNome === 'Empate' ? `<span class="badge bg-slate-200 text-slate-700 text-[10px] font-semibold">Empate</span>` : '-');
+
+        const col3Html = temM3 ? `<td class="text-center font-bold text-purple-900">${row.u3}</td>` : '';
+
+        $tbody.append(`
+            <tr>
+                <td class="font-semibold text-slate-800 text-xs">${row.nome}</td>
+                <td class="text-center font-bold text-blue-900">${row.u1}</td>
+                <td class="text-center font-bold text-emerald-900">${row.u2}</td>
+                ${col3Html}
+                <td class="text-center">${badgeLider}</td>
+            </tr>
+        `);
+    });
+}

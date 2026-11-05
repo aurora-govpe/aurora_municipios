@@ -22,6 +22,16 @@
   --cinza-medio: #CCCCCC;
   --cinza-escuro: #666666;
 
+  /* PALETA OFICIAL PLATAFORMA AURORA */
+  --aurora-orange: #ff5a26;
+  --aurora-orange-hover: #e04010;
+  --aurora-orange-dark: #c2410c;
+  --aurora-amber: #f59e0b;
+  --aurora-navy: #0c2854;
+  --aurora-dark: #1c1917;
+  --aurora-creme: #fbf7e8;
+  --aurora-bg: #f7f4f2;
+
   --sidebar-width: 260px;
   --sidebar-collapsed-width: 70px;
   --sidebar-bg: #0C2856;
@@ -196,7 +206,7 @@ ul#aurora_tabs, .nav-hidden {
 .menu-item.aurora-active {
   background-color: var(--sidebar-active);
   color: #fff;
-  border-left-color: #00B7FF; 
+  border-left-color: #ff5a26; 
   font-weight: 600;
 }
 
@@ -379,7 +389,8 @@ body .card {
   justify-content: center !important;
   border-radius: 12px !important;
   background-color: #f1f5f9 !important;
-  color: #0284c7 !important;
+  color: #ea580c !important;
+  background-color: #fff7ed !important;
   flex-shrink: 0 !important;
   margin: 0 !important;
 }
@@ -475,10 +486,10 @@ div.dataTables_filter input[type='search'] {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  background-color: #0066FF;
+  background-color: #ff5a26;
   color: white;
   border: none;
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+  box-shadow: 0 4px 14px rgba(255, 90, 38, 0.4);
   font-size: 1.2rem;
   display: flex;
   align-items: center;
@@ -495,6 +506,12 @@ div.dataTables_filter input[type='search'] {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+}
+
+#btn-back-to-top:hover {
+  background-color: #e04010;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(255, 90, 38, 0.5);
 }
 
 /* ==========================================================================
@@ -737,7 +754,7 @@ body .capa-relatorio {
   width: 80px;
   height: 80px;
   border: 6px solid #f1f5f9;
-  border-top: 6px solid #0066FF;
+  border-top: 6px solid #ff5a26;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 24px;
@@ -780,4 +797,102 @@ body .capa-relatorio {
 .aurora-topbar {
   height: var(--topbar-height) !important;
   padding: 0 0.75rem !important;
+}
+
+
+/* ==========================================================================
+   RESUMO EXECUTIVO INTEGRADO E CARDS DIMENSIONAIS (DESIGN SYSTEM PADRÃO)
+========================================================================== */
+.resumo-exec-banner {
+  background: linear-gradient(135deg, #ff5a26 0%, #ea580c 55%, #c2410c 100%) !important;
+  color: #ffffff !important;
+  border-radius: 1.25rem !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 10px 25px -5px rgba(255, 90, 38, 0.35), 0 8px 10px -6px rgba(255, 90, 38, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+.resumo-dim-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.resumo-dim-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+/* ==========================================================================
+   AURORA DESIGN SYSTEM - BOTÕES, SELEÇÕES E DESTAQUES (LARANJA #FF5A26)
+========================================================================== */
+.btn-primary,
+.btn-primary:focus,
+.btn-primary.focus,
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:not(:disabled):not(.disabled).active,
+.show > .btn-primary.dropdown-toggle {
+  background-color: #ff5a26 !important;
+  border-color: #ff5a26 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(255, 90, 38, 0.28) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:not(:disabled):not(.disabled):active:hover,
+.btn-primary:not(:disabled):not(.disabled).active:hover {
+  background-color: #e04010 !important;
+  border-color: #e04010 !important;
+  color: #ffffff !important;
+}
+
+.btn-outline-primary {
+  color: #ff5a26 !important;
+  border-color: #ff5a26 !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:active,
+.btn-outline-primary.active {
+  background-color: #ff5a26 !important;
+  border-color: #ff5a26 !important;
+  color: #ffffff !important;
+}
+
+.bg-primary {
+  background-color: #ff5a26 !important;
+}
+
+.text-primary {
+  color: #ff5a26 !important;
+}
+
+.border-primary {
+  border-color: #ff5a26 !important;
+}
+
+/* Menus, tabs e seleções ativas */
+.dropdown-item.active,
+.dropdown-item:active,
+.bootstrap-select .dropdown-menu li.selected a,
+.bootstrap-select .dropdown-menu li.active a,
+.bootstrap-select .dropdown-menu li a:hover {
+  background-color: #ff5a26 !important;
+  color: #ffffff !important;
+}
+
+.subtab-btn.active,
+.subtab-active,
+.btn-group .btn.active,
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  background-color: #ff5a26 !important;
+  border-color: #ff5a26 !important;
+  color: #ffffff !important;
 }

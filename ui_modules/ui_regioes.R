@@ -46,15 +46,15 @@ ui_modulo_regioes <- function() {
       tags$div(
         class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5",
         tags$div(
-          class = "kpi-modern-card", style = "border-left-color: #0C2856;",
+          class = "kpi-modern-card", style = "border-left-color: #ff5a26;",
           tags$div(class = "kpi-modern-header", "MUNICÍPIOS NA RD"),
-          tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-city kpi-modern-icon", style = "color: #0C2856;"), tags$span(class = "kpi-modern-number", id = "rd_kpi_qtd_muns", "0")),
+          tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-city kpi-modern-icon", style = "color: #ff5a26;"), tags$span(class = "kpi-modern-number", id = "rd_kpi_qtd_muns", "0")),
           tags$div(class = "kpi-modern-footer text-uppercase", "Municípios Integrantes")
         ),
         tags$div(
-          class = "kpi-modern-card", style = "border-left-color: #3498DB;",
+          class = "kpi-modern-card", style = "border-left-color: #f59e0b;",
           tags$div(class = "kpi-modern-header", "POPULAÇÃO REGIONAL"),
-          tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-users kpi-modern-icon", style = "color: #3498DB;"), tags$span(class = "kpi-modern-number", id = "rd_kpi_pop_total", "0")),
+          tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-users kpi-modern-icon", style = "color: #f59e0b;"), tags$span(class = "kpi-modern-number", id = "rd_kpi_pop_total", "0")),
           tags$div(class = "kpi-modern-footer text-uppercase", "Habitantes Estimados (2026)")
         ),
         tags$div(
@@ -69,6 +69,21 @@ ui_modulo_regioes <- function() {
           tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hand-holding-usd kpi-modern-icon", style = "color: #8E44AD;"), tags$span(class = "kpi-modern-number", id = "rd_kpi_investimento_total", "R$ 0")),
           tags$div(class = "kpi-modern-footer text-uppercase", "Recursos Alocados na RD")
         )
+      ),
+      
+      # =================================================
+      # SEÇÃO: RESUMO EXECUTIVO REGIONAL (6 DIMENSÕES)
+      # =================================================
+      tags$div(
+        id = "sec_rd_resumo_executivo",
+        class = "border-b-2 border-slate-200 pb-2 mb-4 mt-2",
+        tags$h2(class = "text-2xl font-black text-slate-800 uppercase tracking-tight mb-0", "Resumo Executivo Integrado"),
+        tags$p(class = "text-sm font-bold text-slate-500 mb-0", "Síntese Estratégica Multidimensional: Redes Urbanas, Demografia, Economia, Capital Humano, Vulnerabilidade e Fiscal")
+      ),
+      
+      tags$div(
+        id = "rd_container_resumo_executivo",
+        class = "mb-5"
       ),
       
       # CLUSTER 0: DESENVOLVIMENTO REGIONAL E REDES URBANAS
