@@ -546,3 +546,19 @@ function renderizarCardsExecutivosProgramas(coz, agu, est, cap) {
         console.error("[Programas] Erro ao renderizar cards executivos:", errCards);
     }
 }
+
+
+window.togglePainelExecutivoProgramas = function() {
+  const $cont = $('#tematicas_container_resumo_executivo');
+  const $icon = $('#icon_toggle_painel_programas');
+  const $txt = $('#txt_toggle_painel_programas');
+  if ($cont.is(':visible')) {
+    $cont.slideUp(200);
+    $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+    $txt.text('Expandir Painel');
+  } else {
+    $cont.slideDown(200);
+    $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+    $txt.text('Recolher Painel');
+  }
+};

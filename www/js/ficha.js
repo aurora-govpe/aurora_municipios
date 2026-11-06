@@ -138,8 +138,8 @@ function iniciarDraggableNav() {
     return;
 }
 
-function obterBadgePolaridade(sigla) {
-    if (!sigla || !window.dadosMetadados) return '';
+function obterTextoPolaridade(sigla) {
+    if (!sigla || !window.dadosMetadados) return '<span class="text-slate-400 font-medium">-</span>';
     
     const normKey = (str) => String(str || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const siglaNorm = normKey(sigla);
@@ -148,7 +148,7 @@ function obterBadgePolaridade(sigla) {
         normKey(m.cd_indicador) === siglaNorm || normKey(m.nm_indicador) === siglaNorm
     );
     
-    if (!meta || !meta.referencia_analise) return '';
+    if (!meta || !meta.referencia_analise) return '<span class="text-slate-400 font-medium">-</span>';
     
     const dirRaw = String(
         meta.referencia_analise.direcao_desejavel || 
@@ -157,32 +157,67 @@ function obterBadgePolaridade(sigla) {
 
     const dir = dirRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-    if (!dir || dir === '-' || dir === 'n/a') return '';
+    if (!dir || dir === '-' || dir === 'n/a') return '<span class="text-slate-400 font-medium">-</span>';
 
-    // Verifica primeiro se é um indicador estrutural / vocacional / sem polaridade
+    // 1. Contextual / Estrutural / Acompanhamento
     if (dir.includes('acompanhamento') || dir.includes('vocacao') || dir.includes('estabilidade') || dir.includes('faixa') || dir.includes('manter') || dir.includes('informativo') || dir.includes('contextual') || dir.includes('neutro')) {
-        return `<span class="badge-polaridade badge-polaridade-neutra" title="Indicador de perfil estrutural: ${dirRaw}">
-                    <i class="fas fa-circle-info"></i> Contextual
-                </span>`;
+        return `<span class="kpi-txt-pol kpi-pol-neutra" title="Indicador Estrutural / Contextual: ${dirRaw}"><i class="fas fa-circle-info me-1"></i>Contextual</span>`;
     } 
-    // Indicadores com direção definida (Aumento)
+    // 2. Maior melhor (Aumento)
     else if (dir.includes('aumento') || dir.includes('maior') || dir.includes('crescimento')) {
-        return `<span class="badge-polaridade badge-polaridade-alta" title="Direção desejável: Quanto maior, melhor">
-                    <i class="fas fa-arrow-trend-up"></i> Maior melhor
-                </span>`;
+        return `<span class="kpi-txt-pol kpi-pol-alta" title="Direção desejável: Quanto maior, melhor"><i class="fas fa-arrow-trend-up me-1"></i>Maior melhor</span>`;
     } 
-    // Indicadores com direção definida (Redução)
+    // 3. Menor melhor (Redução)
     else if (dir.includes('reducao') || dir.includes('menor') || dir.includes('queda')) {
-        return `<span class="badge-polaridade badge-polaridade-baixa" title="Direção desejável: Quanto menor, melhor">
-                    <i class="fas fa-arrow-trend-down"></i> Menor melhor
-                </span>`;
+        return `<span class="kpi-txt-pol kpi-pol-baixa" title="Direção desejável: Quanto menor, melhor"><i class="fas fa-arrow-trend-down me-1"></i>Menor melhor</span>`;
     }
 
-    // Fallback padrão contextual para qualquer outra descrição não quantitativa
-    return `<span class="badge-polaridade badge-polaridade-neutra" title="Indicador de perfil estrutural: ${dirRaw}">
-                <i class="fas fa-circle-info"></i> Contextual
-            </span>`;
+    return `<span class="kpi-txt-pol kpi-pol-neutra" title="Indicador Contextual: ${dirRaw}"><i class="fas fa-circle-info me-1"></i>Contextual</span>`;
 }
+
+window.obterBadgePolaridade = obterTextoPolaridade;
+window.obterTextoPolaridade = obterTextoPolaridade;
+
+window.getRankTexto = function(rank) {
+    if (!rank || rank === '-' || rank === 'n/a' || isNaN(Number(rank))) {
+        return '<span class="text-slate-400 font-medium">-</span>';
+    }
+    return `<span class="kpi-txt-rank" title="Posição relativa em Pernambuco">${rank}º em PE</span>`;
+};
+
+window.getRankBadge = window.getRankTexto;
+
+window.montarRodapeKPI = function(grandeza, refAno, rank, siglaPolaridade) {
+    const grandezaLimpa = (grandeza && grandeza !== '-' && grandeza !== 'n.d.') ? String(grandeza).trim() : '';
+    const grandezaHtml = grandezaLimpa 
+        ? `<span class="kpi-txt-grandeza truncate" title="${grandezaLimpa}">${grandezaLimpa}</span>` 
+        : '<span class="text-slate-400 font-medium">-</span>';
+
+    const refAnoLimpo = (refAno && refAno !== '-' && refAno !== 'n.d.') ? String(refAno).trim() : '';
+    const refHtml = refAnoLimpo 
+        ? `<span class="kpi-txt-ref">REF: ${refAnoLimpo}</span>` 
+        : '<span class="text-slate-400 font-medium">-</span>';
+
+    const rankHtml = window.getRankTexto(rank);
+    const polHtml = window.obterTextoPolaridade(siglaPolaridade);
+
+    return `
+        <div class="kpi-footer-grid">
+            <div class="kpi-footer-cell-left">
+                ${grandezaHtml}
+            </div>
+            <div class="kpi-footer-cell-right">
+                ${refHtml}
+            </div>
+            <div class="kpi-footer-cell-left">
+                ${rankHtml}
+            </div>
+            <div class="kpi-footer-cell-right">
+                ${polHtml}
+            </div>
+        </div>
+    `;
+};
 
 /* ==========================================================================
    3. CONTROLES DE INTERFACE E ALTERNÂNCIA DE MÉTRICAS (MAPAS)
@@ -225,7 +260,7 @@ window.alternarMetricaSaude = function (metrica) {
 
 window.alternarMetricaCadUnico = function (metrica) {
     metricaCadUnicoAtiva = metrica;
-    const btns = ['cad_pessoas', 'tx_cad_pessoas', 'ivcad', 'ivcad_nc', 'ivcad_dpi', 'ivcad_dca', 'ivcad_tqa', 'ivcad_dr', 'ivcad_ch', 'maes_qtd', 'maes_val', 'pcp_qtd', 'pcp_val'];
+    const btns = ['cad_pessoas', 'tx_cad_pessoas', 'indice_gini', 'ivcad', 'ivcad_nc', 'ivcad_dpi', 'ivcad_dca', 'ivcad_tqa', 'ivcad_dr', 'ivcad_ch', 'maes_qtd', 'maes_val', 'pcp_qtd', 'pcp_val'];
     btns.forEach(m => {
         $(`#btn_cad_${m}`).toggleClass('btn-primary active', m === metrica).toggleClass('btn-outline-primary', m !== metrica);
     });
@@ -997,7 +1032,7 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
     window.sincronizarBotaoFiltroMunicipio(nomeMun);
 
     const extrairValor = (obj, key, fallback) => (obj && obj[key] && obj[key][0] !== undefined) ? obj[key][0] : fallback;
-    const getRankBadge = (rank) => rank ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${rank}º em PE</span>` : '';
+    const getRankBadge = (rank) => window.getRankTexto(rank);
 
     // --- 5.1 TÍTULOS E CABEÇALHO ---
     document.getElementById('ficha_nome_municipio').innerText = nomeMun;
@@ -1036,6 +1071,30 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
 
     const popFormatada = popVal > 0 ? `${popVal.toLocaleString('pt-BR')} hab.` : '-';
 
+        // --- 5.1b PREFEITO, ANIVERSÁRIO E POVOS TRADICIONAIS ---
+    const itemPrefeito = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'nome_prefeito');
+    const itemPartido = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'partido_prefeito');
+    const nomePrefeito = (itemPrefeito && itemPrefeito.indicador && itemPrefeito.indicador !== '-') ? String(itemPrefeito.indicador).trim() : '-';
+    const partidoPrefeito = (itemPartido && itemPartido.indicador && itemPartido.indicador !== '-') ? String(itemPartido.indicador).trim() : '';
+    const txtPrefeito = nomePrefeito !== '-' ? (partidoPrefeito ? `${nomePrefeito} (${partidoPrefeito})` : nomePrefeito) : '-';
+    $('#ficha_prefeito_subtitle').text(`Prefeito(a): ${txtPrefeito}`);
+
+    const itemAniversario = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'aniversario_municipio');
+    const dataAniversario = (itemAniversario && itemAniversario.indicador && itemAniversario.indicador !== '-') ? String(itemAniversario.indicador).trim() : '-';
+    $('#ficha_aniversario_subtitle').text(`Aniversário: ${dataAniversario}`);
+
+    const itemQuilombola = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'pop_quilombola');
+    let valQuilombola = (itemQuilombola && itemQuilombola.indicador !== undefined && itemQuilombola.indicador !== null && itemQuilombola.indicador !== '-') ? parseFloat(String(itemQuilombola.indicador).replace(',', '.')) : null;
+    const rankQuilombola = (itemQuilombola && itemQuilombola.rank_pe) ? ` (${itemQuilombola.rank_pe}º em PE)` : '';
+    const txtQuilombola = (valQuilombola !== null && !isNaN(valQuilombola)) ? `${valQuilombola.toLocaleString('pt-BR')} hab.${rankQuilombola}` : '0 hab.';
+    $('#ficha_pop_quilombola_subtitle').text(`Pop. Quilombola: ${txtQuilombola}`);
+
+    const itemIndigena = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'pop_indigena');
+    let valIndigena = (itemIndigena && itemIndigena.indicador !== undefined && itemIndigena.indicador !== null && itemIndigena.indicador !== '-') ? parseFloat(String(itemIndigena.indicador).replace(',', '.')) : null;
+    const rankIndigena = (itemIndigena && itemIndigena.rank_pe) ? ` (${itemIndigena.rank_pe}º em PE)` : '';
+    const txtIndigena = (valIndigena !== null && !isNaN(valIndigena)) ? `${valIndigena.toLocaleString('pt-BR')} hab.${rankIndigena}` : '0 hab.';
+    $('#ficha_pop_indigena_subtitle').text(`Pop. Indígena: ${txtIndigena}`);
+
     $('#ficha_pop_subtitle').text(popVal > 0 ? `${popVal.toLocaleString('pt-BR')} hab. (${rankPop}º em PE - estimativa IBGE 2026)` : 'Pop: -');
     $('#ficha_area_subtitle').text(areaVal > 0 ? `${areaVal.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} km²` : 'Área: -');
 
@@ -1050,6 +1109,19 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
 
     $('#ficha_pop_urb_subtitle').text(obterPctPop('perc_pop_urb') !== '-' ? `Pop. Urbana: ${obterPctPop('perc_pop_urb')} (Censo IBGE 2022)` : 'Pop. Urbana: -');
     $('#ficha_pop_rur_subtitle').text(obterPctPop('perc_pop_rur') !== '-' ? `Pop. Rural: ${obterPctPop('perc_pop_rur')} (Censo IBGE 2022)` : 'Pop. Rural: -');
+
+    // Badges de cabeçalho e barras proporcionais
+    $('#ficha_rd_badge').text(rdNome ? (rdNome.toLowerCase().startsWith('rd') ? rdNome : `RD ${rdNome}`) : 'RD');
+    $('#ficha_rank_pop_badge').text(`${rankPop}º em PE`);
+
+    const rawPctUrb = (ind || []).find(i => String(i.sigla_indicador).trim().toLowerCase() === 'perc_pop_urb');
+    let valUrbNum = rawPctUrb ? parseFloat(String(rawPctUrb.indicador).replace(',', '.')) : 0;
+    if (valUrbNum <= 1 && valUrbNum > 0) valUrbNum *= 100;
+    let valRurNum = valUrbNum > 0 ? (100 - valUrbNum) : 0;
+    if (valUrbNum > 0) {
+        $('#ficha_bar_pop_urb').css('width', `${valUrbNum.toFixed(1)}%`);
+        $('#ficha_bar_pop_rur').css('width', `${valRurNum.toFixed(1)}%`);
+    }
 
     // --- 5.2 TAG DE FIBRA ÓTICA ---
     const itensFibra = (ind || []).filter(i => String(i.sigla_indicador).trim().toLowerCase() === 'cob_fibra');
@@ -1119,7 +1191,7 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
         }
 
         $(`#ficha_kpi_${elemBase}`).text(textoValor);
-        $(`#ficha_ano_${elemBase}`).html(`${unidadeTag} &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${itemRecente.ano}</span>${getRankBadge(itemRecente.rank_pe)}${obterBadgePolaridade(sigla)}`);
+        $(`#ficha_ano_${elemBase}`).html(window.montarRodapeKPI(unidadeTag, itemRecente.ano, itemRecente.rank_pe, sigla));
 
         const meta = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
         window.configurarBotoesKPI(elemBase, sigla, meta ? meta.nm_indicador : null, 'socio');
@@ -1156,7 +1228,7 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
             }
             const pct = (val / totalVab) * 100;
             $(`#ficha_kpi_${elemBase}`).text(pct.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%");
-            $(`#ficha_ano_${elemBase}`).html(`% do VAB &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${item.ano}</span>${getRankBadge(item.rank_pe)}${obterBadgePolaridade(sigla)}`);
+            $(`#ficha_ano_${elemBase}`).html(window.montarRodapeKPI("% do VAB", item.ano, item.rank_pe, sigla));
 
             // Cálculo e renderização do Quociente Locacional (QL)
             const refMedia = qlMediaPE[sigla.toLowerCase()] || 0;
@@ -1188,6 +1260,18 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
         renderVab(itemInd, valInd, "vab_ind", "vab_ind");
         renderVab(itemServ, valServ, "vab_serv", "vab_serv");
         renderVab(itemAdm, valAdm, "vab_adm", "vab_adm");
+
+        // Atualizar barra segmentada de 100% do VAB Setorial
+        if (totalVab > 0) {
+            const pAgro = (valAgro / totalVab) * 100;
+            const pInd = (valInd / totalVab) * 100;
+            const pServ = (valServ / totalVab) * 100;
+            const pAdm = (valAdm / totalVab) * 100;
+            $('#vab_bar_agro').css('width', `${pAgro}%`).attr('title', `Agropecuária: ${pAgro.toFixed(1)}%`);
+            $('#vab_bar_ind').css('width', `${pInd}%`).attr('title', `Indústria: ${pInd.toFixed(1)}%`);
+            $('#vab_bar_serv').css('width', `${pServ}%`).attr('title', `Serviços: ${pServ.toFixed(1)}%`);
+            $('#vab_bar_adm').css('width', `${pAdm}%`).attr('title', `Administração Pública: ${pAdm.toFixed(1)}%`);
+        }
     };
 
     aplicarKPI("pibpc", "pibpc", "R$");
@@ -1272,6 +1356,12 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
     try { renderizarTransferenciasRenda(iniciativas || [], pcp || []); } catch(e) { console.error("[Ficha] Erro em renderizarTransferenciasRenda:", e); }
     try { renderizarIniciativasFicha(iniciativas || [], demo || {}); } catch(e) { console.error("[Ficha] Erro em renderizarIniciativasFicha:", e); }
     try { renderizarEmendasFicha(emendas || []); } catch(e) { console.error("[Ficha] Erro em renderizarEmendasFicha:", e); }
+    try {
+        const codIbgeMun = (demo && (demo.cod_ibge || demo.ibge7 || demo.ibge6)) ? (demo.cod_ibge || demo.ibge7 || demo.ibge6) : '';
+        if (typeof window.atualizarKpisProgramasMunicipais === 'function') {
+            window.atualizarKpisProgramasMunicipais(nomeMun, codIbgeMun);
+        }
+    } catch(e) { console.error("[Ficha] Erro em atualizarKpisProgramasMunicipais:", e); }
     if (typeof window.garantirBotoesTodosKPIs === 'function') {
         window.garantirBotoesTodosKPIs();
     }
@@ -1482,7 +1572,7 @@ function renderizarIndicadoresSociais(demo, ind) {
         return { val: isNaN(val) ? 0 : val, str: rawStr, ano: itens[0].ano || '-', mes: itens[0].mes_referencia || '', rank: itens[0].rank_pe || null, tipo: tipoRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") };
     };
 
-    const getRankBadge = (rank) => rank ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${rank}º em PE</span>` : '';
+    const getRankBadge = (rank) => window.getRankTexto(rank);
 
     // Segurança
     const mviData = obterIndicador('mvi'), cvpData = obterIndicador('cvp'), txMviData = obterIndicador('tx_mvi'), txCvpData = obterIndicador('tx_cvp');
@@ -1491,13 +1581,13 @@ function renderizarIndicadoresSociais(demo, ind) {
     const refMviFmt = (mviData.mes && mviData.mes !== '-') ? `${mviData.mes}/${mviData.ano}` : mviData.ano;
 
     $('#ficha_kpi_mvi_abs').text(mviData.val.toLocaleString('pt-BR'));
-    $('#ficha_ano_mvi_abs').html(`Casos &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(mviData.rank)}${obterBadgePolaridade('mvi')}`);
+    $('#ficha_ano_mvi_abs').html(window.montarRodapeKPI('Casos', refMviFmt, mviData.rank, 'mvi'));
     $('#ficha_kpi_mvi_taxa').text(mviTaxa.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
-    $('#ficha_ano_mvi_taxa').html(`/ 100k hab. &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(txMviData.rank || mviData.rank)}${obterBadgePolaridade('tx_mvi')}`);
+    $('#ficha_ano_mvi_taxa').html(window.montarRodapeKPI('/ 100k hab.', refMviFmt, txMviData.rank || mviData.rank, 'tx_mvi'));
     $('#ficha_kpi_cvp_abs').text(cvpData.val.toLocaleString('pt-BR'));
-    $('#ficha_ano_cvp_abs').html(`Ocorrências &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(cvpData.rank)}${obterBadgePolaridade('cvp')}`);
+    $('#ficha_ano_cvp_abs').html(window.montarRodapeKPI('Ocorrências', refMviFmt, cvpData.rank, 'cvp'));
     $('#ficha_kpi_cvp_taxa').text(cvpTaxa.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
-    $('#ficha_ano_cvp_taxa').html(`/ 100k hab. &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${refMviFmt}</span>${getRankBadge(txCvpData.rank || cvpData.rank)}${obterBadgePolaridade('tx_cvp')}`);
+    $('#ficha_ano_cvp_taxa').html(window.montarRodapeKPI('/ 100k hab.', refMviFmt, txCvpData.rank || cvpData.rank, 'tx_cvp'));
 
     // Formatador Universal
     const aplicarKPI_Universal = (sigla, elemBase, sufixo) => {
@@ -1508,13 +1598,13 @@ function renderizarIndicadoresSociais(demo, ind) {
             if (item.tipo === 'percentual') valFmt = item.val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%';
             else if (item.tipo === 'absoluto') valFmt = item.val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
             else if (item.tipo === 'indice') {
-                let casas = (sigla.startsWith('ivcad')) ? 3 : (['rd_pop', 'rd_jovem', 'rd_idosa', 'ind_envelhecimento', 'ind_ir_pia', 'ind_renov_trabalho'].includes(sigla) ? 2 : 1);
+                let casas = (sigla.startsWith('ivcad')) ? 3 : (['rd_pop', 'rd_jovem', 'rd_idosa', 'ind_envelhecimento', 'ind_ir_pia', 'ind_renov_trabalho', 'indice_gini'].includes(sigla) ? 2 : 1);
                 valFmt = item.val.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
             } else valFmt = item.val.toLocaleString('pt-BR');
         }
 
         $(`#ficha_kpi_${elemBase}`).text(valFmt);
-        $(`#ficha_ano_${elemBase}`).html(`${sufixo} &bull; <span style="color: #c2410c; font-weight: 800;">REF: ${item.ano}</span>${getRankBadge(item.rank)}${obterBadgePolaridade(sigla)}`);
+        $(`#ficha_ano_${elemBase}`).html(window.montarRodapeKPI(sufixo, item.ano, item.rank, sigla));
 
         const metaSub = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
         window.configurarBotoesKPI(elemBase, sigla, metaSub ? metaSub.nm_indicador : null, 'socio');
@@ -1525,7 +1615,7 @@ function renderizarIndicadoresSociais(demo, ind) {
     ['rd_pop', 'rd_jovem', 'rd_idosa', 'pct_pia', 'ind_envelhecimento', 'pct_longevidade', 'ind_ir_pia', 'pct_jovem', 'ind_renov_trabalho'].forEach(s => aplicarKPI_Universal(s, s, s.includes('pct') ? '%' : 'Índice'));
     ['ideb_5ano', 'tdi_5ano', 'aba_5ano', 'apr_5ano', 'rep_5ano', 'ideb_9ano', 'tdi_9ano', 'aba_9ano', 'apr_9ano', 'rep_9ano', 'mat_6_10', 'mat_11_14', 'perc_mat_int', 'perc_alfabetizacao', 'atliq_creche'].forEach(s => aplicarKPI_Universal(s, s, s.includes('mat_') ? 'Alunos' : (s.includes('ideb') ? 'Índice' : '%')));
     ['pre_natal', 'razao_mm', 'tx_att', 'tx_dcnt', 'tx_evitaveis', 'tx_infancia', 'tx_infantil'].forEach(s => aplicarKPI_Universal(s, s, s === 'pre_natal' ? '%' : 'Taxa'));
-    ['cad_pessoas', 'tx_cad_pessoas', 'ivcad', 'ivcad_nc', 'ivcad_dpi', 'ivcad_dca', 'ivcad_tqa', 'ivcad_dr', 'ivcad_ch'].forEach(s => aplicarKPI_Universal(s, s, s === 'cad_pessoas' ? 'Pessoas' : (s === 'tx_cad_pessoas' ? '%' : 'Índice')));
+    ['cad_pessoas', 'tx_cad_pessoas', 'indice_gini', 'ivcad', 'ivcad_nc', 'ivcad_dpi', 'ivcad_dca', 'ivcad_tqa', 'ivcad_dr', 'ivcad_ch'].forEach(s => aplicarKPI_Universal(s, s, s === 'cad_pessoas' ? 'Pessoas' : (s === 'tx_cad_pessoas' ? '%' : 'Índice')));
     ['pct_agua_rede', 'pct_esgoto_rede'].forEach(s => aplicarKPI_Universal(s, s, '% Domicílios'));
 
     const rdNome = extrairValor(demo, 'regiao_de_desenvolvimento', extrairValor(demo, 'Região de Desenvolvimento', '-'));
@@ -1843,7 +1933,7 @@ function renderizarMapaCadUnicoRD() {
     const geoData = obterGeoJSONSeguro(cacheSociaisRD.geojsonRD);
     if (!geoData || !geoData.features) return;
     let minVal = Infinity, maxVal = -Infinity;
-    const siglasCadUnico = ['cad_pessoas', 'tx_cad_pessoas', 'ivcad', 'ivcad_nc', 'ivcad_dpi', 'ivcad_dca', 'ivcad_tqa', 'ivcad_dr', 'ivcad_ch'];
+    const siglasCadUnico = ['cad_pessoas', 'tx_cad_pessoas', 'indice_gini', 'ivcad', 'ivcad_nc', 'ivcad_dpi', 'ivcad_dca', 'ivcad_tqa', 'ivcad_dr', 'ivcad_ch'];
 
     geoData.features.forEach(ft => {
         const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
@@ -1950,7 +2040,7 @@ function renderizarMapaCadUnicoRD() {
             if (!e.features.length) return;
             const p = e.features[0].properties;
             const labels = { 
-                'cad_pessoas': 'Total Pessoas', 'tx_cad_pessoas': 'Tx. Pessoas %', 'ivcad': 'IVCAD', 'ivcad_nc': 'NC', 'ivcad_dpi': 'DPI', 'ivcad_dca': 'DCA', 'ivcad_tqa': 'TQA', 'ivcad_dr': 'DR', 'ivcad_ch': 'CH',
+                'cad_pessoas': 'Total Pessoas', 'tx_cad_pessoas': 'Tx. Pessoas %', 'indice_gini': 'Índice de Gini', 'ivcad': 'IVCAD', 'ivcad_nc': 'NC', 'ivcad_dpi': 'DPI', 'ivcad_dca': 'DCA', 'ivcad_tqa': 'TQA', 'ivcad_dr': 'DR', 'ivcad_ch': 'CH',
                 'maes_qtd': 'Mães de PE (Qtd)', 'maes_val': 'Mães de PE (R$)', 'pcp_qtd': 'Chapéu de Palha (Qtd)', 'pcp_val': 'Chapéu de Palha (R$)'
             };
             
@@ -1961,6 +2051,8 @@ function renderizarMapaCadUnicoRD() {
             let valFmt = "";
             if (metricaCadUnicoAtiva === 'maes_val' || metricaCadUnicoAtiva === 'pcp_val') {
                 valFmt = "R$ " + Number(p.val_ativa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else if (metricaCadUnicoAtiva === 'indice_gini') {
+                valFmt = Number(p.val_ativa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             } else if (tipo === 'percentual' || metricaCadUnicoAtiva === 'tx_cad_pessoas') {
                 valFmt = Number(p.val_ativa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%';
             } else {
@@ -2108,9 +2200,8 @@ function renderizarTransferenciasRenda(iniciativas, pcp) {
 
     // LÓGICA DE METADADOS E POLARIDADE
     const configurarMetadados = (elemBase, sigla, sufixo) => {
-        // 1. Adiciona a badge de polaridade no rodapé
-        const badgeHTML = obterBadgePolaridade(sigla);
-        $(`#ficha_ano_${elemBase}`).html(`${sufixo} ${badgeHTML}`);
+        // 1. Adiciona a estrutura 2x2 do rodapé
+        $(`#ficha_ano_${elemBase}`).html(window.montarRodapeKPI(sufixo, '2024', null, sigla));
 
         // 2. Adiciona botões de Informação (i) e Série Histórica (->) no cabeçalho do KPI
         window.configurarBotoesKPI(elemBase, sigla, sufixo, 'programa');
@@ -2120,7 +2211,7 @@ function renderizarTransferenciasRenda(iniciativas, pcp) {
     configurarMetadados('maes_qtd', 'maes_qtd', 'Mulheres Atendidas');
     configurarMetadados('maes_val', 'maes_val', 'Investimento');
     configurarMetadados('pcp_qtd', 'pcp_qtd', 'Pessoas Atendidas');
-    configurarMetadados('pcp_val', 'pcp_val', 'Investimento Pago');
+    configurarMetadados('pcp_val', 'pcp_val', 'Investimento');
 }
 
 /* --- 6.5 INDICADORES ECONÔMICOS (INOVAÇÃO, COMÉRCIO EXTERIOR, CONECTIVIDADE) --- */
@@ -2136,11 +2227,11 @@ function renderizarIndicadoresInovacao(ind, demo) {
 
     const normText = (str) => String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-    // Filtra indicadores do grupo economia da inovação ou correlatos
+    // Filtra indicadores do grupo economia da inovação ou correlatos (exclui comex que fica em Comércio Exterior)
     const itensInovacao = (ind || []).filter(i => {
         const g = normText(i.grupo);
         const s = String(i.sigla_indicador || '').toLowerCase().trim();
-        return g.includes('inova') || s.includes('infocom') || s.includes('tec');
+        return (g.includes('inova') || s.includes('infocom')) && !g.includes('comex') && !g.includes('comercio') && !s.startsWith('exp_') && !s.startsWith('imp_') && !s.includes('corrente_comercio') && !s.includes('saldo_comercial');
     });
 
     if (!itensInovacao.length) {
@@ -2230,7 +2321,7 @@ function renderizarIndicadoresInovacao(ind, demo) {
             <div class="kpi-modern-card bg-white shadow-xs" style="border-left: 4px solid ${cfg.cor};">
               <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: #1E293B; font-weight: 800;" title="${item.nm_indicador}">${cfg.titulo}${iconInfo}</div>
               <div class="kpi-modern-body"><i class="fas ${cfg.icone} kpi-modern-icon" style="color: ${cfg.cor};"></i><span class="kpi-modern-number" id="ficha_kpi_${cfg.sigla}">${valFmt}</span></div>
-              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #c2410c; font-weight: 800;">${item.ano}</span>${rankBadge}${cfg.isQL ? extraBadge : obterBadgePolaridade(cfg.sigla)}${!cfg.isQL ? extraBadge : ''}</div>
+              <div class="kpi-modern-footer">${window.montarRodapeKPI(cfg.isPercent ? '%' : (cfg.isQL ? 'QL' : ''), item.ano, item.rank_pe, cfg.sigla)}${extraBadge}</div>
             </div>
         `);
     });
@@ -2278,7 +2369,7 @@ function renderizarIndicadoresInovacao(ind, demo) {
             <div class="kpi-modern-card" style="border-left-color: #00B7FF;">
               <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
               <div class="kpi-modern-body"><i class="fas fa-laptop-code kpi-modern-icon" style="color: #00B7FF;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${valFmt}</span></div>
-              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #c2410c; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+              <div class="kpi-modern-footer">${window.montarRodapeKPI(tipoNorm === 'moeda' ? 'R$' : (tipoNorm === 'percentual' ? '%' : (tipoNorm === 'absoluto' ? 'Vínculos' : '')), item.ano, item.rank_pe, sigla)}</div>
             </div>
         `);
     });
@@ -2423,7 +2514,7 @@ function renderizarIndicadoresComercio(ind, demo) {
             <div class="kpi-modern-card" style="border-left-color: #E67E22;">
               <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
               <div class="kpi-modern-body"><i class="fas fa-globe kpi-modern-icon" style="color: #E67E22;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${valFmt}</span></div>
-              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #c2410c; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+              <div class="kpi-modern-footer">${window.montarRodapeKPI(tipoRaw === 'moeda' || nomeLow.includes('exporta') || nomeLow.includes('importa') || siglaLow.includes('valor') ? 'US$' : (tipoRaw === 'percentual' ? '%' : ''), item.ano, item.rank_pe, sigla)}</div>
             </div>
         `);
 
@@ -2563,7 +2654,7 @@ function renderizarIndicadoresConectividade(ind, demo) {
             <div class="kpi-modern-card" style="border-left-color: #3F51B5;">
               <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
               <div class="kpi-modern-body"><i class="fas fa-wifi kpi-modern-icon" style="color: #3F51B5;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${textoValor}</span></div>
-              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #c2410c; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+              <div class="kpi-modern-footer">${window.montarRodapeKPI(tipoNorm === 'percentual' ? '%' : (tipoNorm === 'absoluto' ? 'Acessos' : ''), item.ano, item.rank_pe, sigla)}</div>
             </div>
         `);
 
@@ -2856,7 +2947,7 @@ function renderizarIndicadoresTrabalho(ind, demo) {
             <div class="kpi-modern-card" style="border-left-color: ${corSetor};">
               <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
               <div class="kpi-modern-body"><i class="fas ${iconeSetor} kpi-modern-icon" style="color: ${corSetor};"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${textoValor}</span></div>
-              <div class="kpi-modern-footer text-uppercase">REF: <span style="color: #c2410c; font-weight: 800;">${item.ano}</span>${rankBadge}${obterBadgePolaridade(sigla)}</div>
+              <div class="kpi-modern-footer">${window.montarRodapeKPI(siglaLow.includes('sal') ? 'R$' : (tipoNorm === 'percentual' ? '%' : (tipoNorm === 'absoluto' || siglaLow.includes('emp_') ? 'Vínculos' : '')), item.ano, item.rank_pe, sigla)}</div>
             </div>
         `);
 
@@ -3085,7 +3176,7 @@ function renderizarDadosFiscais(fiscais, ind, demo) {
                     </div>
                   </div>
                   <div class="kpi-modern-body"><i class="fas ${iconesFiscais[chaveGrp]} kpi-modern-icon" style="color: ${corBarra};"></i><span class="kpi-modern-number" style="font-size: 1.4rem;">${valFmt}</span></div>
-                  <div class="kpi-modern-footer text-uppercase">Exercício: <span style="color: #c2410c; font-weight: 800;">${item.ex || '-'}</span>${item.rank ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank}º em PE</span>` : ''}${badgePolaridade}</div>
+                  <div class="kpi-modern-footer">${window.montarRodapeKPI(valFmt.includes('%') ? '%' : (valFmt.includes('R$') ? 'R$' : ''), item.ex || '-', item.rank, cdMeta)}</div>
                 </div>
             `);
         });
@@ -5163,56 +5254,97 @@ function renderGraficoBarrasModalMun(rankingArr, munAlvo, nomeExib, rdNome, isPc
    ========================================================================== */
 
 let cozinhasPorMunCache = null;
-window.atualizarKpiCozinhasMunicipio = function(nomeMun, codIbge) {
-    const el = document.getElementById('ficha_kpi_ini_cozinhas');
-    const elSub = document.getElementById('ficha_kpi_ini_cozinhas_sub');
-    if (!el) return;
 
+window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
+    if (!nomeMun) return;
     const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const targetMun = norm(nomeMun);
+    const targetIbge = String(codIbge || '').trim();
 
-    const aplicarValor = () => {
-        let count = 0;
-        let func = 0;
-        const targetMun = norm(nomeMun);
-        const targetIbge = String(codIbge || '').trim();
-
-        if (cozinhasPorMunCache && cozinhasPorMunCache.length) {
-            cozinhasPorMunCache.forEach(c => {
-                const cMun = norm(c.municipio);
-                const cIbge = String(c.cod_ibge || '').trim();
-                if ((targetIbge && cIbge && (cIbge === targetIbge || cIbge.startsWith(targetIbge) || targetIbge.startsWith(cIbge))) ||
-                    (targetMun && cMun && cMun === targetMun)) {
-                    count++;
-                    if ((c.status_funcionamento || '').includes('Funcionamento')) {
-                        func++;
-                    }
-                }
-            });
-        }
-        el.textContent = count;
-        if (elSub) {
-            elSub.textContent = count > 0 
-                ? `${func} em funcionamento` 
-                : 'Pernambuco sem Fome';
-        }
+    const formataBi = (v) => {
+        if (!v || v === 0) return "R$ 0";
+        if (v >= 1e9) return "R$ " + (v / 1e9).toFixed(2).replace('.', ',') + " Bi";
+        if (v >= 1e6) return "R$ " + (v / 1e6).toFixed(2).replace('.', ',') + " Mi";
+        return "R$ " + v.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
     };
 
-    if (cozinhasPorMunCache) {
-        aplicarValor();
-        return;
+    const fetchJson = async (endpoint) => {
+        try {
+            const res = await fetch(`${window.basePath || ''}/${endpoint}`.replace(/\/+/g, '/'));
+            if (res.ok) return await res.json();
+        } catch(e) {}
+        return null;
+    };
+
+    // 1. ÁGUAS (COMPESA)
+    if (!window.cacheResumoAguas) {
+        window.cacheResumoAguas = await fetchJson('municipios/resumo/aguas');
+    }
+    let totAguaVal = 0, totAguaQtd = 0;
+    if (window.cacheResumoAguas && window.cacheResumoAguas.municipios) {
+        const filtrados = window.cacheResumoAguas.municipios.filter(m => norm(m.municipio) === targetMun);
+        filtrados.forEach(f => {
+            totAguaVal += (Number(f.valor_rateado_m) || 0) * 1e6;
+            totAguaQtd++;
+        });
     }
 
-    const apiUrl = `${window.basePath || ''}/municipios/resumo/cozinhas`.replace(/\/+/g, '/');
-    fetch(apiUrl)
-        .then(res => res.json())
-        .then(data => {
-            cozinhasPorMunCache = data.cozinhas || [];
-            aplicarValor();
-        })
-        .catch(() => {
-            el.textContent = "0";
-            if (elSub) elSub.textContent = "Pernambuco sem Fome";
+    // 2. COZINHAS & COFINANCIAMENTO
+    if (!window.cacheResumoCozinhas) {
+        window.cacheResumoCozinhas = await fetchJson('municipios/resumo/cozinhas');
+    }
+    let totCoz = 0, funcCoz = 0, totCofinVal = 0;
+    if (window.cacheResumoCozinhas) {
+        const cozList = window.cacheResumoCozinhas.cozinhas || [];
+        cozList.forEach(c => {
+            const cMun = norm(c.municipio);
+            const cIbge = String(c.cod_ibge || '').trim();
+            if ((targetIbge && cIbge && (cIbge === targetIbge || cIbge.startsWith(targetIbge) || targetIbge.startsWith(cIbge))) ||
+                (targetMun && cMun && cMun === targetMun)) {
+                totCoz++;
+                if ((c.status_funcionamento || '').includes('Funcionamento')) funcCoz++;
+            }
         });
+
+        const cofinList = window.cacheResumoCozinhas.cofinanciamento_muns || [];
+        const itemCofin = cofinList.find(c => norm(c.municipio) === targetMun);
+        if (itemCofin) {
+            totCofinVal = Number(itemCofin.valor_validado) || Number(itemCofin.valor_pago) || 0;
+        }
+    }
+
+    // 3. ESTRADAS DE PE
+    if (!window.cacheResumoEstradas) {
+        window.cacheResumoEstradas = await fetchJson('municipios/resumo/estradas');
+    }
+    let totEstradasQtd = 0;
+    if (window.cacheResumoEstradas && window.cacheResumoEstradas.obras) {
+        totEstradasQtd = window.cacheResumoEstradas.obras.filter(o => norm(o.municipio) === targetMun).length;
+    }
+
+    // A. VULNERABILIDADE SOCIAL
+    $('#ficha_kpi_vuln_cozinhas').text(totCoz > 0 ? totCoz.toLocaleString('pt-BR') : "-");
+    $('#ficha_ano_vuln_cozinhas').html(window.montarRodapeKPI('Unidades', '2024', null, 'cozinhas'));
+    $('#ficha_kpi_vuln_cofin').text(totCofinVal > 0 ? formataBi(totCofinVal) : "-");
+    $('#ficha_ano_vuln_cofin').html(window.montarRodapeKPI('Investimento', '2024', null, 'cofinanciamento'));
+
+    // B. CONDIÇÕES HABITACIONAIS (ÁGUAS)
+    $('#ficha_kpi_hab_aguas_val').text(totAguaVal > 0 ? formataBi(totAguaVal) : "-");
+    $('#ficha_ano_hab_aguas_val').html(window.montarRodapeKPI('Investimento Compesa', '2024', null, 'investimento_agua'));
+    $('#ficha_kpi_hab_aguas_qtd').text(totAguaQtd > 0 ? totAguaQtd.toLocaleString('pt-BR') : "-");
+    $('#ficha_ano_hab_aguas_qtd').html(window.montarRodapeKPI('Intervenções Hídricas', '2024', null, 'obras_agua'));
+
+    // C. INICIATIVAS DE DESENVOLVIMENTO REGIONAL
+    $('#ficha_kpi_ini_aguas_val').text(totAguaVal > 0 ? formataBi(totAguaVal) : "-");
+    $('#ficha_kpi_ini_aguas_qtd').text(totAguaQtd > 0 ? totAguaQtd.toLocaleString('pt-BR') : "-");
+    $('#ficha_kpi_ini_cofin_val').text(totCofinVal > 0 ? formataBi(totCofinVal) : "-");
+    $('#ficha_kpi_ini_estradas_qtd').text(totEstradasQtd > 0 ? totEstradasQtd.toLocaleString('pt-BR') : "-");
+    $('#ficha_kpi_ini_cozinhas').text(totCoz > 0 ? totCoz.toLocaleString('pt-BR') : "0");
+    $('#ficha_kpi_ini_cozinhas_sub').text(totCoz > 0 ? `${funcCoz} em funcionamento` : 'Segurança Alimentar');
+};
+
+window.atualizarKpiCozinhasMunicipio = function(nomeMun, codIbge) {
+    window.atualizarKpisProgramasMunicipais(nomeMun, codIbge);
 };
 
 let mapResumoCozinhas = null;
@@ -7110,6 +7242,13 @@ function extrairMetricasComparacao(nomeMun, rawData) {
     const pctPia = extrairInd('pct_pia', 0);
     const indEnvelhecimento = extrairInd('ind_envelhecimento', 0);
     const rd = extrairValDemo('regiao_de_desenvolvimento', '-');
+    const popQuilombola = extrairInd('pop_quilombola', 0);
+    const popIndigena = extrairInd('pop_indigena', 0);
+    const itemPrefeito = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'nome_prefeito');
+    const itemPartido = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'partido_prefeito');
+    const nomePrefeito = (itemPrefeito && itemPrefeito.indicador && itemPrefeito.indicador !== '-') ? String(itemPrefeito.indicador).trim() : '-';
+    const partidoPrefeito = (itemPartido && itemPartido.indicador && itemPartido.indicador !== '-') ? String(itemPartido.indicador).trim() : '';
+    const prefeitoCompleto = nomePrefeito !== '-' ? (partidoPrefeito ? `${nomePrefeito} (${partidoPrefeito})` : nomePrefeito) : '-';
 
     // 2. Economia
     const pibpc = extrairInd('pibpc', 0);
@@ -7128,6 +7267,7 @@ function extrairMetricasComparacao(nomeMun, rawData) {
 
     // 3. Social
     const idhm = extrairInd('idhm', 0);
+    const gini = extrairInd('indice_gini', 0);
     let txCad = extrairInd('tx_cad_pessoas', 0);
     if (txCad === 0 && pop > 0) {
         const cadPessoas = extrairInd('cad_pessoas', 0);
@@ -7205,7 +7345,11 @@ function extrairMetricasComparacao(nomeMun, rawData) {
         fibraPct,
         pctVabInfocom,
         qlInfocom,
-        estabInfocom
+        estabInfocom,
+        popQuilombola,
+        popIndigena,
+        prefeitoCompleto,
+        gini
     };
 }
 
@@ -7692,6 +7836,8 @@ function renderizarTabelaConfronto(m1, m2, m3) {
     const metricas = [
         // 1. DEMOGRAFIA
         { dim: 'Demografia', nome: 'População Estimada (2026)', u1: m1.pop.toLocaleString('pt-BR') + ' hab.', u2: m2.pop.toLocaleString('pt-BR') + ' hab.', u3: temM3 ? m3.pop.toLocaleString('pt-BR') + ' hab.' : '-', v1: m1.pop, v2: m2.pop, v3: temM3 ? m3.pop : -1 },
+        { dim: 'Demografia', nome: 'População Quilombola', u1: m1.popQuilombola.toLocaleString('pt-BR') + ' hab.', u2: m2.popQuilombola.toLocaleString('pt-BR') + ' hab.', u3: temM3 ? m3.popQuilombola.toLocaleString('pt-BR') + ' hab.' : '-', v1: m1.popQuilombola, v2: m2.popQuilombola, v3: temM3 ? m3.popQuilombola : -1 },
+        { dim: 'Demografia', nome: 'População Indígena', u1: m1.popIndigena.toLocaleString('pt-BR') + ' hab.', u2: m2.popIndigena.toLocaleString('pt-BR') + ' hab.', u3: temM3 ? m3.popIndigena.toLocaleString('pt-BR') + ' hab.' : '-', v1: m1.popIndigena, v2: m2.popIndigena, v3: temM3 ? m3.popIndigena : -1 },
         { dim: 'Demografia', nome: 'Densidade Demográfica', u1: m1.densidade.toFixed(1) + ' hab/km²', u2: m2.densidade.toFixed(1) + ' hab/km²', u3: temM3 ? m3.densidade.toFixed(1) + ' hab/km²' : '-', v1: m1.densidade, v2: m2.densidade, v3: temM3 ? m3.densidade : -1 },
         { dim: 'Demografia', nome: 'Taxa de Urbanização', u1: m1.pctUrb.toFixed(1) + '%', u2: m2.pctUrb.toFixed(1) + '%', u3: temM3 ? m3.pctUrb.toFixed(1) + '%' : '-', v1: m1.pctUrb, v2: m2.pctUrb, v3: temM3 ? m3.pctUrb : -1 },
         { dim: 'Demografia', nome: 'Pop. Idade Produtiva (PIA)', u1: m1.pctPia.toFixed(1) + '%', u2: m2.pctPia.toFixed(1) + '%', u3: temM3 ? m3.pctPia.toFixed(1) + '%' : '-', v1: m1.pctPia, v2: m2.pctPia, v3: temM3 ? m3.pctPia : -1 },
@@ -7705,6 +7851,7 @@ function renderizarTabelaConfronto(m1, m2, m3) {
 
         // 3. SOCIAL
         { dim: 'Social', nome: 'IDHM (Desenvolvimento Humano)', u1: m1.idhm.toFixed(3), u2: m2.idhm.toFixed(3), u3: temM3 ? m3.idhm.toFixed(3) : '-', v1: m1.idhm, v2: m2.idhm, v3: temM3 ? m3.idhm : -1 },
+        { dim: 'Social', nome: 'Índice de Gini (Desigualdade)', u1: m1.gini > 0 ? m1.gini.toFixed(2) : '-', u2: m2.gini > 0 ? m2.gini.toFixed(2) : '-', u3: temM3 ? (m3.gini > 0 ? m3.gini.toFixed(2) : '-') : '-', v1: m1.gini, v2: m2.gini, v3: temM3 ? m3.gini : -1, lowerIsBetter: true },
         { dim: 'Social', nome: 'População no CadÚnico (%)', u1: m1.txCad.toFixed(1) + '%', u2: m2.txCad.toFixed(1) + '%', u3: temM3 ? m3.txCad.toFixed(1) + '%' : '-', v1: m1.txCad, v2: m2.txCad, v3: temM3 ? m3.txCad : -1, lowerIsBetter: true },
         { dim: 'Social', nome: 'Dep. Recursos Transferência (IVCAD-DR)', u1: (m1.ivcadDr > 1 ? m1.ivcadDr.toFixed(1) + '%' : (m1.ivcadDr * 100).toFixed(1) + '%'), u2: (m2.ivcadDr > 1 ? m2.ivcadDr.toFixed(1) + '%' : (m2.ivcadDr * 100).toFixed(1) + '%'), u3: temM3 ? (m3.ivcadDr > 1 ? m3.ivcadDr.toFixed(1) + '%' : (m3.ivcadDr * 100).toFixed(1) + '%') : '-', v1: m1.ivcadDr, v2: m2.ivcadDr, v3: temM3 ? m3.ivcadDr : -1, lowerIsBetter: true },
         { dim: 'Social', nome: 'Água pela Rede Geral (%)', u1: m1.agua.toFixed(1) + '%', u2: m2.agua.toFixed(1) + '%', u3: temM3 ? m3.agua.toFixed(1) + '%' : '-', v1: m1.agua, v2: m2.agua, v3: temM3 ? m3.agua : -1 },

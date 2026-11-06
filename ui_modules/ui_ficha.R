@@ -82,74 +82,236 @@ ui_modulo_ficha <- function() {
       tags$div(
         id = "subaba_ficha_municipal",
       
-      # SEÇÃO 1: CARACTERIZAÇÃO
+      # SEÇÃO 1: CARACTERIZAÇÃO REESTRUTURADA
       tags$div(
         id = "sec_caracterizacao",
         class = "border-b-2 border-slate-200 pb-2 mb-4 mt-2",
-        tags$h2(class = "text-2xl font-black text-slate-800 uppercase tracking-tight mb-0", "Caracterização"),
-        tags$p(class = "text-sm font-bold text-slate-500 mb-0", "Principais Informações")
+        tags$h2(class = "text-2xl font-black text-slate-800 uppercase tracking-tight mb-0", "Caracterização Municipal"),
+        tags$p(class = "text-sm font-bold text-slate-500 mb-0", "Identidade Institucional, Perfil Territorial e Estrutura Produtiva")
       ),
       
+      # 1.1 CABEÇALHO DO MUNICÍPIO & AÇÕES DE RELATÓRIO
       tags$div(
-        class = "row mb-5 align-items-center pb-4",
+        class = "d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3",
         tags$div(
-          class = "col-md-7 col-lg-8",
-          tags$div(
-            class = "d-flex align-items-center gap-3 mb-2 flex-wrap",
-            tags$h1(id = "ficha_nome_municipio", class = "display-5 fw-black text-dark mb-0 text-uppercase tracking-tight", "MUNICÍPIO"),
-            
-            
-            
-            tags$button(
-              class = "btn btn-primary btn-sm fw-bold shadow-sm rounded-pill px-3 transition-all d-print-none",
-              onclick = "window.imprimirResumoExecutivo()",
-              tags$i(class = "fas fa-file-contract me-1"), "Resumo Executivo"
-            ),
-            
-            tags$button(
-              class = "btn btn-outline-dark btn-sm fw-bold shadow-sm rounded-pill px-3 transition-all d-print-none",
-              onclick = "window.imprimirRelatorioCompleto()",
-              tags$i(class = "fas fa-file-pdf me-1 text-danger"), "Relatório Completo"
-            ),
-            
-            
-          ),
-          
-          tags$div(
-            class = "d-flex flex-wrap gap-2 mt-3",
-            tags$span(class = "badge bg-light text-primary border border-primary-subtle px-3 py-2 text-uppercase rounded-pill", tags$i(class = "fas fa-layer-group me-1"), tags$span(id = "ficha_rd_subtitle", "RD")),
-            tags$span(class = "badge bg-light text-purple border px-3 py-2 text-uppercase rounded-pill", style = "color: #8E44AD; border-color: #d8b4e2;", tags$i(class = "fas fa-industry me-1"), tags$span(id = "ficha_apl_subtitle", "APL")),
-            tags$span(class = "badge bg-light border px-3 py-2 text-uppercase rounded-pill", style = "color: #059669; border-color: #a7f3d0;", tags$i(class = "fas fa-briefcase me-1"), tags$span(id = "ficha_vocacoes_subtitle", "Vocações: -")),
-            tags$span(class = "badge bg-light text-dark border px-3 py-2 text-uppercase rounded-pill", tags$i(class = "fas fa-users me-1 text-secondary"), tags$span(id = "ficha_pop_subtitle", "Pop: -")),
-            tags$span(class = "badge bg-light text-dark border px-3 py-2 text-uppercase rounded-pill", tags$i(class = "fas fa-city me-1 text-secondary"), tags$span(id = "ficha_pop_urb_subtitle", "Pop. Urbana: -")),
-            tags$span(class = "badge bg-light text-dark border px-3 py-2 text-uppercase rounded-pill", tags$i(class = "fas fa-tree me-1 text-secondary"), tags$span(id = "ficha_pop_rur_subtitle", "Pop. Rural: -")),
-            tags$span(class = "badge bg-light text-dark border px-3 py-2 text-uppercase rounded-pill", tags$i(class = "fas fa-ruler-combined me-1 text-secondary"), tags$span(id = "ficha_area_subtitle", "Área: -")),
-            tags$span(id = "badge_fibra_container", class = "badge bg-light text-dark border px-3 py-2 text-uppercase rounded-pill transition-colors", 
-                      tags$i(id = "icon_fibra", class = "fas fa-wifi me-1 text-secondary"), 
-                      tags$span(id = "ficha_fibra_subtitle", "Fibra: -"))
-          )
+          tags$h1(id = "ficha_nome_municipio", class = "display-5 fw-black text-slate-900 mb-0 text-uppercase tracking-tight", "MUNICÍPIO")
         ),
         tags$div(
-          class = "col-md-5 col-lg-4 mt-4 mt-md-0",
-          tags$div(
-            class = "map-clean-container map-small",
-            style = "height: 280px; width: 100%;",
-            tags$div(id = "ficha_map_container", style = "width: 100%; height: 100%;")
+          class = "d-flex align-items-center gap-2 d-print-none",
+          tags$button(
+            class = "btn btn-primary btn-sm fw-bold shadow-xs rounded-pill px-3 py-1.5 transition-all",
+            onclick = "window.imprimirResumoExecutivo()",
+            tags$i(class = "fas fa-file-contract me-1.5"), "Resumo Executivo"
+          ),
+          tags$button(
+            class = "btn btn-outline-dark btn-sm fw-bold shadow-xs rounded-pill px-3 py-1.5 transition-all",
+            onclick = "window.imprimirRelatorioCompleto()",
+            tags$i(class = "fas fa-file-pdf me-1.5 text-danger"), "Relatório Completo"
           )
         )
       ),
-      
-      # 8 KPIs CARACTERIZAÇÃO
+
+      # 1.2 OS DOIS PAINÉIS PRINCIPAIS (IDENTIDADE & GESTÃO + TERRITÓRIO & DEMOGRAFIA COM MAPA)
       tags$div(
-        class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5",
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #3498DB;", tags$div(class = "kpi-modern-header", "PIB PER CAPITA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-user-tag kpi-modern-icon", style = "color: #3498DB;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pibpc", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pibpc", "R$")),
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #27AE60;", tags$div(class = "kpi-modern-header", "PARTICIPAÇÃO PIB ESTADUAL"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-chart-pie kpi-modern-icon", style = "color: #27AE60;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pib_pct", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pib_pct", "%")),
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #8E44AD;", tags$div(class = "kpi-modern-header", "PIB TOTAL"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-money-bill-wave kpi-modern-icon", style = "color: #8E44AD;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pib_1000", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pib_1000", "R$ 1.000")),
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #F39C12;", tags$div(class = "kpi-modern-header", "IDHM"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-graduation-cap kpi-modern-icon", style = "color: #F39C12;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_idhm", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_idhm", "Índice")),
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #1ABC9C;", tags$div(class = "kpi-modern-header", "VAB AGROPECUÁRIA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-tractor kpi-modern-icon", style = "color: #1ABC9C;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_vab_agro", "-")), tags$div(class = "kpi-ql-badge-row", id = "ficha_ql_box_vab_agro"), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_vab_agro", "% do VAB")),
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #34495E;", tags$div(class = "kpi-modern-header", "VAB INDÚSTRIA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-industry kpi-modern-icon", style = "color: #34495E;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_vab_ind", "-")), tags$div(class = "kpi-ql-badge-row", id = "ficha_ql_box_vab_ind"), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_vab_ind", "% do VAB")),
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #F1C40F;", tags$div(class = "kpi-modern-header", "VAB SERVIÇOS"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-concierge-bell kpi-modern-icon", style = "color: #F1C40F;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_vab_serv", "-")), tags$div(class = "kpi-ql-badge-row", id = "ficha_ql_box_vab_serv"), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_vab_serv", "% do VAB")),
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #E74C3C;", tags$div(class = "kpi-modern-header", "VAB ADM PÚBLICA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-university kpi-modern-icon", style = "color: #E74C3C;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_vab_adm", "-")), tags$div(class = "kpi-ql-badge-row", id = "ficha_ql_box_vab_adm"), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_vab_adm", "% do VAB"))
+        class = "row g-4 mb-5",
+        
+        # PAINEL ESQUERDO: IDENTIDADE INSTITUCIONAL & ESPECIALIZAÇÃO PRODUTIVA
+        tags$div(
+          class = "col-lg-5",
+          tags$div(
+            class = "bg-white rounded-2xl border border-slate-200 shadow-xs p-4 h-100 d-flex flex-column justify-content-between",
+            tags$div(
+              tags$div(
+                class = "d-flex align-items-center justify-content-between pb-3 mb-3 border-b border-slate-100",
+                tags$span(class = "font-black text-xs uppercase tracking-wider text-slate-500",
+                  tags$i(class = "fas fa-landmark me-1.5 text-[#ff5a26]"), "Identidade & Gestão Municipal"
+                ),
+                tags$span(
+                  class = "badge bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-pill px-2.5 py-1",
+                  tags$i(class = "fas fa-cake-candles me-1 text-[#ff5a26]"),
+                  tags$span(id = "ficha_aniversario_subtitle", "Aniversário: -")
+                )
+              ),
+
+              # Card do Prefeito(a)
+              tags$div(
+                class = "p-3 rounded-xl bg-orange-50/60 border border-orange-100 mb-3 d-flex align-items-center justify-content-between",
+                tags$div(
+                  class = "d-flex align-items-center gap-3",
+                  tags$div(
+                    class = "w-10 h-10 rounded-full bg-orange-100 text-[#c2410c] d-flex align-items-center justify-content-center font-bold text-lg",
+                    tags$i(class = "fas fa-user-tie")
+                  ),
+                  tags$div(
+                    tags$div(class = "text-[10px] uppercase font-bold text-slate-400 tracking-wider", "Chefe do Executivo Municipal"),
+                    tags$div(id = "ficha_prefeito_subtitle", class = "text-sm font-black text-slate-900", "Prefeito(a): -")
+                  )
+                )
+              ),
+
+              # Especializações Produtivas & Conectividade
+              tags$div(
+                class = "space-y-2.5",
+                tags$div(
+                  class = "d-flex align-items-center justify-content-between text-xs py-1.5 border-b border-slate-50",
+                  tags$span(class = "text-slate-500 font-bold", tags$i(class = "fas fa-industry text-purple-500 me-1.5"), "Arranjo Produtivo (APL):"),
+                  tags$span(id = "ficha_apl_subtitle", class = "font-bold text-slate-800", "Sem APL")
+                ),
+                tags$div(
+                  class = "d-flex align-items-center justify-content-between text-xs py-1.5 border-b border-slate-50",
+                  tags$span(class = "text-slate-500 font-bold", tags$i(class = "fas fa-briefcase text-emerald-600 me-1.5"), "Vocações Econômicas:"),
+                  tags$span(id = "ficha_vocacoes_subtitle", class = "font-bold text-slate-800 text-end", "-")
+                ),
+                tags$div(
+                  class = "d-flex align-items-center justify-content-between text-xs py-1.5",
+                  tags$span(class = "text-slate-500 font-bold", tags$i(class = "fas fa-wifi text-blue-500 me-1.5"), "Conectividade Digital:"),
+                  tags$span(
+                    id = "badge_fibra_container",
+                    class = "badge bg-light text-dark border px-2.5 py-1 rounded-pill transition-colors",
+                    tags$i(id = "icon_fibra", class = "fas fa-wifi me-1 text-secondary"),
+                    tags$span(id = "ficha_fibra_subtitle", "Fibra: -")
+                  )
+                )
+              )
+            ),
+
+            tags$div(
+              class = "mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between",
+              tags$span(class = "text-xs text-slate-400 font-bold", "Região de Desenvolvimento:"),
+              tags$span(id = "ficha_rd_subtitle", class = "text-xs font-black text-slate-800 text-uppercase", "RD")
+            )
+          )
+        ),
+
+        # PAINEL DIREITO: PERFIL SOCIOTERRITORIAL & DEMOGRAFIA + MINI-MAPA INTEGRADO
+        tags$div(
+          class = "col-lg-7",
+          tags$div(
+            class = "bg-white rounded-2xl border border-slate-200 shadow-xs p-4 h-100",
+            tags$div(
+              class = "d-flex align-items-center justify-content-between pb-3 mb-3 border-b border-slate-100",
+              tags$span(class = "font-black text-xs uppercase tracking-wider text-slate-500",
+                tags$i(class = "fas fa-earth-americas me-1.5 text-blue-600"), "Perfil Territorial & Demográfico"
+              ),
+              tags$span(class = "text-xs font-bold text-slate-400", "Censo 2022 & IBGE 2026")
+            ),
+
+            tags$div(
+              class = "row g-3 align-items-center",
+              tags$div(
+                class = "col-md-7",
+                
+                # População Destaque
+                tags$div(
+                  class = "mb-3",
+                  tags$div(
+                    class = "d-flex align-items-baseline gap-2",
+                    tags$span(id = "ficha_pop_subtitle", class = "text-2xl font-black text-slate-900", "Pop: -")
+                  ),
+                  tags$div(class = "text-[11px] text-slate-400 font-medium mt-0.5", "Estimativa IBGE/TCU 2026")
+                ),
+
+                # Ocupação Urbana x Rural Mini Bar
+                tags$div(
+                  class = "p-2.5 rounded-xl bg-slate-50 border border-slate-100 mb-3",
+                  tags$div(
+                    class = "d-flex justify-content-between text-[11px] font-bold text-slate-600 mb-1.5",
+                    tags$span(tags$i(class = "fas fa-city me-1 text-slate-500"), tags$span(id = "ficha_pop_urb_subtitle", "Pop. Urbana: -")),
+                    tags$span(tags$i(class = "fas fa-tree me-1 text-emerald-600"), tags$span(id = "ficha_pop_rur_subtitle", "Pop. Rural: -"))
+                  ),
+                  tags$div(
+                    class = "w-full bg-slate-200 rounded-full h-2 d-flex overflow-hidden",
+                    tags$div(id = "ficha_bar_pop_urb", class = "bg-blue-600 h-2 transition-all", style = "width: 50%;"),
+                    tags$div(id = "ficha_bar_pop_rur", class = "bg-emerald-500 h-2 transition-all", style = "width: 50%;")
+                  )
+                ),
+
+                # Povos Tradicionais
+                tags$div(
+                  class = "grid grid-cols-2 gap-2 text-xs mb-2",
+                  tags$div(
+                    class = "p-2 rounded-lg bg-orange-50/40 border border-orange-100",
+                    tags$div(class = "text-[10px] font-bold text-slate-400 uppercase tracking-tight", tags$i(class = "fas fa-people-group me-1 text-[#ff5a26]"), "Quilombolas"),
+                    tags$div(id = "ficha_pop_quilombola_subtitle", class = "font-black text-slate-800 text-xs mt-0.5", "Pop. Quilombola: -")
+                  ),
+                  tags$div(
+                    class = "p-2 rounded-lg bg-amber-50/40 border border-amber-100",
+                    tags$div(class = "text-[10px] font-bold text-slate-400 uppercase tracking-tight", tags$i(class = "fas fa-feather-pointed me-1 text-[#ff5a26]"), "Indígenas"),
+                    tags$div(id = "ficha_pop_indigena_subtitle", class = "font-black text-slate-800 text-xs mt-0.5", "Pop. Indígena: -")
+                  )
+                ),
+
+                tags$div(
+                  class = "d-flex align-items-center justify-content-between pt-2 border-t border-slate-100 text-xs",
+                  tags$span(class = "text-slate-500 font-bold", tags$i(class = "fas fa-ruler-combined text-slate-400 me-1"), "Área Territorial:"),
+                  tags$span(id = "ficha_area_subtitle", class = "font-bold text-slate-800", "Área: -")
+                )
+              ),
+
+              # Mini-Mapa
+              tags$div(
+                class = "col-md-5",
+                tags$div(
+                  class = "map-clean-container map-small rounded-xl overflow-hidden border border-slate-200 shadow-2xs",
+                  style = "height: 240px; width: 100%;",
+                  tags$div(id = "ficha_map_container", style = "width: 100%; height: 100%;")
+                )
+              )
+            )
+          )
+        )
+      ),
+
+      # 1.3 BLOCO ECONÔMICO INTEGRADO (MACROECONOMIA + MATRIZ DO VAB)
+      tags$div(
+        class = "mb-5",
+        tags$div(
+          class = "d-flex align-items-center justify-content-between pb-2 mb-3 border-b border-slate-200",
+          tags$div(
+            tags$h3(class = "text-lg font-black text-slate-800 uppercase tracking-tight mb-0", "Estrutura Econômica & Desenvolvimento"),
+            tags$p(class = "text-xs font-bold text-slate-400 mb-0", "Grandezas Macroeconômicas, Renda per Capita e Matriz Setorial do VAB")
+          )
+        ),
+
+        # 4 CARDS MACROECONÔMICOS
+        tags$div(
+          class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4",
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #8E44AD;", tags$div(class = "kpi-modern-header", "PIB TOTAL"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-money-bill-wave kpi-modern-icon", style = "color: #8E44AD;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pib_1000", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pib_1000", "R$ 1.000")),
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #3498DB;", tags$div(class = "kpi-modern-header", "PIB PER CAPITA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-user-tag kpi-modern-icon", style = "color: #3498DB;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pibpc", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pibpc", "R$")),
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #27AE60;", tags$div(class = "kpi-modern-header", "PARTICIPAÇÃO PIB ESTADUAL"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-chart-pie kpi-modern-icon", style = "color: #27AE60;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pib_pct", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pib_pct", "%")),
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #F39C12;", tags$div(class = "kpi-modern-header", "IDHM"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-graduation-cap kpi-modern-icon", style = "color: #F39C12;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_idhm", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_idhm", "Índice"))
+        ),
+
+        # COMPOSIÇÃO SETORIAL DO VAB (100%)
+        tags$div(
+          class = "bg-white rounded-2xl border border-slate-200 shadow-xs p-4",
+          tags$div(
+            class = "d-flex align-items-center justify-content-between mb-3 pb-2 border-b border-slate-100 flex-wrap gap-2",
+            tags$div(
+              tags$span(class = "font-black text-xs uppercase tracking-wider text-slate-700", "Composição do Valor Adicionado Bruto (VAB Setorial)"),
+              tags$span(class = "text-[11px] text-slate-400 ms-2 font-medium", "Distribuição relativa e Quocientes Locacionais (QL)")
+            ),
+            tags$span(class = "badge bg-slate-100 text-slate-600 border text-[11px] font-bold rounded-pill px-2.5 py-0.5", "Soma: 100% do VAB")
+          ),
+
+          # Barra segmentada proporcional
+          tags$div(
+            class = "w-full bg-slate-100 rounded-full h-2.5 d-flex overflow-hidden mb-4 shadow-inner",
+            tags$div(id = "vab_bar_agro", class = "h-2.5 transition-all", style = "width: 25%; background-color: #1ABC9C;", title = "Agropecuária"),
+            tags$div(id = "vab_bar_ind", class = "h-2.5 transition-all", style = "width: 25%; background-color: #34495E;", title = "Indústria"),
+            tags$div(id = "vab_bar_serv", class = "h-2.5 transition-all", style = "width: 25%; background-color: #F1C40F;", title = "Serviços"),
+            tags$div(id = "vab_bar_adm", class = "h-2.5 transition-all", style = "width: 25%; background-color: #E74C3C;", title = "Administração Pública")
+          ),
+
+          # 4 Cards Setoriais Integrados
+          tags$div(
+            class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3",
+            tags$div(class = "kpi-modern-card", style = "border-left-color: #1ABC9C;", tags$div(class = "kpi-modern-header", "VAB AGROPECUÁRIA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-tractor kpi-modern-icon", style = "color: #1ABC9C;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_vab_agro", "-")), tags$div(class = "kpi-ql-badge-row", id = "ficha_ql_box_vab_agro"), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_vab_agro", "% do VAB")),
+            tags$div(class = "kpi-modern-card", style = "border-left-color: #34495E;", tags$div(class = "kpi-modern-header", "VAB INDÚSTRIA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-industry kpi-modern-icon", style = "color: #34495E;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_vab_ind", "-")), tags$div(class = "kpi-ql-badge-row", id = "ficha_ql_box_vab_ind"), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_vab_ind", "% do VAB")),
+            tags$div(class = "kpi-modern-card", style = "border-left-color: #F1C40F;", tags$div(class = "kpi-modern-header", "VAB SERVIÇOS"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-concierge-bell kpi-modern-icon", style = "color: #F1C40F;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_vab_serv", "-")), tags$div(class = "kpi-ql-badge-row", id = "ficha_ql_box_vab_serv"), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_vab_serv", "% do VAB")),
+            tags$div(class = "kpi-modern-card", style = "border-left-color: #E74C3C;", tags$div(class = "kpi-modern-header", "VAB ADM PÚBLICA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-university kpi-modern-icon", style = "color: #E74C3C;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_vab_adm", "-")), tags$div(class = "kpi-ql-badge-row", id = "ficha_ql_box_vab_adm"), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_vab_adm", "% do VAB"))
+          )
+        )
       ),
       
       # =================================================
@@ -266,7 +428,7 @@ ui_modulo_ficha <- function() {
         class = "subsecao-seguranca",
         tags$h5(class = "font-black text-slate-700 uppercase tracking-tight mb-3 text-base", "Segurança Pública"),
         tags$div(
-          class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-5",
+          class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5",
           tags$div(class = "kpi-modern-card", style = "border-left-color: #C0392B;", tags$div(class = "kpi-modern-header", "MVI (ABSOLUTO)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-skull-crossbones kpi-modern-icon", style = "color: #C0392B;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_mvi_abs", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_mvi_abs", "Casos")),
           tags$div(class = "kpi-modern-card", style = "border-left-color: #E74C3C;", tags$div(class = "kpi-modern-header", "TAXA MVI"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-chart-line kpi-modern-icon", style = "color: #E74C3C;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_mvi_taxa", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_mvi_taxa", "por 100k hab.")),
           tags$div(class = "kpi-modern-card", style = "border-left-color: #D35400;", tags$div(class = "kpi-modern-header", "CVP (ABSOLUTO)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-mask kpi-modern-icon", style = "color: #D35400;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_cvp_abs", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_cvp_abs", "Ocorrências")),
@@ -433,6 +595,7 @@ ui_modulo_ficha <- function() {
           class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5",
           tags$div(class = "kpi-modern-card", style = "border-left-color: #8E44AD;", tags$div(class = "kpi-modern-header", "PESSOAS NO CAD ÚNICO"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-users kpi-modern-icon", style = "color: #8E44AD;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_cad_pessoas", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_cad_pessoas", "Pessoas")),
           tags$div(class = "kpi-modern-card", style = "border-left-color: #E67E22;", tags$div(class = "kpi-modern-header", "TX. PESSOAS NO CAD ÚNICO"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-percent kpi-modern-icon", style = "color: #E67E22;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_tx_cad_pessoas", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_tx_cad_pessoas", "% da População")),
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #ff5a26;", tags$div(class = "kpi-modern-header", "ÍNDICE DE GINI"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-scale-unbalanced kpi-modern-icon", style = "color: #ff5a26;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_indice_gini", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_indice_gini", "Índice (Desigualdade)")),
           tags$div(class = "kpi-modern-card", style = "border-left-color: #9B59B6;", tags$div(class = "kpi-modern-header", "ÍNDICE DE VULNERABILIDADE"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-chart-bar kpi-modern-icon", style = "color: #9B59B6;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ivcad", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_ivcad", "Índice")),
           tags$div(class = "kpi-modern-card", style = "border-left-color: #3498DB;", tags$div(class = "kpi-modern-header", "NECESSIDADE DE CUIDADOS (NC)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hand-holding-medical kpi-modern-icon", style = "color: #3498DB;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ivcad_nc", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_ivcad_nc", "Índice")),
           tags$div(class = "kpi-modern-card", style = "border-left-color: #F1C40F;", tags$div(class = "kpi-modern-header", "DESENV. PRIMEIRA INFÂNCIA (DPI)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-child kpi-modern-icon", style = "color: #F1C40F;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ivcad_dpi", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_ivcad_dpi", "Índice")),
@@ -440,10 +603,12 @@ ui_modulo_ficha <- function() {
           tags$div(class = "kpi-modern-card", style = "border-left-color: #E74C3C;", tags$div(class = "kpi-modern-header", "TRABALHO E QUALIFICAÇÃO (TQA)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-briefcase kpi-modern-icon", style = "color: #E74C3C;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ivcad_tqa", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_ivcad_tqa", "Índice")),
           tags$div(class = "kpi-modern-card", style = "border-left-color: #16A085;", tags$div(class = "kpi-modern-header", "DISPONIBILIDADE DE RECURSOS (DR)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-wallet kpi-modern-icon", style = "color: #16A085;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ivcad_dr", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_ivcad_dr", "Índice")),
           tags$div(class = "kpi-modern-card", style = "border-left-color: #34495E;", tags$div(class = "kpi-modern-header", "CONDIÇÕES HABITACIONAIS (CH)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-home kpi-modern-icon", style = "color: #34495E;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ivcad_ch", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_ivcad_ch", "Índice")),
-          tags$div(class = "kpi-modern-card", style = "border-left-color: #E91E63;", tags$div(class = "kpi-modern-header", "MÃES DE PE (BENEFICIÁRIAS)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-female kpi-modern-icon", style = "color: #E91E63;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_maes_qtd", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_maes_qtd", "Mulheres Atendidas")),
-          tags$div(class = "kpi-modern-card", style = "border-left-color: #C0392B;", tags$div(class = "kpi-modern-header", "MÃES DE PE (VALOR)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-sack-dollar kpi-modern-icon", style = "color: #C0392B;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_maes_val", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_maes_val", "Investimento")),
-          tags$div(class = "kpi-modern-card", style = "border-left-color: #F1C40F;", tags$div(class = "kpi-modern-header", "CHAPÉU DE PALHA (BENEFICIÁRIOS)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hat-cowboy kpi-modern-icon", style = "color: #F1C40F;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pcp_qtd", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pcp_qtd", "Pessoas Atendidas")),
-          tags$div(class = "kpi-modern-card", style = "border-left-color: #D35400;", tags$div(class = "kpi-modern-header", "CHAPÉU DE PALHA (VALOR)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hand-holding-usd kpi-modern-icon", style = "color: #D35400;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pcp_val", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pcp_val", "Investimento pago"))
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #E91E63;", tags$div(class = "kpi-modern-header", "MÃES DE PERNAMBUCO"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-female kpi-modern-icon", style = "color: #E91E63;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_maes_qtd", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_maes_qtd", "Mulheres Atendidas")),
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #C0392B;", tags$div(class = "kpi-modern-header", "MÃES DE PERNAMBUCO"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-sack-dollar kpi-modern-icon", style = "color: #C0392B;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_maes_val", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_maes_val", "Investimento")),
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #F1C40F;", tags$div(class = "kpi-modern-header", "CHAPÉU DE PALHA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hat-cowboy kpi-modern-icon", style = "color: #F1C40F;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pcp_qtd", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pcp_qtd", "Pessoas Atendidas")),
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #D35400;", tags$div(class = "kpi-modern-header", "CHAPÉU DE PALHA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hand-holding-usd kpi-modern-icon", style = "color: #D35400;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pcp_val", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pcp_val", "Investimento")),
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #F59E0B;", tags$div(class = "kpi-modern-header", "COZINHAS COMUNITÁRIAS"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-utensils kpi-modern-icon", style = "color: #F59E0B;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_vuln_cozinhas", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_vuln_cozinhas", "Unidades")),
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #3B82F6;", tags$div(class = "kpi-modern-header", "COFINANCIAMENTO SOCIAL"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hand-holding-dollar kpi-modern-icon", style = "color: #3B82F6;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_vuln_cofin", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_vuln_cofin", "Investimento Estadual"))
         ),
         tags$div(
           class = "bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-5",
@@ -457,6 +622,7 @@ ui_modulo_ficha <- function() {
               class = "d-flex flex-wrap gap-1",
               tags$button(type = "button", class = "btn btn-primary font-bold text-xs px-2 active", id = "btn_cad_cad_pessoas", onclick = "window.alternarMetricaCadUnico('cad_pessoas')", "Pessoas"),
               tags$button(type = "button", class = "btn btn-outline-primary font-bold text-xs px-2", id = "btn_cad_tx_cad_pessoas", onclick = "window.alternarMetricaCadUnico('tx_cad_pessoas')", "Tx. Pessoas"),
+              tags$button(type = "button", class = "btn btn-outline-primary font-bold text-xs px-2", id = "btn_cad_indice_gini", onclick = "window.alternarMetricaCadUnico('indice_gini')", "Gini"),
               tags$button(type = "button", class = "btn btn-outline-primary font-bold text-xs px-2", id = "btn_cad_ivcad", onclick = "window.alternarMetricaCadUnico('ivcad')", "IVCAD"),
               tags$button(type = "button", class = "btn btn-outline-primary font-bold text-xs px-2", id = "btn_cad_ivcad_nc", onclick = "window.alternarMetricaCadUnico('ivcad_nc')", "NC"),
               tags$button(type = "button", class = "btn btn-outline-primary font-bold text-xs px-2", id = "btn_cad_ivcad_dpi", onclick = "window.alternarMetricaCadUnico('ivcad_dpi')", "DPI"),
@@ -481,11 +647,20 @@ ui_modulo_ficha <- function() {
       # 2.5.2 CONDIÇÕES HABITACIONAIS
       tags$div(
         class = "subsecao-print-break",
-        tags$h5(class = "font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-6", "Condições Habitacionais"),
         tags$div(
-          class = "grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5",
+          class = "d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 mt-6",
+          tags$div(
+            tags$h5(class = "font-black text-slate-700 uppercase tracking-tight mb-0 text-base", "Condições Habitacionais e Saneamento"),
+            tags$p(class = "text-xs font-semibold text-slate-400 mb-0", "Indicadores baseados nas dimensões do Cadastro Único (IVCAD). Em breve complementados com dados municipais censitários gerais.")
+          ),
+          tags$span(class = "badge bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold rounded-pill px-2.5 py-1", "Dimensões IVCAD / Compesa")
+        ),
+        tags$div(
+          class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5",
           tags$div(class = "kpi-modern-card", style = "border-left-color: #00BCD4;", tags$div(class = "kpi-modern-header", "ÁGUA (REDE GERAL)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-faucet kpi-modern-icon", style = "color: #00BCD4;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pct_agua_rede", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pct_agua_rede", "% de Domicílios")),
-          tags$div(class = "kpi-modern-card", style = "border-left-color: #8D6E63;", tags$div(class = "kpi-modern-header", "ESGOTO (REDE GERAL)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-toilet kpi-modern-icon", style = "color: #8D6E63;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pct_esgoto_rede", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pct_esgoto_rede", "% de Domicílios"))
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #8D6E63;", tags$div(class = "kpi-modern-header", "ESGOTO (REDE GERAL)"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-toilet kpi-modern-icon", style = "color: #8D6E63;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_pct_esgoto_rede", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_pct_esgoto_rede", "% de Domicílios")),
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #0284C7;", tags$div(class = "kpi-modern-header", "INVESTIMENTO EM ÁGUA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hand-holding-droplet kpi-modern-icon", style = "color: #0284C7;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_hab_aguas_val", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_hab_aguas_val", "Investimento Compesa")),
+          tags$div(class = "kpi-modern-card", style = "border-left-color: #0EA5E9;", tags$div(class = "kpi-modern-header", "OBRAS DE ÁGUA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-faucet-drip kpi-modern-icon", style = "color: #0EA5E9;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_hab_aguas_qtd", "-")), tags$div(class = "kpi-modern-footer text-uppercase", id = "ficha_ano_hab_aguas_qtd", "Intervenções Hídricas"))
         ),
         tags$div(
           class = "bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-5",
@@ -513,9 +688,14 @@ ui_modulo_ficha <- function() {
       # SEÇÃO 2.7: INDICADORES ECONÔMICOS
       tags$div(
         id = "sec_indicadores_economicos",
-        class = "border-b-2 border-slate-200 pb-2 mb-4 mt-8",
-        tags$h2(class = "text-2xl font-black text-slate-800 uppercase tracking-tight mb-0", "Indicadores Econômicos"),
-        tags$p(class = "text-sm font-bold text-slate-500 mb-0", "Vocações, Mercado de Trabalho, Inovação e Comércio Exterior")
+        class = "border-b-2 border-slate-200 pb-2 mb-4 mt-8 d-flex justify-content-between align-items-center flex-wrap gap-2",
+        tags$div(
+          tags$h2(class = "text-2xl font-black text-slate-800 uppercase tracking-tight mb-0", "Indicadores Econômicos"),
+          tags$p(class = "text-sm font-bold text-slate-500 mb-0", "Vocações, Mercado de Trabalho, Inovação e Comércio Exterior • Fonte: RAIS / Ministério do Trabalho e Emprego")
+        ),
+        tags$span(class = "badge bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-pill px-3 py-1",
+          tags$i(class = "fas fa-database me-1 text-slate-500"), "Fonte: RAIS / MTE"
+        )
       ),
       
       # SUBSEÇÃO 1: VOCAÇÕES
@@ -662,14 +842,17 @@ ui_modulo_ficha <- function() {
         tags$p(class = "text-sm font-bold text-slate-500 mb-0", "Programas, Ações Estaduais e Convênios de Despesa")
       ),
       
-      tags$h5(class = "font-black text-slate-700 uppercase tracking-tight mb-3 text-base", "Ações e Programas Governamentais"),
+      tags$h5(class = "font-black text-slate-700 uppercase tracking-tight mb-3 text-base", "Ações e Programas Governamentais no Território"),
       tags$div(
-        class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-5",
+        class = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5",
         tags$div(class = "kpi-modern-card", style = "border-left-color: #34495E;", tags$div(class = "kpi-modern-header", "TOTAL INICIATIVAS"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-lightbulb kpi-modern-icon", style = "color: #34495E;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_total", "0")), tags$div(class = "kpi-modern-footer", "Projetos e Ações")),
         tags$div(class = "kpi-modern-card", style = "border-left-color: #27AE60;", tags$div(class = "kpi-modern-header", "EM EXECUÇÃO"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-tools kpi-modern-icon", style = "color: #27AE60;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_execucao", "0")), tags$div(class = "kpi-modern-footer text-truncate", id="ficha_kpi_ini_top_status", "Outros status...")),
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #2980B9;", tags$div(class = "kpi-modern-header", "VALOR TOTAL"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-sack-dollar kpi-modern-icon", style = "color: #2980B9;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_val_tot", "R$ 0")), tags$div(class = "kpi-modern-footer", "Estimativa de Investimento")),
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #8E44AD;", tags$div(class = "kpi-modern-header", "TOTAL PAGO"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hand-holding-usd kpi-modern-icon", style = "color: #8E44AD;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_val_pag", "R$ 0")), tags$div(class = "kpi-modern-footer", "Desembolso Financeiro")),
-        tags$div(class = "kpi-modern-card", style = "border-left-color: #F59E0B;", tags$div(class = "kpi-modern-header", "COZINHAS COMUNITÁRIAS"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-utensils kpi-modern-icon", style = "color: #F59E0B;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_cozinhas", "0")), tags$div(class = "kpi-modern-footer text-truncate", id = "ficha_kpi_ini_cozinhas_sub", "Superação da Pobreza, Segurança Alimentar e Proteção Social"))
+        tags$div(class = "kpi-modern-card", style = "border-left-color: #2980B9;", tags$div(class = "kpi-modern-header", "VALOR TOTAL"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-sack-dollar kpi-modern-icon", style = "color: #2980B9;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_val_tot", "R$ 0")), tags$div(class = "kpi-modern-footer", "Investimento Estratégico")),
+        tags$div(class = "kpi-modern-card", style = "border-left-color: #0284C7;", tags$div(class = "kpi-modern-header", "INVESTIMENTO EM ÁGUA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hand-holding-droplet kpi-modern-icon", style = "color: #0284C7;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_aguas_val", "-")), tags$div(class = "kpi-modern-footer", "Obras Compesa / SRHS")),
+        tags$div(class = "kpi-modern-card", style = "border-left-color: #0EA5E9;", tags$div(class = "kpi-modern-header", "OBRAS DE ÁGUA"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-faucet-drip kpi-modern-icon", style = "color: #0EA5E9;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_aguas_qtd", "-")), tags$div(class = "kpi-modern-footer", "Projetos Hídricos")),
+        tags$div(class = "kpi-modern-card", style = "border-left-color: #3B82F6;", tags$div(class = "kpi-modern-header", "COFINANCIAMENTO SOCIAL"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-hand-holding-dollar kpi-modern-icon", style = "color: #3B82F6;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_cofin_val", "-")), tags$div(class = "kpi-modern-footer", "Assistência Social")),
+        tags$div(class = "kpi-modern-card", style = "border-left-color: #4F46E5;", tags$div(class = "kpi-modern-header", "RODOVIAS & EIXOS VIÁRIOS"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-road kpi-modern-icon", style = "color: #4F46E5;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_estradas_qtd", "-")), tags$div(class = "kpi-modern-footer", "Estradas de PE / DER")),
+        tags$div(class = "kpi-modern-card", style = "border-left-color: #F59E0B;", tags$div(class = "kpi-modern-header", "COZINHAS COMUNITÁRIAS"), tags$div(class = "kpi-modern-body", tags$i(class = "fas fa-utensils kpi-modern-icon", style = "color: #F59E0B;"), tags$span(class = "kpi-modern-number", id = "ficha_kpi_ini_cozinhas", "0")), tags$div(class = "kpi-modern-footer text-truncate", id = "ficha_kpi_ini_cozinhas_sub", "Segurança Alimentar"))
       ),
       
       tags$div(

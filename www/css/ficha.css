@@ -222,23 +222,89 @@ table.dataTable.display > tbody > tr.even > * {
     width: 100% !important;
   }
 
-  /* Rodapé Alinhado à Esquerda */
+  /* Rodapé Alinhado e Padronizado em Grid 2x2 Tipográfico Limpo */
   #aba_ficha .kpi-modern-footer {
     text-align: left !important;
-    font-size: 0.55rem !important;
-    white-space: nowrap !important;
-    display: flex !important;
+    font-size: 0.68rem !important;
+    white-space: normal !important;
+    display: block !important;
+    width: 100% !important;
+    margin-top: auto !important;
+    padding-top: 6px !important;
+    border-top: 1px solid rgba(226, 232, 240, 0.7) !important;
+    text-transform: none !important;
+  }
+
+  .kpi-footer-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-rows: auto auto !important;
+    column-gap: 8px !important;
+    row-gap: 4px !important;
     align-items: center !important;
-    justify-content: flex-start !important;
-    gap: 3px !important;
     width: 100% !important;
   }
 
-  /* Badge de Ranking PE */
-  #aba_ficha .kpi-modern-footer .badge {
-    font-size: 0.48rem !important;
-    padding: 1px 3px !important;
-    margin-left: 2px !important;
+  .kpi-footer-cell-left {
+    justify-self: start !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+  }
+
+  .kpi-footer-cell-right {
+    justify-self: end !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+  }
+
+  /* Linha 1: Grandeza e Referência */
+  .kpi-txt-grandeza {
+    color: #64748b !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 0.67rem !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  .kpi-txt-ref {
+    color: #c2410c !important;
+    font-weight: 800 !important;
+    font-size: 0.67rem !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  /* Linha 2: Ranking e Polaridade Completa */
+  .kpi-txt-rank {
+    color: #0c2856 !important;
+    font-weight: 800 !important;
+    font-size: 0.67rem !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  .kpi-txt-pol {
+    font-weight: 700 !important;
+    font-size: 0.67rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  .kpi-txt-pol.kpi-pol-alta {
+    color: #047857 !important; /* Verde semafórico */
+  }
+
+  .kpi-txt-pol.kpi-pol-baixa {
+    color: #0284c7 !important; /* Azul semafórico */
+  }
+
+  .kpi-txt-pol.kpi-pol-neutra {
+    color: #64748b !important; /* Cinza ardósia */
   }
 
 /* ==========================================================================
@@ -357,14 +423,14 @@ table.dataTable.display > tbody > tr.even > * {
 .badge-polaridade {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 3px !important;
-  font-size: 0.58rem !important;
-  font-weight: 700 !important;
-  padding: 1px 6px !important;
-  border-radius: 20px !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.02em !important;
-  margin-left: 4px !important;
+  justify-content: center !important;
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 0.62rem !important;
+  font-weight: 800 !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  margin-left: auto !important;
 }
 
 .badge-polaridade-alta {
@@ -424,34 +490,36 @@ table.dataTable.display > tbody > tr.even > * {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 1.25rem;
-
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s ease;
+  padding: 1.6rem 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
   display: flex;
   flex-direction: column;
+  gap: 0.85rem;
 }
 
 .diag-card:hover {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
-  border-color: #94a3b8;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  border-color: #cbd5e1;
 }
 
 .diag-box-paradigma {
-  background-color: #fffbeb;
-  border: 1px solid #fef3c7;
-  border-left: 4px solid #f59e0b;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #f59e0b;
   border-radius: 0.75rem;
-  padding: 0.85rem 1rem;
-  margin-bottom: 0.85rem;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .diag-box-reorientacao {
-  background-color: #f0fdf4;
-  border: 1px solid #dcfce7;
-  border-left: 4px solid #16a34a;
+  background-color: #ffffff;
+  border: 1px solid #fed7aa;
+  border-left: 3px solid #ff5a26;
   border-radius: 0.75rem;
-  padding: 0.95rem 1.1rem;
-  margin-bottom: 0.85rem;
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 1px 2px rgba(255, 90, 38, 0.04);
 }
 
 .diag-fonte-badge {
