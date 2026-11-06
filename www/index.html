@@ -25,12 +25,12 @@
   <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" defer></script>
-  <script src="js/core.js?v=1793965146.97505"></script>
-  <script src="js/landing.js?v=1793965146.97549"></script>
-  <script src="js/ufs.js?v=1793965146.97562"></script>
-  <script src="js/ficha.js?v=1793965146.97573"></script>
-  <script src="js/regioes.js?v=1793965146.97583"></script>
-  <script src="js/app.js?v=1793965146.97595"></script>
+  <script src="js/core.js?v=1793990403.40782"></script>
+  <script src="js/landing.js?v=1793990403.40792"></script>
+  <script src="js/ufs.js?v=1793990403.408"></script>
+  <script src="js/ficha.js?v=1793990403.40809"></script>
+  <script src="js/regioes.js?v=1793990403.40817"></script>
+  <script src="js/app.js?v=1793990403.40825"></script>
 </head>
 <html lang="pt-br">
   <body class="bg-slate-50 antialiased overflow-hidden m-0 p-0">
@@ -467,10 +467,24 @@
                         <span id="rd_map_cluster0_var_label" class="text-sm font-black text-slate-800">Acessibilidade (Busca/Escoamento)</span>
                       </div>
                       <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <button id="rd_btn_toggle_rotas0" class="btn btn-outline-primary btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 shadow-none" style="border: 1.5px solid #7c3aed; color: #7c3aed; background: transparent;" onclick="window.toggleModoRotasCluster0()">
-                          <i class="fas fa-route"></i>
-                          <span id="rd_btn_rotas_label">Ver Rotas / Fluxos</span>
-                        </button>
+                        <div class="btn-group shadow-xs rounded-pill p-0.5 bg-slate-100 border border-slate-200" role="group">
+                          <button id="rd_btn_regic_poligonos" type="button" class="btn btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 active text-white" style="background: #7c3aed; border: none;" onclick="window.selecionarModoRegicCluster0(&#39;poligonos&#39;)" title="Visualização de Polígonos Municipais de Pernambuco">
+                            <i class="fas fa-draw-polygon"></i>
+                            <span>Polígonos</span>
+                          </button>
+                          <button id="rd_btn_regic_internas" type="button" class="btn btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 text-slate-700 hover:text-purple-700" style="background: transparent; border: none;" onclick="window.selecionarModoRegicCluster0(&#39;internas&#39;)" title="Redes Internas: Apenas conexões dentro de Pernambuco">
+                            <i class="fas fa-network-wired"></i>
+                            <span>Redes Internas</span>
+                          </button>
+                          <button id="rd_btn_regic_estaduais" type="button" class="btn btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 text-slate-700 hover:text-purple-700" style="background: transparent; border: none;" onclick="window.selecionarModoRegicCluster0(&#39;estaduais&#39;)" title="Redes Estaduais: Conexões dentro de PE + Estados que fazem fronteira (AL, BA, CE, PB, PI)">
+                            <i class="fas fa-share-nodes"></i>
+                            <span>Redes Estaduais</span>
+                          </button>
+                          <button id="rd_btn_regic_nacionais" type="button" class="btn btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 text-slate-700 hover:text-purple-700" style="background: transparent; border: none;" onclick="window.selecionarModoRegicCluster0(&#39;nacionais&#39;)" title="Redes Nacionais: Conexões internas + conexões com qualquer estado do Brasil">
+                            <i class="fas fa-globe-americas"></i>
+                            <span>Redes Nacionais</span>
+                          </button>
+                        </div>
                         <div class="d-flex align-items-center gap-2">
                           <label class="text-xs font-bold text-slate-500 mb-0">Indicador:</label>
                           <select id="rd_select_cluster0" class="form-select form-select-sm fw-bold text-slate-700" style="width: 270px; font-size: 0.8rem;" onchange="window.atualizarVariavelCluster(0, this.value)"></select>
@@ -479,7 +493,7 @@
                     </div>
                     <div class="row g-4">
                       <div class="col-lg-7">
-                        <div class="map-clean-container w-full h-[400px] relative rounded-xl overflow-hidden">
+                        <div class="map-clean-container w-full h-[620px] relative rounded-xl overflow-hidden shadow-xs border border-slate-200">
                           <div id="rd_spinner_map_cluster0" class="rd-cluster-spinner">
                             <div class="spinner-border text-primary" role="status"></div>
                             <span class="rd-cluster-spinner-text">Carregando mapa regional...</span>
@@ -489,7 +503,7 @@
                         </div>
                       </div>
                       <div class="col-lg-5">
-                        <div class="bg-slate-50 rounded-xl border border-slate-100 w-full h-[400px] p-2 relative">
+                        <div class="bg-slate-50 rounded-xl border border-slate-100 w-full h-[620px] p-2 relative shadow-xs">
                           <div id="rd_spinner_chart_cluster0" class="rd-cluster-spinner">
                             <div class="spinner-border text-primary" role="status"></div>
                             <span class="rd-cluster-spinner-text">Carregando ranking...</span>

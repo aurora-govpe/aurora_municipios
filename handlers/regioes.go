@@ -332,6 +332,7 @@ func PostRegioesData(c *gin.Context) {
 		"fluxos_pe":      DfFluxosPE,
 		"geojson_rd":     geoJSONRD,
 		"geojson_pe":     GeoJSONPE,
+		"geojson_regic":  GeoJSONRegic,
 	}
 
 	cacheRegioesMutex.Lock()
