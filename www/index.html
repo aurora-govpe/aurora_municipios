@@ -25,12 +25,12 @@
   <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" defer></script>
-  <script src="js/core.js?v=1793990403.40782"></script>
-  <script src="js/landing.js?v=1793990403.40792"></script>
-  <script src="js/ufs.js?v=1793990403.408"></script>
-  <script src="js/ficha.js?v=1793990403.40809"></script>
-  <script src="js/regioes.js?v=1793990403.40817"></script>
-  <script src="js/app.js?v=1793990403.40825"></script>
+  <script src="js/core.js?v=1793993327.38026"></script>
+  <script src="js/landing.js?v=1793993327.38038"></script>
+  <script src="js/ufs.js?v=1793993327.38047"></script>
+  <script src="js/ficha.js?v=1793993327.38055"></script>
+  <script src="js/regioes.js?v=1793993327.38064"></script>
+  <script src="js/app.js?v=1793993327.38072"></script>
 </head>
 <html lang="pt-br">
   <body class="bg-slate-50 antialiased overflow-hidden m-0 p-0">
@@ -859,6 +859,10 @@
                       <i class="fas fa-utensils me-1.5 text-slate-900"></i>
                       Superação da Pobreza, Segurança Alimentar e Proteção Social
                     </button>
+                    <button id="btn_pauta_resumo_habitacao" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;habitacao&#39;, this)">
+                      <i class="fas fa-house-chimney me-1.5 text-slate-900"></i>
+                      Habitação e Regularização Fundiária
+                    </button>
                     <button id="btn_pauta_resumo_aguas" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;aguas&#39;, this)">
                       <i class="fas fa-droplet me-1.5 text-slate-900"></i>
                       Segurança Hídrica e Saneamento Básico
@@ -1597,6 +1601,690 @@
                       </div>
                       <div class="table-responsive">
                         <table id="tabela_estradas_pe" class="table table-hover w-100 text-sm"></table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_habitacao" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-teal-50 text-teal-700 border border-teal-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">HABITAÇÃO &amp; DESENVOLVIMENTO URBANO</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Habitação de Interesse Social e Regularização Fundiária</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-house-chimney text-teal-600 me-1"></i>
+                        SEDUH / SEHAB e PERPART
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="fas fa-house-chimney text-teal-600"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Programa Morar Bem PE (Produção Habitacional)</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-3">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total Previsto</span>
+                          <div class="aurora-kpi-icon text-slate-500">
+                            <i class="fas fa-city"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_total" class="aurora-kpi-number">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Entregues</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-key"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_entregues" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Unidades Concluídas</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Construção</span>
+                          <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                            <i class="fas fa-trowel-bricks"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_obras" class="aurora-kpi-number text-amber-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Canteiros Ativos</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento Total</span>
+                          <div class="aurora-kpi-icon text-slate-900 bg-purple-50">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_investimento" class="aurora-kpi-number text-purple-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Valor Global Orçado</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Contrapartida Geral</span>
+                          <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                            <i class="fas fa-coins"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_contrapartida" class="aurora-kpi-number text-teal-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Aporte Estadual</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios Atendidos</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_municipios" class="aurora-kpi-number">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Cobertura Territorial</div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-center my-3 pt-2 border-t border-slate-100">
+                      <button id="btn_toggle_habitacao_detalhes" type="button" class="btn btn-sm rounded-pill font-bold px-4 py-2 text-xs shadow-xs transition-all d-flex align-items-center gap-2" style="background-color: #ff5a26; color: #ffffff; border: 1px solid #ff5a26;" onmouseover="this.style.backgroundColor=&#39;#e04a1b&#39;; this.style.borderColor=&#39;#e04a1b&#39;;" onmouseout="this.style.backgroundColor=&#39;#ff5a26&#39;; this.style.borderColor=&#39;#ff5a26&#39;;" onclick="window.toggleDetalhesHabitacao()">
+                        <span id="txt_toggle_habitacao">Exibir Programas e Modalidades Habitacionais Detalhadas</span>
+                        <i id="icon_toggle_habitacao" class="fas fa-chevron-down transition-transform"></i>
+                      </button>
+                    </div>
+                    <div id="bloco_habitacao_detalhes_extras" class="d-none transition-all mb-4">
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-2">
+                        <i class="fas fa-hammer text-orange-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — Reforma no Lar (Melhorias Habitacionais)</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº de Cadastrados</span>
+                            <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                              <i class="fas fa-clipboard-user"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="rnl_kpi_cadastrados" class="aurora-kpi-number text-slate-800">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Famílias Inscritas</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Reformas Realizadas</span>
+                            <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                              <i class="fas fa-circle-check"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="rnl_kpi_concluidas" class="aurora-kpi-number text-emerald-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Entregues</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Valor Contratual</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-file-contract"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="rnl_kpi_valor_contratual" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Total Contratado</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Valor Total Medido</span>
+                            <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                              <i class="fas fa-ruler-combined"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="rnl_kpi_valor_medido" class="aurora-kpi-number text-purple-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Execução Medida</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Municípios Atendidos</span>
+                            <div class="aurora-kpi-icon text-orange-600 bg-orange-50">
+                              <i class="fas fa-city"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="rnl_kpi_municipios" class="aurora-kpi-number text-orange-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Com Ações RNL</div>
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                        <i class="fas fa-handshake-angle text-indigo-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — Entrada Garantida (Subsídio para Aquisição)</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Quantidade de UH</span>
+                            <div class="aurora-kpi-icon text-indigo-600 bg-indigo-50">
+                              <i class="fas fa-door-open"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="ent_kpi_uh" class="aurora-kpi-number text-indigo-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº Empreendimentos</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-building"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="ent_kpi_empreendimentos" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Empreendimentos Atendidos</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Valor Total</span>
+                            <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                              <i class="fas fa-sack-dollar"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="ent_kpi_valor_total" class="aurora-kpi-number text-emerald-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Aporte Global Previsto</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Municípios Atendidos</span>
+                            <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                              <i class="fas fa-map-location-dot"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="ent_kpi_municipios" class="aurora-kpi-number text-purple-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Municípios Beneficiados</div>
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                        <i class="fas fa-landmark text-sky-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — FAR (Fundo de Arrendamento Residencial)</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Quantidade de UH</span>
+                            <div class="aurora-kpi-icon text-sky-600 bg-sky-50">
+                              <i class="fas fa-door-open"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="far_kpi_uh" class="aurora-kpi-number text-sky-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº Empreendimentos</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-building"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="far_kpi_empreendimentos" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Empreendimentos Mapeados</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Recurso Federal</span>
+                            <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                              <i class="fas fa-landmark-flag"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="far_kpi_recurso_federal" class="aurora-kpi-number text-emerald-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Aporte Federal Global</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Contrapartida Obras</span>
+                            <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                              <i class="fas fa-trowel-bricks"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="far_kpi_contrapartida_obras" class="aurora-kpi-number text-amber-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Não Incidentes</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Contrapartida Terrenos</span>
+                            <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                              <i class="fas fa-map-pin"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="far_kpi_contrapartida_terrenos" class="aurora-kpi-number text-purple-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Terrenos Doados</div>
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                        <i class="fas fa-users-rays text-emerald-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — FDS (Fundo de Desenvolvimento Social)</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Quantidade de UH</span>
+                            <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                              <i class="fas fa-door-open"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="fds_kpi_uh" class="aurora-kpi-number text-emerald-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº Empreendimentos</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-building"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="fds_kpi_empreendimentos" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Empreendimentos Atendidos</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Contrapartida Obras</span>
+                            <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                              <i class="fas fa-coins"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="fds_kpi_contrapartida" class="aurora-kpi-number text-teal-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Não Incidentes</div>
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                        <i class="fas fa-city text-cyan-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — SUB-50 (Municípios até 50 mil habitantes)</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Quantidade de UH</span>
+                            <div class="aurora-kpi-icon text-cyan-600 bg-cyan-50">
+                              <i class="fas fa-door-open"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="sub50_kpi_uh" class="aurora-kpi-number text-cyan-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº Empreendimentos</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-building"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="sub50_kpi_empreendimentos" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Empreendimentos Atendidos</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Valor Total Licitação</span>
+                            <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                              <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="sub50_kpi_licitacao" class="aurora-kpi-number text-purple-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Orçamento Licitado</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Contrapartida Obras</span>
+                            <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                              <i class="fas fa-coins"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="sub50_kpi_contrapartida" class="aurora-kpi-number text-teal-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Não Incidentes</div>
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                        <i class="fas fa-arrows-rotate text-rose-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — Retomadas de Obras Paralisadas</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Quantidade de UH</span>
+                            <div class="aurora-kpi-icon text-rose-600 bg-rose-50">
+                              <i class="fas fa-door-open"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="retomadas_kpi_uh" class="aurora-kpi-number text-rose-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº Empreendimentos</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-building"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="retomadas_kpi_empreendimentos" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Reiniciadas</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Recurso Federal</span>
+                            <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                              <i class="fas fa-landmark-flag"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="retomadas_kpi_recurso_federal" class="aurora-kpi-number text-emerald-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Repasse da União</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Contrapartida Obras</span>
+                            <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                              <i class="fas fa-coins"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="retomadas_kpi_contrapartida" class="aurora-kpi-number text-amber-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Não Incidentes</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2 mt-4 pt-2 border-t border-slate-100">
+                      <i class="fas fa-file-signature text-blue-600"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Regularização Fundiária e Títulos de Propriedade (PERPART / REURB)</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-3">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Títulos Previstos</span>
+                          <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                            <i class="fas fa-folder-open"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_previstos" class="aurora-kpi-number text-slate-800">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Meta Total Planejada</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Títulos Entregues</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-certificate"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_entregues" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Situação: Realizados</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Andamento</span>
+                          <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                            <i class="fas fa-clock-rotate-left"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_andamento" class="aurora-kpi-number text-amber-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Processos em Tramitação</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Titularidade Feminina</span>
+                          <div class="aurora-kpi-icon text-pink-600 bg-pink-50">
+                            <i class="fas fa-person-dress"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_mulheres" class="aurora-kpi-number text-pink-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="reurb_kpi_mulheres_pct">0% do total</span>
+                        </div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Núcleos Urbanos (NC)</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-map-pin"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_nucleos" class="aurora-kpi-number text-blue-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Comunidades / Poligonais</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios Atendidos</span>
+                          <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                            <i class="fas fa-city"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_municipios" class="aurora-kpi-number text-teal-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Cobertura Territorial</div>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>REGMEL</span>
+                          <div class="aurora-kpi-icon text-indigo-600 bg-indigo-50">
+                            <i class="fas fa-house-user"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_classif_regmel" class="aurora-kpi-number text-indigo-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="reurb_kpi_classif_regmel_desc">Previstos / Entregues (0%)</span>
+                        </div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Regularização Fundiária</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_classif_fundiaria" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="reurb_kpi_classif_fundiaria_desc">Previstos / Entregues (0%)</span>
+                        </div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>REURB</span>
+                          <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                            <i class="fas fa-file-shield"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_classif_reurb" class="aurora-kpi-number text-purple-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="reurb_kpi_classif_reurb_desc">Previstos / Entregues (0%)</span>
+                        </div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Imobiliária</span>
+                          <div class="aurora-kpi-icon text-cyan-600 bg-cyan-50">
+                            <i class="fas fa-building-circle-check"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_classif_imobiliaria" class="aurora-kpi-number text-cyan-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="reurb_kpi_classif_imobiliaria_desc">Previstos / Entregues (0%)</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      <div>
+                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa de Cobertura Territorial e Empreendimentos</h5>
+                        <span id="habitacao_camada_label" class="text-xs text-slate-400 font-semibold">Exibindo: Todos os Empreendimentos e Ações de REURB</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1">
+                          <button id="btn_visao_hab_todos" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.filtrarHabitacaoTipo(&#39;todos&#39;, this)">
+                            <i class="fas fa-border-all me-1.5"></i>
+                            Visão Geral
+                          </button>
+                          <button id="btn_visao_hab_construcao" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.filtrarHabitacaoTipo(&#39;construcao&#39;, this)">
+                            <i class="fas fa-house-chimney me-1.5 text-teal-600"></i>
+                            Morar Bem PE
+                          </button>
+                          <button id="btn_visao_hab_reg" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.filtrarHabitacaoTipo(&#39;regularizacao&#39;, this)">
+                            <i class="fas fa-file-signature me-1.5 text-blue-600"></i>
+                            Regularização (REURB)
+                          </button>
+                        </div>
+                        <div id="legenda_visao_habitacao" class="d-flex align-items-center gap-1.5 flex-wrap">
+                          <span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs">● Entregue / Titulado</span>
+                          <span class="badge bg-amber-100 text-amber-800 border border-amber-300 text-xs">● Em Obras / Processamento</span>
+                          <span class="badge bg-blue-100 text-blue-800 border border-blue-300 text-xs">● Em Planejamento / Projeto</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-5">
+                      <div class="col-lg-8 col-xl-8">
+                        <div class="position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-100" style="min-height: 520px;">
+                          <div id="resumo_habitacao_spinner" class="position-absolute top-0 start-0 w-100 h-100 bg-white/75 d-flex align-items-center justify-content-center z-10 d-none">
+                            <div class="spinner-border text-primary" role="status"></div>
+                          </div>
+                          <div id="resumo_habitacao_map" style="width: 100%; height: 100%; min-height: 520px; background-color: #f8fafc;"></div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4 col-xl-4">
+                        <div id="habitacao_hover_box" class="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 shadow-sm h-100 d-flex flex-column justify-content-between" style="min-height: 520px; max-height: 520px; overflow-y: auto;">
+                          <div id="habitacao_box_content_default" class="text-center py-4 my-auto">
+                            <div class="w-14 h-14 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
+                              <i class="fas fa-map-location-dot"></i>
+                            </div>
+                            <h5 class="font-black text-slate-800 text-base mb-1">Detalhamento Territorial</h5>
+                            <p class="text-xs text-slate-500 mb-3 px-2 leading-relaxed">Passe o cursor sobre os municípios ou empreendimentos habitacionais no mapa para visualizar os indicadores locais.</p>
+                            <div class="grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-200/80">
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Municípios</span>
+                                <span id="hab_box_stat_muns" class="text-sm font-black text-slate-700">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Unidades</span>
+                                <span id="hab_box_stat_unidades" class="text-sm font-black text-teal-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Títulos REURB</span>
+                                <span id="hab_box_stat_titulos" class="text-sm font-black text-blue-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Investimento</span>
+                                <span id="hab_box_stat_investimento" class="text-sm font-black text-purple-600">-</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div id="habitacao_box_content_active" class="d-none flex-column h-100"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                      <div class="row g-4 mb-5">
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Status das Obras Habitacionais</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Distribuição das unidades habitacionais por estágio de execução</span>
+                              </div>
+                              <span class="badge bg-teal-100 text-teal-800 text-xs font-bold rounded-pill px-2.5 py-1">Morar Bem PE</span>
+                            </div>
+                            <div id="chart_habitacao_status" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Habitação e REURB por Município</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Top municípios com maior volume de unidades e títulos</span>
+                              </div>
+                              <span class="badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-2.5 py-1">Top 20 Municípios</span>
+                            </div>
+                            <div id="chart_habitacao_por_mun" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                          <h5 class="font-black text-slate-800 text-base mb-0">Portfólio de Projetos e Empreendimentos de Habitação</h5>
+                          <p class="text-xs text-slate-400 mb-0">Relação de conjuntos habitacionais, convênios de regularização e municípios atendidos</p>
+                        </div>
+                        <div id="habitacao_filtro_ativo_badge_container" class="d-none align-items-center gap-2">
+                          <span class="badge bg-teal-100 text-teal-800 font-bold px-3 py-1.5 rounded-pill" id="habitacao_filtro_ativo_badge">Filtro Ativo</span>
+                          <button class="btn btn-outline-secondary btn-sm rounded-pill font-bold text-xs py-0.5 px-2" onclick="window.limparFiltroHabitacao()">Limpar Filtro</button>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <table id="tabela_habitacao_pe" class="table table-hover w-100 text-sm"></table>
                       </div>
                     </div>
                   </div>

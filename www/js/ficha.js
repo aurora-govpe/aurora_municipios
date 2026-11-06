@@ -4022,7 +4022,8 @@ window.alternarPautaResumos = function (pauta, btn) {
     const topAguas = document.getElementById('topbar_btn_pauta_aguas');
     const topCozinhas = document.getElementById('topbar_btn_pauta_cozinhas');
     const topEstradas = document.getElementById('topbar_btn_pauta_estradas');
-    [topCapag, topAguas, topCozinhas, topEstradas].forEach(b => {
+    const topHabitacao = document.getElementById('topbar_btn_pauta_habitacao');
+    [topCapag, topAguas, topCozinhas, topEstradas, topHabitacao].forEach(b => {
         if (b) {
             b.classList.remove('btn-primary', 'text-white', 'shadow-xs');
             b.classList.add('text-slate-600', 'bg-transparent', 'border-0');
@@ -4040,6 +4041,9 @@ window.alternarPautaResumos = function (pauta, btn) {
     } else if (p === 'estradas' && topEstradas) {
         topEstradas.classList.remove('text-slate-600', 'bg-transparent', 'border-0');
         topEstradas.classList.add('btn-primary', 'text-white', 'shadow-xs');
+    } else if (p === 'habitacao' && topHabitacao) {
+        topHabitacao.classList.remove('text-slate-600', 'bg-transparent', 'border-0');
+        topHabitacao.classList.add('btn-primary', 'text-white', 'shadow-xs');
     }
 
     // 2. Sincroniza botões e blocos na página interna
@@ -4047,18 +4051,21 @@ window.alternarPautaResumos = function (pauta, btn) {
     const btnAguas = document.getElementById('btn_pauta_resumo_aguas');
     const btnCozinhas = document.getElementById('btn_pauta_resumo_cozinhas');
     const btnEstradas = document.getElementById('btn_pauta_resumo_estradas');
+    const btnHabitacao = document.getElementById('btn_pauta_resumo_habitacao');
+
     const blocoCapag = document.getElementById('resumo_pauta_capag');
     const blocoAguas = document.getElementById('resumo_pauta_aguas');
     const blocoCozinhas = document.getElementById('resumo_pauta_cozinhas');
     const blocoEstradas = document.getElementById('resumo_pauta_estradas');
+    const blocoHabitacao = document.getElementById('resumo_pauta_habitacao');
 
-    [btnCapag, btnAguas, btnCozinhas, btnEstradas].forEach(b => {
+    [btnCapag, btnAguas, btnCozinhas, btnEstradas, btnHabitacao].forEach(b => {
         if (b) {
             b.classList.remove('btn-primary', 'text-white', 'shadow-sm');
             b.classList.add('btn-light', 'text-slate-600');
         }
     });
-    [blocoCapag, blocoAguas, blocoCozinhas, blocoEstradas].forEach(bl => {
+    [blocoCapag, blocoAguas, blocoCozinhas, blocoEstradas, blocoHabitacao].forEach(bl => {
         if (bl) bl.classList.add('d-none');
     });
 
@@ -4068,36 +4075,35 @@ window.alternarPautaResumos = function (pauta, btn) {
             btnCapag.classList.add('btn-primary', 'text-white', 'shadow-sm');
         }
         if (blocoCapag) blocoCapag.classList.remove('d-none');
-        if (typeof window.renderizarResumoCapag === 'function') {
-            window.renderizarResumoCapag();
-        }
+        if (typeof window.renderizarResumoCapag === 'function') window.renderizarResumoCapag();
     } else if (p === 'aguas') {
         if (btnAguas) {
             btnAguas.classList.remove('btn-light', 'text-slate-600');
             btnAguas.classList.add('btn-primary', 'text-white', 'shadow-sm');
         }
         if (blocoAguas) blocoAguas.classList.remove('d-none');
-        if (typeof window.renderizarResumoAguas === 'function') {
-            window.renderizarResumoAguas();
-        }
+        if (typeof window.renderizarResumoAguas === 'function') window.renderizarResumoAguas();
     } else if (p === 'cozinhas') {
         if (btnCozinhas) {
             btnCozinhas.classList.remove('btn-light', 'text-slate-600');
             btnCozinhas.classList.add('btn-primary', 'text-white', 'shadow-sm');
         }
         if (blocoCozinhas) blocoCozinhas.classList.remove('d-none');
-        if (typeof window.renderizarResumoCozinhas === 'function') {
-            window.renderizarResumoCozinhas();
-        }
+        if (typeof window.renderizarResumoCozinhas === 'function') window.renderizarResumoCozinhas();
     } else if (p === 'estradas') {
         if (btnEstradas) {
             btnEstradas.classList.remove('btn-light', 'text-slate-600');
             btnEstradas.classList.add('btn-primary', 'text-white', 'shadow-sm');
         }
         if (blocoEstradas) blocoEstradas.classList.remove('d-none');
-        if (typeof window.renderizarResumoEstradas === 'function') {
-            window.renderizarResumoEstradas();
+        if (typeof window.renderizarResumoEstradas === 'function') window.renderizarResumoEstradas();
+    } else if (p === 'habitacao') {
+        if (btnHabitacao) {
+            btnHabitacao.classList.remove('btn-light', 'text-slate-600');
+            btnHabitacao.classList.add('btn-primary', 'text-white', 'shadow-sm');
         }
+        if (blocoHabitacao) blocoHabitacao.classList.remove('d-none');
+        if (typeof window.renderizarResumoHabitacao === 'function') window.renderizarResumoHabitacao();
     }
 };
 
@@ -7826,12 +7832,17 @@ function renderizarTabelaConfronto(m1, m2, m3) {
 
     const temM3 = Boolean(m3);
 
-    const fmtMoeda = (val) => {
-        if (!val || isNaN(val)) return '-';
-        if (val >= 1e9) return 'R$ ' + (val / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Bi';
-        if (val >= 1e6) return 'R$ ' + (val / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Mi';
-        return 'R$ ' + val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
-    };
+const fmtMoeda = (val) => {
+    const v = Number(val) || 0;
+    if (v === 0) return "R$ 0";
+    if (v >= 1e9) {
+        return `R$ ${(v / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bi`;
+    }
+    if (v >= 1e6) {
+        return `R$ ${(v / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Mi`;
+    }
+    return `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
 
     const metricas = [
         // 1. DEMOGRAFIA
@@ -7944,3 +7955,200 @@ function renderizarTabelaConfronto(m1, m2, m3) {
         `);
     });
 }
+
+/* ==========================================================================
+   RESUMOS TEMÁTICOS - PAUTA 5: HABITAÇÃO, MODALIDADES E REGULARIZAÇÃO (REURB)
+   ========================================================================== */
+let mapResumoHabitacao = null;
+window.cacheResumoHabitacao = null;
+let cacheResumoHabitacao = null;
+
+// Função do botão retrátil
+window.toggleDetalhesHabitacao = function () {
+    const $bloco = $('#bloco_habitacao_detalhes_extras');
+    const $txt = $('#txt_toggle_habitacao');
+    const $icon = $('#icon_toggle_habitacao');
+
+    if ($bloco.hasClass('d-none')) {
+        $bloco.removeClass('d-none');
+        $txt.text('Ocultar Programas e Modalidades Habitacionais Detalhadas');
+        $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+    } else {
+        $bloco.addClass('d-none');
+        $txt.text('Exibir Programas e Modalidades Habitacionais Detalhadas');
+        $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+    }
+};
+
+window.renderizarResumoHabitacao = function () {
+    const elKpiTotalUH = document.getElementById('morar_bem_kpi_total');
+    if (!elKpiTotalUH) return;
+
+    const fmtMoeda = (val) => {
+        const num = Number(val);
+        if (!num || isNaN(num) || num === 0) return "R$ 0";
+        const abs = Math.abs(num);
+
+        if (abs >= 1e9) {
+            return `R$ ${(num / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bi`;
+        }
+        if (abs >= 1e6) {
+            return `R$ ${(num / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Mi`;
+        }
+        if (abs >= 1e3) {
+            return `R$ ${(num / 1e3).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} mil`;
+        }
+        return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
+
+    const atualizarValoresDOM = (data) => {
+        if (!data) return;
+
+        // 1. Morar Bem PE (Geral)
+        if (data.kpis) {
+            const k = data.kpis;
+            if (k.total_uh !== undefined) {
+                $('#morar_bem_kpi_total').text(Number(k.total_uh).toLocaleString('pt-BR'));
+                $('#hab_box_stat_unidades').text(Number(k.total_uh).toLocaleString('pt-BR'));
+            }
+            if (k.entregues_uh !== undefined) $('#morar_bem_kpi_entregues').text(Number(k.entregues_uh).toLocaleString('pt-BR'));
+            if (k.construcao_uh !== undefined) $('#morar_bem_kpi_obras').text(Number(k.construcao_uh).toLocaleString('pt-BR'));
+            if (k.investimento_total !== undefined) {
+                $('#morar_bem_kpi_investimento').text(fmtMoeda(k.investimento_total));
+                $('#hab_box_stat_investimento').text(fmtMoeda(k.investimento_total));
+            }
+            if (k.contrapartida_total !== undefined) $('#morar_bem_kpi_contrapartida').text(fmtMoeda(k.contrapartida_total));
+            if (k.municipios_cobertos !== undefined) {
+                $('#morar_bem_kpi_municipios').text(Number(k.municipios_cobertos).toLocaleString('pt-BR'));
+                $('#hab_box_stat_muns').text(Number(k.municipios_cobertos).toLocaleString('pt-BR'));
+            }
+        }
+        
+        // Regularização Fundiária (REURB)
+        if (data.kpis_reurb) {
+            const reurb = data.kpis_reurb;
+
+            if (reurb.titulos_previstos !== undefined) {
+                $('#reurb_kpi_previstos').text(Number(reurb.titulos_previstos).toLocaleString('pt-BR'));
+                $('#hab_box_stat_titulos').text(Number(reurb.titulos_previstos).toLocaleString('pt-BR'));
+            }
+            if (reurb.titulos_entregues !== undefined) {
+                $('#reurb_kpi_entregues').text(Number(reurb.titulos_entregues).toLocaleString('pt-BR'));
+            }
+            if (reurb.titulos_andamento !== undefined) {
+                $('#reurb_kpi_andamento').text(Number(reurb.titulos_andamento).toLocaleString('pt-BR'));
+            }
+            if (reurb.total_mulheres !== undefined) {
+                $('#reurb_kpi_mulheres').text(Number(reurb.total_mulheres).toLocaleString('pt-BR'));
+            }
+            if (reurb.percent_mulheres !== undefined) {
+                $('#reurb_kpi_mulheres_pct').text(`${Number(reurb.percent_mulheres).toFixed(1)}% do total`);
+            }
+            if (reurb.total_nucleos !== undefined) {
+                $('#reurb_kpi_nucleos').text(Number(reurb.total_nucleos).toLocaleString('pt-BR'));
+            }
+            if (reurb.total_municipios !== undefined) {
+                $('#reurb_kpi_municipios').text(Number(reurb.total_municipios).toLocaleString('pt-BR'));
+            }
+
+            // Helper para preencher Valor Principal (Entregues) e Rodapé (Previstos / Entregues %)
+            const preencherClassif = (idNum, idDesc, metrica) => {
+                if (!metrica) return;
+                const ent = Number(metrica.entregues || 0);
+                const prev = Number(metrica.previstos || 0);
+                const pct = Number(metrica.percent || 0).toFixed(1);
+
+                // Valor principal: entregues
+                $(`#${idNum}`).text(ent.toLocaleString('pt-BR'));
+                // Rodapé: Previstos / Entregues (X%)
+                $(`#${idDesc}`).text(`${prev.toLocaleString('pt-BR')} prev. / ${ent.toLocaleString('pt-BR')} ent. (${pct}%)`);
+            };
+
+            preencherClassif('reurb_kpi_classif_regmel', 'reurb_kpi_classif_regmel_desc', reurb.classif_regmel);
+            preencherClassif('reurb_kpi_classif_fundiaria', 'reurb_kpi_classif_fundiaria_desc', reurb.classif_fundiaria);
+            preencherClassif('reurb_kpi_classif_reurb', 'reurb_kpi_classif_reurb_desc', reurb.classif_reurb);
+            preencherClassif('reurb_kpi_classif_imobiliaria', 'reurb_kpi_classif_imobiliaria_desc', reurb.classif_imobiliaria);
+        }
+
+        // 3. RNL (Reforma no Lar)
+        if (data.kpis_reforma_no_lar) {
+            const rnl = data.kpis_reforma_no_lar;
+            if (rnl.cadastrados !== undefined) $('#rnl_kpi_cadastrados').text(Number(rnl.cadastrados).toLocaleString('pt-BR'));
+            if (rnl.reformas_realizadas !== undefined) $('#rnl_kpi_concluidas').text(Number(rnl.reformas_realizadas).toLocaleString('pt-BR'));
+            if (rnl.valor_contratual !== undefined) $('#rnl_kpi_valor_contratual').text(fmtMoeda(rnl.valor_contratual));
+            if (rnl.valor_total_medido !== undefined) $('#rnl_kpi_valor_medido').text(fmtMoeda(rnl.valor_total_medido));
+            if (rnl.municipios_atendidos !== undefined) $('#rnl_kpi_municipios').text(Number(rnl.municipios_atendidos).toLocaleString('pt-BR'));
+        }
+
+        // 4. ENT (Entrada Garantida)
+        if (data.kpis_entrada_garantida) {
+            const ent = data.kpis_entrada_garantida;
+            if (ent.total_uh !== undefined) $('#ent_kpi_uh').text(Number(ent.total_uh).toLocaleString('pt-BR'));
+            if (ent.quantidade_empreendimento !== undefined) $('#ent_kpi_empreendimentos').text(Number(ent.quantidade_empreendimento).toLocaleString('pt-BR'));
+            if (ent.valor_total !== undefined) $('#ent_kpi_valor_total').text(fmtMoeda(ent.valor_total));
+            if (ent.municipios_atendidos !== undefined) $('#ent_kpi_municipios').text(Number(ent.municipios_atendidos).toLocaleString('pt-BR'));
+        }
+
+        // 5. FAR
+        if (data.kpis_far) {
+            const far = data.kpis_far;
+            if (far.total_uh !== undefined) $('#far_kpi_uh').text(Number(far.total_uh).toLocaleString('pt-BR'));
+            if (far.quantidade_empreendimento !== undefined) $('#far_kpi_empreendimentos').text(Number(far.quantidade_empreendimento).toLocaleString('pt-BR'));
+            if (far.recurso_federal !== undefined) $('#far_kpi_recurso_federal').text(fmtMoeda(far.recurso_federal));
+            if (far.contrapartida_obras !== undefined) $('#far_kpi_contrapartida_obras').text(fmtMoeda(far.contrapartida_obras));
+            if (far.contrapartida_terrenos !== undefined) $('#far_kpi_contrapartida_terrenos').text(fmtMoeda(far.contrapartida_terrenos));
+        }
+
+        // 6. FDS
+        if (data.kpis_fds) {
+            const fds = data.kpis_fds;
+            if (fds.total_uh !== undefined) $('#fds_kpi_uh').text(Number(fds.total_uh).toLocaleString('pt-BR'));
+            if (fds.quantidade_empreendimento !== undefined) $('#fds_kpi_empreendimentos').text(Number(fds.quantidade_empreendimento).toLocaleString('pt-BR'));
+            if (fds.contrapartida_obras !== undefined) $('#fds_kpi_contrapartida').text(fmtMoeda(fds.contrapartida_obras));
+        }
+
+        // 7. SUB-50
+        if (data.kpis_sub50) {
+            const sub = data.kpis_sub50;
+            if (sub.total_uh !== undefined) $('#sub50_kpi_uh').text(Number(sub.total_uh).toLocaleString('pt-BR'));
+            if (sub.quantidade_empreendimento !== undefined) $('#sub50_kpi_empreendimentos').text(Number(sub.quantidade_empreendimento).toLocaleString('pt-BR'));
+            if (sub.valor_total_licitacao !== undefined) $('#sub50_kpi_licitacao').text(fmtMoeda(sub.valor_total_licitacao));
+            if (sub.contrapartida_obras !== undefined) $('#sub50_kpi_contrapartida').text(fmtMoeda(sub.contrapartida_obras));
+        }
+
+        // 8. RETOMADAS
+        if (data.kpis_retomadas) {
+            const ret = data.kpis_retomadas;
+            if (ret.total_uh !== undefined) $('#retomadas_kpi_uh').text(Number(ret.total_uh).toLocaleString('pt-BR'));
+            if (ret.quantidade_empreendimento !== undefined) $('#retomadas_kpi_empreendimentos').text(Number(ret.quantidade_empreendimento).toLocaleString('pt-BR'));
+            if (ret.recurso_federal !== undefined) $('#retomadas_kpi_recurso_federal').text(fmtMoeda(ret.recurso_federal));
+            if (ret.contrapartida_obras !== undefined) $('#retomadas_kpi_contrapartida').text(fmtMoeda(ret.contrapartida_obras));
+        }
+    };
+
+    if (cacheResumoHabitacao) {
+        atualizarValoresDOM(cacheResumoHabitacao);
+        return;
+    }
+
+    const spinner = document.getElementById('resumo_habitacao_spinner');
+    if (spinner) spinner.classList.remove('d-none');
+
+    const apiUrl = `${window.basePath || ''}/municipios/resumo/habitacao`.replace(/\/+/g, '/');
+
+    fetch(apiUrl)
+        .then(res => {
+            if (!res.ok) throw new Error("Erro na requisição dos dados de Habitação");
+            return res.json();
+        })
+        .then(data => {
+            cacheResumoHabitacao = data;
+            window.cacheResumoHabitacao = data;
+            if (spinner) spinner.classList.add('d-none');
+            atualizarValoresDOM(data);
+        })
+        .catch(err => {
+            console.error("[Habitação] Erro ao carregar dados:", err);
+            if (spinner) spinner.classList.add('d-none');
+        });
+};
