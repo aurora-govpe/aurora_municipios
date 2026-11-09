@@ -110,7 +110,7 @@ type HabitacaoItem struct {
 	Empreendimento              string      `json:"empreendimento"`
 	Status                      string      `json:"status"`
 	UH                          FlexNumber  `json:"uh"`
-	ValorGlobalOrcado2          FlexNumber  `json:"valor_global_orcado2"`
+	ValorGlobalOrcado2          FlexNumber  `json:"valor_global_orcado3"`
 	ValorContrapartida          FlexNumber  `json:"valor_contrapartida"`
 	ValorTerrenosDoados2        FlexNumber  `json:"valor_terrenos_doados2"`
 	Financiamento               string      `json:"financiamento"`
