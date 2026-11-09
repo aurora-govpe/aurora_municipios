@@ -26,6 +26,11 @@ window.dadosMetadados = [];
 window.diagnosticoRegional = null;
 window.fontesReferenciaRegional = null;
 
+
+let dataTableHabitacao = null;
+let dataTableRegularizacao = null;
+window.municipioHabitacaoFiltro = null;
+
 // Dicionário canônico de classificação populacional de todos os 185 municípios de PE (estimativa 2026)
 window.popRanks = {
     "recife": 1, "jaboatão dos guararapes": 2, "petrolina": 3, "caruaru": 4, "paulista": 5, "olinda": 6, "cabo de santo agostinho": 7, "camaragibe": 8, "garanhuns": 9, "vitória de santo antão": 10, "igarassu": 11, "são lourenço da mata": 12, "ipojuca": 13, "santa cruz do capibaribe": 14, "abreu e lima": 15, "serra talhada": 16, "gravatá": 17, "araripina": 18, "goiana": 19, "belo jardim": 20, "carpina": 21, "arcoverde": 22, "ouricuri": 23, "surubim": 24, "salgueiro": 25, "pesqueira": 26, "bezerros": 27, "escada": 28, "paudalho": 29, "limoeiro": 30, "moreno": 31, "palmares": 32, "buíque": 33, "brejo da madre de deus": 34, "são bento do una": 35, "timbaúba": 36, "bom conselho": 37, "toritama": 38, "águas belas": 39, "afogados da ingazeira": 40, "santa maria da boa vista": 41, "lajedo": 42, "barreiros": 43, "custódia": 44, "são caetano": 45, "bom jardim": 46, "bonito": 47, "sirinhaém": 48, "aliança": 49, "são josé do belmonte": 50, "itambé": 51, "petrolândia": 52, "bodocó": 53, "itaíba": 54, "sertânia": 55, "exu": 56, "ribeirão": 57, "catende": 58, "são josé do egito": 59, "trindade": 60, "nazaré da mata": 61, "cabrobó": 62, "floresta": 63, "ipubi": 64, "caetés": 65, "glória do goitá": 66, "tupanatinga": 67, "itapissuma": 68, "passira": 69, "pombos": 70, "tabira": 71, "joão alfredo": 72, "ibimirim": 73, "inajá": 74, "água preta": 75, "vicência": 76, "manari": 77, "ilha de itamaracá": 78, "taquaritinga do norte": 79, "condado": 80, "canhotinho": 81, "lagoa grande": 82, "são joão": 83, "tacaratu": 84, "tamandaré": 85, "agrestina": 86, "macaparana": 87, "cupira": 88, "pedra": 89, "vertentes": 90, "panelas": 91, "orobó": 92, "feira nova": 93, "riacho das almas": 94, "chã grande": 95, "altinho": 96, "cachoeirinha": 97, "flores": 98, "são joaquim do monte": 99, "rio formoso": 100, "araçoiaba": 101, "lagoa de itaenga": 102, "carnaíba": 103, "são josé da coroa grande": 104, "afrânio": 105, "parnamirim": 106, "lagoa do carro": 107, "capoeiras": 108, "serrita": 109, "sanharó": 110, "belém do são francisco": 111, "amaraji": 112, "camocim de são félix": 113, "dormentes": 114, "correntes": 115, "venturosa": 116, "iati": 117, "quipapá": 118, "gameleira": 119, "são vicente férrer": 120, "itaquitinga": 121, "jataúba": 122, "cumaru": 123, "ferreiros": 124, "jupi": 125, "triunfo": 126, "santa maria do cambucá": 127, "mirandiba": 128, "jatobá": 129, "tracunhaém": 130, "alagoinha": 131, "primavera": 132, "tacaimbó": 133, "santa cruz": 134, "lagoa dos gatos": 135, "itapetim": 136, "orocó": 137, "saloá": 138, "frei miguelinho": 139, "jurema": 140, "buenos aires": 141, "chã de alegria": 142, "casinhas": 143, "são benedito do sul": 144, "joaquim nabuco": 145, "paranatama": 146, "carnaubeira da penha": 147, "barra de guabiraba": 148, "lagoa do ouro": 149, "santa filomena": 150, "jucati": 151, "betânia": 152, "santa cruz da baixa verde": 153, "xexéu": 154, "calçado": 155, "iguaracy": 156, "machados": 157, "sairé": 158, "cedro": 159, "moreilândia": 160, "poção": 161, "belém de maria": 162, "angelim": 163, "santa terezinha": 164, "jaqueira": 165, "cortês": 166, "verdejante": 167, "brejão": 168, "terra nova": 169, "maraial": 170, "tuparetama": 171, "brejinho": 172, "camutanga": 173, "vertente do lério": 174, "ibirajuba": 175, "granito": 176, "palmeirina": 177, "terezinha": 178, "quixaba": 179, "solidão": 180, "salgadinho": 181, "calumbi": 182, "ingazeira": 183, "itacuruba": 184, "fernando de noronha": 185
@@ -4023,13 +4028,17 @@ window.alternarPautaResumos = function (pauta, btn) {
     const topCozinhas = document.getElementById('topbar_btn_pauta_cozinhas');
     const topEstradas = document.getElementById('topbar_btn_pauta_estradas');
     const topHabitacao = document.getElementById('topbar_btn_pauta_habitacao');
-    [topCapag, topAguas, topCozinhas, topEstradas, topHabitacao].forEach(b => {
-        if (b) {
-            b.classList.remove('btn-primary', 'text-white', 'shadow-xs');
-            b.classList.add('text-slate-600', 'bg-transparent', 'border-0');
-        }
-    });
-    if (p === 'capag' && topCapag) {
+    const topObras = document.getElementById('topbar_btn_pauta_obras');
+    const topCreches = document.getElementById('topbar_btn_pauta_creches');
+    const topEducacao = document.getElementById('topbar_btn_pauta_educacao');
+    const topIlumina = document.getElementById('topbar_btn_pauta_iluminacao');
+    
+// No loop de desativação:
+[topCapag, topAguas, topCozinhas, topEstradas, topHabitacao, topObras, topCreches, topEducacao, topIlumina].forEach(b => {
+    if (b) { b.classList.remove('btn-primary', 'text-white', 'shadow-xs'); b.classList.add('text-slate-600', 'bg-transparent', 'border-0'); }
+});
+
+if (p === 'capag' && topCapag) {
         topCapag.classList.remove('text-slate-600', 'bg-transparent', 'border-0');
         topCapag.classList.add('btn-primary', 'text-white', 'shadow-xs');
     } else if (p === 'aguas' && topAguas) {
@@ -4044,6 +4053,10 @@ window.alternarPautaResumos = function (pauta, btn) {
     } else if (p === 'habitacao' && topHabitacao) {
         topHabitacao.classList.remove('text-slate-600', 'bg-transparent', 'border-0');
         topHabitacao.classList.add('btn-primary', 'text-white', 'shadow-xs');
+    } else if (p === 'educacao') {
+        if (topEducacao) { topEducacao.classList.remove('text-slate-600', 'bg-transparent', 'border-0'); topEducacao.classList.add('btn-primary', 'text-white', 'shadow-xs'); }
+    } else if (p === 'iluminacao') {
+        if (topIlumina) { topIlumina.classList.remove('text-slate-600', 'bg-transparent', 'border-0'); topIlumina.classList.add('btn-primary', 'text-white', 'shadow-xs'); }
     }
 
     // 2. Sincroniza botões e blocos na página interna
@@ -4052,20 +4065,29 @@ window.alternarPautaResumos = function (pauta, btn) {
     const btnCozinhas = document.getElementById('btn_pauta_resumo_cozinhas');
     const btnEstradas = document.getElementById('btn_pauta_resumo_estradas');
     const btnHabitacao = document.getElementById('btn_pauta_resumo_habitacao');
+    const btnObras = document.getElementById('btn_pauta_resumo_obras');
+    const btnCreches = document.getElementById('btn_pauta_resumo_creches');
+    const btnEducacao = document.getElementById('btn_pauta_resumo_educacao');
+    const btnIlumina = document.getElementById('btn_pauta_resumo_iluminacao');
 
     const blocoCapag = document.getElementById('resumo_pauta_capag');
     const blocoAguas = document.getElementById('resumo_pauta_aguas');
     const blocoCozinhas = document.getElementById('resumo_pauta_cozinhas');
     const blocoEstradas = document.getElementById('resumo_pauta_estradas');
     const blocoHabitacao = document.getElementById('resumo_pauta_habitacao');
-
-    [btnCapag, btnAguas, btnCozinhas, btnEstradas, btnHabitacao].forEach(b => {
+    const blocoObras = document.getElementById('resumo_pauta_obras');
+    const blocoCreches = document.getElementById('resumo_pauta_creches');
+    const blocoEducacao = document.getElementById('resumo_pauta_educacao');
+    const blocoIlumina = document.getElementById('resumo_pauta_iluminacao');
+    
+    [btnCapag, btnAguas, btnCozinhas, btnEstradas, btnHabitacao, btnObras, btnCreches, btnEducacao, btnIlumina].forEach(b => {
         if (b) {
             b.classList.remove('btn-primary', 'text-white', 'shadow-sm');
             b.classList.add('btn-light', 'text-slate-600');
         }
     });
-    [blocoCapag, blocoAguas, blocoCozinhas, blocoEstradas, blocoHabitacao].forEach(bl => {
+    
+    [blocoCapag, blocoAguas, blocoCozinhas, blocoEstradas, blocoHabitacao, blocoObras, blocoCreches, blocoEducacao, blocoIlumina].forEach(bl => {
         if (bl) bl.classList.add('d-none');
     });
 
@@ -4104,7 +4126,26 @@ window.alternarPautaResumos = function (pauta, btn) {
         }
         if (blocoHabitacao) blocoHabitacao.classList.remove('d-none');
         if (typeof window.renderizarResumoHabitacao === 'function') window.renderizarResumoHabitacao();
+    } else if (p === 'obras') {
+      if (topObras) { topObras.classList.remove('text-slate-600', 'bg-transparent', 'border-0'); topObras.classList.add('btn-primary', 'text-white', 'shadow-xs'); }
+    if (btnObras) { btnObras.classList.remove('btn-light', 'text-slate-600'); btnObras.classList.add('btn-primary', 'text-white', 'shadow-sm'); }
+    if (blocoObras) blocoObras.classList.remove('d-none');
+    if (typeof window.renderizarResumoObras === 'function') window.renderizarResumoObras();
+} else if (p === 'creches') {
+        if (topCreches) { topCreches.classList.remove('text-slate-600', 'bg-transparent', 'border-0'); topCreches.classList.add('btn-primary', 'text-white', 'shadow-xs'); }
+        if (btnCreches) { btnCreches.classList.remove('btn-light', 'text-slate-600'); btnCreches.classList.add('btn-primary', 'text-white', 'shadow-sm'); }
+        if (blocoCreches) blocoCreches.classList.remove('d-none');
+        if (typeof window.renderizarResumoCreches === 'function') window.renderizarResumoCreches();
+    } else if (p === 'educacao') {
+        if (btnEducacao) { btnEducacao.classList.remove('btn-light', 'text-slate-600'); btnEducacao.classList.add('btn-primary', 'text-white', 'shadow-sm'); }
+        if (blocoEducacao) blocoEducacao.classList.remove('d-none');
+        if (typeof window.renderizarResumoEducacao === 'function') window.renderizarResumoEducacao();
+    } else if (p === 'iluminacao') {
+        if (btnIlumina) { btnIlumina.classList.remove('btn-light', 'text-slate-600'); btnIlumina.classList.add('btn-primary', 'text-white', 'shadow-sm'); }
+        if (blocoIlumina) blocoIlumina.classList.remove('d-none');
+        if (typeof window.renderizarResumoIluminacao === 'function') window.renderizarResumoIluminacao();
     }
+    
 };
 
 let mapResumoAguas = null;
@@ -5361,8 +5402,21 @@ let chartCofinSerieHistorica = null;
 let chartCofinPorMun = null;
 window.visaoSemFomeAtiva = 'cozinhas';
 
-// Atualização do Box Lateral de Detalhamento no Hover
-function atualizarHoverBoxSemFome(tipo, props) {
+// Variável de controle do município travado/fixo
+window.municipioFixoSemFome = null;
+
+// Função para destravar/fechar o município fixo
+window.desafixarMunicipioSemFome = function() {
+    window.municipioFixoSemFome = null;
+    atualizarHoverBoxSemFome(null, null, true);
+};
+
+function atualizarHoverBoxSemFome(tipo, props, forcarAtualizacao = false) {
+    // Se estiver fixado e não for uma ação forçada (clique ou botão fechar), ignora os hovers
+    if (window.municipioFixoSemFome && !forcarAtualizacao) {
+        return;
+    }
+
     const boxDefault = document.getElementById('sem_fome_box_content_default');
     const boxActive = document.getElementById('sem_fome_box_content_active');
     if (!boxActive || !boxDefault) return;
@@ -5392,13 +5446,21 @@ function atualizarHoverBoxSemFome(tipo, props) {
             ? Number(props.taxa_maes).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '-';
         const cadPessoasFmt = props.cad_pessoas ? Number(props.cad_pessoas).toLocaleString('pt-BR') : '-';
 
+        const isFixo = Boolean(window.municipioFixoSemFome);
+
         boxActive.innerHTML = `
             <div class="border-b border-slate-200 pb-2 mb-2">
                 <div class="d-flex justify-content-between align-items-center mb-0.5">
-                    <span class="badge bg-slate-200 text-slate-700 text-[10px] font-bold rounded-pill px-2 py-0.5">
-                        <i class="fas fa-location-dot text-primary me-1"></i> ${props.regiao_de_desenvolvimento || 'Pernambuco'}
+                    <span class="badge ${isFixo ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-200 text-slate-700'} text-[10px] font-bold rounded-pill px-2 py-0.5">
+                        <i class="fas ${isFixo ? 'fa-thumbtack text-amber-600' : 'fa-location-dot text-primary'} me-1"></i> ${isFixo ? 'MUNICÍPIO FIXADO' : (props.regiao_de_desenvolvimento || 'Pernambuco')}
                     </span>
-                    <span class="text-[10px] text-slate-400 font-semibold">185 municípios</span>
+                    ${isFixo ? `
+                        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill py-0 px-2 text-[10px] font-bold" onclick="window.desafixarMunicipioSemFome()" title="Liberar e voltar ao modo hover">
+                            <i class="fas fa-xmark me-1"></i>Desafixar
+                        </button>
+                    ` : `
+                        <span class="text-[10px] text-slate-400 font-semibold">Clique para fixar</span>
+                    `}
                 </div>
                 <h4 class="font-black text-slate-800 text-base mb-0 tracking-tight leading-tight">${props.municipio}</h4>
             </div>
@@ -5477,10 +5539,21 @@ function atualizarHoverBoxSemFome(tipo, props) {
                         Validado: ${valCofinValFmt}
                     </div>
                 </div>
+                
+                <!-- CARD 5: PROGRAMA CHAPÉU DE PALHA -->
+                <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-2.5">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-xs font-bold text-amber-800"><i class="fas fa-wheat-awn me-1"></i> Chapéu de Palha</span>
+                        <span class="badge bg-amber-600 text-white font-black text-xs">${(Number(props.pcp_beneficiarios) || 0).toLocaleString('pt-BR')}</span>
+                    </div>
+                    <div class="text-[11px] text-amber-900/90">
+                        Pago: <strong>R$ ${(Number(props.pcp_valor_pago) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+                    </div>
+                </div>
             </div>
 
             <div class="pt-2 border-t border-slate-200 text-slate-400 text-[10px] text-center mt-2">
-                Passe o cursor sobre outro município ou cozinha
+                ${isFixo ? 'Clique em outro município ou em "Desafixar" para liberar o painel' : 'Passe o cursor sobre os municípios ou clique em um para fixar'}
             </div>
         `;
     } else if (tipo === 'cozinha') {
@@ -5520,23 +5593,24 @@ function atualizarHoverBoxSemFome(tipo, props) {
         `;
     }
 }
-
 window.alternarVisaoSemFome = function (visao, btn) {
     window.visaoSemFomeAtiva = visao || 'cozinhas';
 
     const btnCozinhas = document.getElementById('btn_visao_sem_fome_cozinhas');
     const btnMaes = document.getElementById('btn_visao_sem_fome_maes');
+    const btnPcp      = document.getElementById('btn_visao_sem_fome_pcp');
     const btnCofin = document.getElementById('btn_visao_sem_fome_cofin');
     const btnIvcad = document.getElementById('btn_visao_sem_fome_ivcad');
 
     const legCozinhas = document.getElementById('legenda_visao_cozinhas');
     const legMaes = document.getElementById('legenda_visao_maes');
+    const legPcp      = document.getElementById('legenda_visao_pcp');
     const legCofin = document.getElementById('legenda_visao_cofin');
     const legIvcad = document.getElementById('legenda_visao_ivcad');
     const lblCamada = document.getElementById('sem_fome_camada_label');
 
     // Reseta botões
-    [btnCozinhas, btnMaes, btnCofin, btnIvcad].forEach(b => {
+    [btnCozinhas, btnMaes, btnPcp, btnCofin, btnIvcad].forEach(b => {
         if (b) {
             b.classList.remove('btn-primary', 'text-white', 'shadow-sm');
             b.classList.add('btn-light', 'text-slate-600');
@@ -5544,7 +5618,7 @@ window.alternarVisaoSemFome = function (visao, btn) {
     });
 
     // Reseta legendas
-    [legCozinhas, legMaes, legCofin, legIvcad].forEach(l => {
+    [legCozinhas, legMaes, legPcp, legCofin, legIvcad].forEach(l => {
         if (l) l.classList.add('d-none');
     });
 
@@ -5597,6 +5671,38 @@ window.alternarVisaoSemFome = function (visao, btn) {
             } catch(e) {}
         }
         atualizarGraficoSemFome('maes');
+    // =========================================================================
+    // VISÃO: CHAPÉU DE PALHA
+    // =========================================================================
+    } else if (window.visaoSemFomeAtiva === 'pcp') {
+        if (btnPcp) {
+            btnPcp.classList.remove('btn-light', 'text-slate-600');
+            btnPcp.classList.add('btn-primary', 'text-white', 'shadow-sm');
+        }
+        if (legPcp) legPcp.classList.remove('d-none');
+        if (lblCamada) lblCamada.textContent = "Exibindo: Programa Chapéu de Palha (Beneficiários por Município)";
+
+        if (mapResumoCozinhas && mapResumoCozinhas.isStyleLoaded()) {
+            try {
+                if (mapResumoCozinhas.getLayer('cozinhas_clusters')) mapResumoCozinhas.setLayoutProperty('cozinhas_clusters', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('cozinhas_cluster_count')) mapResumoCozinhas.setLayoutProperty('cozinhas_cluster_count', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('cozinhas_points')) mapResumoCozinhas.setLayoutProperty('cozinhas_points', 'visibility', 'none');
+                if (mapResumoCozinhas.getLayer('mun_choropleth_fill')) {
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_fill', 'fill-color', [
+                        'step',
+                        ['get', 'pcp_beneficiarios'],
+                        '#f8fafc',    // 0 beneficiários (cinza claro neutro)
+                        1, '#fef3c7',  // 1 - 100
+                        100, '#f59e0b',// 100 - 500
+                        500, '#d97706',// 500 - 1500
+                        1500, '#78350f'// > 1500
+                    ]);
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_fill', 'fill-opacity', 0.80);
+                    mapResumoCozinhas.setPaintProperty('mun_choropleth_line', 'line-color', '#b45309');
+                }
+            } catch(e) {}
+        }
+        atualizarGraficoSemFome('pcp');
     } else if (window.visaoSemFomeAtiva === 'cofin') {
         if (btnCofin) {
             btnCofin.classList.remove('btn-light', 'text-slate-600');
@@ -5793,6 +5899,78 @@ function atualizarGraficoSemFome(visao) {
             }]
         };
         chartResumoCozinhasMuns.setOption(option);
+    } else if (visao === 'pcp') {
+        if (elTitle) elTitle.textContent = "Chapéu de Palha por Município";
+        if (elSub) elSub.textContent = "Top municípios com maior número de trabalhadores beneficiados no programa";
+        if (elBadge) elBadge.innerHTML = `<i class="fas fa-wheat-awn text-amber-600 me-1"></i> ${(cacheResumoCozinhas.kpis_pcp?.municipios_cobertos || 0)} Municípios Atendidos`;
+
+        // Agrupa beneficiários por município a partir de cacheResumoCozinhas.pcp
+        const pcpMunTotals = {};
+        (cacheResumoCozinhas.pcp || []).forEach(p => {
+            const m = p.municipio ? p.municipio.trim() : '';
+            if (!m) return;
+            if (!pcpMunTotals[m]) pcpMunTotals[m] = { beneficiarios: 0, valor_pago: 0 };
+            pcpMunTotals[m].beneficiarios += Number(p.numero_de_beneficiarios) || 0;
+            pcpMunTotals[m].valor_pago += Number(p.valor_pago_no_municipio) || Number(p.valor_investido_no_municipio) || 0;
+        });
+
+        const sortedPcp = Object.entries(pcpMunTotals)
+            .map(([mun, d]) => ({ municipio: mun, beneficiarios: d.beneficiarios, valor_pago: d.valor_pago }))
+            .sort((a, b) => b.beneficiarios - a.beneficiarios)
+            .slice(0, 25)
+            .reverse();
+
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: function (params) {
+                    const p = params[0];
+                    const rawItem = sortedPcp.find(m => m.municipio === p.name);
+                    const valInvest = rawItem ? `R$ ${(rawItem.valor_pago || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-';
+                    return `<strong>${p.name}</strong><br/>Beneficiários: <b>${Number(p.value).toLocaleString('pt-BR')}</b><br/>Recurso Pago: <b>${valInvest}</b>`;
+                }
+            },
+            grid: { top: 20, bottom: 25, left: '4%', right: '10%', containLabel: true },
+            xAxis: {
+                type: 'value',
+                axisLabel: {
+                    color: '#64748b',
+                    fontSize: 11,
+                    formatter: (v) => v >= 1e3 ? (v/1e3).toFixed(0) + 'k' : v
+                },
+                splitLine: { lineStyle: { color: '#f1f5f9' } }
+            },
+            yAxis: {
+                type: 'category',
+                data: sortedPcp.map(item => item.municipio),
+                axisLabel: { color: '#334155', fontWeight: 600, fontSize: 11 },
+                axisLine: { lineStyle: { color: '#cbd5e1' } }
+            },
+            series: [{
+                name: 'Beneficiários',
+                type: 'bar',
+                data: sortedPcp.map(item => item.beneficiarios),
+                barMaxWidth: 20,
+                itemStyle: {
+                    borderRadius: [0, 6, 6, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#f59e0b' },
+                        { offset: 1, color: '#b45309' }
+                    ])
+                },
+                label: {
+                    show: true,
+                    position: 'right',
+                    fontWeight: 'bold',
+                    fontSize: 11,
+                    color: '#78350f',
+                    formatter: (params) => Number(params.value).toLocaleString('pt-BR')
+                }
+            }]
+        };
+        chartResumoCozinhasMuns.setOption(option);
+        
     } else if (visao === 'cofin') {
         if (elTitle) elTitle.textContent = "Cofinanciamento SAS por Município";
         if (elSub) elSub.textContent = "Top municípios com maior volume financeiro pago pelo Fundo Estadual de Assistência Social";
@@ -6248,6 +6426,16 @@ window.renderizarResumoCozinhas = function () {
             cacheResumoCozinhas = data;
             window.cacheResumoCozinhas = data;
             $('#resumo_cozinhas_spinner').addClass('d-none');
+            
+            const kpisPCP = data.kpis_pcp || {};
+            
+            const elPcpBenef = document.getElementById('pcp_kpi_beneficiarios');
+            const elPcpPago = document.getElementById('pcp_kpi_valor_pago');
+            const elPcpMun = document.getElementById('pcp_kpi_municipios');
+            const elPcpRds = document.getElementById('pcp_kpi_rds');
+            const elPcpCana = document.getElementById('pcp_kpi_cana');
+            const elPcpFrutaPesca = document.getElementById('pcp_kpi_fruta_pesca');
+            const elPcpFrutaPescaDesc = document.getElementById('pcp_kpi_fruta_pesca_desc');
 
             const cozinhas = data.cozinhas || [];
             const kpis = data.kpis || {};
@@ -6262,6 +6450,39 @@ window.renderizarResumoCozinhas = function () {
             const elImp = document.getElementById('cozinhas_kpi_implantacao');
             const elPact = document.getElementById('cozinhas_kpi_pactuacao');
             const elNao = document.getElementById('cozinhas_kpi_nao_aderiu');
+            
+            if (elPcpBenef) {
+                elPcpBenef.textContent = (kpisPCP.total_beneficiarios || 0).toLocaleString('pt-BR');
+            }
+            
+            if (elPcpPago) {
+                const pago = kpisPCP.valor_pago || 0;
+                elPcpPago.textContent = pago >= 1e6
+                    ? `R$ ${(pago / 1e6).toFixed(2).replace('.', ',')} Mi`
+                    : `R$ ${pago.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+            
+            if (elPcpMun) {
+                elPcpMun.textContent = (kpisPCP.municipios_cobertos || 0).toLocaleString('pt-BR');
+            }
+            
+            if (elPcpRds) {
+                elPcpRds.textContent = `${kpisPCP.rds_cobertas || 0} Regiões de Desenv.`;
+            }
+            
+            if (elPcpCana) {
+                elPcpCana.textContent = (kpisPCP.beneficiarios_cana || 0).toLocaleString('pt-BR');
+            }
+            
+            if (elPcpFrutaPesca) {
+                const somaFrutaPesca = (kpisPCP.beneficiarios_fruta || 0) + (kpisPCP.beneficiarios_pesca || 0);
+                elPcpFrutaPesca.textContent = somaFrutaPesca.toLocaleString('pt-BR');
+            }
+            
+            if (elPcpFrutaPescaDesc) {
+                elPcpFrutaPescaDesc.textContent = `${(kpisPCP.beneficiarios_fruta || 0).toLocaleString('pt-BR')} Fruta | ${(kpisPCP.beneficiarios_pesca || 0).toLocaleString('pt-BR')} Pesca`;
+            }
+
 
             if (elTotal) elTotal.textContent = (kpis.total || cozinhas.length).toLocaleString('pt-BR');
             if (elFunc) elFunc.textContent = (kpis.funcionamento || 0).toLocaleString('pt-BR');
@@ -6331,6 +6552,39 @@ window.renderizarResumoCozinhas = function () {
                 if (v.cod_ibge) vulnByIbge[String(v.cod_ibge)] = v;
                 if (v.municipio) vulnByMun[norm(v.municipio)] = v;
             });
+            
+            // Mapas de lookup do Chapéu de Palha por IBGE (7 e 6 dígitos) e por Nome
+            const pcpByIbge = {};
+            const pcpByMun = {};
+            
+            (data.pcp || []).forEach(p => {
+                const kMun = norm(p.municipio);
+                const rawIbge = p.ibge7 ? String(p.ibge7).trim() : (p.cod_ibge ? String(p.cod_ibge).trim() : '');
+                const ibge7 = rawIbge;
+                const ibge6 = rawIbge.length >= 6 ? rawIbge.substring(0, 6) : '';
+                
+                const benef = Number(p.numero_de_beneficiarios) || 0;
+                const pago = Number(p.valor_pago_no_municipio) || Number(p.valor_investido_no_municipio) || 0;
+            
+                // Indexa por IBGE 7 dígitos
+                if (ibge7) {
+                    if (!pcpByIbge[ibge7]) pcpByIbge[ibge7] = { beneficiarios: 0, valor_pago: 0 };
+                    pcpByIbge[ibge7].beneficiarios += benef;
+                    pcpByIbge[ibge7].valor_pago += pago;
+                }
+                // Indexa por IBGE 6 dígitos (para compatibilidade caso o GeoJSON use 6 dígitos)
+                if (ibge6) {
+                    if (!pcpByIbge[ibge6]) pcpByIbge[ibge6] = { beneficiarios: 0, valor_pago: 0 };
+                    pcpByIbge[ibge6].beneficiarios += benef;
+                    pcpByIbge[ibge6].valor_pago += pago;
+                }
+                // Indexa por Nome normalizado
+                if (kMun) {
+                    if (!pcpByMun[kMun]) pcpByMun[kMun] = { beneficiarios: 0, valor_pago: 0 };
+                    pcpByMun[kMun].beneficiarios += benef;
+                    pcpByMun[kMun].valor_pago += pago;
+                }
+            });
 
             if (geoMun && geoMun.features) {
                 geoMun.features.forEach(f => {
@@ -6349,6 +6603,17 @@ window.renderizarResumoCozinhas = function () {
                     props.valor_cofin_pago = Number(cData.valor_pago) || 0;
                     props.valor_cofin_validado = Number(cData.valor_validado) || 0;
                     props.pct_cofin = Number(cData.percentual_pago) || 0;
+                    
+                    // Resgata o código IBGE do polígono (seja 7 ou 6 dígitos)
+                    const rawCodMun = String(props.ibge7 || props.cod_ibge || props.codarea || props.ibge6 || '').trim();
+                    const cod7 = rawCodMun.length >= 7 ? rawCodMun.substring(0, 7) : rawCodMun;
+                    const cod6 = rawCodMun.length >= 6 ? rawCodMun.substring(0, 6) : '';
+                    
+                    // Busca por IBGE7 -> fallback IBGE6 -> fallback Nome
+                    const pcpData = pcpByIbge[cod7] || pcpByIbge[cod6] || pcpByMun[kMun] || {};
+                    
+                    props.pcp_beneficiarios = Number(pcpData.beneficiarios) || 0;
+                    props.pcp_valor_pago = Number(pcpData.valor_pago) || 0;
 
                     props.ivcad = Number(vData.ivcad) || 0;
                     props.rank_ivcad = Number(vData.rank_ivcad) || 0;
@@ -6527,21 +6792,46 @@ window.renderizarResumoCozinhas = function () {
                 mapResumoCozinhas.on('mousemove', 'mun_choropleth_fill', (e) => {
                     if (!e.features.length) return;
                     const props = e.features[0].properties;
-                    atualizarHoverBoxSemFome('municipio', props);
+                    // Passa false no 3º argumento para indicar que é hover e respeitar a trava
+                    atualizarHoverBoxSemFome('municipio', props, false);
                 });
-
+                
                 mapResumoCozinhas.on('mousemove', 'cozinhas_points', (e) => {
                     if (!e.features.length) return;
                     const props = e.features[0].properties;
-                    atualizarHoverBoxSemFome('cozinha', props);
+                    atualizarHoverBoxSemFome('cozinha', props, false);
+                });
+                
+                mapResumoCozinhas.on('mouseleave', 'mun_choropleth_fill', () => {
+                    // Só esconde no mouseleave se NÃO estiver fixado
+                    if (!window.municipioFixoSemFome) {
+                        atualizarHoverBoxSemFome(null, null, false);
+                    }
+                });
+                
+                mapResumoCozinhas.on('mouseleave', 'cozinhas_points', () => {
+                    if (!window.municipioFixoSemFome) {
+                        atualizarHoverBoxSemFome(null, null, false);
+                    }
+                });
+                
+                // =========================================================================
+                // NOVO: CLIQUE PARA FIXAR O MUNICÍPIO
+                // =========================================================================
+                mapResumoCozinhas.on('click', 'mun_choropleth_fill', (e) => {
+                    if (!e.features.length) return;
+                    const props = e.features[0].properties;
+                    
+                    // Se clicou no mesmo que já estava fixado, desafixa (toggle); se clicou em outro, fixa o novo
+                    if (window.municipioFixoSemFome === props.municipio) {
+                        window.desafixarMunicipioSemFome();
+                    } else {
+                        window.municipioFixoSemFome = props.municipio;
+                        // Força a renderização imediata com o estado de travado ativo
+                        atualizarHoverBoxSemFome('municipio', props, true);
+                    }
                 });
 
-                mapResumoCozinhas.on('mouseleave', 'mun_choropleth_fill', () => {
-                    atualizarHoverBoxSemFome(null, null);
-                });
-                mapResumoCozinhas.on('mouseleave', 'cozinhas_points', () => {
-                    atualizarHoverBoxSemFome(null, null);
-                });
 
                 // Cluster click para zoom
                 mapResumoCozinhas.on('click', 'cozinhas_clusters', (e) => {
@@ -6827,88 +7117,94 @@ window.inicializarTabelaEstradas = function (obras) {
 
     dtResumoEstradas = $('#tabela_estradas_pe').DataTable({
         data: obras,
-        responsive: true,
+        deferRender: true,
+        scrollX: true,
         pageLength: 10,
-        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+        lengthMenu: [10, 25, 50, 100],
         language: {
             url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
         },
-        order: [[6, 'desc']],
+        order: [[5, 'desc']], // Ordenar por investimento decrescente
         columns: [
             {
-                data: 'local',
-                title: 'Rodovia',
-                width: '10%',
-                render: function (data) {
-                    return `<span class="badge bg-slate-100 text-slate-800 border border-slate-300 font-extrabold px-2.5 py-1 rounded-pill cursor-pointer" onclick="window.selecionarRodoviaFiltro('${data}')">${data}</span>`;
+                title: "Município",
+                data: "municipio",
+                className: "align-middle",
+                width: "140px",
+                render: d => `<span class="badge bg-blue-50 text-blue-700 border border-blue-200 fw-bold px-2 py-1 rounded-pill cursor-pointer" onclick="window.filtrarTabelaPorMunicipioEstradas ? window.filtrarTabelaPorMunicipioEstradas('${d || ''}') : null">${d || 'Estadual'}</span>`
+            },
+            {
+                title: "Rodovia / Intervenção",
+                data: "iniciativa",
+                className: "align-middle",
+                width: "280px",
+                render: (d, t, r) => {
+                    const titulo = d || 'Intervenção Rodoviária';
+                    const rodBadge = r.local ? `<span class="badge bg-slate-800 text-white rounded-pill px-2 py-0.5 text-[10px] me-1 cursor-pointer" onclick="window.selecionarRodoviaFiltro('${r.local}')">${r.local}</span>` : '';
+                    const rdTexto = r.rd ? `<span class="text-slate-400">Região: ${r.rd}</span>` : '';
+                    const sub = (rodBadge || rdTexto) ? `<div class="text-xs text-slate-500 mt-0.5 d-flex align-items-center gap-1">${rodBadge}${rdTexto}</div>` : '';
+                    return `<div class="fw-bold text-slate-800 text-sm leading-tight">${titulo}</div>${sub}`;
                 }
             },
             {
-                data: 'iniciativa',
-                title: 'Iniciativa Estratégica / Obra',
-                width: '32%',
-                render: function (data) {
-                    return `<span class="fw-bold text-slate-800">${data}</span>`;
+                title: "Rodovia",
+                data: "local",
+                className: "align-middle text-center",
+                width: "90px",
+                render: d => `<span class="badge bg-slate-800 text-white rounded-pill px-2.5 py-1 text-xs cursor-pointer" onclick="window.selecionarRodoviaFiltro('${d}')">${d || 'DER-PE'}</span>`
+            },
+            {
+                title: "Status",
+                data: "status",
+                className: "align-middle",
+                width: "140px",
+                render: d => {
+                    const s = String(d || '').trim();
+                    let badgeClass = 'bg-slate-100 text-slate-700 border';
+                    if (s.toLowerCase().includes('conclu') || s.toLowerCase().includes('entreg')) {
+                        badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                    } else if (s.toLowerCase().includes('execu') || s.toLowerCase().includes('andamento')) {
+                        badgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
+                    } else if (s.toLowerCase().includes('licita') || s.toLowerCase().includes('planej') || s.toLowerCase().includes('iniciar')) {
+                        badgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
+                    } else if (s.toLowerCase().includes('paralis')) {
+                        badgeClass = 'bg-rose-100 text-rose-800 border-rose-300';
+                    }
+                    return `<span class="badge ${badgeClass} rounded-pill px-2.5 py-1 text-xs font-bold">${s || '-'}</span>`;
                 }
             },
             {
-                data: 'municipio',
-                title: 'Município',
-                width: '14%',
-                render: function (data) {
-                    return `<span class="text-slate-600 font-medium">${data || 'Estadual'}</span>`;
-                }
-            },
-            {
-                data: 'rd',
-                title: 'Região (RD)',
-                width: '12%',
-                render: function (data) {
-                    return `<span class="badge bg-slate-50 text-slate-600 border border-slate-200 rounded-pill px-2 py-0.5 text-[11px]">${data || '-'}</span>`;
-                }
-            },
-            {
-                data: 'status',
-                title: 'Status',
-                width: '12%',
-                render: function (data) {
-                    let badgeClass = 'bg-slate-100 text-slate-700';
-                    if (data === 'Concluída') badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
-                    else if (data === 'Em Execução') badgeClass = 'bg-sky-100 text-sky-800 border border-sky-200';
-                    else if (data === 'Paralisada') badgeClass = 'bg-rose-100 text-rose-800 border border-rose-200';
-                    return `<span class="badge ${badgeClass} font-bold px-2 py-1 rounded-pill">${data}</span>`;
-                }
-            },
-            {
-                data: 'percent_execucao',
-                title: 'Avanço Físico',
-                width: '10%',
-                render: function (data) {
-                    const pct = Number(data) || 0;
-                    let barColor = 'bg-sky-500';
-                    if (pct >= 99) barColor = 'bg-emerald-500';
-                    else if (pct < 20) barColor = 'bg-amber-500';
+                title: "Avanço Físico",
+                data: "percent_execucao",
+                className: "align-middle",
+                width: "120px",
+                render: (d, t) => {
+                    let num = Number(d) || 0;
+                    if (num <= 1 && num > 0) num = Math.round(num * 100);
+                    else num = Math.min(Math.round(num), 100);
 
+                    if (t !== 'display') return num;
+
+                    const barColor = num >= 100 ? 'bg-emerald-500' : (num >= 50 ? 'bg-sky-500' : 'bg-amber-500');
                     return `
                         <div class="d-flex align-items-center gap-2">
-                            <div class="progress flex-grow-1" style="height: 6px; background-color: #E2E8F0; border-radius: 9999px;">
-                                <div class="progress-bar ${barColor} rounded-pill" role="progressbar" style="width: ${pct}%;"></div>
+                            <div class="progress flex-grow-1" style="height: 6px;">
+                                <div class="progress-bar ${barColor}" style="width: ${num}%;"></div>
                             </div>
-                            <span class="text-[11px] font-bold text-slate-700">${pct}%</span>
+                            <span class="text-xs fw-bold text-slate-700">${num}%</span>
                         </div>
                     `;
                 }
             },
             {
-                data: 'valor_total',
-                title: 'Investimento (R$)',
-                width: '10%',
-                className: 'text-end',
-                render: function (data, type, row) {
-                    if (type === 'display') {
-                        return `<span class="fw-bold text-slate-800">${row.valor_total_fmt}</span>`;
-                    }
-                    return data;
+                title: "Investimento (R$)",
+                data: "valor_total",
+                className: "align-middle text-end fw-bold text-slate-800",
+                width: "140px",
+                render: (d, t, r) => {
+                    const num = Number(d) || 0;
+                    if (t !== 'display') return num;
+                    return r.valor_total_fmt || `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 }
             }
         ]
@@ -7961,7 +8257,683 @@ const fmtMoeda = (val) => {
    ========================================================================== */
 let mapResumoHabitacao = null;
 window.cacheResumoHabitacao = null;
-let cacheResumoHabitacao = null;
+let cacheHabitacaoData = null;
+let mapHabitacao = null;
+window.visaoHabitacaoAtiva = 'todos';
+
+// Instâncias dos Gráficos ECharts
+let chartHabitacaoStatus = null;
+let chartHabitacaoPorMun = null;
+
+window.renderizarResumoHabitacao = function () {
+    const container = document.getElementById('resumo_habitacao_map');
+    if (!container) return;
+
+    // Se já estiver em cache na memória, apenas redimensiona os elementos
+    if (cacheHabitacaoData) {
+        setTimeout(() => {
+            if (mapHabitacao && typeof mapHabitacao.resize === 'function') mapHabitacao.resize();
+            if (chartHabitacaoStatus && typeof chartHabitacaoStatus.resize === 'function') chartHabitacaoStatus.resize();
+            if (chartHabitacaoPorMun && typeof chartHabitacaoPorMun.resize === 'function') chartHabitacaoPorMun.resize();
+        }, 120);
+        return;
+    }
+
+    $('#resumo_habitacao_spinner').removeClass('d-none');
+
+    const apiUrl = `${window.basePath || ''}/municipios/resumo/habitacao`.replace(/\/+/g, '/');
+    fetch(apiUrl)
+        .then(res => {
+            if (!res.ok) throw new Error("Erro na rota de Habitação");
+            return res.json();
+        })
+        .then(data => {
+            cacheHabitacaoData = data;
+            window.cacheResumoHabitacao = data;
+            $('#resumo_habitacao_spinner').addClass('d-none');
+
+            const fmtMoedaBiMi = (val) => {
+                if (!val || isNaN(val) || val === 0) return "R$ 0";
+                const abs = Math.abs(val);
+                if (abs >= 1e9) return `R$ ${(val / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Bi`;
+                if (abs >= 1e6) return `R$ ${(val / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Mi`;
+                if (abs >= 1e3) return `R$ ${(val / 1e3).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mil`;
+                return `R$ ${val.toLocaleString('pt-BR')}`;
+            };
+
+            const fmtInt = (val) => (val !== undefined && val !== null && !isNaN(val)) ? Number(val).toLocaleString('pt-BR') : '-';
+
+            // =========================================================================
+            // 1. KPIS PRINCIPAIS DO MORAR BEM PE & MODALIDADES
+            // =========================================================================
+            const k = data.kpis || {};
+            $('#morar_bem_kpi_total').text(fmtInt(k.total_uh));
+            $('#morar_bem_kpi_entregues').text(fmtInt(k.entregues_uh));
+            $('#morar_bem_kpi_obras').text(fmtInt(k.construcao_uh));
+            $('#morar_bem_kpi_investimento').text(fmtMoedaBiMi(k.investimento_total));
+            $('#morar_bem_kpi_contrapartida').text(fmtMoedaBiMi(k.contrapartida_total));
+            $('#morar_bem_kpi_municipios').text(fmtInt(k.municipios_cobertos));
+
+            const rnl = data.kpis_reforma_no_lar || {};
+            $('#rnl_kpi_cadastrados').text(fmtInt(rnl.cadastrados));
+            $('#rnl_kpi_concluidas').text(fmtInt(rnl.reformas_realizadas));
+            $('#rnl_kpi_valor_contratual').text(fmtMoedaBiMi(rnl.valor_contratual));
+            $('#rnl_kpi_valor_medido').text(fmtMoedaBiMi(rnl.valor_total_medido));
+            $('#rnl_kpi_municipios').text(fmtInt(rnl.municipios_atendidos));
+
+            const ent = data.kpis_entrada_garantida || {};
+            $('#ent_kpi_uh').text(fmtInt(ent.total_uh));
+            $('#ent_kpi_empreendimentos').text(fmtInt(ent.quantidade_empreendimento));
+            $('#ent_kpi_valor_total').text(fmtMoedaBiMi(ent.valor_total));
+            $('#ent_kpi_municipios').text(fmtInt(ent.municipios_atendidos));
+
+            const far = data.kpis_far || {};
+            $('#far_kpi_uh').text(fmtInt(far.total_uh));
+            $('#far_kpi_empreendimentos').text(fmtInt(far.quantidade_empreendimento));
+            $('#far_kpi_recurso_federal').text(fmtMoedaBiMi(far.recurso_federal));
+            $('#far_kpi_contrapartida_obras').text(fmtMoedaBiMi(far.contrapartida_obras));
+            $('#far_kpi_contrapartida_terrenos').text(fmtMoedaBiMi(far.contrapartida_terrenos));
+
+            const fds = data.kpis_fds || {};
+            $('#fds_kpi_uh').text(fmtInt(fds.total_uh));
+            $('#fds_kpi_empreendimentos').text(fmtInt(fds.quantidade_empreendimento));
+            $('#fds_kpi_contrapartida').text(fmtMoedaBiMi(fds.contrapartida_obras));
+
+            const sub50 = data.kpis_sub50 || {};
+            $('#sub50_kpi_uh').text(fmtInt(sub50.total_uh));
+            $('#sub50_kpi_empreendimentos').text(fmtInt(sub50.quantidade_empreendimento));
+            $('#sub50_kpi_licitacao').text(fmtMoedaBiMi(sub50.valor_total_licitacao));
+            $('#sub50_kpi_contrapartida').text(fmtMoedaBiMi(sub50.contrapartida_obras));
+
+            const ret = data.kpis_retomadas || {};
+            $('#retomadas_kpi_uh').text(fmtInt(ret.total_uh));
+            $('#retomadas_kpi_empreendimentos').text(fmtInt(ret.quantidade_empreendimento));
+            $('#retomadas_kpi_recurso_federal').text(fmtMoedaBiMi(ret.recurso_federal));
+            $('#retomadas_kpi_contrapartida').text(fmtMoedaBiMi(ret.contrapartida_obras));
+
+            const r = data.kpis_reurb || {};
+            $('#reurb_kpi_previstos').text(fmtInt(r.titulos_previstos));
+            $('#reurb_kpi_entregues').text(fmtInt(r.titulos_entregues));
+            $('#reurb_kpi_andamento').text(fmtInt(r.titulos_andamento));
+            $('#reurb_kpi_mulheres').text(fmtInt(r.total_mulheres));
+            $('#reurb_kpi_mulheres_pct').text(`${(r.percent_mulheres || 0).toFixed(1)}% do total`);
+            $('#reurb_kpi_nucleos').text(fmtInt(r.total_nucleos));
+            $('#reurb_kpi_municipios').text(fmtInt(r.total_municipios));
+
+            const setMetricaClassif = (idNum, idDesc, m) => {
+                if (!m) return;
+                $(`#${idNum}`).text(fmtInt(m.entregues));
+                $(`#${idDesc}`).text(`${fmtInt(m.previstos)} previstos (${(m.percent || 0).toFixed(1)}%)`);
+            };
+            setMetricaClassif('reurb_kpi_classif_regmel', 'reurb_kpi_classif_regmel_desc', r.classif_regmel);
+            setMetricaClassif('reurb_kpi_classif_fundiaria', 'reurb_kpi_classif_fundiaria_desc', r.classif_fundiaria);
+            setMetricaClassif('reurb_kpi_classif_reurb', 'reurb_kpi_classif_reurb_desc', r.classif_reurb);
+            setMetricaClassif('reurb_kpi_classif_imobiliaria', 'reurb_kpi_classif_imobiliaria_desc', r.classif_imobiliaria);
+
+            // =========================================================================
+            // 2. PARSE DO GEOJSON E MAPA DE CENTRÓIDES
+            // =========================================================================
+            let geoMun = data.geojson || data.geojson_municipios;
+            if (typeof geoMun === 'string') {
+                try { geoMun = JSON.parse(geoMun); } catch(e) {}
+            }
+
+            const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+            const munsMap = {};
+            const munCentroids = {};
+
+            if (geoMun && geoMun.features) {
+                geoMun.features.forEach(f => {
+                    const nomeMun = norm(f.properties.name || f.properties.NM_MUN || f.properties.municipio);
+                    try {
+                        let flatCoords = [];
+                        const collect = (c) => {
+                            if (typeof c[0] === 'number') flatCoords.push(c);
+                            else c.forEach(collect);
+                        };
+                        collect(f.geometry.coordinates);
+                        if (flatCoords.length > 0) {
+                            const sum = flatCoords.reduce((acc, curr) => [acc[0] + curr[0], acc[1] + curr[1]], [0, 0]);
+                            munCentroids[nomeMun] = [sum[0] / flatCoords.length, sum[1] / flatCoords.length];
+                        }
+                    } catch(e) {}
+                });
+            }
+
+            // =========================================================================
+            // 3. PROCESSAMENTO DOS EMPREENDIMENTOS E PONTOS
+            // =========================================================================
+            const featuresEmpreendimentos = [];
+            const projetos = data.projetos || [];
+
+            projetos.forEach((p, idx) => {
+                const m = norm(p.municipio);
+                const uh = Number(p.uh) || 0;
+                const inv = Number(p.valor_global_orcado3 || p.valor_total || 0);
+
+                if (m) {
+                    if (!munsMap[m]) munsMap[m] = { uh: 0, obras: 0, inv: 0, entregues: 0, titulos: 0, titulos_entregues: 0, qtd_empreendimentos: 0 };
+                    munsMap[m].uh += uh;
+                    munsMap[m].qtd_empreendimentos += 1;
+                    munsMap[m].inv += inv;
+
+                    const statusNorm = String(p.status || '').toLowerCase();
+                    if (statusNorm.includes('conclu') || statusNorm.includes('entregue')) {
+                        munsMap[m].entregues += uh;
+                    } else {
+                        munsMap[m].obras += uh;
+                    }
+                }
+
+                let lat = Number(p.lat);
+                let lng = Number(p.long);
+
+                if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+                    if (m && munCentroids[m]) {
+                        const jitterX = ((idx % 7) - 3) * 0.008;
+                        const jitterY = (((idx * 3) % 7) - 3) * 0.008;
+                        lng = munCentroids[m][0] + jitterX;
+                        lat = munCentroids[m][1] + jitterY;
+                    }
+                }
+
+                if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+                    featuresEmpreendimentos.push({
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [lng, lat]
+                        },
+                        properties: {
+                            nome_empreendimento: p.empreendimento || p.nome_empreendimento || 'Empreendimento Habitacional',
+                            municipio: p.municipio || '',
+                            status: p.status || 'Em Construção',
+                            uh: uh,
+                            programa: p.programa || p.financiamento || 'Morar Bem PE',
+                            valor: inv
+                        }
+                    });
+                }
+            });
+
+            (data.regularizacoes || []).forEach(rg => {
+                const m = norm(rg.municipio || rg.cidade);
+                if (!m) return;
+                if (!munsMap[m]) munsMap[m] = { uh: 0, obras: 0, inv: 0, entregues: 0, titulos: 0, titulos_entregues: 0, qtd_empreendimentos: 0 };
+                const t = Number(rg.regularizacoes) || 0;
+                munsMap[m].titulos += t;
+                const sit = String(rg.situacao || '').toLowerCase();
+                if (sit.includes('realizado') || sit.includes('conclu') || sit.includes('entregue')) {
+                    munsMap[m].titulos_entregues += t;
+                }
+            });
+
+            if (geoMun && geoMun.features) {
+                geoMun.features.forEach(f => {
+                    const props = f.properties || {};
+                    const kMun = norm(props.name || props.NM_MUN || props.municipio);
+                    const info = munsMap[kMun] || { uh: 0, obras: 0, inv: 0, entregues: 0, titulos: 0, titulos_entregues: 0, qtd_empreendimentos: 0 };
+
+                    props.hab_uh = info.uh;
+                    props.hab_obras = info.obras;
+                    props.hab_inv = info.inv;
+                    props.hab_titulos = info.titulos;
+                    props.hab_titulos_entregues = info.titulos_entregues;
+                    props.hab_qtd_empreendimentos = info.qtd_empreendimentos;
+                });
+            }
+
+            const geoEmpreendimentos = {
+                type: 'FeatureCollection',
+                features: featuresEmpreendimentos
+            };
+
+            // =========================================================================
+            // 4. MAPLIBRE GL
+            // =========================================================================
+            if (mapHabitacao) {
+                try { mapHabitacao.remove(); } catch(e) {}
+            }
+
+            mapHabitacao = new maplibregl.Map({
+                container: 'resumo_habitacao_map',
+                style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                center: [-37.8, -8.3],
+                zoom: 7,
+                preserveDrawingBuffer: true
+            });
+
+            mapHabitacao.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+            mapHabitacao.on('load', () => {
+                mapHabitacao.resize();
+
+                try {
+                    const bounds = new maplibregl.LngLatBounds();
+                    if (featuresEmpreendimentos.length > 0) {
+                        featuresEmpreendimentos.forEach(f => bounds.extend(f.geometry.coordinates));
+                    }
+                    if (!bounds.isEmpty()) {
+                        mapHabitacao.fitBounds(bounds, { padding: 35, maxZoom: 12, duration: 800 });
+                    }
+                } catch(e) {}
+
+                if (geoMun && geoMun.features) {
+                    mapHabitacao.addSource('hab_mun_source', {
+                        type: 'geojson',
+                        data: geoMun
+                    });
+
+                    mapHabitacao.addLayer({
+                        id: 'hab_muns_fill',
+                        type: 'fill',
+                        source: 'hab_mun_source',
+                        paint: {
+                            'fill-color': '#f8fafc',
+                            'fill-opacity': window.visaoHabitacaoAtiva === 'todos' ? 0.08 : 0.75
+                        }
+                    });
+
+                    mapHabitacao.addLayer({
+                        id: 'hab_muns_line',
+                        type: 'line',
+                        source: 'hab_mun_source',
+                        paint: {
+                            'line-color': '#94a3b8',
+                            'line-width': 0.8,
+                            'line-opacity': 0.5
+                        }
+                    });
+
+                    mapHabitacao.addLayer({
+                        id: 'hab_muns_hover',
+                        type: 'line',
+                        source: 'hab_mun_source',
+                        paint: { 'line-color': '#0f172a', 'line-width': 2.4 },
+                        filter: ['==', 'name', '']
+                    });
+                }
+
+                mapHabitacao.addSource('hab_empreendimentos_source', {
+                    type: 'geojson',
+                    data: geoEmpreendimentos,
+                    cluster: true,
+                    clusterMaxZoom: 10,
+                    clusterRadius: 35
+                });
+
+                mapHabitacao.addLayer({
+                    id: 'hab_clusters',
+                    type: 'circle',
+                    source: 'hab_empreendimentos_source',
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'visibility': window.visaoHabitacaoAtiva === 'todos' ? 'visible' : 'none'
+                    },
+                    paint: {
+                        'circle-color': '#f59e0b',
+                        'circle-radius': [
+                            'step',
+                            ['get', 'point_count'],
+                            16,
+                            5, 20,
+                            15, 26
+                        ],
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ffffff',
+                        'circle-opacity': 0.85
+                    }
+                });
+
+                mapHabitacao.addLayer({
+                    id: 'hab_cluster_count',
+                    type: 'symbol',
+                    source: 'hab_empreendimentos_source',
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'visibility': window.visaoHabitacaoAtiva === 'todos' ? 'visible' : 'none',
+                        'text-field': '{point_count_abbreviated}',
+                        'text-size': 12
+                    },
+                    paint: { 'text-color': '#ffffff' }
+                });
+
+                mapHabitacao.addLayer({
+                    id: 'hab_points',
+                    type: 'circle',
+                    source: 'hab_empreendimentos_source',
+                    filter: ['!', ['has', 'point_count']],
+                    layout: {
+                        'visibility': window.visaoHabitacaoAtiva === 'todos' ? 'visible' : 'none'
+                    },
+                    paint: {
+                        'circle-color': [
+                            'case',
+                            ['in', 'conclu', ['downcase', ['get', 'status']]], '#10b981',
+                            ['in', 'entreg', ['downcase', ['get', 'status']]], '#10b981',
+                            ['in', 'obras', ['downcase', ['get', 'status']]], '#f59e0b',
+                            ['in', 'constru', ['downcase', ['get', 'status']]], '#f59e0b',
+                            ['in', 'planej', ['downcase', ['get', 'status']]], '#3b82f6',
+                            '#64748b'
+                        ],
+                        'circle-radius': 7,
+                        'circle-stroke-width': 1.5,
+                        'circle-stroke-color': '#ffffff'
+                    }
+                });
+
+                mapHabitacao.on('click', 'hab_clusters', (e) => {
+                    const clFeatures = mapHabitacao.queryRenderedFeatures(e.point, { layers: ['hab_clusters'] });
+                    if (!clFeatures.length) return;
+                    const clusterId = clFeatures[0].properties.cluster_id;
+                    mapHabitacao.getSource('hab_empreendimentos_source').getClusterExpansionZoom(clusterId, (err, zoom) => {
+                        if (err) return;
+                        mapHabitacao.easeTo({
+                            center: clFeatures[0].geometry.coordinates,
+                            zoom: zoom
+                        });
+                    });
+                });
+
+                // Hover sobre os Municípios
+                mapHabitacao.on('mousemove', 'hab_muns_fill', (e) => {
+                    if (!e.features.length) return;
+                    mapHabitacao.getCanvas().style.cursor = 'pointer';
+                    const props = e.features[0].properties;
+                    const nomeMun = props.name || props.NM_MUN || props.municipio;
+                    mapHabitacao.setFilter('hab_muns_hover', ['==', 'name', props.name || '']);
+
+                    $('#habitacao_box_content_default').addClass('d-none');
+                    $('#habitacao_box_content_active').removeClass('d-none').html(`
+                        <div class="h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-teal-100 text-teal-800 border border-teal-300 font-bold px-2 py-1 text-xs rounded-pill">MUNICÍPIO</span>
+                                    <span class="text-xs text-slate-400 font-semibold">Detalhamento</span>
+                                </div>
+                                <h4 class="font-black text-slate-800 text-base mb-1">${nomeMun}</h4>
+                                <hr class="my-2 border-slate-200">
+                                <div class="space-y-2 mt-3 text-xs">
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Empreendimentos:</span>
+                                        <strong class="text-amber-600 font-black">${(props.hab_qtd_empreendimentos || 0).toLocaleString('pt-BR')}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Unidades Previstas:</span>
+                                        <strong class="text-teal-700 font-black">${(props.hab_uh || 0).toLocaleString('pt-BR')} UH</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Em Construção:</span>
+                                        <strong class="text-amber-600 font-black">${(props.hab_obras || 0).toLocaleString('pt-BR')} UH</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Títulos REURB Entregues:</span>
+                                        <strong class="text-blue-700 font-black">${(props.hab_titulos_entregues || 0).toLocaleString('pt-BR')}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Investimento Previsto:</span>
+                                        <strong class="text-purple-700 font-black">${fmtMoedaBiMi(props.hab_inv)}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-3 border-t border-slate-200/80 text-center">
+                                <span class="text-[11px] text-slate-400 italic">Passe o cursor sobre outros municípios</span>
+                            </div>
+                        </div>
+                    `);
+                });
+
+                // Hover sobre os Pontos
+                mapHabitacao.on('mousemove', 'hab_points', (e) => {
+                    if (!e.features.length) return;
+                    mapHabitacao.getCanvas().style.cursor = 'pointer';
+                    const props = e.features[0].properties;
+
+                    $('#habitacao_box_content_default').addClass('d-none');
+                    $('#habitacao_box_content_active').removeClass('d-none').html(`
+                        <div class="h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-orange-100 text-orange-800 border border-orange-300 font-bold px-2 py-1 text-xs rounded-pill">EMPREENDIMENTO</span>
+                                    <span class="text-xs text-slate-400 font-semibold">${props.municipio}</span>
+                                </div>
+                                <h4 class="font-black text-slate-800 text-base mb-1">${props.nome_empreendimento}</h4>
+                                <hr class="my-2 border-slate-200">
+                                <div class="space-y-2 mt-3 text-xs">
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Status:</span>
+                                        <strong class="text-slate-800 font-bold">${props.status}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Unidades (UH):</span>
+                                        <strong class="text-teal-700 font-black">${(props.uh || 0).toLocaleString('pt-BR')}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Programa:</span>
+                                        <strong class="text-slate-700 font-bold">${props.programa}</strong>
+                                    </div>
+                                    ${props.valor ? `
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Investimento:</span>
+                                        <strong class="text-purple-700 font-black">${fmtMoedaBiMi(props.valor)}</strong>
+                                    </div>` : ''}
+                                </div>
+                            </div>
+                            <div class="pt-3 border-t border-slate-200/80 text-center">
+                                <span class="text-[11px] text-slate-400 italic">Passe o cursor sobre outros equipamentos</span>
+                            </div>
+                        </div>
+                    `);
+                });
+
+                    // Clique no município: filtra a tabela pelo município clicado
+                    mapHabitacao.on('click', 'hab_muns_fill', (e) => {
+                        if (!e.features.length) return;
+                        const props = e.features[0].properties;
+                        const nomeMun = props.name || props.NM_MUN || props.municipio;
+                        if (nomeMun) {
+                            window.filtrarTabelaPorMunicipioHabitacao(nomeMun);
+                        }
+                    });
+                    
+                    // Clique no ponto do empreendimento: filtra pelo município do empreendimento
+                    mapHabitacao.on('click', 'hab_points', (e) => {
+                        if (!e.features.length) return;
+                        const props = e.features[0].properties;
+                        const nomeMun = props.municipio;
+                        if (nomeMun) {
+                            window.filtrarTabelaPorMunicipioHabitacao(nomeMun);
+                        }
+                    });
+                
+
+                ['hab_points', 'hab_clusters', 'hab_muns_fill'].forEach(layer => {
+                    mapHabitacao.on('mouseenter', layer, () => { mapHabitacao.getCanvas().style.cursor = 'pointer'; });
+                    mapHabitacao.on('mouseleave', layer, () => { mapHabitacao.getCanvas().style.cursor = ''; });
+                });
+
+                window.alternarVisaoHabitacao(window.visaoHabitacaoAtiva || 'todos', document.getElementById('btn_visao_hab_todos'));
+            });
+
+            // =========================================================================
+            // 5. RENDERIZAÇÃO DOS GRÁFICOS ANALÍTICOS (ECHARTS)
+            // =========================================================================
+                renderizarGraficosHabitacao(data);
+                window.renderizarTabelasHabitacaoEReurb(data);
+})
+        .catch(err => {
+            console.error('[Resumo Habitação] Erro:', err);
+            $('#resumo_habitacao_spinner').addClass('d-none');
+        });
+};
+
+
+// =========================================================================
+// 5. ALTERNÂNCIA DE VISÕES DA ABA HABITAÇÃO
+// =========================================================================
+window.alternarVisaoHabitacao = function (visao, btn) {
+    window.visaoHabitacaoAtiva = visao;
+
+    $('#btn_visao_hab_todos, #btn_visao_hab_morarbem, #btn_visao_hab_reurb, #btn_visao_hab_pontos')
+        .removeClass('btn-primary shadow-sm')
+        .addClass('btn-light text-slate-600');
+    if (btn) $(btn).removeClass('btn-light text-slate-600').addClass('btn-primary shadow-sm');
+
+    $('#legenda_hab_cluster, #legenda_hab_uh, #legenda_hab_reurb, #legenda_hab_empreendimentos').addClass('d-none');
+
+    if (!mapHabitacao || !mapHabitacao.getLayer('hab_muns_fill')) return;
+
+    if (visao === 'todos') {
+        // VISÃO GERAL: Clusters e Pontos Visíveis com Municípios transparentes
+        $('#legenda_hab_cluster').removeClass('d-none');
+        mapHabitacao.setLayoutProperty('hab_clusters', 'visibility', 'visible');
+        mapHabitacao.setLayoutProperty('hab_cluster_count', 'visibility', 'visible');
+        mapHabitacao.setLayoutProperty('hab_points', 'visibility', 'visible');
+
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-color', '#f8fafc');
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-opacity', 0.08);
+
+        $('#habitacao_camada_label').text("Exibindo: Localização e Clusters de Empreendimentos");
+
+    } else if (visao === 'morarbem') {
+        // MORAR BEM: Coroplético de Obras (UH)
+        $('#legenda_hab_uh').removeClass('d-none');
+        mapHabitacao.setLayoutProperty('hab_clusters', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_cluster_count', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_points', 'visibility', 'none');
+
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-opacity', 0.75);
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'hab_obras'],
+            '#f0fdfa',
+            1, '#99f6e4',
+            100, '#2dd4bf',
+            500, '#0f766e'
+        ]);
+        $('#habitacao_camada_label').text("Exibindo: Unidades Habitacionais em Obras");
+
+    } else if (visao === 'reurb') {
+        // REGULARIZAÇÃO: Coroplético de Títulos Concluídos
+        $('#legenda_hab_reurb').removeClass('d-none');
+        mapHabitacao.setLayoutProperty('hab_clusters', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_cluster_count', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_points', 'visibility', 'none');
+
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-opacity', 0.75);
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'hab_titulos_entregues'],
+            '#eff6ff',
+            1, '#93c5fd',
+            200, '#3b82f6',
+            1000, '#1d4ed8'
+        ]);
+        $('#habitacao_camada_label').text("Exibindo: Títulos de Regularização Fundiária Concluídos");
+
+    } else if (visao === 'pontos') {
+        // EMPREENDIMENTOS: Coroplético por Quantidade de Empreendimentos
+        $('#legenda_hab_empreendimentos').removeClass('d-none');
+        mapHabitacao.setLayoutProperty('hab_clusters', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_cluster_count', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_points', 'visibility', 'none');
+
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-opacity', 0.75);
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'hab_qtd_empreendimentos'],
+            '#fff7ed',   // 0
+            1, '#fdba74', // 1 a 2
+            3, '#fb923c', // 3 a 5
+            6, '#c2410c'  // > 5
+        ]);
+        $('#habitacao_camada_label').text("Exibindo: Quantidade de Empreendimentos por Município");
+    }
+};
+
+
+// =========================================================================
+// 5. ALTERNÂNCIA DE VISÕES DA ABA HABITAÇÃO
+// =========================================================================
+window.alternarVisaoHabitacao = function (visao, btn) {
+    window.visaoHabitacaoAtiva = visao;
+
+    $('#btn_visao_hab_todos, #btn_visao_hab_morarbem, #btn_visao_hab_reurb, #btn_visao_hab_pontos')
+        .removeClass('btn-primary shadow-sm')
+        .addClass('btn-light text-slate-600');
+    if (btn) $(btn).removeClass('btn-light text-slate-600').addClass('btn-primary shadow-sm');
+
+    $('#legenda_hab_cluster, #legenda_hab_uh, #legenda_hab_reurb, #legenda_hab_empreendimentos').addClass('d-none');
+
+    if (!mapHabitacao || !mapHabitacao.getLayer('hab_muns_fill')) return;
+
+    if (visao === 'todos') {
+        // VISÃO GERAL: Clusters e Pontos Visíveis, Fundo Municipal Transparente/Neutro
+        $('#legenda_hab_cluster').removeClass('d-none');
+        mapHabitacao.setLayoutProperty('hab_clusters', 'visibility', 'visible');
+        mapHabitacao.setLayoutProperty('hab_cluster_count', 'visibility', 'visible');
+        mapHabitacao.setLayoutProperty('hab_points', 'visibility', 'visible');
+
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-color', '#f8fafc');
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-opacity', 0.15);
+
+        $('#habitacao_camada_label').text("Exibindo: Localização e Clusters de Empreendimentos");
+
+    } else if (visao === 'morarbem') {
+        // MORAR BEM: Coroplético de Obras (UH)
+        $('#legenda_hab_uh').removeClass('d-none');
+        mapHabitacao.setLayoutProperty('hab_clusters', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_cluster_count', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_points', 'visibility', 'none');
+
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-opacity', 0.85);
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'hab_obras'],
+            '#f0fdfa',
+            1, '#99f6e4',
+            100, '#2dd4bf',
+            500, '#0f766e'
+        ]);
+        $('#habitacao_camada_label').text("Exibindo: Unidades Habitacionais em Obras");
+
+    } else if (visao === 'reurb') {
+        // REGULARIZAÇÃO: Coroplético de Títulos Concluídos
+        $('#legenda_hab_reurb').removeClass('d-none');
+        mapHabitacao.setLayoutProperty('hab_clusters', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_cluster_count', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_points', 'visibility', 'none');
+
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-opacity', 0.85);
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'hab_titulos_entregues'],
+            '#eff6ff',
+            1, '#93c5fd',
+            200, '#3b82f6',
+            1000, '#1d4ed8'
+        ]);
+        $('#habitacao_camada_label').text("Exibindo: Títulos de Regularização Fundiária Concluídos");
+
+    } else if (visao === 'pontos') {
+        // EMPREENDIMENTOS: Coroplético pela Quantidade de Empreendimentos por Município
+        $('#legenda_hab_empreendimentos').removeClass('d-none');
+        mapHabitacao.setLayoutProperty('hab_clusters', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_cluster_count', 'visibility', 'none');
+        mapHabitacao.setLayoutProperty('hab_points', 'visibility', 'none');
+
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-opacity', 0.85);
+        mapHabitacao.setPaintProperty('hab_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'hab_qtd_empreendimentos'],
+            '#fff7ed',   // 0
+            1, '#fdba74', // 1 a 2
+            3, '#fb923c', // 3 a 5
+            6, '#c2410c'  // > 5
+        ]);
+        $('#habitacao_camada_label').text("Exibindo: Quantidade de Empreendimentos por Município");
+    }
+};
 
 // Função do botão retrátil
 window.toggleDetalhesHabitacao = function () {
@@ -7980,175 +8952,3311 @@ window.toggleDetalhesHabitacao = function () {
     }
 };
 
-window.renderizarResumoHabitacao = function () {
-    const elKpiTotalUH = document.getElementById('morar_bem_kpi_total');
-    if (!elKpiTotalUH) return;
 
-    const fmtMoeda = (val) => {
-        const num = Number(val);
-        if (!num || isNaN(num) || num === 0) return "R$ 0";
-        const abs = Math.abs(num);
+/* ==========================================================================
+   GRÁFICOS ANALÍTICOS: HABITAÇÃO (STATUS DE OBRAS & TOP 20 MUNICÍPIOS)
+   ========================================================================== */
+function renderizarGraficosHabitacao(data) {
+    if (typeof echarts === 'undefined') return;
 
-        if (abs >= 1e9) {
-            return `R$ ${(num / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bi`;
+    const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+    // =========================================================================
+    // 1. GRÁFICO 1: STATUS DAS OBRAS (chart_habitacao_status) - Donut Chart
+    // =========================================================================
+    const elStatus = document.getElementById('chart_habitacao_status');
+    if (elStatus) {
+        if (chartHabitacaoStatus) {
+            chartHabitacaoStatus.dispose();
         }
-        if (abs >= 1e6) {
-            return `R$ ${(num / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Mi`;
-        }
-        if (abs >= 1e3) {
-            return `R$ ${(num / 1e3).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} mil`;
-        }
-        return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    };
+        chartHabitacaoStatus = echarts.init(elStatus);
 
-    const atualizarValoresDOM = (data) => {
-        if (!data) return;
+        const statusMap = {
+            'Concluído': 0,
+            'Em Construção': 0,
+            'Em Planejamento': 0
+        };
 
-        // 1. Morar Bem PE (Geral)
-        if (data.kpis) {
-            const k = data.kpis;
-            if (k.total_uh !== undefined) {
-                $('#morar_bem_kpi_total').text(Number(k.total_uh).toLocaleString('pt-BR'));
-                $('#hab_box_stat_unidades').text(Number(k.total_uh).toLocaleString('pt-BR'));
+        (data.projetos || []).forEach(p => {
+            const uh = Number(p.uh) || 0;
+            const s = String(p.status || '').toLowerCase();
+
+            if (s.includes('conclu') || s.includes('entreg')) {
+                statusMap['Concluído'] += uh;
+            } else if (s.includes('planej') || s.includes('projeto') || s.includes('licita')) {
+                statusMap['Em Planejamento'] += uh;
+            } else {
+                statusMap['Em Construção'] += uh;
             }
-            if (k.entregues_uh !== undefined) $('#morar_bem_kpi_entregues').text(Number(k.entregues_uh).toLocaleString('pt-BR'));
-            if (k.construcao_uh !== undefined) $('#morar_bem_kpi_obras').text(Number(k.construcao_uh).toLocaleString('pt-BR'));
-            if (k.investimento_total !== undefined) {
-                $('#morar_bem_kpi_investimento').text(fmtMoeda(k.investimento_total));
-                $('#hab_box_stat_investimento').text(fmtMoeda(k.investimento_total));
-            }
-            if (k.contrapartida_total !== undefined) $('#morar_bem_kpi_contrapartida').text(fmtMoeda(k.contrapartida_total));
-            if (k.municipios_cobertos !== undefined) {
-                $('#morar_bem_kpi_municipios').text(Number(k.municipios_cobertos).toLocaleString('pt-BR'));
-                $('#hab_box_stat_muns').text(Number(k.municipios_cobertos).toLocaleString('pt-BR'));
-            }
+        });
+
+        const statusData = [
+            { value: statusMap['Concluído'], name: 'Concluído / Entregue', itemStyle: { color: '#10b981' } },
+            { value: statusMap['Em Construção'], name: 'Em Construção', itemStyle: { color: '#f59e0b' } },
+            { value: statusMap['Em Planejamento'], name: 'Em Planejamento / Projeto', itemStyle: { color: '#3b82f6' } }
+        ].filter(item => item.value > 0);
+
+        const totalUH = statusData.reduce((acc, curr) => acc + curr.value, 0);
+
+        const optionStatus = {
+            tooltip: {
+                trigger: 'item',
+                formatter: (params) => {
+                    const pct = totalUH > 0 ? ((params.value / totalUH) * 100).toFixed(1) : 0;
+                    return `<strong>${params.name}</strong><br/>` +
+                           `Unidades (UH): <b>${Number(params.value).toLocaleString('pt-BR')}</b> (${pct}%)`;
+                }
+            },
+            legend: {
+                orient: 'horizontal',
+                bottom: '0%',
+                left: 'center',
+                textStyle: { fontSize: 11, color: '#475569', fontWeight: 600 },
+                itemWidth: 12,
+                itemHeight: 12
+            },
+            series: [
+                {
+                    name: 'Status das Obras',
+                    type: 'pie',
+                    radius: ['45%', '72%'],
+                    center: ['50%', '45%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 6,
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: false,
+                        position: 'center'
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: 16,
+                            fontWeight: 'bold',
+                            formatter: (params) => `${Number(params.value).toLocaleString('pt-BR')}\nUH`
+                        }
+                    },
+                    labelLine: { show: false },
+                    data: statusData
+                }
+            ]
+        };
+
+        chartHabitacaoStatus.setOption(optionStatus);
+    }
+
+    // =========================================================================
+    // 2. GRÁFICO 2: TOP 20 MUNICÍPIOS (chart_habitacao_por_mun) - Barras Empilhadas
+    // =========================================================================
+    const elMun = document.getElementById('chart_habitacao_por_mun');
+    if (elMun) {
+        if (chartHabitacaoPorMun) {
+            chartHabitacaoPorMun.dispose();
         }
-        
-        // Regularização Fundiária (REURB)
-        if (data.kpis_reurb) {
-            const reurb = data.kpis_reurb;
+        chartHabitacaoPorMun = echarts.init(elMun);
 
-            if (reurb.titulos_previstos !== undefined) {
-                $('#reurb_kpi_previstos').text(Number(reurb.titulos_previstos).toLocaleString('pt-BR'));
-                $('#hab_box_stat_titulos').text(Number(reurb.titulos_previstos).toLocaleString('pt-BR'));
-            }
-            if (reurb.titulos_entregues !== undefined) {
-                $('#reurb_kpi_entregues').text(Number(reurb.titulos_entregues).toLocaleString('pt-BR'));
-            }
-            if (reurb.titulos_andamento !== undefined) {
-                $('#reurb_kpi_andamento').text(Number(reurb.titulos_andamento).toLocaleString('pt-BR'));
-            }
-            if (reurb.total_mulheres !== undefined) {
-                $('#reurb_kpi_mulheres').text(Number(reurb.total_mulheres).toLocaleString('pt-BR'));
-            }
-            if (reurb.percent_mulheres !== undefined) {
-                $('#reurb_kpi_mulheres_pct').text(`${Number(reurb.percent_mulheres).toFixed(1)}% do total`);
-            }
-            if (reurb.total_nucleos !== undefined) {
-                $('#reurb_kpi_nucleos').text(Number(reurb.total_nucleos).toLocaleString('pt-BR'));
-            }
-            if (reurb.total_municipios !== undefined) {
-                $('#reurb_kpi_municipios').text(Number(reurb.total_municipios).toLocaleString('pt-BR'));
-            }
+        // Agrupamento municipal
+        const munTotals = {};
 
-            // Helper para preencher Valor Principal (Entregues) e Rodapé (Previstos / Entregues %)
-            const preencherClassif = (idNum, idDesc, metrica) => {
-                if (!metrica) return;
-                const ent = Number(metrica.entregues || 0);
-                const prev = Number(metrica.previstos || 0);
-                const pct = Number(metrica.percent || 0).toFixed(1);
+        (data.projetos || []).forEach(p => {
+            const m = String(p.municipio || '').trim();
+            if (!m || m === '-') return;
+            const k = norm(m);
+            if (!munTotals[k]) munTotals[k] = { nome: m, uh: 0, titulos: 0 };
+            munTotals[k].uh += Number(p.uh) || 0;
+        });
 
-                // Valor principal: entregues
-                $(`#${idNum}`).text(ent.toLocaleString('pt-BR'));
-                // Rodapé: Previstos / Entregues (X%)
-                $(`#${idDesc}`).text(`${prev.toLocaleString('pt-BR')} prev. / ${ent.toLocaleString('pt-BR')} ent. (${pct}%)`);
-            };
+        (data.regularizacoes || []).forEach(rg => {
+            const m = String(rg.municipio || rg.cidade || '').trim();
+            if (!m || m === '-') return;
+            const k = norm(m);
+            if (!munTotals[k]) munTotals[k] = { nome: m, uh: 0, titulos: 0 };
+            munTotals[k].titulos += Number(rg.regularizacoes) || 0;
+        });
 
-            preencherClassif('reurb_kpi_classif_regmel', 'reurb_kpi_classif_regmel_desc', reurb.classif_regmel);
-            preencherClassif('reurb_kpi_classif_fundiaria', 'reurb_kpi_classif_fundiaria_desc', reurb.classif_fundiaria);
-            preencherClassif('reurb_kpi_classif_reurb', 'reurb_kpi_classif_reurb_desc', reurb.classif_reurb);
-            preencherClassif('reurb_kpi_classif_imobiliaria', 'reurb_kpi_classif_imobiliaria_desc', reurb.classif_imobiliaria);
-        }
+        // Top 20 ordenados pelo volume total (UH + Títulos)
+        const top20 = Object.values(munTotals)
+            .map(item => ({
+                ...item,
+                total: item.uh + item.titulos
+            }))
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 20)
+            .reverse(); // Inverte para o maior ficar no topo do eixo Y vertical
 
-        // 3. RNL (Reforma no Lar)
-        if (data.kpis_reforma_no_lar) {
-            const rnl = data.kpis_reforma_no_lar;
-            if (rnl.cadastrados !== undefined) $('#rnl_kpi_cadastrados').text(Number(rnl.cadastrados).toLocaleString('pt-BR'));
-            if (rnl.reformas_realizadas !== undefined) $('#rnl_kpi_concluidas').text(Number(rnl.reformas_realizadas).toLocaleString('pt-BR'));
-            if (rnl.valor_contratual !== undefined) $('#rnl_kpi_valor_contratual').text(fmtMoeda(rnl.valor_contratual));
-            if (rnl.valor_total_medido !== undefined) $('#rnl_kpi_valor_medido').text(fmtMoeda(rnl.valor_total_medido));
-            if (rnl.municipios_atendidos !== undefined) $('#rnl_kpi_municipios').text(Number(rnl.municipios_atendidos).toLocaleString('pt-BR'));
-        }
+        const categories = top20.map(item => item.nome);
+        const seriesUH = top20.map(item => item.uh);
+        const seriesTitulos = top20.map(item => item.titulos);
 
-        // 4. ENT (Entrada Garantida)
-        if (data.kpis_entrada_garantida) {
-            const ent = data.kpis_entrada_garantida;
-            if (ent.total_uh !== undefined) $('#ent_kpi_uh').text(Number(ent.total_uh).toLocaleString('pt-BR'));
-            if (ent.quantidade_empreendimento !== undefined) $('#ent_kpi_empreendimentos').text(Number(ent.quantidade_empreendimento).toLocaleString('pt-BR'));
-            if (ent.valor_total !== undefined) $('#ent_kpi_valor_total').text(fmtMoeda(ent.valor_total));
-            if (ent.municipios_atendidos !== undefined) $('#ent_kpi_municipios').text(Number(ent.municipios_atendidos).toLocaleString('pt-BR'));
-        }
+        const optionMun = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: (params) => {
+                    let text = `<strong>${params[0].name}</strong><br/>`;
+                    params.forEach(p => {
+                        text += `${p.marker} ${p.seriesName}: <b>${Number(p.value).toLocaleString('pt-BR')}</b><br/>`;
+                    });
+                    return text;
+                }
+            },
+            legend: {
+                orient: 'horizontal',
+                bottom: '0%',
+                left: 'center',
+                textStyle: { fontSize: 11, color: '#475569', fontWeight: 600 },
+                itemWidth: 12,
+                itemHeight: 12
+            },
+            grid: {
+                top: '5%',
+                left: '3%',
+                right: '4%',
+                bottom: '12%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value',
+                axisLabel: {
+                    color: '#64748b',
+                    fontSize: 10,
+                    formatter: (v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v
+                },
+                splitLine: { lineStyle: { color: '#f1f5f9' } }
+            },
+            yAxis: {
+                type: 'category',
+                data: categories,
+                axisLabel: { color: '#334155', fontSize: 11, fontWeight: 500 },
+                axisLine: { lineStyle: { color: '#cbd5e1' } }
+            },
+            series: [
+                {
+                    name: 'Unidades Habitacionais (UH)',
+                    type: 'bar',
+                    stack: 'total',
+                    data: seriesUH,
+                    itemStyle: { color: '#0d9488' } // Teal institucional
+                },
+                {
+                    name: 'Títulos de Regularização',
+                    type: 'bar',
+                    stack: 'total',
+                    data: seriesTitulos,
+                    itemStyle: { color: '#2563eb' } // Azul REURB
+                }
+            ]
+        };
 
-        // 5. FAR
-        if (data.kpis_far) {
-            const far = data.kpis_far;
-            if (far.total_uh !== undefined) $('#far_kpi_uh').text(Number(far.total_uh).toLocaleString('pt-BR'));
-            if (far.quantidade_empreendimento !== undefined) $('#far_kpi_empreendimentos').text(Number(far.quantidade_empreendimento).toLocaleString('pt-BR'));
-            if (far.recurso_federal !== undefined) $('#far_kpi_recurso_federal').text(fmtMoeda(far.recurso_federal));
-            if (far.contrapartida_obras !== undefined) $('#far_kpi_contrapartida_obras').text(fmtMoeda(far.contrapartida_obras));
-            if (far.contrapartida_terrenos !== undefined) $('#far_kpi_contrapartida_terrenos').text(fmtMoeda(far.contrapartida_terrenos));
-        }
+        chartHabitacaoPorMun.setOption(optionMun);
+    }
+}
 
-        // 6. FDS
-        if (data.kpis_fds) {
-            const fds = data.kpis_fds;
-            if (fds.total_uh !== undefined) $('#fds_kpi_uh').text(Number(fds.total_uh).toLocaleString('pt-BR'));
-            if (fds.quantidade_empreendimento !== undefined) $('#fds_kpi_empreendimentos').text(Number(fds.quantidade_empreendimento).toLocaleString('pt-BR'));
-            if (fds.contrapartida_obras !== undefined) $('#fds_kpi_contrapartida').text(fmtMoeda(fds.contrapartida_obras));
-        }
+/* ==========================================================================
+   RESUMOS TEMÁTICOS - PAUTA 6: OBRAS E EQUIPAMENTOS PÚBLICOS (SEDUH / CEHAB)
+   ========================================================================== */
+let mapResumoObras = null;
+window.cacheResumoObras = null;
+let cacheObrasData = null;
+let mapObras = null;
+window.visaoObrasAtiva = 'todos';
 
-        // 7. SUB-50
-        if (data.kpis_sub50) {
-            const sub = data.kpis_sub50;
-            if (sub.total_uh !== undefined) $('#sub50_kpi_uh').text(Number(sub.total_uh).toLocaleString('pt-BR'));
-            if (sub.quantidade_empreendimento !== undefined) $('#sub50_kpi_empreendimentos').text(Number(sub.quantidade_empreendimento).toLocaleString('pt-BR'));
-            if (sub.valor_total_licitacao !== undefined) $('#sub50_kpi_licitacao').text(fmtMoeda(sub.valor_total_licitacao));
-            if (sub.contrapartida_obras !== undefined) $('#sub50_kpi_contrapartida').text(fmtMoeda(sub.contrapartida_obras));
-        }
+// Instâncias dos Gráficos ECharts
+let chartObrasStatus = null;
+let chartObrasPorMun = null;
+let dataTableObras = null;
+let municipioObrasFiltro = null;
 
-        // 8. RETOMADAS
-        if (data.kpis_retomadas) {
-            const ret = data.kpis_retomadas;
-            if (ret.total_uh !== undefined) $('#retomadas_kpi_uh').text(Number(ret.total_uh).toLocaleString('pt-BR'));
-            if (ret.quantidade_empreendimento !== undefined) $('#retomadas_kpi_empreendimentos').text(Number(ret.quantidade_empreendimento).toLocaleString('pt-BR'));
-            if (ret.recurso_federal !== undefined) $('#retomadas_kpi_recurso_federal').text(fmtMoeda(ret.recurso_federal));
-            if (ret.contrapartida_obras !== undefined) $('#retomadas_kpi_contrapartida').text(fmtMoeda(ret.contrapartida_obras));
-        }
-    };
+window.renderizarResumoObras = function () {
+    const container = document.getElementById('resumo_obras_map');
+    if (!container) return;
 
-    if (cacheResumoHabitacao) {
-        atualizarValoresDOM(cacheResumoHabitacao);
+    if (cacheObrasData) {
+        setTimeout(() => {
+            if (mapObras && typeof mapObras.resize === 'function') mapObras.resize();
+            if (chartObrasStatus && typeof chartObrasStatus.resize === 'function') chartObrasStatus.resize();
+            if (chartObrasPorMun && typeof chartObrasPorMun.resize === 'function') chartObrasPorMun.resize();
+            if (dataTableObras && typeof dataTableObras.columns.adjust === 'function') dataTableObras.columns.adjust();
+        }, 120);
         return;
     }
 
-    const spinner = document.getElementById('resumo_habitacao_spinner');
-    if (spinner) spinner.classList.remove('d-none');
+    $('#resumo_obras_spinner').removeClass('d-none');
 
-    const apiUrl = `${window.basePath || ''}/municipios/resumo/habitacao`.replace(/\/+/g, '/');
-
+    const apiUrl = `${window.basePath || ''}/municipios/resumo/obras`.replace(/\/+/g, '/');
     fetch(apiUrl)
         .then(res => {
-            if (!res.ok) throw new Error("Erro na requisição dos dados de Habitação");
+            if (!res.ok) throw new Error("Erro ao carregar dados de Obras");
             return res.json();
         })
         .then(data => {
-            cacheResumoHabitacao = data;
-            window.cacheResumoHabitacao = data;
-            if (spinner) spinner.classList.add('d-none');
-            atualizarValoresDOM(data);
+            cacheObrasData = data;
+            window.cacheResumoObras = data;
+            $('#resumo_obras_spinner').addClass('d-none');
+
+            const fmtMoedaBiMi = (val) => {
+                if (!val || isNaN(val) || val === 0) return "R$ 0";
+                const abs = Math.abs(val);
+                if (abs >= 1e9) return `R$ ${(val / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Bi`;
+                if (abs >= 1e6) return `R$ ${(val / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Mi`;
+                if (abs >= 1e3) return `R$ ${(val / 1e3).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mil`;
+                return `R$ ${val.toLocaleString('pt-BR')}`;
+            };
+
+            const fmtInt = (val) => (val !== undefined && val !== null && !isNaN(val)) ? Number(val).toLocaleString('pt-BR') : '-';
+
+            // 1. ATUALIZAÇÃO DOS KPIS PRINCIPAIS
+            const k = data.kpis || {};
+            $('#obras_kpi_total').text(fmtInt(k.total_obras));
+            $('#obras_kpi_execucao').text(fmtInt(k.em_execucao));
+            $('#obras_kpi_concluidas').text(fmtInt(k.concluidas));
+            $('#obras_kpi_investimento').text(fmtMoedaBiMi(k.investimento_total));
+            $('#obras_kpi_exec_media').text(`${(k.media_exec_fisica || 0).toFixed(1)}%`);
+            $('#obras_kpi_municipios').text(fmtInt(k.municipios_cobertos));
+
+            $('#obras_box_stat_muns').text(fmtInt(k.municipios_cobertos));
+            $('#obras_box_stat_ativas').text(fmtInt(k.em_execucao));
+            $('#obras_box_stat_concluidas').text(fmtInt(k.concluidas));
+            $('#obras_box_stat_investimento').text(fmtMoedaBiMi(k.investimento_total));
+
+            // 2. PARSE DO GEOJSON E CÁLCULO DE CENTRÓIDES MUNICIPAIS
+            let geoMun = data.geojson;
+            if (typeof geoMun === 'string') {
+                try { geoMun = JSON.parse(geoMun); } catch(e) {}
+            }
+
+            const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+            const munsMap = {};
+            const munCentroids = {};
+
+            if (geoMun && geoMun.features) {
+                geoMun.features.forEach(f => {
+                    const nomeMun = norm(f.properties.name || f.properties.NM_MUN || f.properties.municipio);
+                    try {
+                        let flatCoords = [];
+                        const collect = (c) => {
+                            if (typeof c[0] === 'number') flatCoords.push(c);
+                            else c.forEach(collect);
+                        };
+                        collect(f.geometry.coordinates);
+                        if (flatCoords.length > 0) {
+                            const sum = flatCoords.reduce((acc, curr) => [acc[0] + curr[0], acc[1] + curr[1]], [0, 0]);
+                            munCentroids[nomeMun] = [sum[0] / flatCoords.length, sum[1] / flatCoords.length];
+                        }
+                    } catch(e) {}
+                });
+            }
+
+            // 3. PROCESSAMENTO DOS PONTOS DE OBRAS E POLÍGONOS
+            const featuresObras = [];
+            const obras = data.obras || [];
+
+            obras.forEach((o, idx) => {
+                const m = norm(o.municipio);
+                const inv = Number(o.valor_total) || 0;
+                const execFisica = Number(o.percent_execucao_fisica) || Number(o.percent_execucao) || 0;
+                const statusStr = String(o.status || '').trim();
+                const stNorm = statusStr.toLowerCase();
+
+                if (m) {
+                    if (!munsMap[m]) {
+                        munsMap[m] = { total: 0, em_execucao: 0, concluidas: 0, inv: 0, soma_exec: 0 };
+                    }
+                    munsMap[m].total += 1;
+                    munsMap[m].inv += inv;
+                    munsMap[m].soma_exec += (execFisica <= 1.0 && execFisica > 0 ? execFisica * 100 : execFisica);
+
+                    if (stNorm.includes('execu') || stNorm.includes('andamento')) {
+                        munsMap[m].em_execucao += 1;
+                    } else if (stNorm.includes('conclu') || stNorm.includes('finaliz') || stNorm.includes('entreg')) {
+                        munsMap[m].concluidas += 1;
+                    }
+                }
+
+                let lat = Number(o.latitude);
+                let lng = Number(o.longitude);
+
+                if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+                    if (m && munCentroids[m]) {
+                        const jitterX = ((idx % 7) - 3) * 0.008;
+                        const jitterY = (((idx * 3) % 7) - 3) * 0.008;
+                        lng = munCentroids[m][0] + jitterX;
+                        lat = munCentroids[m][1] + jitterY;
+                    }
+                }
+
+                if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+                    featuresObras.push({
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [lng, lat]
+                        },
+                        properties: {
+                            iniciativa: o.iniciativa_estrategica || o.iniciativa_resumida || o.produto || 'Obra Pública',
+                            produto: o.produto || '',
+                            municipio: o.municipio || '',
+                            status: statusStr || 'Em Execução',
+                            diretoria: o.diretoria || 'DIF',
+                            secretaria: o.secretaria || 'SEDUH',
+                            empresa: o.empresa || '',
+                            contrato: o.numero_do_contrato || '',
+                            valor: inv,
+                            exec_fisica: execFisica <= 1.0 && execFisica > 0 ? execFisica * 100 : execFisica
+                        }
+                    });
+                }
+            });
+
+            // Enriquecer propriedades dos municípios para coropléticos
+            if (geoMun && geoMun.features) {
+                geoMun.features.forEach(f => {
+                    const props = f.properties || {};
+                    const kMun = norm(props.name || props.NM_MUN || props.municipio);
+                    const info = munsMap[kMun] || { total: 0, em_execucao: 0, concluidas: 0, inv: 0, soma_exec: 0 };
+
+                    props.name = props.name || props.municipio || '';
+                    props.obras_total = info.total;
+                    props.obras_execucao = info.em_execucao;
+                    props.obras_concluidas = info.concluidas;
+                    props.obras_investimento = info.inv;
+                    props.obras_media_exec = info.total > 0 ? (info.soma_exec / info.total) : 0;
+                });
+            }
+
+            const geoObras = {
+                type: 'FeatureCollection',
+                features: featuresObras
+            };
+
+            // 4. INICIALIZAÇÃO DO MAPA MAPLIBRE
+            if (mapObras) {
+                try { mapObras.remove(); } catch(e) {}
+            }
+
+            mapObras = new maplibregl.Map({
+                container: 'resumo_obras_map',
+                style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                center: [-37.8, -8.3],
+                zoom: 7,
+                preserveDrawingBuffer: true
+            });
+
+            mapObras.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+            mapObras.on('load', () => {
+                mapObras.resize();
+
+                try {
+                    const bounds = new maplibregl.LngLatBounds();
+                    if (featuresObras.length > 0) {
+                        featuresObras.forEach(f => bounds.extend(f.geometry.coordinates));
+                    }
+                    if (!bounds.isEmpty()) {
+                        mapObras.fitBounds(bounds, { padding: 35, maxZoom: 12, duration: 800 });
+                    }
+                } catch(e) {}
+
+                if (geoMun && geoMun.features) {
+                    mapObras.addSource('obras_mun_source', {
+                        type: 'geojson',
+                        data: geoMun
+                    });
+
+                    mapObras.addLayer({
+                        id: 'obras_muns_fill',
+                        type: 'fill',
+                        source: 'obras_mun_source',
+                        paint: {
+                            'fill-color': '#f8fafc',
+                            'fill-opacity': window.visaoObrasAtiva === 'todos' ? 0.08 : 0.75
+                        }
+                    });
+
+                    mapObras.addLayer({
+                        id: 'obras_muns_line',
+                        type: 'line',
+                        source: 'obras_mun_source',
+                        paint: {
+                            'line-color': '#94a3b8',
+                            'line-width': 0.8,
+                            'line-opacity': 0.5
+                        }
+                    });
+
+                    mapObras.addLayer({
+                        id: 'obras_muns_hover',
+                        type: 'line',
+                        source: 'obras_mun_source',
+                        paint: { 'line-color': '#0f172a', 'line-width': 2.4 },
+                        filter: ['==', 'name', '']
+                    });
+                }
+
+                mapObras.addSource('obras_points_source', {
+                    type: 'geojson',
+                    data: geoObras,
+                    cluster: true,
+                    clusterMaxZoom: 10,
+                    clusterRadius: 35
+                });
+
+                mapObras.addLayer({
+                    id: 'obras_clusters',
+                    type: 'circle',
+                    source: 'obras_points_source',
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'visibility': window.visaoObrasAtiva === 'todos' ? 'visible' : 'none'
+                    },
+                    paint: {
+                        'circle-color': '#f59e0b',
+                        'circle-radius': [
+                            'step',
+                            ['get', 'point_count'],
+                            16,
+                            5, 20,
+                            15, 26
+                        ],
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ffffff',
+                        'circle-opacity': 0.85
+                    }
+                });
+
+                mapObras.addLayer({
+                    id: 'obras_cluster_count',
+                    type: 'symbol',
+                    source: 'obras_points_source',
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'visibility': window.visaoObrasAtiva === 'todos' ? 'visible' : 'none',
+                        'text-field': '{point_count_abbreviated}',
+                        'text-size': 12
+                    },
+                    paint: { 'text-color': '#ffffff' }
+                });
+
+                mapObras.addLayer({
+                    id: 'obras_points',
+                    type: 'circle',
+                    source: 'obras_points_source',
+                    filter: ['!', ['has', 'point_count']],
+                    layout: {
+                        'visibility': window.visaoObrasAtiva === 'todos' ? 'visible' : 'none'
+                    },
+                    paint: {
+                        'circle-color': [
+                            'case',
+                            ['in', 'conclu', ['downcase', ['get', 'status']]], '#10b981',
+                            ['in', 'entreg', ['downcase', ['get', 'status']]], '#10b981',
+                            ['in', 'execu', ['downcase', ['get', 'status']]], '#f59e0b',
+                            ['in', 'andamento', ['downcase', ['get', 'status']]], '#f59e0b',
+                            ['in', 'paralis', ['downcase', ['get', 'status']]], '#ef4444',
+                            '#3b82f6'
+                        ],
+                        'circle-radius': 7,
+                        'circle-stroke-width': 1.5,
+                        'circle-stroke-color': '#ffffff'
+                    }
+                });
+
+                mapObras.on('click', 'obras_clusters', (e) => {
+                    const clFeatures = mapObras.queryRenderedFeatures(e.point, { layers: ['obras_clusters'] });
+                    if (!clFeatures.length) return;
+                    const clusterId = clFeatures[0].properties.cluster_id;
+                    mapObras.getSource('obras_points_source').getClusterExpansionZoom(clusterId, (err, zoom) => {
+                        if (err) return;
+                        mapObras.easeTo({
+                            center: clFeatures[0].geometry.coordinates,
+                            zoom: zoom
+                        });
+                    });
+                });
+
+                // Hover sobre Municípios
+                mapObras.on('mousemove', 'obras_muns_fill', (e) => {
+                    if (!e.features.length) return;
+                    mapObras.getCanvas().style.cursor = 'pointer';
+                    const props = e.features[0].properties;
+                    const nomeMun = props.name || props.NM_MUN || props.municipio;
+                    mapObras.setFilter('obras_muns_hover', ['==', 'name', props.name || '']);
+
+                    $('#obras_box_content_default').addClass('d-none');
+                    $('#obras_box_content_active').removeClass('d-none').html(`
+                        <div class="h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-orange-100 text-[#c2410c] border border-orange-300 font-bold px-2 py-1 text-xs rounded-pill">MUNICÍPIO</span>
+                                    <span class="text-xs text-slate-400 font-semibold">Detalhamento</span>
+                                </div>
+                                <h4 class="font-black text-slate-800 text-base mb-1">${nomeMun}</h4>
+                                <hr class="my-2 border-slate-200">
+                                <div class="space-y-2 mt-3 text-xs">
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Total de Obras:</span>
+                                        <strong class="text-slate-800 font-black">${(props.obras_total || 0).toLocaleString('pt-BR')}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Em Execução:</span>
+                                        <strong class="text-amber-600 font-black">${(props.obras_execucao || 0).toLocaleString('pt-BR')}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Concluídas:</span>
+                                        <strong class="text-emerald-700 font-black">${(props.obras_concluidas || 0).toLocaleString('pt-BR')}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Investimento Total:</span>
+                                        <strong class="text-blue-700 font-black">${fmtMoedaBiMi(props.obras_investimento)}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Avanço Físico Médio:</span>
+                                        <strong class="text-purple-700 font-black">${(props.obras_media_exec || 0).toFixed(1)}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-3 border-t border-slate-200/80 text-center">
+                                <span class="text-[11px] text-slate-400 italic">Clique para filtrar a tabela por este município</span>
+                            </div>
+                        </div>
+                    `);
+                });
+
+                // Hover sobre os Pontos de Canteiros
+                mapObras.on('mousemove', 'obras_points', (e) => {
+                    if (!e.features.length) return;
+                    mapObras.getCanvas().style.cursor = 'pointer';
+                    const props = e.features[0].properties;
+
+                    $('#obras_box_content_default').addClass('d-none');
+                    $('#obras_box_content_active').removeClass('d-none').html(`
+                        <div class="h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-amber-100 text-amber-800 border border-amber-300 font-bold px-2 py-1 text-xs rounded-pill">CANTEIRO DE OBRA</span>
+                                    <span class="text-xs text-slate-400 font-semibold">${props.municipio}</span>
+                                </div>
+                                <h4 class="font-black text-slate-800 text-base mb-1">${props.iniciativa}</h4>
+                                <div class="text-xs text-slate-500 mb-2">${props.produto || ''}</div>
+                                <hr class="my-2 border-slate-200">
+                                <div class="space-y-2 mt-3 text-xs">
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Status:</span>
+                                        <strong class="text-slate-800 font-bold">${props.status}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Diretoria:</span>
+                                        <strong class="text-blue-700 font-bold">${props.diretoria}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Avanço Físico:</span>
+                                        <strong class="text-amber-600 font-black">${(props.exec_fisica || 0).toFixed(1)}%</strong>
+                                    </div>
+                                    ${props.valor ? `
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Investimento:</span>
+                                        <strong class="text-emerald-700 font-black">${fmtMoedaBiMi(props.valor)}</strong>
+                                    </div>` : ''}
+                                    ${props.empresa ? `
+                                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                                        <span class="text-slate-500 font-bold">Contratada:</span>
+                                        <span class="text-slate-700 text-truncate font-semibold" style="max-width: 140px;" title="${props.empresa}">${props.empresa}</span>
+                                    </div>` : ''}
+                                </div>
+                            </div>
+                            <div class="pt-3 border-t border-slate-200/80 text-center">
+                                <span class="text-[11px] text-slate-400 italic">Passe o cursor sobre outros canteiros</span>
+                            </div>
+                        </div>
+                    `);
+                });
+
+                // Cliques no mapa: filtram a tabela pelo município
+                mapObras.on('click', 'obras_muns_fill', (e) => {
+                    if (!e.features.length) return;
+                    const props = e.features[0].properties;
+                    const nomeMun = props.name || props.NM_MUN || props.municipio;
+                    if (nomeMun) window.filtrarTabelaPorMunicipioObras(nomeMun);
+                });
+
+                mapObras.on('click', 'obras_points', (e) => {
+                    if (!e.features.length) return;
+                    const props = e.features[0].properties;
+                    const nomeMun = props.municipio;
+                    if (nomeMun) window.filtrarTabelaPorMunicipioObras(nomeMun);
+                });
+
+                mapObras.on('mouseleave', 'obras_muns_fill', () => {
+                    mapObras.getCanvas().style.cursor = '';
+                    mapObras.setFilter('obras_muns_hover', ['==', 'name', '']);
+                });
+
+                ['obras_points', 'obras_clusters', 'obras_muns_fill'].forEach(layer => {
+                    mapObras.on('mouseenter', layer, () => { mapObras.getCanvas().style.cursor = 'pointer'; });
+                    mapObras.on('mouseleave', layer, () => { mapObras.getCanvas().style.cursor = ''; });
+                });
+
+                window.alternarVisaoObras(window.visaoObrasAtiva || 'todos', document.getElementById('btn_visao_obras_todos'));
+            });
+
+            // 5. RENDERIZAÇÃO DOS GRÁFICOS E TABELA
+            renderizarGraficosObras(data);
+            renderizarTabelaObras(data);
         })
         .catch(err => {
-            console.error("[Habitação] Erro ao carregar dados:", err);
-            if (spinner) spinner.classList.add('d-none');
+            console.error('[Resumo Obras] Erro:', err);
+            $('#resumo_obras_spinner').addClass('d-none');
         });
 };
+
+// Alternância de camadas/visões do mapa
+window.alternarVisaoObras = function (visao, btn) {
+    window.visaoObrasAtiva = visao;
+
+    $('#btn_visao_obras_todos, #btn_visao_obras_andamento, #btn_visao_obras_investimento, #btn_visao_obras_pontos')
+        .removeClass('btn-primary shadow-sm')
+        .addClass('btn-light text-slate-600');
+    if (btn) $(btn).removeClass('btn-light text-slate-600').addClass('btn-primary shadow-sm');
+
+    $('#legenda_obras_cluster, #legenda_obras_andamento, #legenda_obras_investimento, #legenda_obras_pontos').addClass('d-none');
+
+    if (!mapObras || !mapObras.getLayer('obras_muns_fill')) return;
+
+    if (visao === 'todos') {
+        $('#legenda_obras_cluster').removeClass('d-none');
+        mapObras.setLayoutProperty('obras_clusters', 'visibility', 'visible');
+        mapObras.setLayoutProperty('obras_cluster_count', 'visibility', 'visible');
+        mapObras.setLayoutProperty('obras_points', 'visibility', 'visible');
+
+        mapObras.setPaintProperty('obras_muns_fill', 'fill-color', '#f8fafc');
+        mapObras.setPaintProperty('obras_muns_fill', 'fill-opacity', 0.15);
+        $('#obras_camada_label').text("Exibindo: Localização e Clusters de Canteiros de Obras");
+
+    } else if (visao === 'andamento') {
+        $('#legenda_obras_andamento').removeClass('d-none');
+        mapObras.setLayoutProperty('obras_clusters', 'visibility', 'none');
+        mapObras.setLayoutProperty('obras_cluster_count', 'visibility', 'none');
+        mapObras.setLayoutProperty('obras_points', 'visibility', 'none');
+
+        mapObras.setPaintProperty('obras_muns_fill', 'fill-opacity', 0.82);
+        mapObras.setPaintProperty('obras_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'obras_execucao'],
+            '#fffbeb',
+            1, '#fde68a',
+            5, '#f59e0b',
+            20, '#b45309'
+        ]);
+        $('#obras_camada_label').text("Exibindo: Municípios por Volume de Obras em Execução");
+
+    } else if (visao === 'investimento') {
+        $('#legenda_obras_investimento').removeClass('d-none');
+        mapObras.setLayoutProperty('obras_clusters', 'visibility', 'none');
+        mapObras.setLayoutProperty('obras_cluster_count', 'visibility', 'none');
+        mapObras.setLayoutProperty('obras_points', 'visibility', 'none');
+
+        mapObras.setPaintProperty('obras_muns_fill', 'fill-opacity', 0.82);
+        mapObras.setPaintProperty('obras_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'obras_investimento'],
+            '#f0fdf4',
+            1, '#86efac',
+            5000000, '#22c55e',
+            20000000, '#15803d'
+        ]);
+        $('#obras_camada_label').text("Exibindo: Volume Financeiro de Investimento Contratado (R$)");
+
+    } else if (visao === 'pontos') {
+        $('#legenda_obras_pontos').removeClass('d-none');
+        mapObras.setLayoutProperty('obras_clusters', 'visibility', 'none');
+        mapObras.setLayoutProperty('obras_cluster_count', 'visibility', 'none');
+        mapObras.setLayoutProperty('obras_points', 'visibility', 'none');
+
+        mapObras.setPaintProperty('obras_muns_fill', 'fill-opacity', 0.82);
+        mapObras.setPaintProperty('obras_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'obras_total'],
+            '#eff6ff',
+            1, '#93c5fd',
+            4, '#3b82f6',
+            11, '#1d4ed8'
+        ]);
+        $('#obras_camada_label').text("Exibindo: Total de Obras Contratadas por Município");
+    }
+};
+
+// Renderização dos gráficos analíticos (Donut Status + Top 20 Municípios)
+function renderizarGraficosObras(data) {
+    if (typeof echarts === 'undefined') return;
+
+    const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+    // 1. STATUS DAS OBRAS (Donut)
+    const elStatus = document.getElementById('chart_obras_status');
+    if (elStatus) {
+        if (chartObrasStatus) chartObrasStatus.dispose();
+        chartObrasStatus = echarts.init(elStatus);
+
+        const statusMap = { 'Em Execução': 0, 'Concluída': 0, 'Em Planejamento / Outros': 0 };
+
+        (data.obras || []).forEach(o => {
+            const s = String(o.status || '').toLowerCase();
+            if (s.includes('conclu') || s.includes('finaliz') || s.includes('entreg')) {
+                statusMap['Concluída'] += 1;
+            } else if (s.includes('execu') || s.includes('andamento')) {
+                statusMap['Em Execução'] += 1;
+            } else {
+                statusMap['Em Planejamento / Outros'] += 1;
+            }
+        });
+
+        const statusData = [
+            { value: statusMap['Concluída'], name: 'Concluída / Entregue', itemStyle: { color: '#10b981' } },
+            { value: statusMap['Em Execução'], name: 'Em Execução', itemStyle: { color: '#f59e0b' } },
+            { value: statusMap['Em Planejamento / Outros'], name: 'Planejamento / Outros', itemStyle: { color: '#3b82f6' } }
+        ].filter(item => item.value > 0);
+
+        const totalObras = statusData.reduce((acc, curr) => acc + curr.value, 0);
+
+        chartObrasStatus.setOption({
+            tooltip: {
+                trigger: 'item',
+                formatter: (params) => {
+                    const pct = totalObras > 0 ? ((params.value / totalObras) * 100).toFixed(1) : 0;
+                    return `<strong>${params.name}</strong><br/>Obras: <b>${Number(params.value).toLocaleString('pt-BR')}</b> (${pct}%)`;
+                }
+            },
+            legend: {
+                orient: 'horizontal',
+                bottom: '0%',
+                left: 'center',
+                textStyle: { fontSize: 11, color: '#475569', fontWeight: 600 },
+                itemWidth: 12,
+                itemHeight: 12
+            },
+            series: [{
+                name: 'Status das Obras',
+                type: 'pie',
+                radius: ['45%', '72%'],
+                center: ['50%', '45%'],
+                avoidLabelOverlap: false,
+                itemStyle: {
+                    borderRadius: 6,
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                },
+                label: { show: false },
+                emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: 15,
+                        fontWeight: 'bold',
+                        formatter: (params) => `${Number(params.value).toLocaleString('pt-BR')}\nObras`
+                    }
+                },
+                data: statusData
+            }]
+        });
+    }
+
+    // 2. TOP 20 MUNICÍPIOS POR VOLUME E INVESTIMENTO (Barras)
+    const elMun = document.getElementById('chart_obras_por_mun');
+    if (elMun) {
+        if (chartObrasPorMun) chartObrasPorMun.dispose();
+        chartObrasPorMun = echarts.init(elMun);
+
+        const munTotals = {};
+        (data.obras || []).forEach(o => {
+            const m = String(o.municipio || '').trim();
+            if (!m || m === '-' || m === 'NA') return;
+            const k = norm(m);
+            if (!munTotals[k]) munTotals[k] = { nome: m, qtd: 0, inv: 0 };
+            munTotals[k].qtd += 1;
+            munTotals[k].inv += (Number(o.valor_total) || 0);
+        });
+
+        const top20 = Object.values(munTotals)
+            .sort((a, b) => b.qtd - a.qtd)
+            .slice(0, 20)
+            .reverse();
+
+        const categories = top20.map(item => item.nome);
+        const seriesQtd = top20.map(item => item.qtd);
+
+        chartObrasPorMun.setOption({
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: (params) => {
+                    const item = top20.find(t => t.nome === params[0].name);
+                    const invFmt = item ? (item.inv >= 1e6 ? `R$ ${(item.inv / 1e6).toFixed(1)} Mi` : `R$ ${item.inv.toLocaleString('pt-BR')}`) : '-';
+                    return `<strong>${params[0].name}</strong><br/>Total de Obras: <b>${params[0].value}</b><br/>Investimento Total: <b>${invFmt}</b>`;
+                }
+            },
+            grid: { top: '5%', left: '3%', right: '6%', bottom: '8%', containLabel: true },
+            xAxis: {
+                type: 'value',
+                axisLabel: { color: '#64748b', fontSize: 10 },
+                splitLine: { lineStyle: { color: '#f1f5f9' } }
+            },
+            yAxis: {
+                type: 'category',
+                data: categories,
+                axisLabel: { color: '#334155', fontSize: 11, fontWeight: 500 },
+                axisLine: { lineStyle: { color: '#cbd5e1' } }
+            },
+            series: [{
+                name: 'Quantidade de Obras',
+                type: 'bar',
+                data: seriesQtd,
+                itemStyle: {
+                    borderRadius: [0, 6, 6, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#fb923c' },
+                        { offset: 1, color: '#ea580c' }
+                    ])
+                },
+                label: {
+                    show: true,
+                    position: 'right',
+                    fontWeight: 'bold',
+                    fontSize: 10,
+                    color: '#9a3412'
+                }
+            }]
+        });
+    }
+}
+
+// Renderização da tabela DataTables
+function renderizarTabelaObras(data) {
+    const elTable = document.getElementById('resumo_obras_tabela');
+    if (!elTable || typeof $.fn.DataTable === 'undefined') return;
+
+    if ($.fn.DataTable.isDataTable('#resumo_obras_tabela')) {
+        $('#resumo_obras_tabela').DataTable().destroy();
+        $('#resumo_obras_tabela').empty();
+    }
+
+    const obras = data.obras || [];
+
+    dataTableObras = $('#resumo_obras_tabela').DataTable({
+        data: obras,
+        deferRender: true,
+        scrollX: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
+        order: [[6, 'desc']], // Ordenar por investimento
+        columns: [
+            {
+                title: "Município",
+                data: "municipio",
+                className: "align-middle",
+                width: "140px",
+                render: d => `<span class="badge bg-blue-50 text-blue-700 border border-blue-200 fw-bold px-2 py-1 rounded-pill cursor-pointer" onclick="window.filtrarTabelaPorMunicipioObras('${d || ''}')">${d || 'Estadual'}</span>`
+            },
+            {
+                title: "Obra / Intervenção",
+                data: "iniciativa_estrategica",
+                className: "align-middle",
+                width: "280px",
+                render: (d, t, r) => {
+                    const titulo = d || r.iniciativa_resumida || r.produto || 'Obra Pública';
+                    const sub = r.produto && r.produto !== titulo ? `<div class="text-xs text-slate-500 mt-0.5">${r.produto}</div>` : (r.empresa ? `<div class="text-xs text-slate-400 mt-0.5">Contratada: ${r.empresa}</div>` : '');
+                    return `<div class="fw-bold text-slate-800 text-sm leading-tight">${titulo}</div>${sub}`;
+                }
+            },
+            {
+                title: "Diretoria",
+                data: "diretoria",
+                className: "align-middle text-center",
+                width: "90px",
+                render: (d, t, r) => `<span class="badge bg-slate-800 text-white rounded-pill px-2.5 py-1 text-xs">${d || r.secretaria || 'SEDUH'}</span>`
+            },
+            {
+                title: "Contrato",
+                data: "numero_do_contrato",
+                className: "align-middle text-center",
+                width: "110px",
+                render: d => `<span class="badge bg-slate-100 text-slate-700 font-mono border">${d && d !== '-' ? d : 'N/I'}</span>`
+            },
+            {
+                title: "Status",
+                data: "status",
+                className: "align-middle",
+                width: "140px",
+                render: d => {
+                    const s = String(d || '').trim();
+                    let badgeClass = 'bg-slate-100 text-slate-700 border';
+                    if (s.toLowerCase().includes('conclu') || s.toLowerCase().includes('entreg')) badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                    else if (s.toLowerCase().includes('execu') || s.toLowerCase().includes('andamento')) badgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
+                    else if (s.toLowerCase().includes('licita') || s.toLowerCase().includes('planej')) badgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
+                    else if (s.toLowerCase().includes('paralis')) badgeClass = 'bg-rose-100 text-rose-800 border-rose-300';
+                    return `<span class="badge ${badgeClass} rounded-pill px-2.5 py-1 text-xs font-bold">${s || '-'}</span>`;
+                }
+            },
+            {
+                title: "Execução (%)",
+                data: "percent_execucao_fisica",
+                className: "align-middle",
+                width: "120px",
+                render: (d, t, r) => {
+                    let num = Number(d) || Number(r.percent_execucao) || 0;
+                    if (num <= 1 && num > 0) num = Math.round(num * 100);
+                    else num = Math.round(num);
+                    if (t !== 'display') return num;
+                    const barColor = num >= 100 ? 'bg-emerald-500' : (num >= 50 ? 'bg-sky-500' : 'bg-amber-500');
+                    return `
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height: 6px;">
+                                <div class="progress-bar ${barColor}" style="width: ${Math.min(num, 100)}%;"></div>
+                            </div>
+                            <span class="text-xs fw-bold text-slate-700">${num}%</span>
+                        </div>
+                    `;
+                }
+            },
+            {
+                title: "Investimento (R$)",
+                data: "valor_total",
+                className: "align-middle text-end fw-bold text-slate-800",
+                width: "140px",
+                render: (d, t) => {
+                    const num = Number(d) || 0;
+                    if (t !== 'display') return num;
+                    return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+            }
+        ]
+    });
+}
+
+// Filtro municipal da tabela
+window.filtrarTabelaPorMunicipioObras = function (nomeMun) {
+    if (!nomeMun) return;
+    municipioObrasFiltro = nomeMun;
+
+    $('#obras_filtro_ativo_badge').text(`Município: ${nomeMun}`);
+    $('#obras_filtro_ativo_badge_container').removeClass('d-none').addClass('d-flex');
+
+    if (dataTableObras) {
+        dataTableObras.column(0).search(`^${nomeMun}$`, true, false).draw();
+    }
+
+    const el = document.getElementById('obras_filtro_ativo_badge_container');
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+};
+
+window.addEventListener('resize', () => {
+    if (mapObras && typeof mapObras.resize === 'function') mapObras.resize();
+    if (chartObrasStatus && typeof chartObrasStatus.resize === 'function') chartObrasStatus.resize();
+    if (chartObrasPorMun && typeof chartObrasPorMun.resize === 'function') chartObrasPorMun.resize();
+    if (dataTableObras && typeof dataTableObras.columns.adjust === 'function') dataTableObras.columns.adjust();
+});
+
+window.limparFiltroObras = function () {
+    municipioObrasFiltro = null;
+    $('#obras_filtro_ativo_badge_container').removeClass('d-flex').addClass('d-none');
+    $('#obras_filtro_ativo_badge').text('Filtro Ativo');
+
+    if (dataTableObras) {
+        dataTableObras.column(0).search('').draw();
+    }
+
+    if (mapObras && mapObras.getLayer('obras_muns_hover')) {
+        mapObras.setFilter('obras_muns_hover', ['==', 'name', '']);
+    }
+};
+
+window.renderizarTabelasHabitacaoEReurb = function(data) {
+    const projetos = data.projetos || [];
+    const regularizacoes = data.regularizacoes || [];
+
+    // 1. TABELA DE EMPREENDIMENTOS HABITACIONAIS (MORAR BEM PE)
+    if ($.fn.DataTable.isDataTable('#tabela_tematicas_habitacao')) {
+        $('#tabela_tematicas_habitacao').DataTable().destroy();
+        $('#tabela_tematicas_habitacao').empty();
+    }
+
+    dataTableHabitacao = $('#tabela_tematicas_habitacao').DataTable({
+        data: projetos,
+        deferRender: true,
+        scrollX: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
+        order: [[3, 'desc']], // Ordena por quantidade de UH decrescente
+        columns: [
+            { 
+                title: "Município", 
+                data: "municipio", 
+                className: "align-middle",
+                width: "140px",
+                render: d => `<span class="badge bg-blue-50 text-blue-700 border border-blue-200 fw-bold px-2 py-1 rounded-pill cursor-pointer" onclick="window.filtrarTabelaPorMunicipioHabitacao('${d || ''}')">${d || 'Estadual'}</span>` 
+            },
+            { 
+                title: "Empreendimento Habitacional", 
+                data: "empreendimento", 
+                className: "align-middle",
+                width: "280px",
+                render: (d, t, r) => {
+                    const titulo = d || r.nome_empreendimento || 'Empreendimento Habitacional';
+                    const sub = r.localizacao || r.endereco ? `<div class="text-xs text-slate-500 mt-0.5">${r.localizacao || r.endereco}</div>` : '';
+                    return `<div class="fw-bold text-slate-800 text-sm leading-tight">${titulo}</div>${sub}`;
+                }
+            },
+            { 
+                title: "Linha / Financiamento", 
+                data: "financiamento",
+                className: "align-middle text-center",
+                width: "110px",
+                render: (d, t, r) => `<span class="badge bg-slate-800 text-white rounded-pill px-2.5 py-1 text-xs">${d || r.programa || 'Morar Bem PE'}</span>` 
+            },
+            { 
+                title: "Unidades (UH)", 
+                data: "uh", 
+                className: "align-middle text-end fw-black text-teal-700", 
+                width: "100px",
+                render: (d, t) => {
+                    const n = Number(d || 0);
+                    if (t !== 'display') return n;
+                    return n.toLocaleString('pt-BR');
+                }
+            },
+            { 
+                title: "Status", 
+                data: "status",
+                className: "align-middle",
+                width: "140px",
+                render: d => {
+                    const s = String(d || '').trim();
+                    let badgeClass = 'bg-slate-100 text-slate-700 border';
+                    if (s.toLowerCase().includes('conclu') || s.toLowerCase().includes('entreg')) {
+                        badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                    } else if (s.toLowerCase().includes('execu') || s.toLowerCase().includes('constru') || s.toLowerCase().includes('obras') || s.toLowerCase().includes('andamento')) {
+                        badgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
+                    } else if (s.toLowerCase().includes('licita') || s.toLowerCase().includes('planej')) {
+                        badgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
+                    } else if (s.toLowerCase().includes('paralis')) {
+                        badgeClass = 'bg-rose-100 text-rose-800 border-rose-300';
+                    }
+                    return `<span class="badge ${badgeClass} rounded-pill px-2.5 py-1 text-xs font-bold">${s || '-'}</span>`;
+                }
+            },
+            { 
+                title: "Valor Global Orçado", 
+                data: "valor_global_orcado3", 
+                className: "align-middle text-end fw-bold text-slate-800",
+                width: "140px",
+                render: (d, t, r) => {
+                    const raw = d !== undefined && d !== null ? d : r.valor_total;
+                    const num = parseFloat(String(raw || '0').replace(',', '.')) || 0;
+                    if (t !== 'display') return num;
+                    return num > 0 ? `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+                }
+            }
+        ]
+    });
+
+    // 2. TABELA DE REGULARIZAÇÃO FUNDIÁRIA (REURB)
+    if ($.fn.DataTable.isDataTable('#tabela_tematicas_regularizacao')) {
+        $('#tabela_tematicas_regularizacao').DataTable().destroy();
+        $('#tabela_tematicas_regularizacao').empty();
+    }
+
+    dataTableRegularizacao = $('#tabela_tematicas_regularizacao').DataTable({
+        data: regularizacoes,
+        deferRender: true,
+        scrollX: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
+        order: [[2, 'desc']], // Ordena por títulos previstos decrescente
+        columns: [
+            { 
+                title: "Município", 
+                data: "municipio", 
+                className: "align-middle",
+                width: "140px",
+                render: (d, t, r) => `<span class="badge bg-blue-50 text-blue-700 border border-blue-200 fw-bold px-2 py-1 rounded-pill cursor-pointer" onclick="window.filtrarTabelaPorMunicipioHabitacao('${d || r.cidade || ''}')">${d || r.cidade || 'Estadual'}</span>`
+            },
+            { 
+                title: "Núcleo Urbano / Comunidade", 
+                data: "nc", 
+                className: "align-middle",
+                width: "260px",
+                render: (d, t, r) => {
+                    const titulo = d || r.local || 'Poligonal Consolidada';
+                    const sub = r.processo ? `<div class="text-xs text-slate-500 mt-0.5">Processo: ${r.processo}</div>` : '';
+                    return `<div class="fw-bold text-slate-800 text-sm leading-tight">${titulo}</div>${sub}`;
+                }
+            },
+            { 
+                title: "Classificação", 
+                data: "classificacao", 
+                className: "align-middle text-center",
+                width: "90px",
+                render: d => `<span class="badge bg-slate-800 text-white rounded-pill px-2.5 py-1 text-xs">${d || 'REURB-S'}</span>` 
+            },
+            { 
+                title: "Títulos Previstos", 
+                data: "regularizacoes", 
+                className: "align-middle text-end fw-bold text-slate-800", 
+                width: "110px",
+                render: (d, t) => {
+                    const n = Number(d || 0);
+                    if (t !== 'display') return n;
+                    return n > 0 ? n.toLocaleString('pt-BR') : '-';
+                }
+            },
+            { 
+                title: "Mulheres Tituladas", 
+                data: "mulheres", 
+                className: "align-middle text-end fw-bold text-rose-600", 
+                width: "120px",
+                render: (d, t) => {
+                    const n = Number(d || 0);
+                    if (t !== 'display') return n;
+                    return n > 0 ? n.toLocaleString('pt-BR') : '-';
+                }
+            },
+            { 
+                title: "Situação / Execução", 
+                data: "situacao",
+                className: "align-middle",
+                width: "140px",
+                render: d => {
+                    const s = String(d || '').trim();
+                    let badgeClass = 'bg-slate-100 text-slate-700 border';
+                    if (s.toLowerCase().includes('realizado') || s.toLowerCase().includes('conclu') || s.toLowerCase().includes('entreg')) {
+                        badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                    } else if (s.toLowerCase().includes('andamento') || s.toLowerCase().includes('execu')) {
+                        badgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
+                    } else if (s.toLowerCase().includes('etapa') || s.toLowerCase().includes('fase')) {
+                        badgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
+                    }
+                    return `<span class="badge ${badgeClass} rounded-pill px-2.5 py-1 text-xs font-bold">${s || 'Em Andamento'}</span>`;
+                }
+            }
+        ]
+    });
+};
+
+window.filtrarTabelaPorMunicipioHabitacao = function (nomeMun) {
+    if (!nomeMun) return;
+    window.municipioHabitacaoFiltro = nomeMun;
+
+    $('#hab_filtro_ativo_badge').text(`Município: ${nomeMun}`);
+    $('#hab_filtro_ativo_badge_container').removeClass('d-none').addClass('d-flex');
+
+    if (dataTableHabitacao) {
+        dataTableHabitacao.column(0).search(`^${nomeMun}$`, true, false).draw();
+    }
+    if (dataTableRegularizacao) {
+        dataTableRegularizacao.column(0).search(nomeMun, false, true).draw();
+    }
+
+    const el = document.getElementById('tabela_tematicas_habitacao');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
+
+window.limparFiltroHabitacao = function () {
+    window.municipioHabitacaoFiltro = null;
+    $('#hab_filtro_ativo_badge_container').removeClass('d-flex').addClass('d-none');
+    $('#hab_filtro_ativo_badge').text('Filtro Ativo');
+
+    if (dataTableHabitacao) {
+        dataTableHabitacao.column(0).search('').draw();
+    }
+    if (dataTableRegularizacao) {
+        dataTableRegularizacao.column(0).search('').draw();
+    }
+    if (mapHabitacao && mapHabitacao.getLayer('hab_muns_hover')) {
+        mapHabitacao.setFilter('hab_muns_hover', ['==', 'name', '']);
+    }
+};
+
+/* ==========================================================================
+   RESUMOS TEMÁTICOS - PAUTA CRECHES: 60 MIL VAGAS EM CRECHES E PRÉ-ESCOLA
+   ========================================================================== */
+let mapCreches = null;
+let cacheCrechesData = null;
+let chartCrechesStatus = null;
+let chartCrechesPorMun = null;
+let dataTableCreches = null;
+window.visaoCrechesAtiva = 'todos';
+window.municipioCrechesFiltro = null;
+window.municipioFixoCreches = null;
+
+window.desafixarMunicipioCreches = function() {
+    window.municipioFixoCreches = null;
+    atualizarHoverBoxCreches(null, null, true);
+};
+
+function atualizarHoverBoxCreches(tipo, props, forcar = false) {
+    if (window.municipioFixoCreches && !forcar) return;
+
+    const boxDefault = document.getElementById('creches_box_content_default');
+    const boxActive = document.getElementById('creches_box_content_active');
+    if (!boxActive || !boxDefault) return;
+
+    if (!tipo || !props) {
+        boxActive.classList.add('d-none');
+        boxActive.classList.remove('d-flex');
+        boxDefault.classList.remove('d-none');
+        return;
+    }
+
+    boxDefault.classList.add('d-none');
+    boxActive.classList.remove('d-none');
+    boxActive.classList.add('d-flex');
+
+    const fmtMoeda = (v) => {
+        const n = Number(v) || 0;
+        if (n >= 1e6) return `R$ ${(n / 1e6).toFixed(2).replace('.', ',')} Mi`;
+        return `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    };
+
+    const isFixo = Boolean(window.municipioFixoCreches);
+
+    if (tipo === 'municipio') {
+        const nomeMun = props.name || props.municipio || 'Município';
+        boxActive.innerHTML = `
+            <div class="h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="badge ${isFixo ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-rose-100 text-rose-800 border border-rose-300'} font-bold px-2 py-1 text-xs rounded-pill">
+                            <i class="fas ${isFixo ? 'fa-thumbtack text-amber-600' : 'fa-school text-rose-600'} me-1"></i> ${isFixo ? 'MUNICÍPIO FIXADO' : 'MUNICÍPIO'}
+                        </span>
+                        ${isFixo ? `
+                            <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill py-0 px-2 text-[10px] font-bold" onclick="window.desafixarMunicipioCreches()">
+                                <i class="fas fa-xmark me-1"></i>Desafixar
+                            </button>
+                        ` : '<span class="text-xs text-slate-400 font-semibold">Clique para fixar</span>'}
+                    </div>
+                    <h4 class="font-black text-slate-800 text-base mb-1">${nomeMun}</h4>
+                    <hr class="my-2 border-slate-200">
+                    <div class="space-y-2 mt-3 text-xs">
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Total de Creches:</span>
+                            <strong class="text-slate-800 font-black">${(props.creches_total || 0).toLocaleString('pt-BR')}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Em Execução:</span>
+                            <strong class="text-amber-600 font-black">${(props.creches_execucao || 0).toLocaleString('pt-BR')}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Concluídas:</span>
+                            <strong class="text-emerald-700 font-black">${(props.creches_concluidas || 0).toLocaleString('pt-BR')}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Investimento Total:</span>
+                            <strong class="text-rose-700 font-black">${fmtMoeda(props.creches_investimento)}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-3 border-t border-slate-200/80 text-center">
+                    <span class="text-[11px] text-slate-400 italic">Clique para filtrar a tabela por este município</span>
+                </div>
+            </div>
+        `;
+    } else if (tipo === 'creche') {
+        boxActive.innerHTML = `
+            <div class="h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="badge bg-rose-100 text-rose-800 border border-rose-300 font-bold px-2 py-1 text-xs rounded-pill">CANTEIRO DE CRECHE</span>
+                        <span class="text-xs text-slate-400 font-semibold">${props.municipio}</span>
+                    </div>
+                    <h4 class="font-black text-slate-800 text-base mb-1">${props.iniciativa}</h4>
+                    <div class="text-xs text-slate-500 mb-2">${props.produto || ''}</div>
+                    <hr class="my-2 border-slate-200">
+                    <div class="space-y-2 mt-3 text-xs">
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Status:</span>
+                            <strong class="text-slate-800 font-bold">${props.status}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Avanço Físico:</span>
+                            <strong class="text-amber-600 font-black">${(props.exec_fisica || 0).toFixed(1)}%</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Investimento:</span>
+                            <strong class="text-rose-700 font-black">${fmtMoeda(props.valor)}</strong>
+                        </div>
+                        ${props.empresa ? `
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Contratada:</span>
+                            <span class="text-slate-700 text-truncate font-semibold" style="max-width: 140px;" title="${props.empresa}">${props.empresa}</span>
+                        </div>` : ''}
+                    </div>
+                </div>
+                <div class="pt-3 border-t border-slate-200/80 text-center">
+                    <span class="text-[11px] text-slate-400 italic">Passe o cursor sobre outros canteiros</span>
+                </div>
+            </div>
+        `;
+    }
+}
+
+window.renderizarResumoCreches = function() {
+    const container = document.getElementById('resumo_creches_map');
+    if (!container) return;
+
+    if (cacheCrechesData) {
+        setTimeout(() => {
+            if (mapCreches && typeof mapCreches.resize === 'function') mapCreches.resize();
+            if (chartCrechesStatus && typeof chartCrechesStatus.resize === 'function') chartCrechesStatus.resize();
+            if (chartCrechesPorMun && typeof chartCrechesPorMun.resize === 'function') chartCrechesPorMun.resize();
+            if (dataTableCreches && typeof dataTableCreches.columns.adjust === 'function') dataTableCreches.columns.adjust();
+        }, 120);
+        return;
+    }
+
+    $('#resumo_creches_spinner').removeClass('d-none');
+
+    const obterDadosBase = () => {
+        if (window.cacheResumoObras && window.cacheResumoObras.obras) {
+            return Promise.resolve(window.cacheResumoObras);
+        }
+        const apiUrl = `${window.basePath || ''}/municipios/resumo/obras`.replace(/\/+/g, '/');
+        return fetch(apiUrl).then(r => r.json());
+    };
+
+    obterDadosBase()
+        .then(data => {
+            $('#resumo_creches_spinner').addClass('d-none');
+
+            const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+            // FILTRO DE CRECHES: iniciativa_estrategica contendo 60 MIL VAGAS / CRECHES
+            const todasObras = data.obras || [];
+            const crechesObras = todasObras.filter(o => {
+                const ini = norm(o.iniciativa_estrategica || o.iniciativa_resumida || '');
+                const prod = norm(o.produto || '');
+                return ini.includes('60 mil') || ini.includes('creche') || prod.includes('creche') || prod.includes('pre-escola');
+            });
+
+            // Estrutura de KPIs de Creches
+            let totalCreches = crechesObras.length;
+            let emExecucao = 0;
+            let concluidas = 0;
+            let investTotal = 0;
+            const munsSet = new Set();
+            const munsMap = {};
+
+            crechesObras.forEach(o => {
+                const m = norm(o.municipio);
+                if (m) munsSet.add(m);
+
+                const inv = Number(o.valor_total) || 0;
+                investTotal += inv;
+
+                const stNorm = String(o.status || '').toLowerCase();
+                let statusGrupo = 'Em Execução';
+                if (stNorm.includes('conclu') || stNorm.includes('finaliz') || stNorm.includes('entreg')) {
+                    concluidas++;
+                    statusGrupo = 'Concluída';
+                } else if (stNorm.includes('execu') || stNorm.includes('andamento')) {
+                    emExecucao++;
+                    statusGrupo = 'Em Execução';
+                }
+
+                if (m) {
+                    if (!munsMap[m]) munsMap[m] = { total: 0, execucao: 0, concluidas: 0, inv: 0 };
+                    munsMap[m].total++;
+                    munsMap[m].inv += inv;
+                    if (statusGrupo === 'Concluída') munsMap[m].concluidas++;
+                    else if (statusGrupo === 'Em Execução') munsMap[m].execucao++;
+                }
+            });
+
+            const fmtMoedaBiMi = (val) => {
+                if (!val || val === 0) return "R$ 0";
+                if (val >= 1e9) return `R$ ${(val / 1e9).toFixed(2).replace('.', ',')} Bi`;
+                if (val >= 1e6) return `R$ ${(val / 1e6).toFixed(1).replace('.', ',')} Mi`;
+                return `R$ ${val.toLocaleString('pt-BR')}`;
+            };
+
+            // Atualiza KPIs no DOM
+            $('#creches_kpi_total').text(totalCreches.toLocaleString('pt-BR'));
+            $('#creches_kpi_execucao').text(emExecucao.toLocaleString('pt-BR'));
+            $('#creches_kpi_concluidas').text(concluidas.toLocaleString('pt-BR'));
+            $('#creches_kpi_investimento').text(fmtMoedaBiMi(investTotal));
+            $('#creches_kpi_municipios').text(munsSet.size.toLocaleString('pt-BR'));
+
+            $('#creches_box_stat_muns').text(munsSet.size.toLocaleString('pt-BR'));
+            $('#creches_box_stat_ativas').text(emExecucao.toLocaleString('pt-BR'));
+            $('#creches_box_stat_concluidas').text(concluidas.toLocaleString('pt-BR'));
+            $('#creches_box_stat_investimento').text(fmtMoedaBiMi(investTotal));
+
+            // GeoJSON enriquecido
+            let geoMun = data.geojson;
+            if (typeof geoMun === 'string') {
+                try { geoMun = JSON.parse(geoMun); } catch(e) {}
+            }
+
+            const munCentroids = {};
+            if (geoMun && geoMun.features) {
+                geoMun.features.forEach(f => {
+                    const nomeMun = norm(f.properties.name || f.properties.NM_MUN || f.properties.municipio);
+                    try {
+                        let flatCoords = [];
+                        const collect = (c) => {
+                            if (typeof c[0] === 'number') flatCoords.push(c);
+                            else c.forEach(collect);
+                        };
+                        collect(f.geometry.coordinates);
+                        if (flatCoords.length > 0) {
+                            const sum = flatCoords.reduce((acc, curr) => [acc[0] + curr[0], acc[1] + curr[1]], [0, 0]);
+                            munCentroids[nomeMun] = [sum[0] / flatCoords.length, sum[1] / flatCoords.length];
+                        }
+                    } catch(e) {}
+                });
+
+                geoMun.features.forEach(f => {
+                    const props = f.properties || {};
+                    const kMun = norm(props.name || props.NM_MUN || props.municipio);
+                    const info = munsMap[kMun] || { total: 0, execucao: 0, concluidas: 0, inv: 0 };
+                    props.creches_total = info.total;
+                    props.creches_execucao = info.execucao;
+                    props.creches_concluidas = info.concluidas;
+                    props.creches_investimento = info.inv;
+                });
+            }
+
+            // Features pontuais de creches
+            const featuresCreches = [];
+            crechesObras.forEach((o, idx) => {
+                const m = norm(o.municipio);
+                let lat = Number(o.latitude);
+                let lng = Number(o.longitude);
+
+                if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+                    if (m && munCentroids[m]) {
+                        const jitterX = ((idx % 7) - 3) * 0.008;
+                        const jitterY = (((idx * 3) % 7) - 3) * 0.008;
+                        lng = munCentroids[m][0] + jitterX;
+                        lat = munCentroids[m][1] + jitterY;
+                    }
+                }
+
+                if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+                    const exec = Number(o.percent_execucao_fisica) || Number(o.percent_execucao) || 0;
+                    featuresCreches.push({
+                        type: 'Feature',
+                        geometry: { type: 'Point', coordinates: [lng, lat] },
+                        properties: {
+                            iniciativa: o.iniciativa_estrategica || o.iniciativa_resumida || o.produto || 'Creche',
+                            produto: o.produto || '',
+                            municipio: o.municipio || '',
+                            status: o.status || 'Em Execução',
+                            empresa: o.empresa || '',
+                            valor: Number(o.valor_total) || 0,
+                            exec_fisica: exec <= 1.0 && exec > 0 ? exec * 100 : exec
+                        }
+                    });
+                }
+            });
+
+            cacheCrechesData = {
+                obras: crechesObras,
+                geoMun: geoMun,
+                geoCreches: { type: 'FeatureCollection', features: featuresCreches }
+            };
+
+            // Inicialização do Mapa
+            if (mapCreches) {
+                try { mapCreches.remove(); } catch(e) {}
+            }
+
+            mapCreches = new maplibregl.Map({
+                container: 'resumo_creches_map',
+                style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                center: [-37.8, -8.3],
+                zoom: 7,
+                preserveDrawingBuffer: true
+            });
+
+            mapCreches.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+            mapCreches.on('load', () => {
+                mapCreches.resize();
+
+                try {
+                    const bounds = new maplibregl.LngLatBounds();
+                    featuresCreches.forEach(f => bounds.extend(f.geometry.coordinates));
+                    if (!bounds.isEmpty()) {
+                        mapCreches.fitBounds(bounds, { padding: 40, maxZoom: 12, duration: 800 });
+                    }
+                } catch(e) {}
+
+                if (geoMun && geoMun.features) {
+                    mapCreches.addSource('creches_mun_source', { type: 'geojson', data: geoMun });
+
+                    mapCreches.addLayer({
+                        id: 'creches_muns_fill',
+                        type: 'fill',
+                        source: 'creches_mun_source',
+                        paint: {
+                            'fill-color': '#f8fafc',
+                            'fill-opacity': window.visaoCrechesAtiva === 'todos' ? 0.08 : 0.75
+                        }
+                    });
+
+                    mapCreches.addLayer({
+                        id: 'creches_muns_line',
+                        type: 'line',
+                        source: 'creches_mun_source',
+                        paint: { 'line-color': '#94a3b8', 'line-width': 0.8, 'line-opacity': 0.5 }
+                    });
+
+                    mapCreches.addLayer({
+                        id: 'creches_muns_hover',
+                        type: 'line',
+                        source: 'creches_mun_source',
+                        paint: { 'line-color': '#e11d48', 'line-width': 2.4 },
+                        filter: ['==', 'name', '']
+                    });
+                }
+
+                mapCreches.addSource('creches_points_source', {
+                    type: 'geojson',
+                    data: cacheCrechesData.geoCreches,
+                    cluster: true,
+                    clusterMaxZoom: 10,
+                    clusterRadius: 35
+                });
+
+                mapCreches.addLayer({
+                    id: 'creches_clusters',
+                    type: 'circle',
+                    source: 'creches_points_source',
+                    filter: ['has', 'point_count'],
+                    layout: { 'visibility': window.visaoCrechesAtiva === 'todos' ? 'visible' : 'none' },
+                    paint: {
+                        'circle-color': '#f43f5e',
+                        'circle-radius': ['step', ['get', 'point_count'], 16, 5, 20, 15, 26],
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ffffff',
+                        'circle-opacity': 0.85
+                    }
+                });
+
+                mapCreches.addLayer({
+                    id: 'creches_cluster_count',
+                    type: 'symbol',
+                    source: 'creches_points_source',
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'visibility': window.visaoCrechesAtiva === 'todos' ? 'visible' : 'none',
+                        'text-field': '{point_count_abbreviated}',
+                        'text-size': 12
+                    },
+                    paint: { 'text-color': '#ffffff' }
+                });
+
+                mapCreches.addLayer({
+                    id: 'creches_points',
+                    type: 'circle',
+                    source: 'creches_points_source',
+                    filter: ['!', ['has', 'point_count']],
+                    layout: { 'visibility': window.visaoCrechesAtiva === 'todos' ? 'visible' : 'none' },
+                    paint: {
+                        'circle-color': [
+                            'case',
+                            ['in', 'conclu', ['downcase', ['get', 'status']]], '#10b981',
+                            ['in', 'entreg', ['downcase', ['get', 'status']]], '#10b981',
+                            ['in', 'execu', ['downcase', ['get', 'status']]], '#f59e0b',
+                            ['in', 'andamento', ['downcase', ['get', 'status']]], '#f59e0b',
+                            '#f43f5e'
+                        ],
+                        'circle-radius': 7,
+                        'circle-stroke-width': 1.5,
+                        'circle-stroke-color': '#ffffff'
+                    }
+                });
+
+                mapCreches.on('click', 'creches_clusters', (e) => {
+                    const clFeatures = mapCreches.queryRenderedFeatures(e.point, { layers: ['creches_clusters'] });
+                    if (!clFeatures.length) return;
+                    const clusterId = clFeatures[0].properties.cluster_id;
+                    mapCreches.getSource('creches_points_source').getClusterExpansionZoom(clusterId, (err, zoom) => {
+                        if (err) return;
+                        mapCreches.easeTo({ center: clFeatures[0].geometry.coordinates, zoom: zoom });
+                    });
+                });
+
+                mapCreches.on('mousemove', 'creches_muns_fill', (e) => {
+                    if (!e.features.length) return;
+                    mapCreches.getCanvas().style.cursor = 'pointer';
+                    const props = e.features[0].properties;
+                    mapCreches.setFilter('creches_muns_hover', ['==', 'name', props.name || '']);
+                    atualizarHoverBoxCreches('municipio', props, false);
+                });
+
+                mapCreches.on('mousemove', 'creches_points', (e) => {
+                    if (!e.features.length) return;
+                    mapCreches.getCanvas().style.cursor = 'pointer';
+                    const props = e.features[0].properties;
+                    atualizarHoverBoxCreches('creche', props, false);
+                });
+
+                mapCreches.on('mouseleave', 'creches_muns_fill', () => {
+                    mapCreches.getCanvas().style.cursor = '';
+                    mapCreches.setFilter('creches_muns_hover', ['==', 'name', '']);
+                    if (!window.municipioFixoCreches) atualizarHoverBoxCreches(null, null, false);
+                });
+
+                mapCreches.on('mouseleave', 'creches_points', () => {
+                    if (!window.municipioFixoCreches) atualizarHoverBoxCreches(null, null, false);
+                });
+
+                mapCreches.on('click', 'creches_muns_fill', (e) => {
+                    if (!e.features.length) return;
+                    const props = e.features[0].properties;
+                    const nomeMun = props.name || props.NM_MUN || props.municipio;
+                    if (window.municipioFixoCreches === nomeMun) {
+                        window.desafixarMunicipioCreches();
+                    } else {
+                        window.municipioFixoCreches = nomeMun;
+                        atualizarHoverBoxCreches('municipio', props, true);
+                    }
+                    if (nomeMun) window.filtrarTabelaPorMunicipioCreches(nomeMun);
+                });
+
+                window.alternarVisaoCreches(window.visaoCrechesAtiva || 'todos', document.getElementById('btn_visao_creches_todos'));
+            });
+
+            // Gráficos e Tabela
+            renderizarGraficosCreches(crechesObras);
+            renderizarTabelaCreches(crechesObras);
+        })
+        .catch(err => {
+            console.error('[Resumo Creches] Erro:', err);
+            $('#resumo_creches_spinner').addClass('d-none');
+        });
+};
+
+window.alternarVisaoCreches = function (visao, btn) {
+    window.visaoCrechesAtiva = visao;
+
+    $('#btn_visao_creches_todos, #btn_visao_creches_andamento, #btn_visao_creches_pontos')
+        .removeClass('btn-primary shadow-sm')
+        .addClass('btn-light text-slate-600');
+    if (btn) $(btn).removeClass('btn-light text-slate-600').addClass('btn-primary shadow-sm');
+
+    $('#legenda_creches_cluster, #legenda_creches_andamento, #legenda_creches_pontos').addClass('d-none');
+
+    if (!mapCreches || !mapCreches.getLayer('creches_muns_fill')) return;
+
+    if (visao === 'todos') {
+        $('#legenda_creches_cluster').removeClass('d-none');
+        mapCreches.setLayoutProperty('creches_clusters', 'visibility', 'visible');
+        mapCreches.setLayoutProperty('creches_cluster_count', 'visibility', 'visible');
+        mapCreches.setLayoutProperty('creches_points', 'visibility', 'visible');
+        mapCreches.setPaintProperty('creches_muns_fill', 'fill-color', '#f8fafc');
+        mapCreches.setPaintProperty('creches_muns_fill', 'fill-opacity', 0.15);
+        $('#creches_camada_label').text("Exibindo: Localização e Clusters de Creches");
+    } else if (visao === 'andamento') {
+        $('#legenda_creches_andamento').removeClass('d-none');
+        mapCreches.setLayoutProperty('creches_clusters', 'visibility', 'none');
+        mapCreches.setLayoutProperty('creches_cluster_count', 'visibility', 'none');
+        mapCreches.setLayoutProperty('creches_points', 'visibility', 'none');
+        mapCreches.setPaintProperty('creches_muns_fill', 'fill-opacity', 0.82);
+        mapCreches.setPaintProperty('creches_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'creches_execucao'],
+            '#fff1f2',
+            1, '#fda4af',
+            2, '#f43f5e',
+            5, '#9f1239'
+        ]);
+        $('#creches_camada_label').text("Exibindo: Municípios por Volume de Creches em Execução");
+    } else if (visao === 'pontos') {
+        $('#legenda_creches_pontos').removeClass('d-none');
+        mapCreches.setLayoutProperty('creches_clusters', 'visibility', 'none');
+        mapCreches.setLayoutProperty('creches_cluster_count', 'visibility', 'none');
+        mapCreches.setLayoutProperty('creches_points', 'visibility', 'none');
+        mapCreches.setPaintProperty('creches_muns_fill', 'fill-opacity', 0.82);
+        mapCreches.setPaintProperty('creches_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'creches_total'],
+            '#fff1f2',
+            1, '#fecdd3',
+            3, '#f43f5e',
+            6, '#881337'
+        ]);
+        $('#creches_camada_label').text("Exibindo: Total de Creches Pactuadas por Município");
+    }
+};
+
+function renderizarGraficosCreches(crechesObras) {
+    if (typeof echarts === 'undefined') return;
+
+    // 1. Donut de Status
+    const elStatus = document.getElementById('chart_creches_status');
+    if (elStatus) {
+        if (chartCrechesStatus) chartCrechesStatus.dispose();
+        chartCrechesStatus = echarts.init(elStatus);
+
+        const statusMap = { 'Em Execução': 0, 'Concluída': 0, 'Em Planejamento / Outros': 0 };
+        crechesObras.forEach(o => {
+            const s = String(o.status || '').toLowerCase();
+            if (s.includes('conclu') || s.includes('finaliz') || s.includes('entreg')) statusMap['Concluída']++;
+            else if (s.includes('execu') || s.includes('andamento')) statusMap['Em Execução']++;
+            else statusMap['Em Planejamento / Outros']++;
+        });
+
+        const statusData = [
+            { value: statusMap['Concluída'], name: 'Concluída / Entregue', itemStyle: { color: '#10b981' } },
+            { value: statusMap['Em Execução'], name: 'Em Execução', itemStyle: { color: '#f59e0b' } },
+            { value: statusMap['Em Planejamento / Outros'], name: 'Planejamento / Outros', itemStyle: { color: '#3b82f6' } }
+        ].filter(item => item.value > 0);
+
+        const total = statusData.reduce((acc, curr) => acc + curr.value, 0);
+
+        chartCrechesStatus.setOption({
+            tooltip: {
+                trigger: 'item',
+                formatter: (p) => `<strong>${p.name}</strong><br/>Creches: <b>${p.value}</b> (${total > 0 ? ((p.value/total)*100).toFixed(1) : 0}%)`
+            },
+            legend: { orient: 'horizontal', bottom: '0%', left: 'center', textStyle: { fontSize: 11, color: '#475569', fontWeight: 600 } },
+            series: [{
+                name: 'Status das Creches',
+                type: 'pie',
+                radius: ['45%', '72%'],
+                center: ['50%', '45%'],
+                itemStyle: { borderRadius: 6, borderColor: '#ffffff', borderWidth: 2 },
+                data: statusData
+            }]
+        });
+    }
+
+    // 2. Top 20 Municípios
+    const elMun = document.getElementById('chart_creches_por_mun');
+    if (elMun) {
+        if (chartCrechesPorMun) chartCrechesPorMun.dispose();
+        chartCrechesPorMun = echarts.init(elMun);
+
+        const munTotals = {};
+        crechesObras.forEach(o => {
+            const m = String(o.municipio || '').trim();
+            if (!m || m === '-' || m === 'NA') return;
+            if (!munTotals[m]) munTotals[m] = { nome: m, qtd: 0, inv: 0 };
+            munTotals[m].qtd++;
+            munTotals[m].inv += (Number(o.valor_total) || 0);
+        });
+
+        const top20 = Object.values(munTotals).sort((a, b) => b.qtd - a.qtd).slice(0, 20).reverse();
+
+        chartCrechesPorMun.setOption({
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: (params) => {
+                    const item = top20.find(t => t.nome === params[0].name);
+                    const invFmt = item ? (item.inv >= 1e6 ? `R$ ${(item.inv / 1e6).toFixed(1)} Mi` : `R$ ${item.inv.toLocaleString('pt-BR')}`) : '-';
+                    return `<strong>${params[0].name}</strong><br/>Creches: <b>${params[0].value}</b><br/>Investimento Total: <b>${invFmt}</b>`;
+                }
+            },
+            grid: { top: '5%', left: '3%', right: '6%', bottom: '8%', containLabel: true },
+            xAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: '#f1f5f9' } } },
+            yAxis: { type: 'category', data: top20.map(t => t.nome), axisLabel: { color: '#334155', fontSize: 11, fontWeight: 500 } },
+            series: [{
+                name: 'Qtd. de Creches',
+                type: 'bar',
+                data: top20.map(t => t.qtd),
+                itemStyle: {
+                    borderRadius: [0, 6, 6, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#fda4af' },
+                        { offset: 1, color: '#e11d48' }
+                    ])
+                },
+                label: { show: true, position: 'right', fontWeight: 'bold', fontSize: 10, color: '#881337' }
+            }]
+        });
+    }
+}
+
+function renderizarTabelaCreches(crechesObras) {
+    const elTable = document.getElementById('resumo_creches_tabela');
+    if (!elTable || typeof $.fn.DataTable === 'undefined') return;
+
+    if ($.fn.DataTable.isDataTable('#resumo_creches_tabela')) {
+        $('#resumo_creches_tabela').DataTable().destroy();
+        $('#resumo_creches_tabela').empty();
+    }
+
+    dataTableCreches = $('#resumo_creches_tabela').DataTable({
+        data: crechesObras,
+        deferRender: true,
+        scrollX: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
+        order: [[5, 'desc']], // Ordenar por investimento
+        columns: [
+            {
+                title: "Município",
+                data: "municipio",
+                className: "align-middle",
+                width: "140px",
+                render: d => `<span class="badge bg-blue-50 text-blue-700 border border-blue-200 fw-bold px-2 py-1 rounded-pill cursor-pointer" onclick="window.filtrarTabelaPorMunicipioCreches('${d || ''}')">${d || 'Estadual'}</span>`
+            },
+            {
+                title: "Unidade / Empreendimento",
+                data: "produto",
+                className: "align-middle",
+                width: "280px",
+                render: (d, t, r) => {
+                    const titulo = d || r.iniciativa_estrategica || 'Creche e Pré-Escola';
+                    const sub = r.empresa ? `<div class="text-xs text-slate-400 mt-0.5">Contratada: ${r.empresa}</div>` : '';
+                    return `<div class="fw-bold text-slate-800 text-sm leading-tight">${titulo}</div>${sub}`;
+                }
+            },
+            {
+                title: "Contrato",
+                data: "numero_do_contrato",
+                className: "align-middle text-center",
+                width: "110px",
+                render: d => `<span class="badge bg-slate-100 text-slate-700 font-mono border">${d && d !== '-' ? d : 'N/I'}</span>`
+            },
+            {
+                title: "Status",
+                data: "status",
+                className: "align-middle",
+                width: "140px",
+                render: d => {
+                    const s = String(d || '').trim();
+                    let badgeClass = 'bg-slate-100 text-slate-700 border';
+                    if (s.toLowerCase().includes('conclu') || s.toLowerCase().includes('entreg')) badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                    else if (s.toLowerCase().includes('execu') || s.toLowerCase().includes('andamento')) badgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
+                    else if (s.toLowerCase().includes('licita') || s.toLowerCase().includes('planej')) badgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
+                    return `<span class="badge ${badgeClass} rounded-pill px-2.5 py-1 text-xs font-bold">${s || '-'}</span>`;
+                }
+            },
+            {
+                title: "Execução (%)",
+                data: "percent_execucao_fisica",
+                className: "align-middle",
+                width: "120px",
+                render: (d, t, r) => {
+                    let num = Number(d) || Number(r.percent_execucao) || 0;
+                    if (num <= 1 && num > 0) num = Math.round(num * 100);
+                    else num = Math.round(num);
+                    if (t !== 'display') return num;
+                    const barColor = num >= 100 ? 'bg-emerald-500' : (num >= 50 ? 'bg-sky-500' : 'bg-amber-500');
+                    return `
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height: 6px;">
+                                <div class="progress-bar ${barColor}" style="width: ${Math.min(num, 100)}%;"></div>
+                            </div>
+                            <span class="text-xs fw-bold text-slate-700">${num}%</span>
+                        </div>
+                    `;
+                }
+            },
+            {
+                title: "Investimento (R$)",
+                data: "valor_total",
+                className: "align-middle text-end fw-bold text-slate-800",
+                width: "140px",
+                render: (d, t) => {
+                    const num = Number(d) || 0;
+                    if (t !== 'display') return num;
+                    return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+            }
+        ]
+    });
+}
+
+window.filtrarTabelaPorMunicipioCreches = function (nomeMun) {
+    if (!nomeMun) return;
+    window.municipioCrechesFiltro = nomeMun;
+    $('#creches_filtro_ativo_badge').text(`Município: ${nomeMun}`);
+    $('#creches_filtro_ativo_badge_container').removeClass('d-none').addClass('d-flex');
+
+    if (dataTableCreches) {
+        dataTableCreches.column(0).search(`^${nomeMun}$`, true, false).draw();
+    }
+    const el = document.getElementById('creches_filtro_ativo_badge_container');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
+
+window.limparFiltroCreches = function () {
+    window.municipioCrechesFiltro = null;
+    $('#creches_filtro_ativo_badge_container').removeClass('d-flex').addClass('d-none');
+    $('#creches_filtro_ativo_badge').text('Filtro Ativo');
+
+    if (dataTableCreches) {
+        dataTableCreches.column(0).search('').draw();
+    }
+    if (mapCreches && mapCreches.getLayer('creches_muns_hover')) {
+        mapCreches.setFilter('creches_muns_hover', ['==', 'name', '']);
+    }
+};
+
+window.addEventListener('resize', () => {
+    if (mapCreches && typeof mapCreches.resize === 'function') mapCreches.resize();
+    if (chartCrechesStatus && typeof chartCrechesStatus.resize === 'function') chartCrechesStatus.resize();
+    if (chartCrechesPorMun && typeof chartCrechesPorMun.resize === 'function') chartCrechesPorMun.resize();
+    if (dataTableCreches && typeof dataTableCreches.columns.adjust === 'function') dataTableCreches.columns.adjust();
+});
+
+
+/* ==========================================================================
+   RESUMOS TEMÁTICOS - PAUTA EDUCAÇÃO: TRANSPORTE ESCOLAR (ÔNIBUS E VANS)
+   ========================================================================== */
+let mapEducacao = null;
+let cacheEducacaoData = null;
+let chartEducacaoComposicao = null;
+let chartEducacaoPorMun = null;
+let dataTableEducacao = null;
+window.visaoEducacaoAtiva = 'total';
+window.municipioFixoEducacao = null;
+
+window.desafixarMunicipioEducacao = function() {
+    window.municipioFixoEducacao = null;
+    atualizarHoverBoxEducacao(null, null, true);
+};
+
+function atualizarHoverBoxEducacao(tipo, props, forcar = false) {
+    if (window.municipioFixoEducacao && !forcar) return;
+
+    const boxDefault = document.getElementById('educacao_box_content_default');
+    const boxActive = document.getElementById('educacao_box_content_active');
+    if (!boxActive || !boxDefault) return;
+
+    if (!tipo || !props) {
+        boxActive.classList.add('d-none');
+        boxActive.classList.remove('d-flex');
+        boxDefault.classList.remove('d-none');
+        return;
+    }
+
+    boxDefault.classList.add('d-none');
+    boxActive.classList.remove('d-none');
+    boxActive.classList.add('d-flex');
+
+    const fmtMoeda = (v) => {
+        const n = Number(v) || 0;
+        if (n >= 1e6) return `R$ ${(n / 1e6).toFixed(2).replace('.', ',')} Mi`;
+        return `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    };
+
+    const isFixo = Boolean(window.municipioFixoEducacao);
+    const nomeMun = props.municipio || props.name || props.NM_MUN || 'Município';
+    const totalVeiculos = (Number(props.transp_onibus) || 0) + (Number(props.transp_vans) || 0);
+
+    boxActive.innerHTML = `
+        <div class="h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="badge ${isFixo ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-200 text-slate-700'} font-bold px-2 py-1 text-xs rounded-pill">
+                        <i class="fas ${isFixo ? 'fa-thumbtack text-amber-600' : 'fa-bus text-amber-600'} me-1"></i> ${isFixo ? 'MUNICÍPIO FIXADO' : (props.regiao_de_desenvolvimento || 'Pernambuco')}
+                    </span>
+                    ${isFixo ? `
+                        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill py-0 px-2 text-[10px] font-bold" onclick="window.desafixarMunicipioEducacao()">
+                            <i class="fas fa-xmark me-1"></i>Desafixar
+                        </button>
+                    ` : '<span class="text-xs text-slate-400 font-semibold">Clique para fixar</span>'}
+                </div>
+                <h4 class="font-black text-slate-800 text-base mb-1">${nomeMun}</h4>
+                <div class="text-xs text-slate-500 mb-2">${props.produto || (totalVeiculos + ' veículos entregues')}</div>
+                <hr class="my-2 border-slate-200">
+                <div class="space-y-2 mt-3 text-xs">
+                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                        <span class="text-slate-500 font-bold">Total de Veículos:</span>
+                        <strong class="text-amber-700 font-black">${totalVeiculos.toLocaleString('pt-BR')}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                        <span class="text-slate-500 font-bold">Ônibus Escolares:</span>
+                        <strong class="text-yellow-700 font-black">${(Number(props.transp_onibus) || 0).toLocaleString('pt-BR')}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                        <span class="text-slate-500 font-bold">Vans Escolares:</span>
+                        <strong class="text-sky-700 font-black">${(Number(props.transp_vans) || 0).toLocaleString('pt-BR')}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                        <span class="text-slate-500 font-bold">Investimento na Frota:</span>
+                        <strong class="text-emerald-700 font-black">${fmtMoeda(props.transp_valor)}</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-3 border-t border-slate-200/80 text-center">
+                <span class="text-[11px] text-slate-400 italic">Clique para filtrar a tabela por este município</span>
+            </div>
+        </div>
+    `;
+}
+
+window.renderizarResumoEducacao = function() {
+    const container = document.getElementById('resumo_educacao_map');
+    if (!container) return;
+
+    if (cacheEducacaoData) {
+        setTimeout(() => {
+            if (mapEducacao && typeof mapEducacao.resize === 'function') mapEducacao.resize();
+            if (chartEducacaoComposicao && typeof chartEducacaoComposicao.resize === 'function') chartEducacaoComposicao.resize();
+            if (chartEducacaoPorMun && typeof chartEducacaoPorMun.resize === 'function') chartEducacaoPorMun.resize();
+            if (dataTableEducacao && typeof dataTableEducacao.columns.adjust === 'function') dataTableEducacao.columns.adjust();
+        }, 120);
+        return;
+    }
+
+    $('#resumo_educacao_spinner').removeClass('d-none');
+
+    // Busca da API consolidada de cozinhas ou do json direto
+    const apiUrl = `${window.basePath || ''}/municipios/resumo/cozinhas`.replace(/\/+/g, '/');
+    const fallbackUrl = `${window.basePath || ''}/data/json/df_transporte.json`.replace(/\/+/g, '/');
+
+    fetch(apiUrl)
+        .then(res => res.json())
+        .then(async data => {
+            let transporte = data.transporte || [];
+            let geoMun = data.geojson_municipios;
+
+            // Fallback caso a rota principal não contenha transporte
+            if (!transporte.length) {
+                try {
+                    const r2 = await fetch(fallbackUrl);
+                    if (r2.ok) transporte = await r2.json();
+                } catch(e) {}
+            }
+
+            if (typeof geoMun === 'string') {
+                try { geoMun = JSON.parse(geoMun); } catch(e) {}
+            }
+
+            $('#resumo_educacao_spinner').addClass('d-none');
+
+            const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+            let totOnibus = 0, totVans = 0, totInvest = 0;
+            const munsMap = {};
+            const munsIbgeMap = {};
+
+            transporte.forEach(t => {
+                const onibus = Number(t.qtd_onibus) || 0;
+                const vans = Number(t.qtd_vans) || 0;
+                
+                let vFloat = 0;
+                if (typeof t.valor_total === 'number') {
+                    vFloat = t.valor_total;
+                } else if (typeof t.valor_total === 'string') {
+                    vFloat = parseFloat(t.valor_total.replace(',', '.')) || 0;
+                }
+
+                totOnibus += onibus;
+                totVans += vans;
+                totInvest += vFloat;
+
+                const kMun = norm(t.municipio);
+                const rawIbge = t.ibge7 ? String(t.ibge7).trim() : (t.cod_ibge ? String(t.cod_ibge).trim() : '');
+                const ibge6 = rawIbge.length >= 6 ? rawIbge.substring(0, 6) : '';
+
+                const obj = {
+                    municipio: t.municipio,
+                    onibus: onibus,
+                    vans: vans,
+                    total: onibus + vans,
+                    valor: vFloat,
+                    produto: t.produto || `${onibus + vans} veículos`,
+                    rd: t.regiao_de_desenvolvimento || ''
+                };
+
+                if (kMun) munsMap[kMun] = obj;
+                if (rawIbge) munsIbgeMap[rawIbge] = obj;
+                if (ibge6) munsIbgeMap[ibge6] = obj;
+            });
+
+            const totFrota = totOnibus + totVans;
+
+            const fmtMoedaBiMi = (val) => {
+                if (!val || val === 0) return "R$ 0";
+                if (val >= 1e9) return `R$ ${(val / 1e9).toFixed(2).replace('.', ',')} Bi`;
+                if (val >= 1e6) return `R$ ${(val / 1e6).toFixed(1).replace('.', ',')} Mi`;
+                return `R$ ${val.toLocaleString('pt-BR')}`;
+            };
+
+            // Atualiza KPIs
+            $('#transp_kpi_total').text(totFrota.toLocaleString('pt-BR'));
+            $('#transp_kpi_onibus').text(totOnibus.toLocaleString('pt-BR'));
+            $('#transp_kpi_vans').text(totVans.toLocaleString('pt-BR'));
+            $('#transp_kpi_investimento').text(fmtMoedaBiMi(totInvest));
+            $('#transp_kpi_municipios').text(Object.keys(munsMap).length.toLocaleString('pt-BR'));
+
+            $('#educacao_box_stat_onibus').text(totOnibus.toLocaleString('pt-BR'));
+            $('#educacao_box_stat_vans').text(totVans.toLocaleString('pt-BR'));
+            $('#educacao_box_stat_investimento').text(fmtMoedaBiMi(totInvest));
+
+            // Enriquecer GeoJSON
+            if (geoMun && geoMun.features) {
+                geoMun.features.forEach(f => {
+                    const props = f.properties || {};
+                    const kMun = norm(props.municipio || props.name || props.NM_MUN);
+                    const rawCod = String(props.ibge7 || props.cod_ibge || props.codarea || props.ibge6 || '').trim();
+                    const kIbge6 = rawCod.length >= 6 ? rawCod.substring(0, 6) : '';
+
+                    const info = munsIbgeMap[rawCod] || munsIbgeMap[kIbge6] || munsMap[kMun] || { onibus: 0, vans: 0, total: 0, valor: 0 };
+                    props.transp_onibus = info.onibus;
+                    props.transp_vans = info.vans;
+                    props.transp_total = info.total;
+                    props.transp_valor = info.valor;
+                    props.municipio = info.municipio || props.municipio || props.name;
+                    props.produto = info.produto || '';
+                });
+            }
+
+            cacheEducacaoData = {
+                transporte: transporte,
+                geoMun: geoMun
+            };
+
+            // Inicialização do Mapa MapLibre
+            if (mapEducacao) {
+                try { mapEducacao.remove(); } catch(e) {}
+            }
+
+            mapEducacao = new maplibregl.Map({
+                container: 'resumo_educacao_map',
+                style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                center: [-37.8, -8.3],
+                zoom: 7,
+                preserveDrawingBuffer: true
+            });
+
+            mapEducacao.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+            mapEducacao.on('load', () => {
+                mapEducacao.resize();
+
+                if (geoMun && geoMun.features) {
+                    try {
+                        const bounds = new maplibregl.LngLatBounds();
+                        geoMun.features.forEach(feature => {
+                            const geom = feature.geometry;
+                            if (!geom) return;
+                            const expand = (c) => {
+                                if (typeof c[0] === 'number') bounds.extend(c);
+                                else c.forEach(expand);
+                            };
+                            expand(geom.coordinates);
+                        });
+                        if (!bounds.isEmpty()) {
+                            mapEducacao.fitBounds(bounds, { padding: 30, animate: false });
+                        }
+                    } catch (e) {}
+
+                    mapEducacao.addSource('educacao_mun_source', { type: 'geojson', data: geoMun });
+
+                    mapEducacao.addLayer({
+                        id: 'educacao_muns_fill',
+                        type: 'fill',
+                        source: 'educacao_mun_source',
+                        paint: {
+                            'fill-color': [
+                                'step',
+                                ['get', 'transp_total'],
+                                '#fef3c7',
+                                5, '#f59e0b',
+                                10, '#d97706',
+                                20, '#78350f'
+                            ],
+                            'fill-opacity': 0.85
+                        }
+                    });
+
+                    mapEducacao.addLayer({
+                        id: 'educacao_muns_line',
+                        type: 'line',
+                        source: 'educacao_mun_source',
+                        paint: { 'line-color': '#ffffff', 'line-width': 0.8 }
+                    });
+
+                    mapEducacao.addLayer({
+                        id: 'educacao_muns_hover',
+                        type: 'line',
+                        source: 'educacao_mun_source',
+                        paint: { 'line-color': '#0f172a', 'line-width': 2.4 },
+                        filter: ['==', 'municipio', '']
+                    });
+
+                    mapEducacao.on('mousemove', 'educacao_muns_fill', (e) => {
+                        if (!e.features.length) return;
+                        mapEducacao.getCanvas().style.cursor = 'pointer';
+                        const props = e.features[0].properties;
+                        mapEducacao.setFilter('educacao_muns_hover', ['==', 'municipio', props.municipio || '']);
+                        atualizarHoverBoxEducacao('municipio', props, false);
+                    });
+
+                    mapEducacao.on('mouseleave', 'educacao_muns_fill', () => {
+                        mapEducacao.getCanvas().style.cursor = '';
+                        mapEducacao.setFilter('educacao_muns_hover', ['==', 'municipio', '']);
+                        if (!window.municipioFixoEducacao) atualizarHoverBoxEducacao(null, null, false);
+                    });
+
+                    mapEducacao.on('click', 'educacao_muns_fill', (e) => {
+                        if (!e.features.length) return;
+                        const props = e.features[0].properties;
+                        const nomeMun = props.municipio;
+                        if (window.municipioFixoEducacao === nomeMun) {
+                            window.desafixarMunicipioEducacao();
+                        } else {
+                            window.municipioFixoEducacao = nomeMun;
+                            atualizarHoverBoxEducacao('municipio', props, true);
+                        }
+                        if (nomeMun) window.filtrarTabelaPorMunicipioEducacao(nomeMun);
+                    });
+                }
+            });
+
+            // Gráficos e Tabela
+            renderizarGraficosEducacao(transporte, totOnibus, totVans);
+            renderizarTabelaEducacao(transporte);
+        })
+        .catch(err => {
+            console.error('[Resumo Educação] Erro:', err);
+            $('#resumo_educacao_spinner').addClass('d-none');
+        });
+};
+
+window.alternarVisaoEducacao = function (visao, btn) {
+    window.visaoEducacaoAtiva = visao;
+
+    $('#btn_visao_transp_total, #btn_visao_transp_onibus, #btn_visao_transp_vans')
+        .removeClass('btn-primary shadow-sm')
+        .addClass('btn-light text-slate-600');
+    if (btn) $(btn).removeClass('btn-light text-slate-600').addClass('btn-primary shadow-sm');
+
+    $('#legenda_transp_total, #legenda_transp_onibus, #legenda_transp_vans').addClass('d-none');
+
+    if (!mapEducacao || !mapEducacao.getLayer('educacao_muns_fill')) return;
+
+    if (visao === 'total') {
+        $('#legenda_transp_total').removeClass('d-none');
+        mapEducacao.setPaintProperty('educacao_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'transp_total'],
+            '#fef3c7',
+            5, '#f59e0b',
+            10, '#d97706',
+            20, '#78350f'
+        ]);
+        $('#educacao_camada_label').text("Exibindo: Total de Veículos Entregues (Ônibus + Vans)");
+    } else if (visao === 'onibus') {
+        $('#legenda_transp_onibus').removeClass('d-none');
+        mapEducacao.setPaintProperty('educacao_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'transp_onibus'],
+            '#fef9c3',
+            5, '#eab308',
+            10, '#ca8a04',
+            15, '#713f12'
+        ]);
+        $('#educacao_camada_label').text("Exibindo: Apenas Ônibus Escolares Entregues");
+    } else if (visao === 'vans') {
+        $('#legenda_transp_vans').removeClass('d-none');
+        mapEducacao.setPaintProperty('educacao_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'transp_vans'],
+            '#f0f9ff',
+            1, '#38bdf8',
+            2, '#0284c7',
+            4, '#0c4a6e'
+        ]);
+        $('#educacao_camada_label').text("Exibindo: Apenas Vans Escolares Entregues");
+    }
+};
+
+function renderizarGraficosEducacao(transporte, totOnibus, totVans) {
+    if (typeof echarts === 'undefined') return;
+
+    // 1. Donut de Composição
+    const elComp = document.getElementById('chart_educacao_composicao');
+    if (elComp) {
+        if (chartEducacaoComposicao) chartEducacaoComposicao.dispose();
+        chartEducacaoComposicao = echarts.init(elComp);
+
+        const dataComp = [
+            { value: totOnibus, name: 'Ônibus Escolares', itemStyle: { color: '#eab308' } },
+            { value: totVans, name: 'Vans Escolares', itemStyle: { color: '#0284c7' } }
+        ];
+
+        const total = totOnibus + totVans;
+
+        chartEducacaoComposicao.setOption({
+            tooltip: {
+                trigger: 'item',
+                formatter: (p) => `<strong>${p.name}</strong><br/>Veículos: <b>${p.value}</b> (${total > 0 ? ((p.value/total)*100).toFixed(1) : 0}%)`
+            },
+            legend: { orient: 'horizontal', bottom: '0%', left: 'center', textStyle: { fontSize: 11, color: '#475569', fontWeight: 600 } },
+            series: [{
+                name: 'Composição da Frota',
+                type: 'pie',
+                radius: ['45%', '72%'],
+                center: ['50%', '45%'],
+                itemStyle: { borderRadius: 6, borderColor: '#ffffff', borderWidth: 2 },
+                data: dataComp
+            }]
+        });
+    }
+
+    // 2. Top 20 Municípios
+    const elMun = document.getElementById('chart_educacao_por_mun');
+    if (elMun) {
+        if (chartEducacaoPorMun) chartEducacaoPorMun.dispose();
+        chartEducacaoPorMun = echarts.init(elMun);
+
+        const top20 = transporte
+            .map(t => ({
+                nome: t.municipio,
+                onibus: Number(t.qtd_onibus) || 0,
+                vans: Number(t.qtd_vans) || 0,
+                total: (Number(t.qtd_onibus) || 0) + (Number(t.qtd_vans) || 0)
+            }))
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 20)
+            .reverse();
+
+        chartEducacaoPorMun.setOption({
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: (params) => {
+                    let out = `<strong>${params[0].name}</strong><br/>`;
+                    params.forEach(p => {
+                        out += `${p.marker} ${p.seriesName}: <b>${p.value}</b><br/>`;
+                    });
+                    return out;
+                }
+            },
+            legend: { orient: 'horizontal', bottom: '0%', left: 'center', textStyle: { fontSize: 11, color: '#475569', fontWeight: 600 } },
+            grid: { top: '5%', left: '3%', right: '6%', bottom: '10%', containLabel: true },
+            xAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: '#f1f5f9' } } },
+            yAxis: { type: 'category', data: top20.map(t => t.nome), axisLabel: { color: '#334155', fontSize: 11, fontWeight: 500 } },
+            series: [
+                {
+                    name: 'Ônibus',
+                    type: 'bar',
+                    stack: 'frota',
+                    data: top20.map(t => t.onibus),
+                    itemStyle: { color: '#eab308' }
+                },
+                {
+                    name: 'Vans',
+                    type: 'bar',
+                    stack: 'frota',
+                    data: top20.map(t => t.vans),
+                    itemStyle: { color: '#0284c7' }
+                }
+            ]
+        });
+    }
+}
+
+function renderizarTabelaEducacao(transporte) {
+    const elTable = document.getElementById('resumo_educacao_tabela');
+    if (!elTable || typeof $.fn.DataTable === 'undefined') return;
+
+    if ($.fn.DataTable.isDataTable('#resumo_educacao_tabela')) {
+        $('#resumo_educacao_tabela').DataTable().destroy();
+        $('#resumo_educacao_tabela').empty();
+    }
+
+    dataTableEducacao = $('#resumo_educacao_tabela').DataTable({
+        data: transporte,
+        deferRender: true,
+        scrollX: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
+        order: [[4, 'desc']], // Ordenar por total de veículos
+        columns: [
+            {
+                title: "Município",
+                data: "municipio",
+                className: "align-middle",
+                width: "160px",
+                render: d => `<span class="badge bg-blue-50 text-blue-700 border border-blue-200 fw-bold px-2 py-1 rounded-pill cursor-pointer" onclick="window.filtrarTabelaPorMunicipioEducacao('${d || ''}')">${d || 'Estadual'}</span>`
+            },
+            {
+                title: "Região (RD)",
+                data: "regiao_de_desenvolvimento",
+                className: "align-middle text-center",
+                width: "140px",
+                render: d => `<span class="badge bg-slate-100 text-slate-700 border text-xs">${d || '-'}</span>`
+            },
+            {
+                title: "Ônibus",
+                data: "qtd_onibus",
+                className: "align-middle text-center fw-bold",
+                width: "90px",
+                render: (d, t) => {
+                    const n = Number(d) || 0;
+                    if (t !== 'display') return n;
+                    return n > 0 ? `<span class="badge bg-yellow-50 text-yellow-800 border border-yellow-300 font-black px-2.5 py-1 text-xs rounded-pill">${n}</span>` : `<span class="text-slate-300">-</span>`;
+                }
+            },
+            {
+                title: "Vans",
+                data: "qtd_vans",
+                className: "align-middle text-center fw-bold",
+                width: "90px",
+                render: (d, t) => {
+                    const n = Number(d) || 0;
+                    if (t !== 'display') return n;
+                    return n > 0 ? `<span class="badge bg-sky-50 text-sky-800 border border-sky-300 font-black px-2.5 py-1 text-xs rounded-pill">${n}</span>` : `<span class="text-slate-300">-</span>`;
+                }
+            },
+            {
+                title: "Total de Veículos",
+                data: null,
+                className: "align-middle text-center fw-black",
+                width: "120px",
+                render: (d, t, r) => {
+                    const total = (Number(r.qtd_onibus) || 0) + (Number(r.qtd_vans) || 0);
+                    if (t !== 'display') return total;
+                    return `<span class="badge bg-amber-100 text-amber-900 border border-amber-300 font-black px-3 py-1 text-xs rounded-pill">${total} veículos</span>`;
+                }
+            },
+            {
+                title: "Status",
+                data: "status",
+                className: "align-middle",
+                width: "120px",
+                render: d => `<span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-pill px-2.5 py-1 text-xs font-bold">${d || 'CONCLUÍDA'}</span>`
+            },
+            {
+                title: "Investimento (R$)",
+                data: "valor_total",
+                className: "align-middle text-end fw-bold text-slate-800",
+                width: "150px",
+                render: (d, t) => {
+                    let num = 0;
+                    if (typeof d === 'number') num = d;
+                    else if (typeof d === 'string') num = parseFloat(d.replace(',', '.')) || 0;
+                    if (t !== 'display') return num;
+                    return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+            }
+        ]
+    });
+}
+window.filtrarTabelaPorMunicipioEducacao = function(nomeMun) {
+    if (!nomeMun) return;
+    $('#educacao_filtro_ativo_badge').text(`Município: ${nomeMun}`);
+    $('#educacao_filtro_ativo_badge_container').removeClass('d-none').addClass('d-flex');
+
+    if (dataTableEducacao) {
+        dataTableEducacao.column(0).search(`^${nomeMun}$`, true, false).draw();
+    }
+    const el = document.getElementById('educacao_filtro_ativo_badge_container');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
+
+window.limparFiltroEducacao = function() {
+    $('#educacao_filtro_ativo_badge_container').removeClass('d-flex').addClass('d-none');
+    $('#educacao_filtro_ativo_badge').text('Filtro Ativo');
+
+    if (dataTableEducacao) {
+        dataTableEducacao.column(0).search('').draw();
+    }
+    if (mapEducacao && mapEducacao.getLayer('educacao_muns_hover')) {
+        mapEducacao.setFilter('educacao_muns_hover', ['==', 'municipio', '']);
+    }
+};
+
+window.addEventListener('resize', () => {
+    if (mapEducacao && typeof mapEducacao.resize === 'function') mapEducacao.resize();
+    if (chartEducacaoComposicao && typeof chartEducacaoComposicao.resize === 'function') chartEducacaoComposicao.resize();
+    if (chartEducacaoPorMun && typeof chartEducacaoPorMun.resize === 'function') chartEducacaoPorMun.resize();
+    if (dataTableEducacao && typeof dataTableEducacao.columns.adjust === 'function') dataTableEducacao.columns.adjust();
+});
+
+/* ==========================================================================
+   RESUMOS TEMÁTICOS - EFICIÊNCIA ENERGÉTICA E SUSTENTABILIDADE (ILUMINA PE)
+   ========================================================================== */
+let mapIluminacao = null;
+let cacheIluminacaoData = null;
+let chartIluminacaoStatus = null;
+let chartIluminacaoPorMun = null;
+let dataTableIluminacao = null;
+window.visaoIluminacaoAtiva = 'todos';
+window.municipioFixoIluminacao = null;
+
+window.desafixarMunicipioIluminacao = function() {
+    window.municipioFixoIluminacao = null;
+    atualizarHoverBoxIluminacao(null, null, true);
+};
+
+function atualizarHoverBoxIluminacao(tipo, props, forcar = false) {
+    if (window.municipioFixoIluminacao && !forcar) return;
+
+    const boxDefault = document.getElementById('iluminacao_box_content_default');
+    const boxActive = document.getElementById('iluminacao_box_content_active');
+    if (!boxActive || !boxDefault) return;
+
+    if (!tipo || !props) {
+        boxActive.classList.add('d-none');
+        boxActive.classList.remove('d-flex');
+        boxDefault.classList.remove('d-none');
+        return;
+    }
+
+    boxDefault.classList.add('d-none');
+    boxActive.classList.remove('d-none');
+    boxActive.classList.add('d-flex');
+
+    const fmtMoeda = (v) => {
+        const n = Number(v) || 0;
+        if (n >= 1e6) return `R$ ${(n / 1e6).toFixed(2).replace('.', ',')} Mi`;
+        return `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    };
+
+    const isFixo = Boolean(window.municipioFixoIluminacao);
+
+    if (tipo === 'municipio') {
+        const nomeMun = props.municipio || props.name || props.NM_MUN || 'Município';
+        const pExec = Number(props.ilumina_pontos_exec) || 0;
+        const pPrev = Number(props.ilumina_pontos_prev) || 0;
+        const tx = pPrev > 0 ? ((pExec / pPrev) * 100).toFixed(1) : (pExec > 0 ? '100.0' : '0.0');
+
+        boxActive.innerHTML = `
+            <div class="h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="badge ${isFixo ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'} font-bold px-2 py-1 text-xs rounded-pill">
+                            <i class="fas ${isFixo ? 'fa-thumbtack text-amber-600' : 'fa-lightbulb text-emerald-600'} me-1"></i> ${isFixo ? 'MUNICÍPIO FIXADO' : (props.rd || 'Pernambuco')}
+                        </span>
+                        ${isFixo ? `
+                            <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill py-0 px-2 text-[10px] font-bold" onclick="window.desafixarMunicipioIluminacao()">
+                                <i class="fas fa-xmark me-1"></i>Desafixar
+                            </button>
+                        ` : '<span class="text-xs text-slate-400 font-semibold">Clique para fixar</span>'}
+                    </div>
+                    <h4 class="font-black text-slate-800 text-base mb-1">${nomeMun}</h4>
+                    <div class="text-xs text-slate-500 mb-2">${props.contratos_count || 1} intervenção(ões) do Ilumina PE</div>
+                    <hr class="my-2 border-slate-200">
+                    <div class="space-y-2 mt-3 text-xs">
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Pontos Executados:</span>
+                            <strong class="text-emerald-700 font-black">${pExec.toLocaleString('pt-BR')}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Pontos Previstos:</span>
+                            <strong class="text-slate-700 font-bold">${pPrev.toLocaleString('pt-BR')}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Avanço Físico:</span>
+                            <strong class="text-teal-700 font-black">${tx}%</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Investimento Total:</span>
+                            <strong class="text-blue-700 font-black">${fmtMoeda(props.ilumina_valor_total)}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Recurso Pago:</span>
+                            <strong class="text-emerald-700 font-black">${fmtMoeda(props.ilumina_valor_pago)}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-3 border-t border-slate-200/80 text-center">
+                    <span class="text-[11px] text-slate-400 italic">Clique para filtrar a tabela por este município</span>
+                </div>
+            </div>
+        `;
+    } else if (tipo === 'ponto') {
+        boxActive.innerHTML = `
+            <div class="h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-2 py-1 text-xs rounded-pill">CANTEIRO ILUMINA PE</span>
+                        <span class="text-xs text-slate-400 font-semibold">${props.municipio}</span>
+                    </div>
+                    <h4 class="font-black text-slate-800 text-base mb-1">${props.produto || 'Modernização LED'}</h4>
+                    <div class="text-xs text-slate-500 mb-2">Contrato: <b>${props.no_contrato || '-'}</b> ${props.grupo_ilumina ? `(${props.grupo_ilumina})` : ''}</div>
+                    <hr class="my-2 border-slate-200">
+                    <div class="space-y-2 mt-3 text-xs">
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Status:</span>
+                            <strong class="text-slate-800 font-bold">${props.status}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Pontos Executados:</span>
+                            <strong class="text-emerald-700 font-black">${(Number(props.indicador) || 0).toLocaleString('pt-BR')}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Pontos Previstos:</span>
+                            <strong class="text-slate-700 font-bold">${(Number(props.indicador_secundario) || 0).toLocaleString('pt-BR')}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Investimento:</span>
+                            <strong class="text-blue-700 font-black">${fmtMoeda(props.valor_total)}</strong>
+                        </div>
+                        ${props.empresa_contratada ? `
+                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
+                            <span class="text-slate-500 font-bold">Contratada:</span>
+                            <span class="text-slate-700 text-truncate font-semibold" style="max-width: 140px;" title="${props.empresa_contratada}">${props.empresa_contratada}</span>
+                        </div>` : ''}
+                    </div>
+                </div>
+                <div class="pt-3 border-t border-slate-200/80 text-center">
+                    <span class="text-[11px] text-slate-400 italic">Passe o cursor sobre outros pontos</span>
+                </div>
+            </div>
+        `;
+    }
+}
+
+window.renderizarResumoIluminacao = function() {
+    const container = document.getElementById('resumo_iluminacao_map');
+    if (!container) return;
+
+    if (cacheIluminacaoData) {
+        setTimeout(() => {
+            if (mapIluminacao && typeof mapIluminacao.resize === 'function') mapIluminacao.resize();
+            if (chartIluminacaoStatus && typeof chartIluminacaoStatus.resize === 'function') chartIluminacaoStatus.resize();
+            if (chartIluminacaoPorMun && typeof chartIluminacaoPorMun.resize === 'function') chartIluminacaoPorMun.resize();
+            if (dataTableIluminacao && typeof dataTableIluminacao.columns.adjust === 'function') dataTableIluminacao.columns.adjust();
+        }, 120);
+        return;
+    }
+
+    $('#resumo_iluminacao_spinner').removeClass('d-none');
+
+    const apiUrl = `${window.basePath || ''}/municipios/resumo/cozinhas`.replace(/\/+/g, '/');
+    const fallbackUrl = `${window.basePath || ''}/data/json/df_iluminacao.json`.replace(/\/+/g, '/');
+
+    fetch(apiUrl)
+        .then(res => res.json())
+        .then(async data => {
+            let iluminacao = data.iluminacao || [];
+            let geoMun = data.geojson_municipios;
+
+            if (!iluminacao.length) {
+                try {
+                    const r2 = await fetch(fallbackUrl);
+                    if (r2.ok) iluminacao = await r2.json();
+                } catch(e) {}
+            }
+
+            if (typeof geoMun === 'string') {
+                try { geoMun = JSON.parse(geoMun); } catch(e) {}
+            }
+
+            $('#resumo_iluminacao_spinner').addClass('d-none');
+
+            const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+            let totPontosExec = 0, totPontosPrev = 0, totInvest = 0, totPago = 0;
+            const munsMap = {};
+            const munsIbgeMap = {};
+
+            iluminacao.forEach(item => {
+                const pExec = Number(item.indicador) || 0;
+                const pPrev = Number(item.indicador_secundario) || 0;
+                const vTot = parseFloat(String(item.valor_total || '0').replace(',', '.')) || 0;
+                const vPag = parseFloat(String(item.valor_pago || '0').replace(',', '.')) || 0;
+
+                totPontosExec += pExec;
+                totPontosPrev += pPrev;
+                totInvest += vTot;
+                totPago += vPag;
+
+                const kMun = norm(item.municipio);
+                const rawIbge = item.ibge7 ? String(item.ibge7).trim() : '';
+                const ibge6 = rawIbge.length >= 6 ? rawIbge.substring(0, 6) : '';
+
+                if (!munsMap[kMun]) {
+                    munsMap[kMun] = { municipio: item.municipio, rd: item.rd, pontos_exec: 0, pontos_prev: 0, valor_total: 0, valor_pago: 0, contratos: 0 };
+                }
+                munsMap[kMun].pontos_exec += pExec;
+                munsMap[kMun].pontos_prev += pPrev;
+                munsMap[kMun].valor_total += vTot;
+                munsMap[kMun].valor_pago += vPag;
+                munsMap[kMun].contratos++;
+
+                if (rawIbge) munsIbgeMap[rawIbge] = munsMap[kMun];
+                if (ibge6) munsIbgeMap[ibge6] = munsMap[kMun];
+            });
+
+            const taxaGlobal = totPontosPrev > 0 ? ((totPontosExec / totPontosPrev) * 100).toFixed(1) : '100.0';
+
+            const fmtMoedaBiMi = (val) => {
+                if (!val || val === 0) return "R$ 0";
+                if (val >= 1e9) return `R$ ${(val / 1e9).toFixed(2).replace('.', ',')} Bi`;
+                if (val >= 1e6) return `R$ ${(val / 1e6).toFixed(1).replace('.', ',')} Mi`;
+                return `R$ ${val.toLocaleString('pt-BR')}`;
+            };
+
+            // Atualiza KPIs
+            $('#ilumina_kpi_pontos_exec').text(totPontosExec.toLocaleString('pt-BR'));
+            $('#ilumina_kpi_pontos_prev').text(totPontosPrev.toLocaleString('pt-BR'));
+            $('#ilumina_kpi_taxa_exec').text(`${taxaGlobal}%`);
+            $('#ilumina_kpi_investimento').text(fmtMoedaBiMi(totInvest));
+            $('#ilumina_kpi_pago_sub').text(`Pago: ${fmtMoedaBiMi(totPago)}`);
+            $('#ilumina_kpi_municipios').text(Object.keys(munsMap).length.toLocaleString('pt-BR'));
+
+            $('#ilumina_box_stat_muns').text(Object.keys(munsMap).length.toLocaleString('pt-BR'));
+            $('#ilumina_box_stat_exec').text(totPontosExec.toLocaleString('pt-BR'));
+            $('#ilumina_box_stat_prev').text(totPontosPrev.toLocaleString('pt-BR'));
+            $('#ilumina_box_stat_investimento').text(fmtMoedaBiMi(totInvest));
+
+            // Centróides para dispersão se lat/long faltarem
+            const munCentroids = {};
+            if (geoMun && geoMun.features) {
+                geoMun.features.forEach(f => {
+                    const nomeMun = norm(f.properties.name || f.properties.NM_MUN || f.properties.municipio);
+                    try {
+                        let flatCoords = [];
+                        const collect = (c) => {
+                            if (typeof c[0] === 'number') flatCoords.push(c);
+                            else c.forEach(collect);
+                        };
+                        collect(f.geometry.coordinates);
+                        if (flatCoords.length > 0) {
+                            const sum = flatCoords.reduce((acc, curr) => [acc[0] + curr[0], acc[1] + curr[1]], [0, 0]);
+                            munCentroids[nomeMun] = [sum[0] / flatCoords.length, sum[1] / flatCoords.length];
+                        }
+                    } catch(e) {}
+                });
+
+                // Enriquecimento dos municípios
+                geoMun.features.forEach(f => {
+                    const props = f.properties || {};
+                    const kMun = norm(props.municipio || props.name || props.NM_MUN);
+                    const rawCod = String(props.ibge7 || props.cod_ibge || props.codarea || props.ibge6 || '').trim();
+                    const kIbge6 = rawCod.length >= 6 ? rawCod.substring(0, 6) : '';
+
+                    const info = munsIbgeMap[rawCod] || munsIbgeMap[kIbge6] || munsMap[kMun] || { pontos_exec: 0, pontos_prev: 0, valor_total: 0, valor_pago: 0, contratos: 0 };
+                    props.ilumina_pontos_exec = info.pontos_exec;
+                    props.ilumina_pontos_prev = info.pontos_prev;
+                    props.ilumina_valor_total = info.valor_total;
+                    props.ilumina_valor_pago = info.valor_pago;
+                    props.contratos_count = info.contratos;
+                    props.municipio = info.municipio || props.municipio || props.name;
+                    props.rd = info.rd || props.regiao_de_desenvolvimento || '';
+                });
+            }
+
+            // Features pontuais georreferenciadas
+            const featuresIlumina = [];
+            iluminacao.forEach((item, idx) => {
+                const m = norm(item.municipio);
+                let lat = parseFloat(item.latitude);
+                let lng = parseFloat(item.longitude);
+
+                if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+                    if (m && munCentroids[m]) {
+                        const jitterX = ((idx % 7) - 3) * 0.008;
+                        const jitterY = (((idx * 3) % 7) - 3) * 0.008;
+                        lng = munCentroids[m][0] + jitterX;
+                        lat = munCentroids[m][1] + jitterY;
+                    }
+                }
+
+                if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+                    featuresIlumina.push({
+                        type: 'Feature',
+                        geometry: { type: 'Point', coordinates: [lng, lat] },
+                        properties: {
+                            no_contrato: item.no_contrato || '',
+                            produto: item.produto || 'Modernização LED',
+                            status: item.status || 'CONCLUÍDA',
+                            indicador: Number(item.indicador) || 0,
+                            indicador_secundario: Number(item.indicador_secundario) || 0,
+                            valor_total: parseFloat(String(item.valor_total || '0').replace(',', '.')) || 0,
+                            valor_pago: parseFloat(String(item.valor_pago || '0').replace(',', '.')) || 0,
+                            empresa_contratada: item.empresa_contratada || '',
+                            municipio: item.municipio || '',
+                            grupo_ilumina: item.grupo_ilumina || ''
+                        }
+                    });
+                }
+            });
+
+            cacheIluminacaoData = {
+                iluminacao: iluminacao,
+                geoMun: geoMun,
+                geoPontos: { type: 'FeatureCollection', features: featuresIlumina }
+            };
+
+            // Inicialização do Mapa
+            if (mapIluminacao) {
+                try { mapIluminacao.remove(); } catch(e) {}
+            }
+
+            mapIluminacao = new maplibregl.Map({
+                container: 'resumo_iluminacao_map',
+                style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                center: [-37.8, -8.3],
+                zoom: 7,
+                preserveDrawingBuffer: true
+            });
+
+            mapIluminacao.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+            mapIluminacao.on('load', () => {
+                mapIluminacao.resize();
+
+                try {
+                    const bounds = new maplibregl.LngLatBounds();
+                    featuresIlumina.forEach(f => bounds.extend(f.geometry.coordinates));
+                    if (!bounds.isEmpty()) {
+                        mapIluminacao.fitBounds(bounds, { padding: 40, maxZoom: 12, duration: 800 });
+                    }
+                } catch(e) {}
+
+                if (geoMun && geoMun.features) {
+                    mapIluminacao.addSource('ilumina_mun_source', { type: 'geojson', data: geoMun });
+
+                    mapIluminacao.addLayer({
+                        id: 'ilumina_muns_fill',
+                        type: 'fill',
+                        source: 'ilumina_mun_source',
+                        paint: {
+                            'fill-color': '#f8fafc',
+                            'fill-opacity': window.visaoIluminacaoAtiva === 'todos' ? 0.08 : 0.75
+                        }
+                    });
+
+                    mapIluminacao.addLayer({
+                        id: 'ilumina_muns_line',
+                        type: 'line',
+                        source: 'ilumina_mun_source',
+                        paint: { 'line-color': '#94a3b8', 'line-width': 0.8, 'line-opacity': 0.5 }
+                    });
+
+                    mapIluminacao.addLayer({
+                        id: 'ilumina_muns_hover',
+                        type: 'line',
+                        source: 'ilumina_mun_source',
+                        paint: { 'line-color': '#059669', 'line-width': 2.4 },
+                        filter: ['==', 'municipio', '']
+                    });
+                }
+
+                mapIluminacao.addSource('ilumina_points_source', {
+                    type: 'geojson',
+                    data: cacheIluminacaoData.geoPontos,
+                    cluster: true,
+                    clusterMaxZoom: 10,
+                    clusterRadius: 35
+                });
+
+                mapIluminacao.addLayer({
+                    id: 'ilumina_clusters',
+                    type: 'circle',
+                    source: 'ilumina_points_source',
+                    filter: ['has', 'point_count'],
+                    layout: { 'visibility': window.visaoIluminacaoAtiva === 'todos' ? 'visible' : 'none' },
+                    paint: {
+                        'circle-color': '#10b981',
+                        'circle-radius': ['step', ['get', 'point_count'], 16, 5, 20, 15, 26],
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ffffff',
+                        'circle-opacity': 0.85
+                    }
+                });
+
+                mapIluminacao.addLayer({
+                    id: 'ilumina_cluster_count',
+                    type: 'symbol',
+                    source: 'ilumina_points_source',
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'visibility': window.visaoIluminacaoAtiva === 'todos' ? 'visible' : 'none',
+                        'text-field': '{point_count_abbreviated}',
+                        'text-size': 12
+                    },
+                    paint: { 'text-color': '#ffffff' }
+                });
+
+                mapIluminacao.addLayer({
+                    id: 'ilumina_points',
+                    type: 'circle',
+                    source: 'ilumina_points_source',
+                    filter: ['!', ['has', 'point_count']],
+                    layout: { 'visibility': window.visaoIluminacaoAtiva === 'todos' ? 'visible' : 'none' },
+                    paint: {
+                        'circle-color': [
+                            'case',
+                            ['in', 'conclu', ['downcase', ['get', 'status']]], '#10b981',
+                            ['in', 'entreg', ['downcase', ['get', 'status']]], '#10b981',
+                            ['in', 'execu', ['downcase', ['get', 'status']]], '#f59e0b',
+                            ['in', 'andamento', ['downcase', ['get', 'status']]], '#f59e0b',
+                            '#3b82f6'
+                        ],
+                        'circle-radius': 7,
+                        'circle-stroke-width': 1.5,
+                        'circle-stroke-color': '#ffffff'
+                    }
+                });
+
+                mapIluminacao.on('click', 'ilumina_clusters', (e) => {
+                    const clFeatures = mapIluminacao.queryRenderedFeatures(e.point, { layers: ['ilumina_clusters'] });
+                    if (!clFeatures.length) return;
+                    const clusterId = clFeatures[0].properties.cluster_id;
+                    mapIluminacao.getSource('ilumina_points_source').getClusterExpansionZoom(clusterId, (err, zoom) => {
+                        if (err) return;
+                        mapIluminacao.easeTo({ center: clFeatures[0].geometry.coordinates, zoom: zoom });
+                    });
+                });
+
+                mapIluminacao.on('mousemove', 'ilumina_muns_fill', (e) => {
+                    if (!e.features.length) return;
+                    mapIluminacao.getCanvas().style.cursor = 'pointer';
+                    const props = e.features[0].properties;
+                    mapIluminacao.setFilter('ilumina_muns_hover', ['==', 'municipio', props.municipio || '']);
+                    atualizarHoverBoxIluminacao('municipio', props, false);
+                });
+
+                mapIluminacao.on('mousemove', 'ilumina_points', (e) => {
+                    if (!e.features.length) return;
+                    mapIluminacao.getCanvas().style.cursor = 'pointer';
+                    const props = e.features[0].properties;
+                    atualizarHoverBoxIluminacao('ponto', props, false);
+                });
+
+                mapIluminacao.on('mouseleave', 'ilumina_muns_fill', () => {
+                    mapIluminacao.getCanvas().style.cursor = '';
+                    mapIluminacao.setFilter('ilumina_muns_hover', ['==', 'municipio', '']);
+                    if (!window.municipioFixoIluminacao) atualizarHoverBoxIluminacao(null, null, false);
+                });
+
+                mapIluminacao.on('mouseleave', 'ilumina_points', () => {
+                    if (!window.municipioFixoIluminacao) atualizarHoverBoxIluminacao(null, null, false);
+                });
+
+                mapIluminacao.on('click', 'ilumina_muns_fill', (e) => {
+                    if (!e.features.length) return;
+                    const props = e.features[0].properties;
+                    const nomeMun = props.municipio;
+                    if (window.municipioFixoIluminacao === nomeMun) {
+                        window.desafixarMunicipioIluminacao();
+                    } else {
+                        window.municipioFixoIluminacao = nomeMun;
+                        atualizarHoverBoxIluminacao('municipio', props, true);
+                    }
+                    if (nomeMun) window.filtrarTabelaPorMunicipioIluminacao(nomeMun);
+                });
+
+                window.alternarVisaoIluminacao(window.visaoIluminacaoAtiva || 'todos', document.getElementById('btn_visao_ilumina_todos'));
+            });
+
+            // Gráficos e Tabela
+            renderizarGraficosIluminacao(iluminacao);
+            renderizarTabelaIluminacao(iluminacao);
+        })
+        .catch(err => {
+            console.error('[Resumo Iluminação] Erro:', err);
+            $('#resumo_iluminacao_spinner').addClass('d-none');
+        });
+};
+
+window.alternarVisaoIluminacao = function (visao, btn) {
+    window.visaoIluminacaoAtiva = visao;
+
+    $('#btn_visao_ilumina_todos, #btn_visao_ilumina_pontos_exec, #btn_visao_ilumina_investimento')
+        .removeClass('btn-primary shadow-sm')
+        .addClass('btn-light text-slate-600');
+    if (btn) $(btn).removeClass('btn-light text-slate-600').addClass('btn-primary shadow-sm');
+
+    $('#legenda_ilumina_cluster, #legenda_ilumina_pontos_exec, #legenda_ilumina_investimento').addClass('d-none');
+
+    if (!mapIluminacao || !mapIluminacao.getLayer('ilumina_muns_fill')) return;
+
+    if (visao === 'todos') {
+        $('#legenda_ilumina_cluster').removeClass('d-none');
+        mapIluminacao.setLayoutProperty('ilumina_clusters', 'visibility', 'visible');
+        mapIluminacao.setLayoutProperty('ilumina_cluster_count', 'visibility', 'visible');
+        mapIluminacao.setLayoutProperty('ilumina_points', 'visibility', 'visible');
+        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-color', '#f8fafc');
+        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-opacity', 0.15);
+        $('#iluminacao_camada_label').text("Exibindo: Localização e Clusters de Contratos de Iluminação");
+    } else if (visao === 'pontos_exec') {
+        $('#legenda_ilumina_pontos_exec').removeClass('d-none');
+        mapIluminacao.setLayoutProperty('ilumina_clusters', 'visibility', 'none');
+        mapIluminacao.setLayoutProperty('ilumina_cluster_count', 'visibility', 'none');
+        mapIluminacao.setLayoutProperty('ilumina_points', 'visibility', 'none');
+        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-opacity', 0.82);
+        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'ilumina_pontos_exec'],
+            '#f0fdf4',
+            1, '#86efac',
+            300, '#22c55e',
+            800, '#15803d'
+        ]);
+        $('#iluminacao_camada_label').text("Exibindo: Municípios por Quantidade de Pontos LED Instalados");
+    } else if (visao === 'investimento') {
+        $('#legenda_ilumina_investimento').removeClass('d-none');
+        mapIluminacao.setLayoutProperty('ilumina_clusters', 'visibility', 'none');
+        mapIluminacao.setLayoutProperty('ilumina_cluster_count', 'visibility', 'none');
+        mapIluminacao.setLayoutProperty('ilumina_points', 'visibility', 'none');
+        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-opacity', 0.82);
+        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-color', [
+            'step',
+            ['get', 'ilumina_valor_total'],
+            '#eff6ff',
+            1, '#93c5fd',
+            300000, '#3b82f6',
+            700000, '#1d4ed8'
+        ]);
+        $('#iluminacao_camada_label').text("Exibindo: Volume Financeiro Contratado no Ilumina PE (R$)");
+    }
+};
+
+function renderizarGraficosIluminacao(iluminacao) {
+    if (typeof echarts === 'undefined') return;
+
+    // 1. Donut de Status das Etapas
+    const elStatus = document.getElementById('chart_iluminacao_status');
+    if (elStatus) {
+        if (chartIluminacaoStatus) chartIluminacaoStatus.dispose();
+        chartIluminacaoStatus = echarts.init(elStatus);
+
+        const statusMap = { 'Concluída': 0, 'Em Execução': 0, 'Em Planejamento': 0 };
+        iluminacao.forEach(item => {
+            const s = String(item.status || '').toLowerCase();
+            if (s.includes('conclu') || s.includes('finaliz') || s.includes('entreg')) statusMap['Concluída']++;
+            else if (s.includes('execu') || s.includes('andamento')) statusMap['Em Execução']++;
+            else statusMap['Em Planejamento']++;
+        });
+
+        const statusData = [
+            { value: statusMap['Concluída'], name: 'Concluída', itemStyle: { color: '#10b981' } },
+            { value: statusMap['Em Execução'], name: 'Em Execução', itemStyle: { color: '#f59e0b' } },
+            { value: statusMap['Em Planejamento'], name: 'Em Planejamento', itemStyle: { color: '#3b82f6' } }
+        ].filter(item => item.value > 0);
+
+        const total = statusData.reduce((acc, curr) => acc + curr.value, 0);
+
+        chartIluminacaoStatus.setOption({
+            tooltip: {
+                trigger: 'item',
+                formatter: (p) => `<strong>${p.name}</strong><br/>Etapas: <b>${p.value}</b> (${total > 0 ? ((p.value/total)*100).toFixed(1) : 0}%)`
+            },
+            legend: { orient: 'horizontal', bottom: '0%', left: 'center', textStyle: { fontSize: 11, color: '#475569', fontWeight: 600 } },
+            series: [{
+                name: 'Status das Etapas',
+                type: 'pie',
+                radius: ['45%', '72%'],
+                center: ['50%', '45%'],
+                itemStyle: { borderRadius: 6, borderColor: '#ffffff', borderWidth: 2 },
+                data: statusData
+            }]
+        });
+    }
+
+    // 2. Top 20 Municípios por Pontos LED Executados
+    const elMun = document.getElementById('chart_iluminacao_por_mun');
+    if (elMun) {
+        if (chartIluminacaoPorMun) chartIluminacaoPorMun.dispose();
+        chartIluminacaoPorMun = echarts.init(elMun);
+
+        const munTotals = {};
+        iluminacao.forEach(item => {
+            const m = String(item.municipio || '').trim();
+            if (!m || m === '-' || m === 'NA') return;
+            if (!munTotals[m]) munTotals[m] = { nome: m, exec: 0, prev: 0, inv: 0 };
+            munTotals[m].exec += Number(item.indicador) || 0;
+            munTotals[m].prev += Number(item.indicador_secundario) || 0;
+            munTotals[m].inv += (parseFloat(String(item.valor_total || '0').replace(',', '.')) || 0);
+        });
+
+        const top20 = Object.values(munTotals).sort((a, b) => b.exec - a.exec).slice(0, 20).reverse();
+
+        chartIluminacaoPorMun.setOption({
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: (params) => {
+                    const item = top20.find(t => t.nome === params[0].name);
+                    const invFmt = item ? (item.inv >= 1e6 ? `R$ ${(item.inv / 1e6).toFixed(1)} Mi` : `R$ ${item.inv.toLocaleString('pt-BR')}`) : '-';
+                    return `<strong>${params[0].name}</strong><br/>Pontos Executados: <b>${params[0].value.toLocaleString('pt-BR')}</b><br/>Meta Prevista: <b>${(item ? item.prev : 0).toLocaleString('pt-BR')}</b><br/>Investimento Total: <b>${invFmt}</b>`;
+                }
+            },
+            grid: { top: '5%', left: '3%', right: '6%', bottom: '8%', containLabel: true },
+            xAxis: { type: 'value', splitLine: { lineStyle: { color: '#f1f5f9' } } },
+            yAxis: { type: 'category', data: top20.map(t => t.nome), axisLabel: { color: '#334155', fontSize: 11, fontWeight: 500 } },
+            series: [{
+                name: 'Pontos LED Executados',
+                type: 'bar',
+                data: top20.map(t => t.exec),
+                itemStyle: {
+                    borderRadius: [0, 6, 6, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#6ee7b7' },
+                        { offset: 1, color: '#059669' }
+                    ])
+                },
+                label: { show: true, position: 'right', fontWeight: 'bold', fontSize: 10, color: '#065f46' }
+            }]
+        });
+    }
+}
+
+function renderizarTabelaIluminacao(iluminacao) {
+    const elTable = document.getElementById('resumo_iluminacao_tabela');
+    if (!elTable || typeof $.fn.DataTable === 'undefined') return;
+
+    if ($.fn.DataTable.isDataTable('#resumo_iluminacao_tabela')) {
+        $('#resumo_iluminacao_tabela').DataTable().destroy();
+        $('#resumo_iluminacao_tabela').empty();
+    }
+
+    dataTableIluminacao = $('#resumo_iluminacao_tabela').DataTable({
+        data: iluminacao,
+        deferRender: true,
+        scrollX: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
+        order: [[7, 'desc']], // Ordenar por investimento
+        columns: [
+            {
+                title: "Município",
+                data: "municipio",
+                className: "align-middle",
+                width: "140px",
+                render: d => `<span class="badge bg-blue-50 text-blue-700 border border-blue-200 fw-bold px-2 py-1 rounded-pill cursor-pointer" onclick="window.filtrarTabelaPorMunicipioIluminacao('${d || ''}')">${d || 'Estadual'}</span>`
+            },
+            {
+                title: "Etapa / Intervenção",
+                data: "produto",
+                className: "align-middle",
+                width: "260px",
+                render: (d, t, r) => {
+                    const titulo = d || r.iniciativa_estrategica || 'Modernização Ilumina PE';
+                    const sub = r.empresa_contratada ? `<div class="text-xs text-slate-400 mt-0.5">${r.empresa_contratada}</div>` : '';
+                    return `<div class="fw-bold text-slate-800 text-sm leading-tight">${titulo}</div>${sub}`;
+                }
+            },
+            {
+                title: "Contrato",
+                data: "no_contrato",
+                className: "align-middle text-center",
+                width: "100px",
+                render: (d, t, r) => `<span class="badge bg-slate-100 text-slate-700 font-mono border">${d || '-'}</span>`
+            },
+            {
+                title: "Pontos Exec.",
+                data: "indicador",
+                className: "align-middle text-center fw-bold",
+                width: "100px",
+                render: (d, t) => {
+                    const num = Number(d) || 0;
+                    if (t !== 'display') return num;
+                    return `<span class="badge bg-emerald-50 text-emerald-800 border border-emerald-300 font-black px-2.5 py-1 text-xs rounded-pill">${num.toLocaleString('pt-BR')}</span>`;
+                }
+            },
+            {
+                title: "Pontos Prev.",
+                data: "indicador_secundario",
+                className: "align-middle text-center fw-bold",
+                width: "100px",
+                render: (d, t) => {
+                    const num = Number(d) || 0;
+                    if (t !== 'display') return num;
+                    return `<span class="badge bg-slate-100 text-slate-700 border font-bold px-2.5 py-1 text-xs rounded-pill">${num.toLocaleString('pt-BR')}</span>`;
+                }
+            },
+            {
+                title: "Status",
+                data: "status",
+                className: "align-middle",
+                width: "130px",
+                render: d => {
+                    const s = String(d || '').trim();
+                    let badgeClass = 'bg-slate-100 text-slate-700 border';
+                    if (s.toLowerCase().includes('conclu') || s.toLowerCase().includes('entreg')) badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                    else if (s.toLowerCase().includes('execu') || s.toLowerCase().includes('andamento')) badgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
+                    else if (s.toLowerCase().includes('planej')) badgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
+                    return `<span class="badge ${badgeClass} rounded-pill px-2.5 py-1 text-xs font-bold">${s || '-'}</span>`;
+                }
+            },
+            {
+                title: "Avanço Físico",
+                data: null,
+                className: "align-middle",
+                width: "120px",
+                render: (d, t, r) => {
+                    const pExec = Number(r.indicador) || 0;
+                    const pPrev = Number(r.indicador_secundario) || 0;
+                    const num = pPrev > 0 ? Math.min(Math.round((pExec / pPrev) * 100), 100) : (pExec > 0 ? 100 : 0);
+                    if (t !== 'display') return num;
+                    const barColor = num >= 100 ? 'bg-emerald-500' : (num >= 50 ? 'bg-teal-500' : 'bg-amber-500');
+                    return `
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height: 6px;">
+                                <div class="progress-bar ${barColor}" style="width: ${num}%;"></div>
+                            </div>
+                            <span class="text-xs fw-bold text-slate-700">${num}%</span>
+                        </div>
+                    `;
+                }
+            },
+            {
+                title: "Investimento (R$)",
+                data: "valor_total",
+                className: "align-middle text-end fw-bold text-slate-800",
+                width: "140px",
+                render: (d, t) => {
+                    const num = parseFloat(String(d || '0').replace(',', '.')) || 0;
+                    if (t !== 'display') return num;
+                    return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+            }
+        ]
+    });
+}
+window.filtrarTabelaPorMunicipioIluminacao = function (nomeMun) {
+    if (!nomeMun) return;
+    $('#iluminacao_filtro_ativo_badge').text(`Município: ${nomeMun}`);
+    $('#iluminacao_filtro_ativo_badge_container').removeClass('d-none').addClass('d-flex');
+
+    if (dataTableIluminacao) {
+        dataTableIluminacao.column(0).search(`^${nomeMun}$`, true, false).draw();
+    }
+    const el = document.getElementById('iluminacao_filtro_ativo_badge_container');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
+
+window.limparFiltroIluminacao = function () {
+    $('#iluminacao_filtro_ativo_badge_container').removeClass('d-flex').addClass('d-none');
+    $('#iluminacao_filtro_ativo_badge').text('Filtro Ativo');
+
+    if (dataTableIluminacao) {
+        dataTableIluminacao.column(0).search('').draw();
+    }
+    if (mapIluminacao && mapIluminacao.getLayer('ilumina_muns_hover')) {
+        mapIluminacao.setFilter('ilumina_muns_hover', ['==', 'municipio', '']);
+    }
+};
+
+window.addEventListener('resize', () => {
+    if (mapIluminacao && typeof mapIluminacao.resize === 'function') mapIluminacao.resize();
+    if (chartIluminacaoStatus && typeof chartIluminacaoStatus.resize === 'function') chartIluminacaoStatus.resize();
+    if (chartIluminacaoPorMun && typeof chartIluminacaoPorMun.resize === 'function') chartIluminacaoPorMun.resize();
+    if (dataTableIluminacao && typeof dataTableIluminacao.columns.adjust === 'function') dataTableIluminacao.columns.adjust();
+});
+
+window.addEventListener('resize', () => {
+    // ...
+    if (dataTableHabitacao && typeof dataTableHabitacao.columns.adjust === 'function') dataTableHabitacao.columns.adjust();
+    if (dataTableRegularizacao && typeof dataTableRegularizacao.columns.adjust === 'function') dataTableRegularizacao.columns.adjust();
+});
+
+
+

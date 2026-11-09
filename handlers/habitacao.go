@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -55,13 +54,18 @@ func (fn *FlexNumber) UnmarshalJSON(b []byte) error {
 		*fn = FlexNumber(f)
 	case nil:
 		*fn = 0
+	case bool:
+		if v {
+			*fn = 1
+		} else {
+			*fn = 0
+		}
 	default:
-		return fmt.Errorf("tipo incompatível para FlexNumber: %T", v)
+		*fn = 0
+		return nil
 	}
 	return nil
 }
-
-
 
 // ItemRegularizacao mapeia as colunas de df_regularizacoes.json
 type ItemRegularizacao struct {
@@ -105,7 +109,7 @@ type KPIsReurb struct {
 
 // HabitacaoItem mapeia os campos do df_habitacao.json
 type HabitacaoItem struct {
-	CodIBGE                     interface{} `json:"cod_ibge"`
+	CodIBGE                     interface{} `json:"ibge7"`
 	Municipio                   string      `json:"municipio"`
 	Empreendimento              string      `json:"empreendimento"`
 	Status                      string      `json:"status"`
@@ -179,6 +183,7 @@ type RetomadasKPIs struct {
 	MunicipiosAtendidos      int     `json:"municipios_atendidos"`
 }
 
+// HabitacaoResponse consolidado
 type HabitacaoResponse struct {
 	Projetos          []HabitacaoItem      `json:"projetos"`
 	KPIs              HabitacaoKPIs        `json:"kpis"`
@@ -190,6 +195,7 @@ type HabitacaoResponse struct {
 	KPIsRetomadas     RetomadasKPIs        `json:"kpis_retomadas"`
 	Regularizacoes    []ItemRegularizacao  `json:"regularizacoes"`
 	KPIsReurb         KPIsReurb            `json:"kpis_reurb"`
+	GeoJSON           interface{}          `json:"geojson"`
 }
 
 var (
@@ -200,14 +206,12 @@ var (
 
 func GetHabitacaoResumo(c *gin.Context) {
 	habitacaoCacheOnce.Do(func() {
-		log.Println("⚡ [Habitação] Carregando df_habitacao.json e df_regularizacoes.json em memória...")
+		log.Println("⚡ [Habitação] Carregando dados e GeoJSON em memória...")
 
 		// 1. Habitação
 		rawHab, err := readFileFromPaths(
-			"data/df_habitacao.json",
-			"data/df_habitação.json",
-			"app_aurora_municipios/data/df_habitacao.json",
-			"C:/dados/aurora/df_habitacao.json",
+			"data/json/df_habitacao.json",
+			"C:/dados/aurora/json/df_habitacao.json",
 		)
 		if err != nil {
 			log.Printf("⚠️ Erro ao carregar df_habitacao.json: %v", err)
@@ -225,16 +229,29 @@ func GetHabitacaoResumo(c *gin.Context) {
 		// 2. Regularizações
 		var regularizacoes []ItemRegularizacao
 		rawReurb, errReurb := readFileFromPaths(
-			"data/df_regularizacoes.json",
-			"data/df_regularizações.json",
-			"app_aurora_municipios/data/df_regularizacoes.json",
-			"C:/dados/aurora/df_regularizacoes.json",
+			"data/json/df_regularizacoes.json",
+			"C:/dados/aurora/json/df_regularizacoes.json",
 		)
 		if errReurb != nil {
 			log.Printf("⚠️ Aviso: df_regularizacoes.json não encontrado: %v", errReurb)
 		} else {
 			if err := json.Unmarshal(rawReurb, &regularizacoes); err != nil {
 				log.Printf("⚠️ Erro ao decodificar df_regularizacoes.json: %v", err)
+			}
+		}
+
+		// 3. GeoJSON dos Municípios
+		rawGeo, errGeo := readFileFromPaths(
+			"data/geojson/pernambuco_municipios.geojson",
+			"app_aurora_municipios/data/geojson/pernambuco_municipios.geojson",
+			"C:/dados/aurora/geojson/pernambuco_municipios.geojson",
+		)
+		var geojsonParsed interface{}
+		if errGeo != nil {
+			log.Printf("⚠️ Aviso: pernambuco_municipios.geojson não encontrado: %v", errGeo)
+		} else {
+			if err := json.Unmarshal(rawGeo, &geojsonParsed); err != nil {
+				log.Printf("⚠️ Erro ao decodificar pernambuco_municipios.geojson: %v", err)
 			}
 		}
 
@@ -355,12 +372,12 @@ func GetHabitacaoResumo(c *gin.Context) {
 		kpisSub50.MunicipiosAtendidos = len(munsSub50Map)
 		kpisRetomadas.MunicipiosAtendidos = len(munsRetomadasMap)
 
-		// 3. Processamento dos KPIs de REURB com regras requisitadas
+		// 4. Processamento dos KPIs de REURB
 		kpisReurb := KPIsReurb{}
 		munsReurbMap := make(map[string]bool)
 		nucleosMap := make(map[string]bool)
 
-for _, reg := range regularizacoes {
+		for _, reg := range regularizacoes {
 			titulos := int(reg.Regularizacoes)
 			mulheres := int(reg.Mulheres)
 
@@ -397,7 +414,6 @@ for _, reg := range regularizacoes {
 				kpisReurb.TitulosAndamento += titulos
 			}
 
-			// Agrupamento por Classificação (Previstos e Entregues)
 			cls := strings.ToUpper(strings.TrimSpace(reg.Classificacao))
 			if strings.Contains(cls, "REGMEL") {
 				kpisReurb.ClassifRegmel.Previstos += titulos
@@ -422,7 +438,6 @@ for _, reg := range regularizacoes {
 			}
 		}
 
-		// Cálculo dos percentuais de cada classificação
 		calcPct := func(m *ClassifMetrica) {
 			if m.Previstos > 0 {
 				m.Percent = (float64(m.Entregues) / float64(m.Previstos)) * 100.0
@@ -433,12 +448,6 @@ for _, reg := range regularizacoes {
 		calcPct(&kpisReurb.ClassifReurb)
 		calcPct(&kpisReurb.ClassifImobiliaria)
 
-		kpisReurb.TotalMunicipios = len(munsReurbMap)
-		kpisReurb.TotalNucleos = len(nucleosMap)
-		if kpisReurb.TitulosPrevistos > 0 {
-			kpisReurb.PercentMulheres = (float64(kpisReurb.TotalMulheres) / float64(kpisReurb.TitulosPrevistos)) * 100.0
-		}
-		
 		kpisReurb.TotalMunicipios = len(munsReurbMap)
 		kpisReurb.TotalNucleos = len(nucleosMap)
 		if kpisReurb.TitulosPrevistos > 0 {
@@ -456,6 +465,7 @@ for _, reg := range regularizacoes {
 			KPIsRetomadas:     kpisRetomadas,
 			Regularizacoes:    regularizacoes,
 			KPIsReurb:         kpisReurb,
+			GeoJSON:           geojsonParsed,
 		}
 
 		habitacaoPayload, habitacaoErr = json.Marshal(resp)

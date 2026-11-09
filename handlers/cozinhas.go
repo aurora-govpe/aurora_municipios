@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"strconv" // <--- Adicionar este import
 
 	"github.com/gin-gonic/gin"
 )
@@ -101,6 +102,32 @@ type VulnerabilidadeMun struct {
 	RankIVCADNCPond  int     `json:"rank_ivcad_nc_ponderado"`
 }
 
+type ItemPCP struct {
+	IBGE7                   interface{} `json:"ibge7"`
+	Segmento                string      `json:"segmento"`
+	Municipio               string      `json:"municipio"`
+	ValorInvestido          float64     `json:"valor_investido_no_municipio"`
+	ValorPago               float64     `json:"valor_pago_no_municipio"`
+	PercentExecucao         float64     `json:"percent_execucao"`
+	NumeroBeneficiarios     int         `json:"numero_de_beneficiarios"`
+	PercentDoValorTotal     float64     `json:"percent_do_valor_total"`
+	ProporcaoDoTotalDeCasos float64     `json:"proporcao_do_total_de_casos"`
+	CodIBGE                 string      `json:"cod_ibge"`
+	RD                      string      `json:"rd"`
+	Status                  string      `json:"status"`
+}
+
+type ChapeuDePalhaKPIs struct {
+	TotalBeneficiarios int     `json:"total_beneficiarios"`
+	ValorInvestido     float64 `json:"valor_investido"`
+	ValorPago          float64 `json:"valor_pago"`
+	MunicipiosCobertos int     `json:"municipios_cobertos"`
+	RDsCobertas        int     `json:"rds_cobertas"`
+	BeneficiariosCana  int     `json:"beneficiarios_cana"`
+	BeneficiariosFruta int     `json:"beneficiarios_fruta"`
+	BeneficiariosPesca int     `json:"beneficiarios_pesca"`
+}
+
 type CozinhasResponse struct {
 	Cozinhas            []CozinhaItem        `json:"cozinhas"`
 	KPIs                CozinhasKPIs         `json:"kpis"`
@@ -111,7 +138,70 @@ type CozinhasResponse struct {
 	CofinMuns           []CofinanciamentoMun `json:"cofinanciamento_muns"`
 	VulnerabilidadeMuns []VulnerabilidadeMun `json:"vulnerabilidade_muns"`
 	GeoJSONMun          json.RawMessage      `json:"geojson_municipios,omitempty"`
+	KPIsPCP             ChapeuDePalhaKPIs    `json:"kpis_pcp"`
+	PCP                 []ItemPCP            `json:"pcp,omitempty"`
+	KPIsTransporte TransporteEscolarKPIs   `json:"kpis_transporte"`
+	Transporte     []ItemTransporteEscolar `json:"transporte,omitempty"`
+	KPIsIluminacao IluminacaoKPIs   `json:"kpis_iluminacao"`
+	Iluminacao     []ItemIluminacao `json:"iluminacao,omitempty"`
 }
+
+// Estrutura de cada linha de df_transporte.json
+type ItemTransporteEscolar struct {
+	IBGE7                 interface{} `json:"ibge7"`
+	CodIBGE               interface{} `json:"cod_ibge"`
+	QtdOnibus             int         `json:"qtd_onibus"`
+	QtdVans               int         `json:"qtd_vans"`
+	ValorTotal            interface{} `json:"valor_total"`
+	Produto               string      `json:"produto"`
+	Municipio             string      `json:"municipio"`
+	RegiaoDesenvolvimento string      `json:"regiao_de_desenvolvimento"`
+	EixoEstrategico       string      `json:"eixo_estrategico"`
+	IniciativaEstrategica string      `json:"iniciativa_estrategica"`
+	Secretaria            string      `json:"secretaria"`
+	Status                string      `json:"status"`
+	PercentExecucao       string      `json:"percent_execucao"`
+}
+
+type TransporteEscolarKPIs struct {
+	TotalVeiculos      int     `json:"total_veiculos"`
+	TotalOnibus        int     `json:"total_onibus"`
+	TotalVans          int     `json:"total_vans"`
+	ValorInvestido     float64 `json:"valor_investido"`
+	MunicipiosCobertos int     `json:"municipios_cobertos"`
+}
+
+type ItemIluminacao struct {
+	IBGE7                 interface{} `json:"ibge7"`
+	Municipio             string      `json:"municipio"`
+	RD                    string      `json:"rd"`
+	NoContrato            string      `json:"no_contrato"`
+	Produto               string      `json:"produto"`
+	Status                string      `json:"status"`
+	PercentExecucao       string      `json:"percent_execucao"`
+	IndicadorExecutado    string      `json:"indicador"`            // Pontos Executados
+	IndicadorPrevisto     string      `json:"indicador_secundario"` // Pontos Previstos
+	ValorTotal            string      `json:"valor_total"`
+	ValorPago             string      `json:"valor_pago"`
+	EmpresaContratada     string      `json:"empresa_contratada"`
+	Latitude              string      `json:"latitude"`
+	Longitude             string      `json:"longitude"`
+	GrupoIlumina          string      `json:"grupo_ilumina"`
+	IniciativaEstrategica string      `json:"iniciativa_estrategica"`
+	Secretaria            string      `json:"secretaria"`
+}
+
+type IluminacaoKPIs struct {
+	TotalContratos     int     `json:"total_contratos"`
+	PontosExecutados   int     `json:"pontos_executados"`
+	PontosPrevistos    int     `json:"pontos_previstos"`
+	ValorTotal         float64 `json:"valor_total"`
+	ValorPago          float64 `json:"valor_pago"`
+	Concluidas         int     `json:"concluidas"`
+	EmExecucao         int     `json:"em_execucao"`
+	MunicipiosCobertos int     `json:"municipios_cobertos"`
+}
+
 
 var (
 	cozinhasCacheOnce sync.Once
@@ -123,6 +213,50 @@ var (
 func GetCozinhasResumo(c *gin.Context) {
 	cozinhasCacheOnce.Do(func() {
 		log.Println("⚡ [Pernambuco sem Fome] Carregando bases de Cozinhas, Mães de PE e Cofinanciamento em memória...")
+		
+		// Carrega Iluminação Pública / Eficiência Energética (df_iluminacao.json)
+		kpisIlumina := IluminacaoKPIs{}
+		var iluminaItems []ItemIluminacao
+		rawIlumina, errIlumina := readFileFromPaths(
+			"data/json/df_iluminacao.json",
+			"data/df_iluminacao.json",
+			"app_aurora_municipios/data/json/df_iluminacao.json",
+			"C:/dados/aurora/json/df_iluminacao.json",
+			"C:/dados/aurora/df_iluminacao.json",
+		)
+		if errIlumina == nil && len(rawIlumina) > 0 {
+			if err := json.Unmarshal(rawIlumina, &iluminaItems); err == nil {
+				munsIlumina := make(map[string]bool)
+				for _, item := range iluminaItems {
+					kpisIlumina.TotalContratos++
+
+					// Conversão de pontos
+					ptExec, _ := strconv.Atoi(strings.TrimSpace(item.IndicadorExecutado))
+					ptPrev, _ := strconv.Atoi(strings.TrimSpace(item.IndicadorPrevisto))
+					kpisIlumina.PontosExecutados += ptExec
+					kpisIlumina.PontosPrevistos += ptPrev
+
+					// Conversão de valores financeiros
+					vTot, _ := strconv.ParseFloat(strings.ReplaceAll(strings.TrimSpace(item.ValorTotal), ",", "."), 64)
+					vPag, _ := strconv.ParseFloat(strings.ReplaceAll(strings.TrimSpace(item.ValorPago), ",", "."), 64)
+					kpisIlumina.ValorTotal += vTot
+					kpisIlumina.ValorPago += vPag
+
+					stNorm := strings.ToUpper(strings.TrimSpace(item.Status))
+					if strings.Contains(stNorm, "CONCLU") || strings.Contains(stNorm, "ENTREG") {
+						kpisIlumina.Concluidas++
+					} else {
+						kpisIlumina.EmExecucao++
+					}
+
+					if item.Municipio != "" {
+						munsIlumina[strings.ToUpper(strings.TrimSpace(item.Municipio))] = true
+					}
+				}
+				kpisIlumina.MunicipiosCobertos = len(munsIlumina)
+			}
+		}
+
 
 		// 1. Carrega cozinhas
 		rawCozinhas, err := readFileFromPaths(
@@ -263,6 +397,43 @@ func GetCozinhasResumo(c *gin.Context) {
 			}
 		} else {
 			log.Printf("⚠️ Aviso: ppcof_co_financiamento.json não encontrado: %v", errCofin)
+		}
+		
+		// Carrega Transporte Escolar (df_transporte.json)
+		kpisTransporte := TransporteEscolarKPIs{}
+		var transporteItems []ItemTransporteEscolar
+		rawTransp, errTransp := readFileFromPaths(
+			"data/json/df_transporte.json",
+			"data/df_transporte.json",
+			"app_aurora_municipios/data/json/df_transporte.json",
+			"C:/dados/aurora/json/df_transporte.json",
+			"C:/dados/aurora/df_transporte.json",
+		)
+		if errTransp == nil && len(rawTransp) > 0 {
+			if err := json.Unmarshal(rawTransp, &transporteItems); err == nil {
+				munsTransp := make(map[string]bool)
+				for _, item := range transporteItems {
+					kpisTransporte.TotalOnibus += item.QtdOnibus
+					kpisTransporte.TotalVans += item.QtdVans
+					kpisTransporte.TotalVeiculos += (item.QtdOnibus + item.QtdVans)
+
+					// Converte valor_total para float
+					var vFloat float64
+					switch v := item.ValorTotal.(type) {
+					case float64:
+						vFloat = v
+					case string:
+						vLimpo := strings.ReplaceAll(strings.TrimSpace(v), ",", ".")
+						vFloat, _ = strconv.ParseFloat(vLimpo, 64)
+					}
+					kpisTransporte.ValorInvestido += vFloat
+
+					if item.Municipio != "" {
+						munsTransp[strings.ToUpper(strings.TrimSpace(item.Municipio))] = true
+					}
+				}
+				kpisTransporte.MunicipiosCobertos = len(munsTransp)
+			}
 		}
 
 		// 4. Carrega Indicadores IVCAD e calcula Vulnerabilidade a Cuidados
@@ -418,6 +589,63 @@ func GetCozinhasResumo(c *gin.Context) {
 			log.Printf("⚠️ Aviso: GeoJSON pernambuco_municipios.geojson não encontrado: %v", errGeo)
 		}
 
+		// 6. Carrega Chapéu de Palha (df_pcp.json)
+		kpisPCP := ChapeuDePalhaKPIs{}
+		var pcpItems []ItemPCP
+		rawPCP, errPCP := readFileFromPaths(
+			"data/json/df_pcp.json",
+			"data/df_pcp.json",
+			"app_aurora_municipios/data/json/df_pcp.json",
+			"C:/dados/aurora/json/df_pcp.json",
+			"C:/dados/aurora/df_pcp.json",
+		)
+		
+		pcpByMun := make(map[string]struct{
+    Beneficiarios int
+    ValorPago     float64
+})
+for _, p := range pcpItems {
+    k := strings.ToUpper(strings.TrimSpace(p.Municipio))
+    cur := pcpByMun[k]
+    cur.Beneficiarios += p.NumeroBeneficiarios
+    cur.ValorPago += p.ValorPago
+    pcpByMun[k] = cur
+}
+		
+		if errPCP == nil && len(rawPCP) > 0 {
+			if err := json.Unmarshal(rawPCP, &pcpItems); err == nil {
+				munsPCP := make(map[string]bool)
+				rdsPCP := make(map[string]bool)
+				for _, item := range pcpItems {
+					kpisPCP.TotalBeneficiarios += item.NumeroBeneficiarios
+					kpisPCP.ValorInvestido += item.ValorInvestido
+					kpisPCP.ValorPago += item.ValorPago
+					if item.Municipio != "" {
+						munsPCP[strings.ToUpper(strings.TrimSpace(item.Municipio))] = true
+					}
+					if item.RD != "" {
+						rdsPCP[strings.ToUpper(strings.TrimSpace(item.RD))] = true
+					}
+					seg := strings.ToUpper(strings.TrimSpace(item.Segmento))
+					if strings.Contains(seg, "CANA") {
+						kpisPCP.BeneficiariosCana += item.NumeroBeneficiarios
+					} else if strings.Contains(seg, "PESCA") {
+						kpisPCP.BeneficiariosPesca += item.NumeroBeneficiarios
+					} else if strings.Contains(seg, "FRUTI") {
+						kpisPCP.BeneficiariosFruta += item.NumeroBeneficiarios
+					}
+				}
+				kpisPCP.MunicipiosCobertos = len(munsPCP)
+				kpisPCP.RDsCobertas = len(rdsPCP)
+				log.Printf("✅ [Pernambuco sem Fome] Chapéu de Palha carregado com sucesso (%d beneficiários, %d municípios, R$ %.2f)",
+					kpisPCP.TotalBeneficiarios, kpisPCP.MunicipiosCobertos, kpisPCP.ValorPago)
+			} else {
+				log.Printf("⚠️ Erro ao decodificar df_pcp.json: %v", err)
+			}
+		} else {
+			log.Printf("⚠️ Aviso: df_pcp.json não encontrado: %v", errPCP)
+		}
+
 		resp := CozinhasResponse{
 			Cozinhas:            cozinhas,
 			KPIs:                kpis,
@@ -428,6 +656,12 @@ func GetCozinhasResumo(c *gin.Context) {
 			CofinMuns:           cofinMuns,
 			VulnerabilidadeMuns: vulnList,
 			GeoJSONMun:          rawGeo,
+			KPIsPCP:             kpisPCP,
+			PCP:                 pcpItems,
+			KPIsTransporte:      kpisTransporte,  // <--- Incluir aqui
+			Transporte:          transporteItems, // <--- ADICIONE ESTA LINHA QUE ESTAVA FALTANDO!
+			KPIsIluminacao: kpisIlumina,
+			Iluminacao:     iluminaItems,
 		}
 
 		cozinhasPayload, cozinhasErr = json.Marshal(resp)

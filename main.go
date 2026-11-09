@@ -64,7 +64,10 @@ func main() {
 		rg.Any("/municipios/resumo/cozinhas", handlers.GetCozinhasResumo)
 		rg.Any("/municipios/resumo/estradas", handlers.GetEstradasResumo)
 		rg.Any("/municipios/resumo/habitacao", handlers.GetHabitacaoResumo)
-		rg.Any("/ficha/filtros", handlers.GetFichaFiltros)
+		rg.Any("/municipios/resumo/obras", handlers.GetObrasResumo)
+		rg.Any("/municipios/resumo/creches", handlers.GetCrechesResumo)
+
+    rg.Any("/ficha/filtros", handlers.GetFichaFiltros)
 		rg.Any("/ficha/metadados", handlers.GetFichaMetadados)
 		rg.Any("/ficha/data", handlers.PostFichaData)
 		rg.Any("/ficha/resumo/capag", handlers.GetCapagResumo)
@@ -72,6 +75,7 @@ func main() {
 		rg.Any("/ficha/resumo/cozinhas", handlers.GetCozinhasResumo)
 		rg.Any("/ficha/resumo/estradas", handlers.GetEstradasResumo)
 		rg.Any("/ficha/resumo/habitacao", handlers.GetHabitacaoResumo)
+		rg.Any("/ficha/resumo/obras", handlers.GetObrasResumo)
 
 		// Regiões de Desenvolvimento
 		rg.Any("/regioes/filtros", handlers.GetRegioesFiltros)

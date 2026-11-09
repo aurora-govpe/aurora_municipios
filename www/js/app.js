@@ -317,7 +317,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
 
 /* ==========================================================================
-   PAINEL EXECUTIVO INTEGRADO DE PROGRAMAS PRIORITÁRIOS (4 GRANDES PROGRAMAS)
+   PAINEL EXECUTIVO INTEGRADO DE PROGRAMAS PRIORITÁRIOS (TODAS AS PAUTAS)
    ========================================================================== */
 window.carregarResumoExecutivoProgramas = async function () {
     const $container = $('#tematicas_container_resumo_executivo');
@@ -328,7 +328,6 @@ window.carregarResumoExecutivoProgramas = async function () {
     try {
         const fetchEndpoint = async (rota) => {
             try {
-                // Tenta rota sem /api e com /api
                 let res = await window.fetchSeguro(`${basePath}/${rota}`.replace(/\/+/g, '/'));
                 if (!res || !res.ok) {
                     res = await window.fetchSeguro(`${basePath}/api/${rota}`.replace(/\/+/g, '/'));
@@ -368,21 +367,37 @@ window.carregarResumoExecutivoProgramas = async function () {
             return data;
         };
 
-        const [coz, agu, est, cap] = await Promise.all([
+        const fetchHabitacao = async () => {
+            if (window.cacheResumoHabitacao) return window.cacheResumoHabitacao;
+            const data = await fetchEndpoint('municipios/resumo/habitacao');
+            if (data) window.cacheResumoHabitacao = data;
+            return data;
+        };
+
+        const fetchObras = async () => {
+            if (window.cacheResumoObras) return window.cacheResumoObras;
+            const data = await fetchEndpoint('municipios/resumo/obras');
+            if (data) window.cacheResumoObras = data;
+            return data;
+        };
+
+        const [coz, agu, est, cap, hab, obr] = await Promise.all([
             fetchCozinhas(),
             fetchAguas(),
             fetchEstradas(),
-            fetchCapag()
+            fetchCapag(),
+            fetchHabitacao(),
+            fetchObras()
         ]);
 
-        renderizarCardsExecutivosProgramas(coz, agu, est, cap);
+        renderizarCardsExecutivosProgramas(coz, agu, est, cap, hab, obr);
 
     } catch (err) {
         console.error("[Programas] Erro ao carregar painel integrado:", err);
     }
 };
 
-function renderizarCardsExecutivosProgramas(coz, agu, est, cap) {
+function renderizarCardsExecutivosProgramas(coz, agu, est, cap, hab, obr) {
     try {
         const $container = $('#tematicas_container_resumo_executivo');
         if (!$container.length) return;
@@ -405,40 +420,82 @@ function renderizarCardsExecutivosProgramas(coz, agu, est, cap) {
             return `${sinal}R$ ${abs.toLocaleString('pt-BR')}`;
         };
 
-        // 1. Pernambuco sem Fome
-        const totalCoz = coz?.kpis?.total || 134;
-        const funcCoz = coz?.kpis?.em_funcionamento || 107;
-        const refDia = coz?.kpis?.refeicoes_dia ? Number(coz.kpis.refeicoes_dia).toLocaleString('pt-BR') : '25.000';
-        const munsCoz = coz?.kpis?.municipios_cobertos || 89;
-        const totalMaes = coz?.kpis_maes?.total_beneficiarias ? Number(coz.kpis_maes.total_beneficiarias).toLocaleString('pt-BR') : '100.000';
+        // 1. Pernambuco sem Fome (Cozinhas, Mães e Chapéu de Palha)
+        const totalCoz = coz?.kpis?.total || 402;
+        const funcCoz = coz?.kpis?.funcionamento || coz?.kpis?.em_funcionamento || 0;
+        const totalMaes = coz?.kpis_maes?.total_beneficiarias ? Number(coz.kpis_maes.total_beneficiarias).toLocaleString('pt-BR') : '-';
+        const totalPcp = coz?.kpis_pcp?.total_beneficiarios ? Number(coz.kpis_pcp.total_beneficiarios).toLocaleString('pt-BR') : '-';
+        const valCofinPago = coz?.kpis_cofinanciamento?.total_pago || 0;
 
-        let textoCoz = `O programa de combate à fome conta com <strong>${funcCoz} cozinhas em pleno funcionamento</strong> (${totalCoz} mapeadas), servindo mais de <strong>${refDia} refeições diárias</strong> em <strong>${munsCoz} municípios</strong> vulneráveis, além de transferências a mais de <strong>${totalMaes} mulheres</strong> pelo Mães de PE.`;
+        // 2. Obras Públicas e Equipamentos Estruturadores
+        const totalObras = obr?.kpis?.total_obras || (obr?.obras ? obr.obras.length : 0);
+        const obrasExec = obr?.kpis?.em_execucao || 0;
+        const obrasConcl = obr?.kpis?.concluidas || 0;
+        const invObras = obr?.kpis?.investimento_total || 0;
 
-        // 2. Águas de Pernambuco
-        const totalObrasAgua = agu?.kpis?.total_obras || (agu?.obras ? agu.obras.length : 142);
-        const obrasConcluidas = agu?.kpis?.obras_concluidas || (agu?.obras ? agu.obras.filter(o => String(o.status || '').toLowerCase().includes('conclu')).length : 48);
-        const obrasAndamento = agu?.kpis?.obras_andamento || (agu?.obras ? agu.obras.filter(o => String(o.status || '').toLowerCase().includes('andamento') || String(o.status || '').toLowerCase().includes('execu')).length : 74);
-        const invAgua = agu?.kpis?.investimento_total || 2500000000;
-        const popAgua = agu?.kpis?.populacao_beneficiada ? Number(agu.kpis.populacao_beneficiada).toLocaleString('pt-BR') : '2.100.000';
+        // 3. Creches e Pré-Escola (Filtro das obras de educação infantil)
+        const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+        const crechesList = (obr?.obras || []).filter(o => {
+            const ini = norm(o.iniciativa_estrategica || o.iniciativa_resumida || '');
+            const prod = norm(o.produto || '');
+            return ini.includes('60 mil') || ini.includes('creche') || prod.includes('creche') || prod.includes('pre-escola');
+        });
+        const totalCreches = crechesList.length;
+        const crechesExec = crechesList.filter(o => {
+            const s = norm(o.status);
+            return s.includes('execu') || s.includes('andamento');
+        }).length;
+        const crechesConcl = crechesList.filter(o => {
+            const s = norm(o.status);
+            return s.includes('conclu') || s.includes('entreg');
+        }).length;
+        let invCreches = 0;
+        crechesList.forEach(c => { invCreches += Number(c.valor_total) || 0; });
 
-        let textoAgua = `Com investimentos estruturantes previstos em <strong>${formataMoedaCompacta(invAgua)}</strong>, o programa abrange <strong>${totalObrasAgua} obras hídricas</strong> (${obrasConcluidas} concluídas e ${obrasAndamento} em andamento), beneficiando diretamente mais de <strong>${popAgua} pernambucanos</strong>.`;
+        // 4. Educação (Transporte Escolar)
+        const totalVeiculosTransp = coz?.kpis_transporte?.total_veiculos || (coz?.transporte ? coz.transporte.reduce((acc, t) => acc + (Number(t.qtd_onibus)||0) + (Number(t.qtd_vans)||0), 0) : 0);
+        const totalOnibusTransp = coz?.kpis_transporte?.total_onibus || (coz?.transporte ? coz.transporte.reduce((acc, t) => acc + (Number(t.qtd_onibus)||0), 0) : 0);
+        const totalVansTransp = coz?.kpis_transporte?.total_vans || (coz?.transporte ? coz.transporte.reduce((acc, t) => acc + (Number(t.qtd_vans)||0), 0) : 0);
+        let invTransp = coz?.kpis_transporte?.valor_investido || 0;
+        if (!invTransp && coz?.transporte) {
+            coz.transporte.forEach(t => {
+                invTransp += parseFloat(String(t.valor_total || '0').replace(',', '.')) || 0;
+            });
+        }
 
-        // 3. Estradas de Pernambuco
-        const extTotalKm = est?.kpis?.extensao_total_km || 6380;
-        const trechosObras = est?.kpis?.trechos_em_obras || 43;
-        const invEstradas = est?.kpis?.investimento_total || 900000000;
-        const extPavKm = est?.kpis?.extensao_pavimentada_km || 4920;
+        // 5. Habitação e Regularização Fundiária (Morar Bem & REURB)
+        const totalUh = hab?.kpis?.total_uh || 0;
+        const uhConstrucao = hab?.kpis?.construcao_uh || 0;
+        const uhEntregues = hab?.kpis?.entregues_uh || 0;
+        const titulosReurb = hab?.kpis_reurb?.titulos_entregues || 0;
+        const invHab = hab?.kpis?.investimento_total || 0;
 
-        let textoEstradas = `O programa rodoviário monitora uma malha viária de <strong>${Number(extTotalKm).toLocaleString('pt-BR')} km</strong> (${Number(extPavKm).toLocaleString('pt-BR')} km pavimentados), com <strong>${trechosObras} frentes de obras e restauração</strong> ativas e investimentos na ordem de <strong>${formataMoedaCompacta(invEstradas)}</strong>.`;
+        // 6. Eficiência Energética e Sustentabilidade (Ilumina PE)
+        const pontosIluminaExec = coz?.kpis_iluminacao?.pontos_executados || (coz?.iluminacao ? coz.iluminacao.reduce((acc, i) => acc + (Number(i.indicador)||0), 0) : 0);
+        const pontosIluminaPrev = coz?.kpis_iluminacao?.pontos_previstos || (coz?.iluminacao ? coz.iluminacao.reduce((acc, i) => acc + (Number(i.indicador_secundario)||0), 0) : 0);
+        const contratosIlumina = coz?.kpis_iluminacao?.total_contratos || (coz?.iluminacao ? coz.iluminacao.length : 0);
+        let invIlumina = coz?.kpis_iluminacao?.valor_total || 0;
+        if (!invIlumina && coz?.iluminacao) {
+            coz.iluminacao.forEach(i => {
+                invIlumina += parseFloat(String(i.valor_total || '0').replace(',', '.')) || 0;
+            });
+        }
 
-        // 4. Capacidade Fiscal dos Municípios
-        const munsAptos = cap?.kpis?.muns_aptos || 118;
-        const munsRestritos = cap?.kpis?.muns_restritos || 67;
-        const denom = (munsAptos + munsRestritos) || 185;
-        const pctAptos = Math.round((munsAptos / denom) * 100);
-        const emendasPagas = cap?.kpis?.emendas_pagas || 180000000;
+        // 7. Águas de Pernambuco
+        const totalObrasAgua = agu?.projetos ? agu.projetos.length : (agu?.kpis?.total_obras || 0);
+        const invAgua = (agu?.desembolso || []).reduce((acc, d) => acc + (Number(d.valor_desembolso_m) || 0) * 1e6, 0) || (agu?.kpis?.investimento_total || 14800000000);
+        const popAgua = "9,5 Mi";
 
-        let textoCapag = `No fortalecimento fiscal dos entes locais, <strong>${munsAptos} municípios (${pctAptos}%)</strong> estão habilitados com CAPAG A ou B junto à STN para formalização de convênios, além de <strong>${formataMoedaCompacta(emendasPagas)}</strong> em emendas e transferências repassadas.`;
+        // 8. Estradas de Pernambuco
+        const totalObrasEstradas = est?.kpis?.total_obras || (est?.obras ? est.obras.length : 193);
+        const rodoviasEstradas = est?.kpis?.total_rodovias || (est?.rodovias_unicas ? est.rodovias_unicas.length : 81);
+        const invEstradas = est?.kpis?.valor_total_bi ? est.kpis.valor_total_bi * 1e9 : 4720000000;
+        const concluidasEstradas = est?.kpis?.concluidas || 129;
+
+        // 9. CAPAG / Sustentabilidade Fiscal
+        const c = cap?.contagens || {};
+        const munsAptos = (Number(c['A']) || 0) + (Number(c['A+']) || 0) + (Number(c['B']) || 0) + (Number(c['B+']) || 0);
+        const munsRestritos = (Number(c['C']) || 0) + (Number(c['D']) || 0);
 
         const htmlResumo = `
             <div class="resumo-exec-banner mb-4">
@@ -454,10 +511,25 @@ function renderizarCardsExecutivosProgramas(coz, agu, est, cap) {
                             <i class="fas fa-utensils me-1 text-amber-300"></i> ${funcCoz} Cozinhas Ativas
                         </span>
                         <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
-                            <i class="fas fa-droplet me-1 text-cyan-300"></i> ${totalObrasAgua} Obras Hídricas
+                            <i class="fas fa-trowel-bricks me-1 text-orange-300"></i> ${totalObras} Obras Públicas
                         </span>
                         <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
-                            <i class="fas fa-road me-1 text-indigo-300"></i> ${trechosObras} Trechos em Obras
+                            <i class="fas fa-shapes me-1 text-rose-300"></i> ${totalCreches} Creches
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-bus me-1 text-yellow-300"></i> ${totalVeiculosTransp} Ônibus/Vans
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-house-chimney me-1 text-teal-300"></i> ${totalUh.toLocaleString('pt-BR')} Moradias
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-lightbulb me-1 text-emerald-300"></i> ${pontosIluminaExec.toLocaleString('pt-BR')} Pontos LED
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-droplet me-1 text-cyan-300"></i> ${formataMoedaCompacta(invAgua)} em Águas
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-road me-1 text-indigo-300"></i> ${concluidasEstradas} Rodovias Entregues
                         </span>
                         <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
                             <i class="fas fa-building-columns me-1 text-purple-300"></i> ${munsAptos} Muns CAPAG A/B
@@ -465,78 +537,166 @@ function renderizarCardsExecutivosProgramas(coz, agu, est, cap) {
                     </div>
                 </div>
                 <p class="text-sm text-white leading-relaxed mb-0 font-medium" style="text-align: justify;">
-                    A estratégia governamental de intervenção territorial opera de forma articulada em quatro grandes pilares: <strong>Superação da Pobreza, Segurança Alimentar e Proteção Social</strong> com ${funcCoz} cozinhas comunitárias e Mães de Pernambuco; <strong>Segurança Hídrica e Saneamento Básico</strong> com ${totalObrasAgua} obras sob investimento de ${formataMoedaCompacta(invAgua)}; <strong>Conectividade Logística, Eixos Viários e Mobilidade Regional</strong> com ${trechosObras} trechos rodoviários em recuperação; e <strong>Governança e Sustentabilidade Fiscal, Parcerias e Apoio aos Municípios</strong> com ${munsAptos} prefeituras aptas (${pctAptos}%) a captar recursos e acelerar o desenvolvimento local.
+                    O plano estruturador do Governo de Pernambuco atua de ponta a ponta no território estadual: na <strong>Assistência e Segurança Alimentar</strong> com ${funcCoz} cozinhas em funcionamento, ${totalMaes} mães e ${totalPcp} beneficiários do Chapéu de Palha; na <strong>Infraestrutura e Equipamentos</strong> com ${totalObras} obras públicas ativas sob ${formataMoedaCompacta(invObras)}; na <strong>Educação e Primeira Infância</strong> com ${totalCreches} novas creches e entrega de ${totalVeiculosTransp} ônibus e vans escolares; na <strong>Habitação e Regularização Fundiária</strong> com ${totalUh.toLocaleString('pt-BR')} unidades habitacionais e ${titulosReurb.toLocaleString('pt-BR')} títulos REURB; na <strong>Sustentabilidade Energética</strong> modernizando ${pontosIluminaExec.toLocaleString('pt-BR')} pontos de LED; em <strong>Saneamento e Rodovias</strong> assegurando ${formataMoedaCompacta(invAgua)} para segurança hídrica e ${totalObrasEstradas} intervenções viárias; e na <strong>Gestão Fiscal</strong> com ${munsAptos} municípios aptos com notas A e B na CAPAG STN.
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <!-- 1. PERNAMBUCO SEM FOME -->
+            <!-- GRID COMPLETO COM TODOS OS PROGRAMAS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3">
+                
+                <!-- 1. SUPERAÇÃO DA POBREZA E SEGURANÇA ALIMENTAR -->
                 <div class="resumo-dim-card cursor-pointer hover:shadow-md transition-all" style="border-top: 4px solid #D97706;" onclick="window.alternarPautaResumos('cozinhas', document.getElementById('btn_pauta_resumo_cozinhas'))">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-utensils text-amber-600 me-1.5"></i> Superação da Pobreza</span>
-                        <span class="badge bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-pill px-2">${funcCoz} Ativas</span>
+                        <span class="badge bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-pill px-2">${funcCoz} Cozinhas</span>
                     </div>
-                    <div class="space-y-1 mb-2.5">
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Cozinhas em Operação:</span> <strong class="text-slate-800 text-amber-700 font-bold">${funcCoz} (${totalCoz} total)</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Refeições / Dia:</span> <strong class="text-slate-800">${refDia}</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Municípios Cobertos:</span> <strong class="text-slate-800">${munsCoz}</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Mães de Pernambuco:</span> <strong class="text-slate-800">${totalMaes} beneficiárias</strong></div>
+                    <div class="space-y-1 mb-2.5 text-xs">
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Cozinhas em Operação:</span> <strong class="text-amber-700 font-bold">${funcCoz} (${totalCoz} total)</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Mães de Pernambuco:</span> <strong class="text-pink-600 font-bold">${totalMaes} mães</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Chapéu de Palha:</span> <strong class="text-amber-800 font-bold">${totalPcp} atendidos</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Cofinanciamento SAS:</span> <strong class="text-blue-700 font-bold">${formataMoedaCompacta(valCofinPago)}</strong></div>
                     </div>
-                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
-                        ${textoCoz}
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal">
+                        Rede de segurança alimentar e combate à fome integrada a transferências diretas de renda e cofinanciamento estadual da assistência social.
                     </div>
                 </div>
 
-                <!-- 2. ÁGUAS DE PERNAMBUCO -->
+                <!-- 2. OBRAS PÚBLICAS E EQUIPAMENTOS -->
+                <div class="resumo-dim-card cursor-pointer hover:shadow-md transition-all" style="border-top: 4px solid #EA580C;" onclick="window.alternarPautaResumos('obras', document.getElementById('btn_pauta_resumo_obras'))">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-trowel-bricks text-[#ea580c] me-1.5"></i> Obras Públicas</span>
+                        <span class="badge bg-orange-50 text-[#c2410c] border border-orange-200 text-[10px] font-bold rounded-pill px-2">${totalObras} Obras</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5 text-xs">
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Total de Contratos:</span> <strong class="text-slate-800 font-bold">${totalObras}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Em Execução:</span> <strong class="text-amber-600 font-bold">${obrasExec} canteiros</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Obras Entregues:</span> <strong class="text-emerald-600 font-bold">${obrasConcl}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Investimento Global:</span> <strong class="text-blue-600 font-bold">${formataMoedaCompacta(invObras)}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal">
+                        Construção, requalificação e entrega de equipamentos comunitários e estruturadores da SEDUH e CEHAB em todo o território estadual.
+                    </div>
+                </div>
+
+                <!-- 3. CRECHES E EDUCAÇÃO INFANTIL -->
+                <div class="resumo-dim-card cursor-pointer hover:shadow-md transition-all" style="border-top: 4px solid #F43F5E;" onclick="window.alternarPautaResumos('creches', document.getElementById('btn_pauta_resumo_creches'))">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-shapes text-rose-500 me-1.5"></i> Creches &amp; Pré-Escola</span>
+                        <span class="badge bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold rounded-pill px-2">${totalCreches} Creches</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5 text-xs">
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Total de Unidades:</span> <strong class="text-slate-800 font-bold">${totalCreches}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Em Obras / Construção:</span> <strong class="text-amber-600 font-bold">${crechesExec} ativas</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Creches Entregues:</span> <strong class="text-emerald-600 font-bold">${crechesConcl}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Investimento Previsto:</span> <strong class="text-rose-700 font-bold">${formataMoedaCompacta(invCreches)}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal">
+                        Meta prioritária do Governo de Pernambuco com abertura de 60 mil vagas em creches para ampliação do atendimento infantil e apoio às famílias.
+                    </div>
+                </div>
+
+                <!-- 4. EDUCAÇÃO / TRANSPORTE ESCOLAR -->
+                <div class="resumo-dim-card cursor-pointer hover:shadow-md transition-all" style="border-top: 4px solid #EAB308;" onclick="window.alternarPautaResumos('educacao', document.getElementById('btn_pauta_resumo_educacao'))">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-bus-school text-yellow-500 me-1.5"></i> Transporte Escolar</span>
+                        <span class="badge bg-yellow-50 text-yellow-800 border border-yellow-200 text-[10px] font-bold rounded-pill px-2">${totalVeiculosTransp} Veículos</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5 text-xs">
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Frota Total Entregue:</span> <strong class="text-amber-700 font-bold">${totalVeiculosTransp}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Ônibus Escolares:</span> <strong class="text-yellow-700 font-bold">${totalOnibusTransp}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Vans Escolares:</span> <strong class="text-sky-700 font-bold">${totalVansTransp}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Investimento Total:</span> <strong class="text-emerald-700 font-bold">${formataMoedaCompacta(invTransp)}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal">
+                        Renovação e expansão da frota própria escolar municipal garantindo segurança, acessibilidade e combate à evasão em todos os 185 municípios.
+                    </div>
+                </div>
+
+                <!-- 5. HABITAÇÃO E REGULARIZAÇÃO FUNDIÁRIA -->
+                <div class="resumo-dim-card cursor-pointer hover:shadow-md transition-all" style="border-top: 4px solid #0D9488;" onclick="window.alternarPautaResumos('habitacao', document.getElementById('btn_pauta_resumo_habitacao'))">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-house-chimney text-teal-600 me-1.5"></i> Habitação &amp; REURB</span>
+                        <span class="badge bg-teal-50 text-teal-700 border border-teal-200 text-[10px] font-bold rounded-pill px-2">${totalUh.toLocaleString('pt-BR')} UH</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5 text-xs">
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Total Morar Bem PE:</span> <strong class="text-teal-700 font-bold">${totalUh.toLocaleString('pt-BR')} UH</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Em Construção:</span> <strong class="text-amber-600 font-bold">${uhConstrucao.toLocaleString('pt-BR')} UH</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Entregues / Concluídas:</span> <strong class="text-emerald-600 font-bold">${uhEntregues.toLocaleString('pt-BR')} UH</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Títulos REURB Entregues:</span> <strong class="text-blue-700 font-bold">${titulosReurb.toLocaleString('pt-BR')}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal">
+                        Programa Morar Bem integrado com modalidades FAR, FDS, Entrada Garantida e Reforma no Lar junto à segurança jurídica da regularização fundiária.
+                    </div>
+                </div>
+
+                <!-- 6. EFICIÊNCIA ENERGÉTICA (ILUMINA PE) -->
+                <div class="resumo-dim-card cursor-pointer hover:shadow-md transition-all" style="border-top: 4px solid #10B981;" onclick="window.alternarPautaResumos('iluminacao', document.getElementById('btn_pauta_resumo_iluminacao'))">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-lightbulb text-emerald-500 me-1.5"></i> Eficiência Energética</span>
+                        <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-pill px-2">${pontosIluminaExec.toLocaleString('pt-BR')} LED</span>
+                    </div>
+                    <div class="space-y-1 mb-2.5 text-xs">
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Pontos LED Executados:</span> <strong class="text-emerald-700 font-bold">${pontosIluminaExec.toLocaleString('pt-BR')}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Meta Prevista:</span> <strong class="text-slate-800 font-bold">${pontosIluminaPrev.toLocaleString('pt-BR')}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Contratos / Etapas:</span> <strong class="text-slate-800 font-bold">${contratosIlumina}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Investimento Ilumina PE:</span> <strong class="text-blue-700 font-bold">${formataMoedaCompacta(invIlumina)}</strong></div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal">
+                        Modernização de parques de iluminação pública com luminárias de LED de alta eficiência, reduzindo consumo de energia e custos operacionais municipais.
+                    </div>
+                </div>
+
+                <!-- 7. ÁGUAS DE PERNAMBUCO -->
                 <div class="resumo-dim-card cursor-pointer hover:shadow-md transition-all" style="border-top: 4px solid #0284C7;" onclick="window.alternarPautaResumos('aguas', document.getElementById('btn_pauta_resumo_aguas'))">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-droplet text-sky-600 me-1.5"></i> Segurança Hídrica</span>
                         <span class="badge bg-sky-50 text-sky-700 border border-sky-200 text-[10px] font-bold rounded-pill px-2">${formataMoedaCompacta(invAgua)}</span>
                     </div>
-                    <div class="space-y-1 mb-2.5">
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Total de Obras:</span> <strong class="text-slate-800">${totalObrasAgua}</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Concluídas:</span> <strong class="text-emerald-700 font-bold">${obrasConcluidas}</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Em Execução:</span> <strong class="text-amber-700 font-bold">${obrasAndamento}</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Pop. Beneficiada:</span> <strong class="text-slate-800">${popAgua}</strong></div>
+                    <div class="space-y-1 mb-2.5 text-xs">
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Total de Obras Hídricas:</span> <strong class="text-slate-800 font-bold">${totalObrasAgua}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">População Alcançada:</span> <strong class="text-slate-800 font-bold">${popAgua} hab.</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Rede de Adutoras:</span> <strong class="text-blue-600 font-bold">100% Mapeada</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Investimento Plurianual:</span> <strong class="text-sky-700 font-bold">${formataMoedaCompacta(invAgua)}</strong></div>
                     </div>
-                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
-                        ${textoAgua}
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal">
+                        Intervenções estruturantes de adutoras, barragens e saneamento da COMPESA/SRHS garantindo segurança hídrica e universalização do abastecimento.
                     </div>
                 </div>
 
-                <!-- 3. ESTRADAS DE PERNAMBUCO -->
+                <!-- 8. ESTRADAS DE PERNAMBUCO -->
                 <div class="resumo-dim-card cursor-pointer hover:shadow-md transition-all" style="border-top: 4px solid #4F46E5;" onclick="window.alternarPautaResumos('estradas', document.getElementById('btn_pauta_resumo_estradas'))">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-road text-indigo-600 me-1.5"></i> Conectividade Logística</span>
-                        <span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold rounded-pill px-2">${Number(extTotalKm).toLocaleString('pt-BR')} km</span>
+                        <span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold rounded-pill px-2">${totalObrasEstradas} Obras</span>
                     </div>
-                    <div class="space-y-1 mb-2.5">
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Malha Monitorada:</span> <strong class="text-slate-800">${Number(extTotalKm).toLocaleString('pt-BR')} km</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Pavimentada:</span> <strong class="text-slate-800">${Number(extPavKm).toLocaleString('pt-BR')} km</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Trechos em Obras:</span> <strong class="text-slate-800 text-indigo-700 font-bold">${trechosObras} frentes</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Investimento Total:</span> <strong class="text-slate-800">${formataMoedaCompacta(invEstradas)}</strong></div>
+                    <div class="space-y-1 mb-2.5 text-xs">
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Contratos DER-PE:</span> <strong class="text-slate-800 font-bold">${totalObrasEstradas}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Rodovias Mapeadas:</span> <strong class="text-indigo-700 font-bold">${rodoviasEstradas}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Obras Concluídas:</span> <strong class="text-emerald-700 font-bold">${concluidasEstradas}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Investimento Global:</span> <strong class="text-slate-800 font-bold">${formataMoedaCompacta(invEstradas)}</strong></div>
                     </div>
-                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
-                        ${textoEstradas}
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal">
+                        Programa rodoviário de restauração, duplicação e manutenção das rodovias estaduais dinamizando eixos logísticos e conectividade regional.
                     </div>
                 </div>
 
-                <!-- 4. CAPACIDADE FISCAL DOS MUNICÍPIOS -->
+                <!-- 9. CAPACIDADE FISCAL DOS MUNICÍPIOS -->
                 <div class="resumo-dim-card cursor-pointer hover:shadow-md transition-all" style="border-top: 4px solid #9333EA;" onclick="window.alternarPautaResumos('capag', document.getElementById('btn_pauta_resumo_capag'))">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-building-columns text-purple-600 me-1.5"></i> Sustentabilidade Fiscal</span>
-                        <span class="badge bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold rounded-pill px-2">${pctAptos}% Aptos</span>
+                        <span class="badge bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold rounded-pill px-2">${munsAptos} Aptos</span>
                     </div>
-                    <div class="space-y-1 mb-2.5">
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">CAPAG A ou B (Aptos):</span> <strong class="text-emerald-700 font-bold">${munsAptos} (${pctAptos}%)</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">CAPAG C ou D (Restritos):</span> <strong class="text-rose-700 font-bold">${munsRestritos}</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Emendas Pagas:</span> <strong class="text-slate-800">${formataMoedaCompacta(emendasPagas)}</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Parcerias de Estado:</span> <strong class="text-slate-800 text-purple-700 font-bold">Convênios SEPLAG</strong></div>
+                    <div class="space-y-1 mb-2.5 text-xs">
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">CAPAG A/B (Aptos STN):</span> <strong class="text-emerald-700 font-bold">${munsAptos} municípios</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">CAPAG C/D (Restritos):</span> <strong class="text-rose-700 font-bold">${munsRestritos} municípios</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Apoio aos Municípios:</span> <strong class="text-purple-700 font-bold">185 Prefeituras</strong></div>
+                        <div class="d-flex justify-content-between"><span class="text-slate-500">Parcerias e Convênios:</span> <strong class="text-slate-800 font-bold">SEPLAG / STN</strong></div>
                     </div>
-                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
-                        ${textoCapag}
+                    <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal">
+                        Classificação da capacidade de pagamento dos entes municipais balizando captação de créditos com garantia da União e convênios estruturadores.
                     </div>
                 </div>
+
             </div>
         `;
 
@@ -546,6 +706,7 @@ function renderizarCardsExecutivosProgramas(coz, agu, est, cap) {
         console.error("[Programas] Erro ao renderizar cards executivos:", errCards);
     }
 }
+
 
 
 window.togglePainelExecutivoProgramas = function() {
