@@ -47,6 +47,9 @@ EXPOSE 8000
 
 CMD ["/app/server"]
 
+# docker build -t juliabarretocp/aurora_municipios-api:latest .
+# docker push juliabarretocp/aurora_municipios-api:latest
+
 # --- Comandos Úteis ---
 # Build da imagem:
 # docker build -t hugoavmedeiros/aurora_municipios-api:latest .
