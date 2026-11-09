@@ -146,13 +146,50 @@ ui_modulo_regioes <- function() {
             ),
             tags$div(
               class = "d-flex align-items-center gap-2 flex-wrap",
-              tags$button(
-                id = "rd_btn_toggle_rotas0",
-                class = "btn btn-outline-primary btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 shadow-none",
-                style = "border: 1.5px solid #7c3aed; color: #7c3aed; background: transparent;",
-                onclick = "window.toggleModoRotasCluster0()",
-                tags$i(class = "fas fa-route"),
-                tags$span(id = "rd_btn_rotas_label", "Ver Rotas / Fluxos")
+              # 4 Botões de Seleção da Rede REGIC
+              tags$div(
+                class = "btn-group shadow-xs rounded-pill p-0.5 bg-slate-100 border border-slate-200",
+                role = "group",
+                tags$button(
+                  id = "rd_btn_regic_poligonos",
+                  type = "button",
+                  class = "btn btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 active text-white",
+                  style = "background: #7c3aed; border: none;",
+                  onclick = "window.selecionarModoRegicCluster0('poligonos')",
+                  title = "Visualização de Polígonos Municipais de Pernambuco",
+                  tags$i(class = "fas fa-draw-polygon"),
+                  tags$span("Polígonos")
+                ),
+                tags$button(
+                  id = "rd_btn_regic_internas",
+                  type = "button",
+                  class = "btn btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 text-slate-700 hover:text-purple-700",
+                  style = "background: transparent; border: none;",
+                  onclick = "window.selecionarModoRegicCluster0('internas')",
+                  title = "Redes Internas: Apenas conexões dentro de Pernambuco",
+                  tags$i(class = "fas fa-network-wired"),
+                  tags$span("Redes Internas")
+                ),
+                tags$button(
+                  id = "rd_btn_regic_estaduais",
+                  type = "button",
+                  class = "btn btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 text-slate-700 hover:text-purple-700",
+                  style = "background: transparent; border: none;",
+                  onclick = "window.selecionarModoRegicCluster0('estaduais')",
+                  title = "Redes Estaduais: Conexões dentro de PE + Estados que fazem fronteira (AL, BA, CE, PB, PI)",
+                  tags$i(class = "fas fa-share-nodes"),
+                  tags$span("Redes Estaduais")
+                ),
+                tags$button(
+                  id = "rd_btn_regic_nacionais",
+                  type = "button",
+                  class = "btn btn-sm rounded-pill font-bold text-xs d-flex align-items-center gap-1.5 px-3 py-1.5 text-slate-700 hover:text-purple-700",
+                  style = "background: transparent; border: none;",
+                  onclick = "window.selecionarModoRegicCluster0('nacionais')",
+                  title = "Redes Nacionais: Conexões internas + conexões com qualquer estado do Brasil",
+                  tags$i(class = "fas fa-globe-americas"),
+                  tags$span("Redes Nacionais")
+                )
               ),
               tags$div(
                 class = "d-flex align-items-center gap-2",
@@ -164,7 +201,7 @@ ui_modulo_regioes <- function() {
           tags$div(
             class = "row g-4",
             tags$div(class = "col-lg-7",
-                     tags$div(class = "map-clean-container w-full h-[400px] relative rounded-xl overflow-hidden",
+                     tags$div(class = "map-clean-container w-full h-[620px] relative rounded-xl overflow-hidden shadow-xs border border-slate-200",
                               tags$div(id = "rd_spinner_map_cluster0", class = "rd-cluster-spinner",
                                        tags$div(class = "spinner-border text-primary", role = "status"),
                                        tags$span(class = "rd-cluster-spinner-text", "Carregando mapa regional...")
@@ -174,7 +211,7 @@ ui_modulo_regioes <- function() {
                      )
             ),
             tags$div(class = "col-lg-5",
-                     tags$div(class = "bg-slate-50 rounded-xl border border-slate-100 w-full h-[400px] p-2 relative",
+                     tags$div(class = "bg-slate-50 rounded-xl border border-slate-100 w-full h-[620px] p-2 relative shadow-xs",
                               tags$div(id = "rd_spinner_chart_cluster0", class = "rd-cluster-spinner",
                                        tags$div(class = "spinner-border text-primary", role = "status"),
                                        tags$span(class = "rd-cluster-spinner-text", "Carregando ranking...")

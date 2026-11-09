@@ -17,6 +17,7 @@ var (
 	SQLiteDB   *sql.DB
 	GeminiKey           string
 	GeoJSONPE           json.RawMessage
+	GeoJSONRegic        json.RawMessage
 	DfRegicPE           []map[string]string
 	DfFluxosPE          []map[string]string
 	DiagnosticoRegional map[string]interface{}
@@ -179,6 +180,15 @@ func InitData() error {
 		log.Printf("⚠️ Erro ao pré-computar GeoJSON PE: %v", err)
 	}
 
+	// Pré-carregar GeoJSON da Rede REGIC expandida (399 municípios)
+	log.Println("⚡ Carregando GeoJSON da Rede REGIC expandida...")
+	if regicBytes, err := readFileFromPaths("data/geojson/rede_regic_municipios.geojson", "www/data/rede_regic_municipios.geojson", "C:/dados/aurora/geojson/rede_regic_municipios.geojson"); err == nil {
+		GeoJSONRegic = json.RawMessage(regicBytes)
+		log.Printf("✅ GeoJSON da Rede REGIC carregado com sucesso (%d bytes).", len(regicBytes))
+	} else {
+		log.Printf("⚠️ Erro ao carregar GeoJSON da Rede REGIC: %v", err)
+	}
+
 	// Pré-computar REGIC e Arranjos Populacionais do estado (Dimensão 0)
 	log.Println("⚡ Pré-computando REGIC estadual completo...")
 	queryRegic := `
@@ -211,17 +221,17 @@ func InitData() error {
 		log.Printf("⚠️ Erro ao pré-computar REGIC: %v", err)
 	}
 
-	// Pré-computar Fluxos REGIC do estado (Dimensão 0 - Rotas)
-	log.Println("⚡ Pré-computando Fluxos REGIC estaduais...")
+	// Pré-computar Fluxos REGIC do estado (Dimensão 0 - Rotas completas incluindo conexões externas)
+	log.Println("⚡ Pré-computando Fluxos REGIC estaduais e interestaduais...")
 	queryFluxos := `
 		SELECT 
 			f.*,
-			COALESCE(CAST(dem_orig.latitude AS VARCHAR), '') AS origem_lat,
-			COALESCE(CAST(dem_orig.longitude AS VARCHAR), '') AS origem_lon,
-			COALESCE(dem_orig.regiao_de_desenvolvimento, '') AS origem_rd,
-			COALESCE(CAST(dem_dest.latitude AS VARCHAR), '') AS destino_lat,
-			COALESCE(CAST(dem_dest.longitude AS VARCHAR), '') AS destino_lon,
-			COALESCE(dem_dest.regiao_de_desenvolvimento, '') AS destino_rd
+			COALESCE(NULLIF(CAST(dem_orig.latitude AS VARCHAR), ''), CAST(f.origem_lat AS VARCHAR), '') AS origem_lat,
+			COALESCE(NULLIF(CAST(dem_orig.longitude AS VARCHAR), ''), CAST(f.origem_lon AS VARCHAR), '') AS origem_lon,
+			COALESCE(NULLIF(dem_orig.regiao_de_desenvolvimento, ''), f.origem_uf, '') AS origem_rd,
+			COALESCE(NULLIF(CAST(dem_dest.latitude AS VARCHAR), ''), CAST(f.destino_lat AS VARCHAR), '') AS destino_lat,
+			COALESCE(NULLIF(CAST(dem_dest.longitude AS VARCHAR), ''), CAST(f.destino_lon AS VARCHAR), '') AS destino_lon,
+			COALESCE(NULLIF(dem_dest.regiao_de_desenvolvimento, ''), f.destino_uf, '') AS destino_rd
 		FROM v_fluxos f
 		LEFT JOIN v_demografia dem_orig ON SUBSTR(CAST(f.origem AS VARCHAR), 1, 6) = dem_orig.ibge6_clean
 		LEFT JOIN v_demografia dem_dest ON SUBSTR(CAST(f.destino AS VARCHAR), 1, 6) = dem_dest.ibge6_clean

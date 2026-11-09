@@ -10,6 +10,31 @@ var clusterRenderizado = { 0: false, 1: false, 2: false, 3: false, 4: false, 5: 
 var matrizRenderizada = false;
 var regioesObserver = null;
 var modoRotasCluster0 = false;
+window.modoRegicCluster0 = 'poligonos'; // 'poligonos' | 'internas' | 'estaduais' | 'nacionais'
+window.cacheRedeRegicGeoJSON = null;
+const UFS_FRONTEIRA_PE = ['PE', 'PB', 'CE', 'PI', 'BA', 'AL'];
+
+async function obterGeoJSONRedeRegic() {
+    if (window.cacheRedeRegicGeoJSON) return window.cacheRedeRegicGeoJSON;
+    if (dadosBrutosRD && dadosBrutosRD.geojson_regic) {
+        window.cacheRedeRegicGeoJSON = (typeof dadosBrutosRD.geojson_regic === 'string') 
+            ? JSON.parse(dadosBrutosRD.geojson_regic) 
+            : dadosBrutosRD.geojson_regic;
+        return window.cacheRedeRegicGeoJSON;
+    }
+    try {
+        const url = `${window.basePath || ''}/data/rede_regic_municipios.geojson`.replace(/\/+/g, '/');
+        const res = await fetch(url);
+        if (res.ok) {
+            const data = await res.json();
+            window.cacheRedeRegicGeoJSON = data;
+            return data;
+        }
+    } catch(e) {
+        console.warn("[REGIC] Erro ao carregar rede_regic_municipios.geojson:", e);
+    }
+    return dadosBrutosRD?.geojson_pe || null;
+}
 
 function ocultarSpinnerRD(id) {
     const el = document.getElementById(id);
@@ -502,27 +527,43 @@ function populaSelectsClusters() {
     });
 }
 
-window.toggleModoRotasCluster0 = function () {
-    modoRotasCluster0 = !modoRotasCluster0;
-    const $btn = $('#rd_btn_toggle_rotas0');
-    const $label = $('#rd_btn_rotas_label');
+window.selecionarModoRegicCluster0 = function (modo) {
+    window.modoRegicCluster0 = modo || 'poligonos';
+    modoRotasCluster0 = (modo !== 'poligonos');
 
-    if (modoRotasCluster0) {
-        $btn.removeClass('btn-outline-primary').addClass('btn-primary text-white shadow-sm')
-            .css({ 'background': '#7c3aed', 'color': '#ffffff', 'border': '1.5px solid #7c3aed' });
-        $label.text('Rotas Ativas (Fluxos)');
-        varAtivaCluster[0] = 'peso_geral';
+    // Atualiza o estado visual dos 4 botões de seleção
+    ['poligonos', 'internas', 'estaduais', 'nacionais'].forEach(m => {
+        const $b = $(`#rd_btn_regic_${m}`);
+        if (m === window.modoRegicCluster0) {
+            $b.removeClass('text-slate-700 bg-transparent')
+              .addClass('active text-white shadow-xs')
+              .css({ 'background': '#7c3aed', 'color': '#ffffff', 'border': 'none' });
+        } else {
+            $b.removeClass('active text-white shadow-xs')
+              .addClass('text-slate-700 bg-transparent')
+              .css({ 'background': 'transparent', 'color': '#334155', 'border': 'none' });
+        }
+    });
+
+    if (modo === 'poligonos') {
+        if (!INDICADORES_CLUSTER0_PADRAO.includes(varAtivaCluster[0])) {
+            varAtivaCluster[0] = 'indice_acessibilidade_from';
+        }
     } else {
-        $btn.removeClass('btn-primary text-white shadow-sm').addClass('btn-outline-primary')
-            .css({ 'background': 'transparent', 'color': '#7c3aed', 'border': '1.5px solid #7c3aed' });
-        $label.text('Ver Rotas / Fluxos');
-        varAtivaCluster[0] = 'indice_acessibilidade_from';
+        if (!INDICADORES_CLUSTER0_FLUXOS.includes(varAtivaCluster[0])) {
+            varAtivaCluster[0] = 'peso_geral';
+        }
     }
 
     populaSelectsClusters();
     mostrarSpinnerRD('rd_spinner_map_cluster0');
     mostrarSpinnerRD('rd_spinner_chart_cluster0');
     renderizarClusterEspecifico(0);
+};
+
+window.toggleModoRotasCluster0 = function () {
+    const proximo = modoRotasCluster0 ? 'poligonos' : 'internas';
+    window.selecionarModoRegicCluster0(proximo);
 };
 
 function renderizarClusterEspecifico(cNum) {
@@ -538,17 +579,19 @@ function renderizarClusterEspecifico(cNum) {
     const geoJsonTarget = cNum === 0 ? (data.geojson_pe || data.geojson_rd) : data.geojson_rd;
 
     if (cNum === 0 && modoRotasCluster0) {
-        renderizarMapaRotasCluster0(
-            `rd_map_cluster0`,
-            `rd_legenda_cluster0`,
-            sig,
-            geoJsonTarget,
-            data.fluxos_pe || [],
-            mapasRD[0],
-            (m) => mapasRD[0] = m,
-            nomeRD
-        );
-        renderizarChartCluster0RD(sig, data.regic_rd, nomeRD);
+        obterGeoJSONRedeRegic().then(geoJsonRegic => {
+            renderizarMapaRotasCluster0(
+                `rd_map_cluster0`,
+                `rd_legenda_cluster0`,
+                sig,
+                geoJsonRegic || geoJsonTarget,
+                data.fluxos_pe || [],
+                mapasRD[0],
+                (m) => mapasRD[0] = m,
+                nomeRD
+            );
+            renderizarChartCluster0RD(sig, data.regic_rd, nomeRD);
+        });
     } else {
         renderizarMapaClusterRD(
             cNum,
@@ -935,8 +978,25 @@ function renderizarChartCluster0RD(siglaChave, dadosRegicEstadual, nomeRD) {
     const isCons = Boolean(dadosBrutosRD && (dadosBrutosRD.is_consorcio || window.tipoAgrupamentoRegioes === 'consorcio'));
 
     if (modoRotasCluster0) {
+        const modo = window.modoRegicCluster0 || 'internas';
+        const ufsFronteira = ['PE', 'PB', 'CE', 'PI', 'BA', 'AL'];
+        let fluxosBase = (dadosBrutosRD?.fluxos_pe || []).filter(f => {
+            const oUf = String(f.origem_uf || '').toUpperCase().trim();
+            const dUf = String(f.destino_uf || '').toUpperCase().trim();
+            if (modo === 'internas') {
+                return (oUf === 'PE' || !oUf) && (dUf === 'PE' || !dUf);
+            } else if (modo === 'estaduais') {
+                const oFronteira = ufsFronteira.includes(oUf);
+                const dFronteira = ufsFronteira.includes(dUf);
+                return (oUf === 'PE' || dUf === 'PE') && oFronteira && dFronteira;
+            } else if (modo === 'nacionais') {
+                return true;
+            }
+            return true;
+        });
+
         let destinosAgregados = {};
-        (dadosBrutosRD?.fluxos_pe || []).forEach(f => {
+        fluxosBase.forEach(f => {
             let dest = f.destino_nome && f.destino_nome !== '-' ? f.destino_nome : f.destino;
             if (!dest) return;
             let valRaw = f[siglaChave];
@@ -967,7 +1027,11 @@ function renderizarChartCluster0RD(siglaChave, dadosRegicEstadual, nomeRD) {
 
         let option = {
             title: { 
-                text: `Destinos de Atração (${obterNomeAmigavel(siglaChave)})`, 
+                text: modo === 'internas' 
+                    ? `Destinos em PE (${obterNomeAmigavel(siglaChave)})`
+                    : modo === 'estaduais' 
+                        ? `Destinos Interestaduais (${obterNomeAmigavel(siglaChave)})`
+                        : `Destinos Nacionais (${obterNomeAmigavel(siglaChave)})`, 
                 textStyle: { fontSize: 13, color: '#475569', fontFamily: 'Jost' }, 
                 left: 'center', 
                 top: 5 
@@ -1414,23 +1478,99 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
         return;
     }
 
+    const modo = window.modoRegicCluster0 || 'internas';
     const isCons = Boolean(dadosBrutosRD && (dadosBrutosRD.is_consorcio || window.tipoAgrupamentoRegioes === 'consorcio'));
-    const geoData = typeof geojsonEstadual === 'string' ? JSON.parse(geojsonEstadual) : JSON.parse(JSON.stringify(geojsonEstadual));
+    let rawGeo = typeof geojsonEstadual === 'string' ? JSON.parse(geojsonEstadual) : JSON.parse(JSON.stringify(geojsonEstadual));
     const normText = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
     const rdNorm = normText(nomeRD);
+    const ufsFronteira = ['PE', 'PB', 'CE', 'PI', 'BA', 'AL'];
 
-    // Identificar municípios da RD selecionada para contorno
-    geoData.features.forEach(ft => {
-        const normName = normText(ft.properties.municipio || ft.properties.Município || ft.properties.name || '');
-        const pertenceRD = (dadosBrutosRD?.demografia_rd || []).some(m => normText(m.municipio) === normName);
-        ft.properties.pertence_rd = pertenceRD;
+    // Filtrar a malha GeoJSON de acordo com o modo
+    let featuresFiltradas = (rawGeo.features || []).filter(ft => {
+        const uf = String(ft.properties.uf || ft.properties.UF || (ft.properties.cod_ibge && String(ft.properties.cod_ibge).startsWith('26') ? 'PE' : '')).toUpperCase().trim();
+        const isPE = (uf === 'PE' || ft.properties.pertence_pe === true || (ft.properties.cod_ibge && String(ft.properties.cod_ibge).startsWith('26')));
+        if (modo === 'internas') {
+            return isPE;
+        } else if (modo === 'estaduais') {
+            return ufsFronteira.includes(uf) || isPE;
+        }
+        return true; // Nacionais: toda a malha conectada
     });
 
-    // 1. Montagem das Rotas (LineStrings com Curvatura)
-    let rotasFeatures = [];
-    let hubsMap = {};
+    const geoData = {
+        type: "FeatureCollection",
+        features: featuresFiltradas
+    };
 
-    (fluxos || []).forEach(f => {
+    // Mapa base de todas as cidades para garantir que NENHUMA cidade fique sem sua bolinha de referência
+    let cidadesMap = {};
+
+    // 1. Inicializar todas as cidades presentes na malha visível
+    geoData.features.forEach(ft => {
+        const nome = ft.properties.nome_mun || ft.properties.municipio || ft.properties.Município || ft.properties.name || '';
+        const uf = String(ft.properties.uf || ft.properties.UF || (ft.properties.cod_ibge && String(ft.properties.cod_ibge).startsWith('26') ? 'PE' : '')).toUpperCase().trim();
+        const isPE = (uf === 'PE' || ft.properties.pertence_pe === true || (ft.properties.cod_ibge && String(ft.properties.cod_ibge).startsWith('26')));
+        const normName = normText(nome);
+        const pertenceRD = isPE && (dadosBrutosRD?.demografia_rd || []).some(m => normText(m.municipio) === normName);
+        ft.properties.pertence_rd = pertenceRD;
+        ft.properties.is_pe = isPE;
+
+        let lon = parseFloat(ft.properties.longitude);
+        let lat = parseFloat(ft.properties.latitude);
+
+        // Se a feature não tiver lon/lat direto nas propriedades, calcula centróide da geometria
+        if (isNaN(lon) || isNaN(lat)) {
+            const coords = ft.geometry.coordinates;
+            let sumX = 0, sumY = 0, count = 0;
+            const proc = (c) => {
+                if (Array.isArray(c) && typeof c[0] === 'number' && typeof c[1] === 'number') {
+                    sumX += c[0]; sumY += c[1]; count++;
+                }
+            };
+            if (ft.geometry.type === 'Polygon') coords[0].forEach(proc);
+            else if (ft.geometry.type === 'MultiPolygon') coords.forEach(p => p[0].forEach(proc));
+            if (count > 0) {
+                lon = sumX / count;
+                lat = sumY / count;
+            }
+        }
+
+        if (!isNaN(lon) && !isNaN(lat) && nome) {
+            const key = (normName + '_' + (uf || '')).trim();
+            cidadesMap[key] = {
+                nome: nome,
+                uf: uf,
+                lon: lon,
+                lat: lat,
+                pertence_rd: pertenceRD,
+                is_pe: isPE,
+                total_inflow: 0,
+                total_outflow: 0,
+                conexoes_total: 0
+            };
+        }
+    });
+
+    // Filtrar fluxos de acordo com o modo selecionado
+    const fluxosFiltrados = (fluxos || []).filter(f => {
+        const oUf = String(f.origem_uf || '').toUpperCase().trim();
+        const dUf = String(f.destino_uf || '').toUpperCase().trim();
+        if (modo === 'internas') {
+            return (oUf === 'PE' || !oUf) && (dUf === 'PE' || !dUf);
+        } else if (modo === 'estaduais') {
+            const oFronteira = ufsFronteira.includes(oUf);
+            const dFronteira = ufsFronteira.includes(dUf);
+            return (oUf === 'PE' || dUf === 'PE') && oFronteira && dFronteira;
+        } else if (modo === 'nacionais') {
+            return true;
+        }
+        return true;
+    });
+
+    // 2. Montagem das Rotas (LineStrings com Curvatura)
+    let rotasFeatures = [];
+
+    fluxosFiltrados.forEach(f => {
         let valRaw = f[siglaChave];
         if (valRaw === undefined || valRaw === null || valRaw === "" || valRaw === "-") return;
         let val = parseFloat(String(valRaw).replace(',', '.'));
@@ -1457,8 +1597,10 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
             geometry: { type: "LineString", coordinates: curva },
             properties: {
                 origem_nome: f.origem_nome,
+                origem_uf: f.origem_uf || '',
                 origem_rd: f.origem_rd,
                 destino_nome: f.destino_nome,
+                destino_uf: f.destino_uf || '',
                 destino_rd: f.destino_rd,
                 valor: val,
                 pertence_rd_origem: pertenceRDOrig,
@@ -1467,18 +1609,47 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
             }
         });
 
-        let dKey = f.destino_nome && f.destino_nome !== '-' ? f.destino_nome : f.destino;
-        if (!hubsMap[dKey]) {
-            hubsMap[dKey] = {
-                nome: dKey,
+        // Contabilizar destino (inflow)
+        const dNorm = normText(f.destino_nome);
+        const dUf = String(f.destino_uf || '').toUpperCase().trim();
+        const dKey = (dNorm + '_' + dUf).trim();
+        if (!cidadesMap[dKey]) {
+            cidadesMap[dKey] = {
+                nome: f.destino_nome && f.destino_nome !== '-' ? f.destino_nome : f.destino,
+                uf: dUf,
                 lon: destLon,
                 lat: destLat,
+                pertence_rd: pertenceRDDest,
+                is_pe: (dUf === 'PE'),
                 total_inflow: 0,
-                pertence_rd: pertenceRDDest
+                total_outflow: 0,
+                conexoes_total: 0
             };
         }
-        hubsMap[dKey].total_inflow += val;
-        if (pertenceRDDest) hubsMap[dKey].pertence_rd = true;
+        cidadesMap[dKey].total_inflow += val;
+        cidadesMap[dKey].conexoes_total += val;
+        if (pertenceRDDest) cidadesMap[dKey].pertence_rd = true;
+
+        // Contabilizar origem (outflow)
+        const oNorm = normText(f.origem_nome);
+        const oUf = String(f.origem_uf || '').toUpperCase().trim();
+        const oKey = (oNorm + '_' + oUf).trim();
+        if (!cidadesMap[oKey]) {
+            cidadesMap[oKey] = {
+                nome: f.origem_nome && f.origem_nome !== '-' ? f.origem_nome : f.origem,
+                uf: oUf,
+                lon: origLon,
+                lat: origLat,
+                pertence_rd: pertenceRDOrig,
+                is_pe: (oUf === 'PE'),
+                total_inflow: 0,
+                total_outflow: 0,
+                conexoes_total: 0
+            };
+        }
+        cidadesMap[oKey].total_outflow += val;
+        cidadesMap[oKey].conexoes_total += val;
+        if (pertenceRDOrig) cidadesMap[oKey].pertence_rd = true;
     });
 
     // Ordena as rotas para que as linhas da RD fiquem renderizadas no topo
@@ -1490,42 +1661,75 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
 
     const fcRotas = { type: "FeatureCollection", features: rotasFeatures };
 
-    // 2. Montagem dos Pontos de Destino (Hubs)
-    let hubFeatures = Object.values(hubsMap).map(h => ({
+    // 3. Montagem dos Pontos de Cidades (Bolinhas sempre presentes para todas as cidades)
+    let hubFeatures = Object.values(cidadesMap).map(c => ({
         type: "Feature",
-        geometry: { type: "Point", coordinates: [h.lon, h.lat] },
+        geometry: { type: "Point", coordinates: [c.lon, c.lat] },
         properties: {
-            destino_nome: h.nome,
-            total_inflow: h.total_inflow,
-            pertence_rd: h.pertence_rd
+            destino_nome: c.nome,
+            destino_uf: c.uf,
+            total_inflow: c.total_inflow,
+            total_outflow: c.total_outflow,
+            conexoes_total: c.conexoes_total,
+            pertence_rd: c.pertence_rd,
+            is_pe: c.is_pe,
+            tem_inflow: c.total_inflow > 0,
+            tem_outflow: c.total_outflow > 0,
+            tem_conexao: c.conexoes_total > 0
         }
     }));
+
+    // Ordenar para que nós sem fluxo fiquem por baixo, depois emissoras, e polos de atração no topo
+    hubFeatures.sort((a, b) => {
+        if (a.properties.total_inflow !== b.properties.total_inflow) {
+            return a.properties.total_inflow - b.properties.total_inflow;
+        }
+        return a.properties.conexoes_total - b.properties.conexoes_total;
+    });
+
     const fcHubs = { type: "FeatureCollection", features: hubFeatures };
 
-    // 3. Legenda Dinâmica
+    // 4. Legenda Dinâmica com indicação das bolinhas das cidades
     const $legendaEl = $(`#${legendaId}`);
     if ($legendaEl.length) {
         const rotuloAgrup = isCons ? `Consórcio ${nomeRD}` : `RD ${nomeRD}`;
+        let descModo = "Redes Internas (Pernambuco)";
+        if (modo === 'estaduais') descModo = "Redes Estaduais (PE + PB, CE, PI, BA, AL)";
+        else if (modo === 'nacionais') descModo = "Redes Nacionais (Brasil)";
+
         $legendaEl.html(`
-            <div class="fw-bold text-slate-800 mb-1" style="font-size: 0.75rem;">
-                <i class="fas fa-route text-purple-700 me-1"></i> Rotas e Fluxos REGIC (${obterNomeAmigavel(siglaChave)})
+            <div class="d-flex align-items-center justify-content-between mb-1">
+                <div class="fw-bold text-slate-800" style="font-size: 0.75rem;">
+                    <i class="fas fa-route text-purple-700 me-1"></i> Rotas e Fluxos REGIC: <span class="text-purple-900">${descModo}</span>
+                </div>
+                <span class="badge bg-purple-100 text-purple-800 border border-purple-200" style="font-size: 0.65rem;">
+                    ${rotasFeatures.length} conexões | ${hubFeatures.length} cidades
+                </span>
             </div>
-            <div class="d-flex flex-column gap-1 text-slate-600" style="font-size: 0.68rem;">
+            <div class="d-flex flex-wrap gap-x-3 gap-y-1 text-slate-600" style="font-size: 0.68rem;">
                 <div class="d-flex align-items-center gap-1.5">
-                    <span style="display:inline-block; width:18px; height:3px; background:#7c3aed; border-radius:2px;"></span>
+                    <span style="display:inline-block; width:16px; height:3px; background:#7c3aed; border-radius:2px;"></span>
                     <span>Saídas de <b>${rotuloAgrup}</b></span>
                 </div>
                 <div class="d-flex align-items-center gap-1.5">
-                    <span style="display:inline-block; width:18px; height:3px; background:#0d9488; border-radius:2px;"></span>
+                    <span style="display:inline-block; width:16px; height:3px; background:#0d9488; border-radius:2px;"></span>
                     <span>Entradas em <b>${rotuloAgrup}</b></span>
                 </div>
                 <div class="d-flex align-items-center gap-1.5">
-                    <span style="display:inline-block; width:18px; height:2px; background:#cbd5e1; border-radius:2px;"></span>
-                    <span>Demais fluxos estaduais</span>
+                    <span style="display:inline-block; width:16px; height:2px; background:#cbd5e1; border-radius:2px;"></span>
+                    <span>Demais fluxos</span>
                 </div>
-                <div class="d-flex align-items-center gap-1.5 mt-0.5">
+                <div class="d-flex align-items-center gap-1.5">
                     <span style="display:inline-block; width:8px; height:8px; background:#4A235A; border:1.5px solid #fff; border-radius:50%;"></span>
-                    <span>Polos e Arranjos de Atração (Destinos)</span>
+                    <span>Polos de Atração</span>
+                </div>
+                <div class="d-flex align-items-center gap-1.5">
+                    <span style="display:inline-block; width:7px; height:7px; background:#7c3aed; border:1px solid #fff; border-radius:50%;"></span>
+                    <span>Cidades de <b>${rotuloAgrup}</b></span>
+                </div>
+                <div class="d-flex align-items-center gap-1.5">
+                    <span style="display:inline-block; width:5.5px; height:5.5px; background:#94a3b8; border:1px solid #fff; border-radius:50%;"></span>
+                    <span>Cidades de Referência</span>
                 </div>
             </div>
         `);
@@ -1534,33 +1738,109 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
     const fitBounds = (mapInst) => {
         try {
             const bounds = new maplibregl.LngLatBounds();
-            geoData.features.forEach(ft => {
-                const coords = ft.geometry.coordinates;
-                const proc = (c) => { if (Array.isArray(c) && c[0] < -34.0 && c[1] < -7.0) bounds.extend(c); };
-                if (ft.geometry.type === 'Polygon') coords[0].forEach(proc);
-                else if (ft.geometry.type === 'MultiPolygon') coords.forEach(p => p[0].forEach(proc));
-            });
-            if (!bounds.isEmpty()) mapInst.fitBounds(bounds, { padding: 20, animate: false });
-        } catch (e) {}
+            // Adiciona nós das rotas para enquadrar perfeitamente a malha ativa
+            if (rotasFeatures.length > 0) {
+                rotasFeatures.forEach(rf => {
+                    const c = rf.geometry.coordinates;
+                    if (c && c.length > 0) {
+                        bounds.extend(c[0]);
+                        bounds.extend(c[c.length - 1]);
+                    }
+                });
+            }
+            // Para internas ou se rotas for vazia, adiciona os polígonos
+            if (modo === 'internas' || bounds.isEmpty()) {
+                geoData.features.forEach(ft => {
+                    const coords = ft.geometry.coordinates;
+                    const proc = (c) => { if (Array.isArray(c) && typeof c[0] === 'number' && typeof c[1] === 'number') bounds.extend(c); };
+                    if (ft.geometry.type === 'Polygon') coords[0].forEach(proc);
+                    else if (ft.geometry.type === 'MultiPolygon') coords.forEach(p => p[0].forEach(proc));
+                });
+            }
+            if (!bounds.isEmpty()) {
+                mapInst.fitBounds(bounds, { padding: 35, animate: false });
+            }
+        } catch (e) {
+            console.warn("[REGIC] fitBounds erro:", e);
+        }
     };
+
+    // Definição das Expressões de Estilo das Bolinhas de Cidades
+    const circleRadiusExpr = [
+        'case',
+        // Polo de atração (inflow > 0): escala proporcional suave
+        ['>', ['get', 'total_inflow'], 0],
+        [
+            'interpolate', ['linear'], ['get', 'total_inflow'],
+            1, 5.0,
+            10, 7.5,
+            35, 11.0,
+            100, 16.0,
+            250, 22.0
+        ],
+        // Cidade emissora com conexões ativas de saída: raio 4.5
+        ['>', ['get', 'total_outflow'], 0], 4.5,
+        // Cidade pertencente à RD/Consórcio selecionado: raio 4.0
+        ['boolean', ['get', 'pertence_rd'], false], 4.0,
+        // Bolinha de referência da cidade padrão: raio 3.0 (nunca some!)
+        3.0
+    ];
+
+    const circleColorExpr = [
+        'case',
+        // Polo de atração na RD selecionada: roxo profundo
+        ['all', ['boolean', ['get', 'pertence_rd'], false], ['>', ['get', 'total_inflow'], 0]], '#4A235A',
+        // Polo de atração externo: roxo violeta
+        ['>', ['get', 'total_inflow'], 0], '#8B5CF6',
+        // Pertence à RD (emissora ou referência da região): roxo institucional
+        ['boolean', ['get', 'pertence_rd'], false], '#7C3AED',
+        // Emissora externa na rede: verde teal (#0D9488) combinando com a linha de entrada
+        ['>', ['get', 'total_outflow'], 0], '#0D9488',
+        // Cidade de referência em PE: slate neutro
+        ['boolean', ['get', 'is_pe'], false], '#94A3B8',
+        // Cidade de referência de outros estados: slate claro
+        '#CBD5E1'
+    ];
+
+    const circleStrokeWidthExpr = [
+        'case',
+        ['>', ['get', 'total_inflow'], 0], 2.0,
+        ['boolean', ['get', 'pertence_rd'], false], 1.8,
+        ['>', ['get', 'total_outflow'], 0], 1.5,
+        1.0
+    ];
+
+    const circleOpacityExpr = [
+        'case',
+        ['>', ['get', 'total_inflow'], 0], 1.0,
+        ['boolean', ['get', 'pertence_rd'], false], 1.0,
+        ['>', ['get', 'total_outflow'], 0], 0.95,
+        ['boolean', ['get', 'is_pe'], false], 0.85,
+        0.70
+    ];
 
     const attachOrUpdateRotasLayers = (mapa) => {
         if (mapa.getSource('rd_cluster_src_' + containerId)) {
             mapa.getSource('rd_cluster_src_' + containerId).setData(geoData);
         }
         if (mapa.getLayer('rd_cluster_fill_' + containerId)) {
-            mapa.setPaintProperty('rd_cluster_fill_' + containerId, 'fill-color', '#F8FAFC');
+            mapa.setPaintProperty('rd_cluster_fill_' + containerId, 'fill-color', [
+                'case',
+                ['boolean', ['get', 'is_pe'], false], '#F8FAFC',
+                '#F1F5F9'
+            ]);
             mapa.setPaintProperty('rd_cluster_fill_' + containerId, 'fill-opacity', 0.85);
         }
         if (mapa.getLayer('rd_cluster_line_' + containerId)) {
             mapa.setPaintProperty('rd_cluster_line_' + containerId, 'line-color', [
                 'case',
                 ['boolean', ['get', 'pertence_rd'], false], '#7c3aed',
+                ['boolean', ['get', 'is_pe'], false], '#CBD5E1',
                 '#E2E8F0'
             ]);
             mapa.setPaintProperty('rd_cluster_line_' + containerId, 'line-width', [
                 'case',
-                ['boolean', ['get', 'pertence_rd'], false], 2.0,
+                ['boolean', ['get', 'pertence_rd'], false], 2.2,
                 0.6
             ]);
         }
@@ -1605,13 +1885,15 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
                 mapa.getCanvas().style.cursor = 'pointer';
                 if (!e.features.length) return;
                 const p = e.features[0].properties;
+                const oUf = p.origem_uf ? ` (${p.origem_uf})` : '';
+                const dUf = p.destino_uf ? ` (${p.destino_uf})` : '';
                 popupRota.setLngLat(e.lngLat).setHTML(`
                     <div style="font-family: Jost; padding: 4px; min-width: 200px;">
                         <div style="font-size: 10px; color: #7c3aed; font-weight: 800; text-transform: uppercase; margin-bottom: 3px;">
                             <i class="fas fa-route"></i> Fluxo Territorial REGIC
                         </div>
                         <div style="font-size: 12px; font-weight: 900; color: #ff5a26; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 6px;">
-                            ${p.origem_nome} <span style="color:#7c3aed;">➔</span> ${p.destino_nome}
+                            ${p.origem_nome}${oUf} <span style="color:#7c3aed;">➔</span> ${p.destino_nome}${dUf}
                         </div>
                         <div style="background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 6px; padding: 4px 8px;">
                             <span style="color:#5b21b6; font-size:11px; font-weight:700;">${obterNomeAmigavel(siglaChave)}:</span>
@@ -1630,7 +1912,7 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
             mapa.setLayoutProperty('rd_rotas_line_' + containerId, 'visibility', 'visible');
         }
 
-        // Fonte e Layer dos Hubs
+        // Fonte e Layer dos Hubs e Bolinhas de Cidades
         if (mapa.getSource('rd_hubs_src_' + containerId)) {
             mapa.getSource('rd_hubs_src_' + containerId).setData(fcHubs);
         } else {
@@ -1641,19 +1923,11 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
                 source: 'rd_hubs_src_' + containerId,
                 layout: { 'visibility': 'visible' },
                 paint: {
-                    'circle-radius': [
-                        'interpolate', ['linear'], ['get', 'total_inflow'],
-                        1, 4,
-                        30, 8,
-                        150, 16
-                    ],
-                    'circle-color': [
-                        'case',
-                        ['boolean', ['get', 'pertence_rd'], false], '#4A235A',
-                        '#8B5CF6'
-                    ],
-                    'circle-stroke-width': 2,
-                    'circle-stroke-color': '#FFFFFF'
+                    'circle-radius': circleRadiusExpr,
+                    'circle-color': circleColorExpr,
+                    'circle-stroke-width': circleStrokeWidthExpr,
+                    'circle-stroke-color': '#FFFFFF',
+                    'circle-opacity': circleOpacityExpr
                 }
             });
 
@@ -1662,17 +1936,44 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
                 mapa.getCanvas().style.cursor = 'pointer';
                 if (!e.features.length) return;
                 const p = e.features[0].properties;
+                const dUf = p.destino_uf ? ` (${p.destino_uf})` : '';
+                const rotuloAgrup = isCons ? `Consórcio ${nomeRD}` : `RD ${nomeRD}`;
+                const badgeRD = p.pertence_rd ? `<span style="background:#7c3aed; color:#fff; font-size:9px; padding:2px 6px; border-radius:10px; margin-left:4px;">${rotuloAgrup}</span>` : '';
+                
+                let tagTipo = '';
+                let corpoInfo = '';
+
+                if (p.total_inflow > 0) {
+                    tagTipo = `<div style="font-size: 10px; color: #4A235A; font-weight: 800; text-transform: uppercase;"><i class="fas fa-bullseye"></i> Polo de Atração / Destino</div>`;
+                    corpoInfo = `
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 11px;">
+                            <span style="color:#64748b;">Total Recebido (${obterNomeAmigavel(siglaChave)}):</span> <b style="color:#0C2856;">${p.total_inflow} conexões</b>
+                            ${p.total_outflow > 0 ? `<br/><span style="color:#64748b;">Total Emitido:</span> <b style="color:#7c3aed;">${p.total_outflow} conexões</b>` : ''}
+                        </div>
+                    `;
+                } else if (p.total_outflow > 0) {
+                    tagTipo = `<div style="font-size: 10px; color: #0d9488; font-weight: 800; text-transform: uppercase;"><i class="fas fa-paper-plane"></i> Cidade Emissora de Conexões</div>`;
+                    corpoInfo = `
+                        <div style="background: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 6px; padding: 4px 8px; font-size: 11px;">
+                            <span style="color:#0f766e;">Conexões Emitidas (${obterNomeAmigavel(siglaChave)}):</span> <b style="color:#115e59;">${p.total_outflow} conexões</b>
+                        </div>
+                    `;
+                } else {
+                    tagTipo = `<div style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase;"><i class="fas fa-city"></i> Município de Referência</div>`;
+                    corpoInfo = `
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 11px; color: #64748b;">
+                            Nó municipal de referência territorial na rede REGIC
+                        </div>
+                    `;
+                }
+
                 popupHub.setLngLat(e.lngLat).setHTML(`
                     <div style="font-family: Jost; padding: 4px; min-width: 190px;">
-                        <div style="font-size: 10px; color: #4A235A; font-weight: 800; text-transform: uppercase;">
-                            <i class="fas fa-bullseye"></i> Polo de Atração / Destino
-                        </div>
+                        ${tagTipo}
                         <div style="font-size: 13px; font-weight: 900; color: #ff5a26; margin: 3px 0;">
-                            ${p.destino_nome}
+                            ${p.destino_nome}${dUf} ${badgeRD}
                         </div>
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 12px;">
-                            <span style="color:#64748b;">Total Recebido (${obterNomeAmigavel(siglaChave)}):</span> <b style="color:#0C2856;">${p.total_inflow} conexões</b>
-                        </div>
+                        ${corpoInfo}
                     </div>
                 `).addTo(mapa);
             });
@@ -1684,6 +1985,11 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
 
         if (mapa.getLayer('rd_rotas_hubs_' + containerId)) {
             mapa.setLayoutProperty('rd_rotas_hubs_' + containerId, 'visibility', 'visible');
+            mapa.setPaintProperty('rd_rotas_hubs_' + containerId, 'circle-radius', circleRadiusExpr);
+            mapa.setPaintProperty('rd_rotas_hubs_' + containerId, 'circle-color', circleColorExpr);
+            mapa.setPaintProperty('rd_rotas_hubs_' + containerId, 'circle-stroke-width', circleStrokeWidthExpr);
+            mapa.setPaintProperty('rd_rotas_hubs_' + containerId, 'circle-stroke-color', '#FFFFFF');
+            mapa.setPaintProperty('rd_rotas_hubs_' + containerId, 'circle-opacity', circleOpacityExpr);
         }
 
         fitBounds(mapa);
@@ -1725,9 +2031,6 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
     setInst(mapa);
 }
 
-// -------------------------------------------------------------
-// MAPA DINÂMICO DOS CLUSTERS (Gera Cloroplético ou Bolhas)
-// -------------------------------------------------------------
 function renderizarMapaClusterRD(cNum, containerId, legendaId, siglaChave, geojsonStr, indicadores, demografia, instMapa, setInst, listaIndicadoresHover) {
     const dom = document.getElementById(containerId);
     if (!dom || !geojsonStr) {
