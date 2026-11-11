@@ -24,7 +24,7 @@ ui_modulo_ufs <- function() {
         tags$h4("RELATÓRIO COMPARATIVO NACIONAL", class = "fw-bold text-secondary mt-4")
       ),
       
-            # CABEÇALHO PRINCIPAL COM CONTROLES INTEGRADOS NO TOPO & BANDEIRA OFICIAL
+      # CABEÇALHO PRINCIPAL COM CONTROLES INTEGRADOS NO TOPO & BANDEIRA OFICIAL
       tags$div(
         class = "d-flex justify-content-between align-items-center border-b-2 border-slate-200 pb-3 mb-4 flex-wrap gap-3",
         tags$div(
@@ -95,7 +95,6 @@ ui_modulo_ufs <- function() {
           )
         )
       ),
-
       
       # =========================================================================
       # SEÇÃO: RESUMO EXECUTIVO DAS UFs (5 EIXOS ESTRATÉGICOS)
@@ -310,6 +309,18 @@ ui_modulo_ufs <- function() {
         )
       )
       
+    ),
+    # =========================================================================
+    # BOTÃO FLUTUANTE: SUBIR AO TOPO (posicionado à esquerda do chatbot)
+    # =========================================================================
+    tags$button(
+      id = "ufs_btn_subir_topo",
+      class = "btn btn-primary rounded-circle shadow-lg d-print-none",
+      type = "button",
+      onclick = "window.subirAoTopoUFs()",
+      title = "Voltar ao topo",
+      style = "position: fixed; bottom: 30px; right: 95px; width: 46px; height: 46px; z-index: 1040; display: none; align-items: center; justify-content: center; cursor: pointer; border: none; box-shadow: 0 4px 14px rgba(0,0,0,0.25);",
+      tags$i(class = "fas fa-arrow-up text-white", style = "font-size: 1.1rem;")
     )
   )
 }

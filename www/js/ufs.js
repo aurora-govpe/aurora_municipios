@@ -12,6 +12,91 @@ window.moduloUFsIniciado = false;
 var chartModalUFsSerie = null;
 var chartModalUFsRanking = null;
 
+// Ajuste das subdimensões em metadadosSeguranca (ufs.js)
+const metadadosSeguranca = {
+    "tx_mvi": {
+        "cd_indicador": "tx_mvi",
+        "nm_indicador": "Taxa de Mortes Violentas Intencionais",
+        "subdimensao": "Policiamento Ostensivo e Criminalidade Letal",
+        "natureza": "Taxa por 100 mil hab.",
+        "formula_katex": "\\text{Taxa MVI} = \\left( \\frac{\\text{MVI}}{\\text{População Total}} \\right) \\times 100.000",
+        "referencia_analise": { "interpretacao": "Taxa padronizada de mortes violentas por 100 mil habitantes.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
+    },
+    "mvi": {
+        "cd_indicador": "mvi",
+        "nm_indicador": "Mortes Violentas Intencionais",
+        "subdimensao": "Policiamento Ostensivo e Criminalidade Letal",
+        "natureza": "Vítimas (Qtd)",
+        "formula_katex": "\\text{MVI} = \\sum \\text{Crimes Violentos Letais Intencionais}",
+        "referencia_analise": { "interpretacao": "Total absoluto de mortes violentas intencionais.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
+    },
+    "tx_cvp": {
+        "cd_indicador": "tx_cvp",
+        "nm_indicador": "Taxa de Crimes Violentos Contra o Patrimônio",
+        "subdimensao": "Policiamento Ostensivo e Crimes Patrimoniais",
+        "natureza": "Taxa por 100 mil hab.",
+        "formula_katex": "\\text{Taxa CVP} = \\left( \\frac{\\text{CVP}}{\\text{População Total}} \\right) \\times 100.000",
+        "referencia_analise": { "interpretacao": "Taxa de crimes contra o patrimônio com violência.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
+    },
+    "n_ab_cvp": {
+        "cd_indicador": "n_ab_cvp",
+        "nm_indicador": "Crimes Violentos Contra o Patrimônio",
+        "subdimensao": "Policiamento Ostensivo e Crimes Patrimoniais",
+        "natureza": "Ocorrências (Qtd)",
+        "formula_katex": "\\text{CVP} = \\sum \\text{Roubos com grave ameaça/violência}",
+        "referencia_analise": { "interpretacao": "Volume absoluto de roubos registrados.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
+    },
+    "tx_rfcelular": {
+        "cd_indicador": "tx_rfcelular",
+        "nm_indicador": "Taxa de Roubo e Furto de Celulares",
+        "subdimensao": "Policiamento Ostensivo e Crimes Patrimoniais",
+        "natureza": "Taxa por 100 mil hab.",
+        "formula_katex": "\\text{Taxa RF Celular} = \\left( \\frac{\\text{RF Celulares}}{\\text{População Total}} \\right) \\times 100.000",
+        "referencia_analise": { "interpretacao": "Frequência de celulares subtraídos por 100 mil hab.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
+    },
+    "rf_celular": {
+        "cd_indicador": "rf_celular",
+        "nm_indicador": "Roubo e Furto de Celulares",
+        "subdimensao": "Policiamento Ostensivo e Crimes Patrimoniais",
+        "natureza": "Ocorrências (Qtd)",
+        "formula_katex": "\\text{RF Celulares} = \\sum (\\text{Roubos} + \\text{Furtos})",
+        "referencia_analise": { "interpretacao": "Total de aparelhos celulares roubados ou furtados.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
+    },
+    "tx_feminicidio": {
+        "cd_indicador": "tx_feminicidio",
+        "nm_indicador": "Taxa de Feminicídio",
+        "subdimensao": "Prevenção Social e Proteção às Mulheres",
+        "natureza": "Taxa por 100 mil hab.",
+        "formula_katex": "\\text{Taxa Feminicídio} = \\left( \\frac{\\text{Feminicídios}}{\\text{Pop. Feminina}} \\right) \\times 100.000",
+        "referencia_analise": { "interpretacao": "Taxa por 100 mil mulheres residentes.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
+    },
+    "feminicidio": {
+        "cd_indicador": "feminicidio",
+        "nm_indicador": "Feminicídio",
+        "subdimensao": "Prevenção Social e Proteção às Mulheres",
+        "natureza": "Ocorrências (Qtd)",
+        "formula_katex": "\\text{Feminicídio} = \\sum \\text{Mortes por razão de gênero}",
+        "referencia_analise": { "interpretacao": "Total absoluto de feminicídios.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
+    },
+    "pop_carceraria": {
+        "cd_indicador": "pop_carceraria",
+        "nm_indicador": "População Carcerária",
+        "subdimensao": "Custódia, Sistema Prisional e Ressocialização",
+        "natureza": "Detentos (Qtd)",
+        "formula_katex": "\\text{PopCarcerária} = \\sum \\text{Pessoas privadas de liberdade}",
+        "referencia_analise": { "interpretacao": "Total de internos no sistema penitenciário.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
+    },
+    "pop_socioeducanda": {
+        "cd_indicador": "pop_socioeducanda",
+        "nm_indicador": "População Socioeducanda",
+        "subdimensao": "Custódia, Sistema Prisional e Ressocialização",
+        "natureza": "Adolescentes (Qtd)",
+        "formula_katex": "\\text{PopSocioeducanda} = \\sum \\text{Adolescentes em medida socioeducativa}",
+        "referencia_analise": { "interpretacao": "Total em regime de internação ou semiliberdade.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
+    }
+};
+
+
 // Dicionário Unificado de Metadados para Indicadores das UFs
 const dicionarioMetadadosUFs = {
     "Educação": {
@@ -2382,6 +2467,29 @@ const dicionarioMetadadosUFs = {
     }
 };
 
+// Vincula tanto pela sigla quanto pelo nome completo
+Object.assign(dicionarioMetadadosUFs, metadadosSeguranca);
+for (const k in metadadosSeguranca) {
+    dicionarioMetadadosUFs[metadadosSeguranca[k].nm_indicador] = metadadosSeguranca[k];
+}
+
+
+// Despesas Fiscais com subdimensão explícita
+dicionarioMetadadosUFs["Segurança Pública"].subdimensao = "Alocação Orçamentária e Gestão da Justiça";
+dicionarioMetadadosUFs["Direitos da Cidadania"].subdimensao = "Alocação Orçamentária e Gestão da Justiça";
+dicionarioMetadadosUFs["Judiciária"].subdimensao = "Alocação Orçamentária e Gestão da Justiça";
+dicionarioMetadadosUFs["Legislativa"].subdimensao = "Alocação Orçamentária e Gestão da Justiça";
+
+// Atribuição de subdimensão orçamentária do Eixo 4
+if (dicionarioMetadadosUFs["Gestão Ambiental"]) dicionarioMetadadosUFs["Gestão Ambiental"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
+if (dicionarioMetadadosUFs["desp_gestao_ambiental"]) dicionarioMetadadosUFs["desp_gestao_ambiental"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
+
+if (dicionarioMetadadosUFs["Transporte"]) dicionarioMetadadosUFs["Transporte"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
+if (dicionarioMetadadosUFs["desp_transporte"]) dicionarioMetadadosUFs["desp_transporte"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
+
+if (dicionarioMetadadosUFs["Agricultura"]) dicionarioMetadadosUFs["Agricultura"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
+if (dicionarioMetadadosUFs["desp_agricultura"]) dicionarioMetadadosUFs["desp_agricultura"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
+
 // Helper de Normalização de String para Busca de Metadados
 function normKeyUFs(str) {
     return String(str || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -2668,7 +2776,7 @@ window.filtrarUFsLocal = function() {
     }
 
     renderizarEixoConhecimento(baseSocio, uf);
-    renderizarEixoSeguranca(uf);
+    renderizarEixoSeguranca(baseSocio, uf); // <-- passar baseSocio como 1º argumento
     renderizarEixoSaude(baseSocio, uf);
     renderizarEixoSustentabilidade(baseSocio, uf);
     renderizarEixoGestaoFiscal(uf);
@@ -2780,7 +2888,53 @@ function gerarHTMLCardUFs(titulo, valAtual, valAnt, varPct, config, siglaOrKey, 
 
 // Configurações Visuais dos Indicadores
 function obterConfigUFs(nomeOuSigla) {
-    const s = (nomeOuSigla || "").toLowerCase();
+  
+  // Dentro de function obterConfigUFs(nomeOuSigla) { ... }
+const s = (nomeOuSigla || "").toLowerCase();
+
+// Taxas de Segurança (por 100 mil hab) -> formatação decimal
+if (s === 'tx_cvp' || s === 'tx_rfcelular' || s === 'tx_feminicidio' || s === 'tx_mvi' || s.startsWith('taxa de')) {
+    let icone = "fas fa-person-falling-burst";
+    if (s.includes('feminicidio')) icone = "fas fa-person-dress";
+    if (s.includes('mvi') || s.includes('morte')) icone = "fas fa-skull-crossbones";
+    if (s.includes('cvp') || s.includes('patrimonio')) icone = "fas fa-shield-halved";
+    if (s.includes('celular')) icone = "fas fa-mobile-screen-button";
+    return { color: "#C0392B", icon: icone, isIndice: true, isLowerBetter: true };
+}
+
+      // Ocorrências e Contagens Absolutas de Segurança
+      if (s === 'feminicidio') return { color: "#9B59B6", icon: "fas fa-person-dress", isAbs: true, isLowerBetter: true };
+      if (s === 'mvi') return { color: "#B91C1C", icon: "fas fa-skull-crossbones", isAbs: true, isLowerBetter: true };
+      if (s === 'n_ab_cvp') return { color: "#D97706", icon: "fas fa-shield-halved", isAbs: true, isLowerBetter: true };
+      if (s === 'rf_celular') return { color: "#EA580C", icon: "fas fa-mobile-screen-button", isAbs: true, isLowerBetter: true };
+      if (s === 'pop_carceraria') return { color: "#475569", icon: "fas fa-building-shield", isAbs: true, isLowerBetter: true };
+      if (s === 'pop_socioeducanda') return { color: "#0284C7", icon: "fas fa-user-group", isAbs: true, isLowerBetter: true };
+      
+      // Dentro de obterConfigUFs(nomeOuSigla) em ufs.js:
+        // Energia Renovável
+        if (s === 'qtd_energia_solar') return { color: "#F59E0B", icon: "fas fa-solar-panel", isAbs: true };
+        if (s === 'qtd_energia_eolica') return { color: "#10B981", icon: "fas fa-wind", isAbs: true };
+        
+        // Logística e Agro
+        if (s === 'carga_bruta_suape') return { color: "#2563EB", icon: "fas fa-ship", isAbs: true };
+        if (s === 'valor_producao_hec_colhido') return { color: "#059669", icon: "fas fa-wheat-awn", isPerCapita: true };
+        
+        // Custos, Tarifas e Perdas (Menor é melhor)
+        if (s.includes('custo_medio') || s.includes('tarifa_media')) {
+            return { color: "#D97706", icon: "fas fa-file-invoice-dollar", isPerCapita: true, isLowerBetter: true };
+        }
+        if (s === 'perdas_distribuicao_agua') {
+            return { color: "#EF4444", icon: "fas fa-triangle-exclamation", isPct: true, isLowerBetter: true };
+        }
+        if (s === 'consumo_total_medio_agua') {
+            return { color: "#3B82F6", icon: "fas fa-glass-water", isIndice: true };
+        }
+        
+        // Atendimento de Água e Esgoto (Percentuais)
+        if (s.startsWith('abastecimento_') || s.startsWith('esgoto_tratado_')) {
+            let icon = s.includes('esgoto') ? "fas fa-faucet-drip" : "fas fa-droplet";
+            return { color: "#0284C7", icon: icon, isPct: true };
+        }
 
     // Mercado de Trabalho & Demografia
     if (s.includes('desocupação') || s.includes('taxa_desocupacao')) {
@@ -2933,44 +3087,36 @@ function extrairFiscal(uf, nomeInd) {
 // RENDERIZAÇÃO DOS 5 EIXOS ESTRATÉGICOS
 // =========================================================================
 
-// Eixo 1: Conhecimento e Inovação (Educação, IDEB, Abandono, Distorção, Creches, C&T)
 function renderizarEixoConhecimento(baseSocio, uf) {
-    const elGrid = document.getElementById('grid_ufs_conhecimento');
-    if (!elGrid) return;
+    const listaItens = [];
 
-    let html = '';
-
-    // Indicadores Educacionais Completos
     const listaSocio = [
-        // IDEB Anos Iniciais
+        // IDEB
         { sigla: "ideb_5ano_estadual", label: "IDEB Anos Iniciais (5º) - Estadual" },
         { sigla: "ideb_5ano_publica", label: "IDEB Anos Iniciais (5º) - Pública" },
         { sigla: "ideb_5ano_privada", label: "IDEB Anos Iniciais (5º) - Privada" },
         { sigla: "ideb_5ano_total", label: "IDEB Anos Iniciais (5º) - Total" },
-        // IDEB Anos Finais
         { sigla: "ideb_9ano_estadual", label: "IDEB Anos Finais (9º) - Estadual" },
         { sigla: "ideb_9ano_publica", label: "IDEB Anos Finais (9º) - Pública" },
         { sigla: "ideb_9ano_privada", label: "IDEB Anos Finais (9º) - Privada" },
         { sigla: "ideb_9ano_total", label: "IDEB Anos Finais (9º) - Total" },
-        // IDEB Ensino Médio
         { sigla: "ideb_3ano_estadual", label: "IDEB Ensino Médio (3º) - Estadual" },
         { sigla: "ideb_3ano_privada", label: "IDEB Ensino Médio (3º) - Privada" },
         { sigla: "ideb_3ano_total", label: "IDEB Ensino Médio (3º) - Total" },
-        // Taxa de Abandono
+        // Fluxo
         { sigla: "aba_em_estadual", label: "Taxa de Abandono - E. Médio (Estadual)" },
         { sigla: "aba_em_publica", label: "Taxa de Abandono - E. Médio (Pública)" },
         { sigla: "aba_em_privada", label: "Taxa de Abandono - E. Médio (Privada)" },
         { sigla: "aba_em_federal", label: "Taxa de Abandono - E. Médio (Federal)" },
         { sigla: "aba_em_municipal", label: "Taxa de Abandono - E. Médio (Municipal)" },
         { sigla: "aba_em_total", label: "Taxa de Abandono - E. Médio (Total)" },
-        // Distorção Idade-Série
         { sigla: "tdi_em_estadual", label: "Distorção Idade-Série - E. Médio (Estadual)" },
         { sigla: "tdi_em_publica", label: "Distorção Idade-Série - E. Médio (Pública)" },
         { sigla: "tdi_em_privada", label: "Distorção Idade-Série - E. Médio (Privada)" },
         { sigla: "tdi_em_federal", label: "Distorção Idade-Série - E. Médio (Federal)" },
         { sigla: "tdi_em_municipal", label: "Distorção Idade-Série - E. Médio (Municipal)" },
         { sigla: "tdi_em_total", label: "Distorção Idade-Série - E. Médio (Total)" },
-        // Creche e Pré-escola
+        // Infantil
         { sigla: "tx_creche_pct", label: "Taxa Bruta de Creche (%)" },
         { sigla: "tx_liq_creche_pct", label: "Taxa Líquida de Creche (%)" },
         { sigla: "tx_creche_abs", label: "Matrículas em Creche (Abs.)" },
@@ -2984,37 +3130,70 @@ function renderizarEixoConhecimento(baseSocio, uf) {
     listaSocio.forEach(item => {
         const dados = extrairSocio(baseSocio, item.sigla);
         const config = obterConfigUFs(item.sigla);
-        html += gerarHTMLCardUFs(item.label, dados.valAtual, dados.valAnt, dados.varPct, config, item.sigla, 'socio', dados.rank);
+        listaItens.push({
+            siglaOrKey: item.sigla,
+            cardHtml: gerarHTMLCardUFs(item.label, dados.valAtual, dados.valAnt, dados.varPct, config, item.sigla, 'socio', dados.rank)
+        });
     });
 
-    // Despesas de Educação e Ciência & Tecnologia
-    const fiscEduc = extrairFiscal(uf, "Educação");
-    html += gerarHTMLCardUFs("Despesa com Educação", fiscEduc.valAtual, fiscEduc.valAnt, fiscEduc.varPct, obterConfigUFs("Educação"), "Educação", "fiscal", fiscEduc.rank);
+    const fiscais = ["Educação", "Ciência e Tecnologia", "Vinculação - Educação"];
+    fiscais.forEach(nomeInd => {
+        const d = extrairFiscal(uf, nomeInd);
+        listaItens.push({
+            siglaOrKey: nomeInd,
+            cardHtml: gerarHTMLCardUFs(nomeInd.startsWith("Vinculação") ? nomeInd : `Despesa com ${nomeInd}`, d.valAtual, d.valAnt, d.varPct, obterConfigUFs(nomeInd), nomeInd, 'fiscal', d.rank)
+        });
+    });
 
-    const fiscCT = extrairFiscal(uf, "Ciência e Tecnologia");
-    html += gerarHTMLCardUFs("Despesa com Ciência e Tecnologia", fiscCT.valAtual, fiscCT.valAnt, fiscCT.varPct, obterConfigUFs("Ciência e Tecnologia"), "Ciência e Tecnologia", "fiscal", fiscCT.rank);
-
-    const vincEduc = extrairFiscal(uf, "Vinculação - Educação");
-    html += gerarHTMLCardUFs("Vinculação Constitucional da Educação", vincEduc.valAtual, vincEduc.valAnt, vincEduc.varPct, obterConfigUFs("Vinculação - Educação"), "Vinculação - Educação", "fiscal", vincEduc.rank);
-
-    elGrid.innerHTML = html;
+    renderizarGridComSubdimensoes('grid_ufs_conhecimento', listaItens);
 }
 
-// Eixo 2: Segurança e Cidadania (Segurança, Cidadania, Judiciária, Legislativa)
-function renderizarEixoSeguranca(uf) {
-    const elGrid = document.getElementById('grid_ufs_seguranca');
-    if (!elGrid) return;
+// Eixo 2: Segurança e Cidadania (Com hierarquia visual automática)
+function renderizarEixoSeguranca(baseSocio, uf) {
+    const listaItens = [];
 
-    let html = '';
-    const inds = ["Segurança Pública", "Direitos da Cidadania", "Judiciária", "Legislativa"];
+    // 1. Indicadores de Segurança e Custódia
+    const listaSeguranca = [
+        // Ostensivo / Letal
+        { sigla: "tx_mvi", label: "Taxa de Mortes Violentas Intencionais" },
+        { sigla: "mvi", label: "Mortes Violentas Intencionais" },
+        // Ostensivo / Patrimonial
+        { sigla: "tx_cvp", label: "Taxa de Crimes Violentos Contra o Patrimônio" },
+        { sigla: "n_ab_cvp", label: "Crimes Violentos Contra o Patrimônio" },
+        { sigla: "tx_rfcelular", label: "Taxa de Roubo e Furto de Celulares" },
+        { sigla: "rf_celular", label: "Roubo e Furto de Celulares" },
+        // Prevenção / Violência de Gênero
+        { sigla: "tx_feminicidio", label: "Taxa de Feminicídio" },
+        { sigla: "feminicidio", label: "Feminicídio" },
+        // Custódia e Ressocialização
+        { sigla: "pop_carceraria", label: "População Carcerária" },
+        { sigla: "pop_socioeducanda", label: "População Socioeducanda" }
+    ];
 
-    inds.forEach(nomeInd => {
-        const d = extrairFiscal(uf, nomeInd);
-        const cfg = obterConfigUFs(nomeInd);
-        html += gerarHTMLCardUFs(`Despesa com ${nomeInd}`, d.valAtual, d.valAnt, d.varPct, cfg, nomeInd, 'fiscal', d.rank);
+    listaSeguranca.forEach(item => {
+        const dados = extrairSocio(baseSocio, item.sigla);
+        const config = obterConfigUFs(item.sigla);
+        const cardHtml = gerarHTMLCardUFs(item.label, dados.valAtual, dados.valAnt, dados.varPct, config, item.sigla, 'socio', dados.rank);
+        listaItens.push({
+            siglaOrKey: item.sigla,
+            cardHtml: cardHtml
+        });
     });
 
-    elGrid.innerHTML = html;
+    // 2. Despesas Orçamentárias da Função
+    const indsFiscais = ["Segurança Pública", "Direitos da Cidadania", "Judiciária", "Legislativa"];
+    indsFiscais.forEach(nomeInd => {
+        const d = extrairFiscal(uf, nomeInd);
+        const cfg = obterConfigUFs(nomeInd);
+        const cardHtml = gerarHTMLCardUFs(`Despesa com ${nomeInd}`, d.valAtual, d.valAnt, d.varPct, cfg, nomeInd, 'fiscal', d.rank);
+        listaItens.push({
+            siglaOrKey: nomeInd,
+            cardHtml: cardHtml
+        });
+    });
+
+    // Renderiza com agrupamento e pills automáticos
+    renderizarGridComSubdimensoes('grid_ufs_seguranca', listaItens);
 }
 
 // Eixo 3: Saúde e Qualidade de Vida (Saúde, Saneamento, Habitação, Urbanismo, Assistência Social)
@@ -3041,32 +3220,65 @@ function renderizarEixoSaude(baseSocio, uf) {
     elGrid.innerHTML = html;
 }
 
-// Eixo 4: Desenvolvimento Sustentável (Economia, Mercado de Trabalho, Demografia, Meio Ambiente)
+// Eixo 4: Desenvolvimento Sustentável (Com todos os novos indicadores e navegação por subdimensões)
 function renderizarEixoSustentabilidade(baseSocio, uf) {
-    const elGrid = document.getElementById('grid_ufs_sustentabilidade');
-    if (!elGrid) return;
+    const listaItens = [];
 
-    let html = '';
+    // Helper para extrair e montar card padronizado
+    const adicionarItem = (sigla, label, subdim) => {
+        const dados = extrairSocio(baseSocio, sigla);
+        const config = obterConfigUFs(sigla);
+        const cardHtml = gerarHTMLCardUFs(label, dados.valAtual, dados.valAnt, dados.varPct, config, sigla, 'socio', dados.rank);
+        listaItens.push({
+            siglaOrKey: sigla,
+            subdimensaoFallback: subdim,
+            cardHtml: cardHtml
+        });
+    };
 
-    // Indicadores Econômicos, Mercado de Trabalho e Demografia
-    const listaEconomia = [
-        { sigla: "pib_total_reais", label: "PIB Total" },
-        { sigla: "pib_per_capita", label: "PIB per capita" },
-        { sigla: "pib_por_pop_ocupada", label: "PIB por População Ocupada" },
-        { sigla: "taxa_desocupacao_media", label: "Taxa de Desocupação Média (%)" },
-        { sigla: "pop_ocupada_media", label: "População Ocupada (Média)" },
-        { sigla: "populacao_total", label: "População Total (hab.)" },
-        { sigla: "pia_media", label: "População em Idade Ativa (PIA)" }
-    ];
+    // 1. Transição Energética e Energia Renovável
+    adicionarItem("qtd_energia_solar", "Capacidade em Operação - Energia Solar", "Transição Energética e Renováveis");
+    adicionarItem("qtd_energia_eolica", "Capacidade em Operação - Energia Eólica", "Transição Energética e Renováveis");
 
-    listaEconomia.forEach(item => {
-        const dados = extrairSocio(baseSocio, item.sigla);
-        const config = obterConfigUFs(item.sigla);
-        html += gerarHTMLCardUFs(item.label, dados.valAtual, dados.valAnt, dados.varPct, config, item.sigla, 'socio', dados.rank);
-    });
+    // 2. Abastecimento de Água e Eficiência Hídrica
+    adicionarItem("abastecimento_pop_agua_pct", "Atendimento Total da População com Água", "Abastecimento de Água e Eficiência Hídrica");
+    adicionarItem("abastecimento_pop_urbana_agua_pct", "Atendimento da População Urbana com Água", "Abastecimento de Água e Eficiência Hídrica");
+    adicionarItem("abastecimento_pop_rural_agua_pct", "Atendimento da População Rural com Água", "Abastecimento de Água e Eficiência Hídrica");
+    adicionarItem("abastecimento_dom_agua_pct", "Domicílios Totais com Água", "Abastecimento de Água e Eficiência Hídrica");
+    adicionarItem("abastecimento_dom_urbana_agua_pct", "Domicílios Urbanos com Água", "Abastecimento de Água e Eficiência Hídrica");
+    adicionarItem("abastecimento_dom_rural_agua_pct", "Domicílios Rurais com Água", "Abastecimento de Água e Eficiência Hídrica");
+    adicionarItem("perdas_distribuicao_agua", "Perdas Totais de Água na Distribuição", "Abastecimento de Água e Eficiência Hídrica");
+    adicionarItem("consumo_total_medio_agua", "Consumo Médio per capita de Água", "Abastecimento de Água e Eficiência Hídrica");
+    adicionarItem("tarifa_media_agua", "Receita Direta Média - Água", "Abastecimento de Água e Eficiência Hídrica");
+    adicionarItem("custo_medio_agua", "Despesa Média de Água (c/ tributos)", "Abastecimento de Água e Eficiência Hídrica");
 
-    // Unidades de Conservação e Áreas Protegidas
-    const listaSocio = [
+    // 3. Saneamento e Esgotamento Sanitário
+    adicionarItem("abastecimento_pop_esgoto_pct", "Atendimento Total da População com Esgoto", "Saneamento e Esgotamento Sanitário");
+    adicionarItem("abastecimento_pop_urbana_esgoto_pct", "Atendimento da População Urbana com Esgoto", "Saneamento e Esgotamento Sanitário");
+    adicionarItem("abastecimento_pop_rural_esgoto_pct", "Atendimento da População Rural com Esgoto", "Saneamento e Esgotamento Sanitário");
+    adicionarItem("abastecimento_dom_esgoto_pct", "Domicílios Totais com Esgoto", "Saneamento e Esgotamento Sanitário");
+    adicionarItem("abastecimento_dom_urbana_esgoto_pct", "Domicílios Urbanos com Esgoto", "Saneamento e Esgotamento Sanitário");
+    adicionarItem("abastecimento_dom_rural_esgoto_pct", "Domicílios Rurais com Esgoto", "Saneamento e Esgotamento Sanitário");
+    adicionarItem("esgoto_tratado_coletado", "Esgoto Tratado / Coletado", "Saneamento e Esgotamento Sanitário");
+    adicionarItem("esgoto_tratado_agua_consumida", "Esgoto Tratado / Água Consumida", "Saneamento e Esgotamento Sanitário");
+    adicionarItem("tarifa_media_esgoto", "Receita Direta Média - Esgoto", "Saneamento e Esgotamento Sanitário");
+    adicionarItem("custo_medio_esgoto", "Despesa Média de Esgoto (c/ tributos)", "Saneamento e Esgotamento Sanitário");
+
+    // 4. Atividade Econômica, Logística e Agropecuária
+    adicionarItem("pib_total_reais", "PIB Total", "Atividade Econômica, Logística e Agro");
+    adicionarItem("pib_per_capita", "PIB per capita", "Atividade Econômica, Logística e Agro");
+    adicionarItem("pib_por_pop_ocupada", "PIB por População Ocupada", "Atividade Econômica, Logística e Agro");
+    adicionarItem("carga_bruta_suape", "Porto de Suape - Carga Bruta Total", "Atividade Econômica, Logística e Agro");
+    adicionarItem("valor_producao_hec_colhido", "Valor da Produção por Hectare Colhido", "Atividade Econômica, Logística e Agro");
+
+    // 5. Dinâmica Demográfica e Mercado de Trabalho
+    adicionarItem("taxa_desocupacao_media", "Taxa de Desocupação Média (%)", "Mercado de Trabalho e Demografia");
+    adicionarItem("pop_ocupada_media", "População Ocupada (Média)", "Mercado de Trabalho e Demografia");
+    adicionarItem("populacao_total", "População Total (hab.)", "Mercado de Trabalho e Demografia");
+    adicionarItem("pia_media", "População em Idade Ativa (PIA)", "Mercado de Trabalho e Demografia");
+
+    // 6. Áreas Protegidas e Unidades de Conservação (SNUC)
+    const listaUCs = [
         { sigla: "area_uc_total", label: "Área Total Protegida em UCs (ha)" },
         { sigla: "area_uc_est", label: "Área Protegida em UCs Estaduais (ha)" },
         { sigla: "area_uc_fed", label: "Área Protegida em UCs Federais (ha)" },
@@ -3080,24 +3292,23 @@ function renderizarEixoSustentabilidade(baseSocio, uf) {
         { sigla: "qtd_uc_pi", label: "Unidades de Conservação em Proteção Integral" },
         { sigla: "qtd_uc_us", label: "Unidades de Conservação em Uso Sustentável" }
     ];
+    listaUCs.forEach(u => adicionarItem(u.sigla, u.label, "Unidades de Conservação e Áreas Protegidas"));
 
-    listaSocio.forEach(item => {
-        const dados = extrairSocio(baseSocio, item.sigla);
-        const config = obterConfigUFs(item.sigla);
-        html += gerarHTMLCardUFs(item.label, dados.valAtual, dados.valAnt, dados.varPct, config, item.sigla, 'socio', dados.rank);
+    // 7. Despesas Orçamentárias Executadas
+    const fiscais = ["Gestão Ambiental", "Transporte", "Agricultura"];
+    fiscais.forEach(nomeInd => {
+        const d = extrairFiscal(uf, nomeInd);
+        const cfg = obterConfigUFs(nomeInd);
+        const cardHtml = gerarHTMLCardUFs(`Despesa com ${nomeInd}`, d.valAtual, d.valAnt, d.varPct, cfg, nomeInd, 'fiscal', d.rank);
+        listaItens.push({
+            siglaOrKey: nomeInd,
+            subdimensaoFallback: "Alocação Orçamentária e Infraestrutura",
+            cardHtml: cardHtml
+        });
     });
 
-    // Despesas de Meio Ambiente, Transporte e Agricultura
-    const fiscAmb = extrairFiscal(uf, "Gestão Ambiental");
-    html += gerarHTMLCardUFs("Despesa com Gestão Ambiental", fiscAmb.valAtual, fiscAmb.valAnt, fiscAmb.varPct, obterConfigUFs("Gestão Ambiental"), "Gestão Ambiental", "fiscal", fiscAmb.rank);
-
-    const fiscTransp = extrairFiscal(uf, "Transporte");
-    html += gerarHTMLCardUFs("Despesa com Transporte", fiscTransp.valAtual, fiscTransp.valAnt, fiscTransp.varPct, obterConfigUFs("Transporte"), "Transporte", "fiscal", fiscTransp.rank);
-
-    const fiscAgri = extrairFiscal(uf, "Agricultura");
-    html += gerarHTMLCardUFs("Despesa com Agricultura", fiscAgri.valAtual, fiscAgri.valAnt, fiscAgri.varPct, obterConfigUFs("Agricultura"), "Agricultura", "fiscal", fiscAgri.rank);
-
-    elGrid.innerHTML = html;
+    // Renderiza tudo no grid com pills navegáveis e cabeçalhos automáticos
+    renderizarGridComSubdimensoes('grid_ufs_sustentabilidade', listaItens);
 }
 
 // Eixo 5: Gestão, Transparência e Participação (Resultados Fiscais, Receitas e Despesas)
@@ -3264,14 +3475,13 @@ async function renderizarModalSocio(sigla, uf) {
             : (serieUF.length > 0 ? serieUF[serieUF.length - 1].ano : '');
 
         renderGraficoLinhaModal(anos, valores, nomeExibicao, uf, config);
-
-        // Ranking com UFs e benchmarks
-        const isLowerBetter = config.isLowerBetter || false;
+        
+        // Por este:
         const rankingArr = rankingData.map(r => ({
             uf: r.sg_uf,
             valor: Number(r.valor) || 0
         }));
-
+    
         // Adiciona referências regionais (NE e BR) se disponíveis
         benchmarks.forEach(b => {
             rankingArr.push({
@@ -3280,8 +3490,11 @@ async function renderizarModalSocio(sigla, uf) {
                 isBenchmark: true
             });
         });
+    
+        // Ordenação decrescente padrão (maior valor no topo)
+        rankingArr.sort((a, b) => b.valor - a.valor);
 
-        rankingArr.sort((a, b) => isLowerBetter ? (a.valor - b.valor) : (b.valor - a.valor));
+
         renderGraficoBarrasRanking(rankingArr, uf, nomeExibicao, config, anoRef);
         renderStorytellingModal(nomeExibicao, uf, rankingArr, config, anoRef);
 
@@ -3449,7 +3662,13 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
 
         const safeFmt = (v, dec = 1, suffix = '') => {
             const n = safeNum(v, null);
-            return (n !== null && n > 0) ? (n.toFixed(dec) + suffix) : '-';
+            return (n !== null && n > 0) ? (n.toLocaleString('pt-BR', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suffix) : '-';
+        };
+
+        // Helper formatador de contagem inteira
+        const safeFmtInt = (v) => {
+            const n = safeNum(v, null);
+            return (n !== null && n > 0) ? Math.round(n).toLocaleString('pt-BR') : '-';
         };
 
         // Helper formatador de moeda compacta
@@ -3476,23 +3695,24 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
         const abaEMItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'aba_em_total') || {}) : {};
         const abaEM = (abaEMItem.valAtual > 0) ? abaEMItem : ((typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'aba_em_estadual') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
 
-        const tdiEMItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'tdi_em_total') || {}) : {};
-        const tdiEM = (tdiEMItem.valAtual > 0) ? tdiEMItem : ((typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'tdi_em_estadual') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
-
         const despEdu = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Educação') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
 
         let textoEixo1 = `No desempenho educacional, registra nota no IDEB do Ensino Médio de <strong>${safeFmt(ideb3.valAtual, 1)}</strong> (${ideb3.rank > 0 ? ideb3.rank + 'º no Brasil' : 'referência estadual'}) e IDEB Anos Iniciais de <strong>${safeFmt(ideb5.valAtual, 1)}</strong> (${ideb5.rank > 0 ? ideb5.rank + 'º BR' : '-'}). A taxa de abandono escolar no Ensino Médio situa-se em <strong>${safeFmt(abaEM.valAtual, 1, '%')}</strong> e despesa orçamentária executada em Educação em <strong>${formataMoedaCompacta(despEdu.valAtual)}</strong> (${despEdu.rank > 0 ? despEdu.rank + 'º em alocação' : '-'}).`;
 
-        // Eixo 2: Segurança e Cidadania
+        // =====================================================================
+        // Eixo 2: Segurança e Cidadania (Estatísticas Criminais + Orçamento)
+        // =====================================================================
+        const txMviItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'tx_mvi') || {}) : {};
+        const mviItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'mvi') || {}) : {};
+        const txCvpItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'tx_cvp') || {}) : {};
+        const txCelItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'tx_rfcelular') || {}) : {};
+        const femItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'tx_feminicidio') || {}) : {};
+        const popCarcItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'pop_carceraria') || {}) : {};
+
         const despSeg = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Segurança Pública') || { valAtual: 0, rank: 0, varPct: 0, exercicio: '-' }) : { valAtual: 0, rank: 0, varPct: 0, exercicio: '-' };
         const despCid = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Direitos da Cidadania') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
 
-        let varSegFmt = '-';
-        if (despSeg.varPct !== 0 && !isNaN(despSeg.varPct)) {
-            varSegFmt = (despSeg.varPct > 0 ? '+' : '') + Number(despSeg.varPct).toFixed(1) + '%';
-        }
-
-        let textoEixo2 = `Na área de segurança pública e cidadania, a UF comprometeu <strong>${formataMoedaCompacta(despSeg.valAtual)}</strong> em despesas orçamentárias na função Segurança (${despSeg.rank > 0 ? despSeg.rank + 'º maior esforço orçamentário do país' : 'orçamento executado'}), além de <strong>${formataMoedaCompacta(despCid.valAtual)}</strong> em Direitos da Cidadania. Apresenta esforço orçamentário e priorização da ordem pública e garantia de direitos civis.`;
+        let textoEixo2 = `No panorama da segurança pública, a UF aponta Taxa de Mortes Violentas Intencionais (MVI) de <strong>${safeFmt(txMviItem.valAtual, 1)}</strong> por 100 mil hab. (${txMviItem.rank > 0 ? txMviItem.rank + 'ª maior taxa do país' : (safeFmtInt(mviItem.valAtual) + ' vítimas')} em ${txMviItem.ano || '-'}), taxa de crimes patrimoniais (CVP) em <strong>${safeFmt(txCvpItem.valAtual, 1)}</strong> e furto/roubo de celulares em <strong>${safeFmt(txCelItem.valAtual, 1)}</strong>. A população carcerária é de <strong>${safeFmtInt(popCarcItem.valAtual)}</strong> pessoas privadas de liberdade. Para enfrentamento, alocou <strong>${formataMoedaCompacta(despSeg.valAtual)}</strong> na função Segurança Pública (${despSeg.rank > 0 ? despSeg.rank + 'º maior orçamento' : 'orçamento executado'}) e <strong>${formataMoedaCompacta(despCid.valAtual)}</strong> em Cidadania.`;
 
         // Eixo 3: Saúde e Qualidade de Vida
         const despSaude = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Saúde') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
@@ -3505,7 +3725,7 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
         let textoEixo3 = `O setor de saúde pública e qualidade de vida conta com execução orçamentária de <strong>${formataMoedaCompacta(despSaude.valAtual)}</strong> (${despSaude.rank > 0 ? despSaude.rank + 'º no Brasil' : '-'}), com foco no custeio e investimentos da rede assistencial do SUS. Na infraestrutura de bem-estar urbano, foram alocados <strong>${formataMoedaCompacta(despUrb.valAtual)}</strong> em urbanismo e <strong>${formataMoedaCompacta(despHab.valAtual)}</strong> em habitação social, com atendimento de água tratada em <strong>${safeFmt(agua.valAtual, 1, '%')}</strong>.`;
 
         // Eixo 4: Desenvolvimento Sustentável
-        const pibpcItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'pibpc') || {}) : {};
+        const pibpcItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'pib_per_capita') || {}) : {};
         const pibpc = (pibpcItem.valAtual > 0) ? pibpcItem : ((typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'PIB per Capita') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
 
         const desempItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'taxa_desocupacao_media') || {}) : {};
@@ -3518,7 +3738,8 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
 
         // Eixo 5: Gestão, Transparência & Fiscal
         const rcl = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Receita Corrente Líquida') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
-        const dtp = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Despesa Total com Pessoal - DTP (% da RCL)') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 };
+        const dtp = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'DTP/RCL') || {}) : {};
+        const dtpVal = (dtp.valAtual > 0) ? dtp : ((typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Despesa Total com Pessoal - DTP (% da RCL)') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
         
         const invLiq = (typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Investimentos - Liq.') || {}) : {};
         const invest = (invLiq.valAtual > 0) ? invLiq : ((typeof extrairFiscal === 'function') ? (extrairFiscal(uf, 'Despesas de Capital - Emp.') || { valAtual: 0, rank: 0 }) : { valAtual: 0, rank: 0 });
@@ -3526,7 +3747,7 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
         const capagItem = (typeof extrairSocio === 'function') ? (extrairSocio(socioArray, 'capag') || {}) : {};
         let capagNota = capagItem.valAtual ? String(capagItem.valAtual).toUpperCase() : (uf === 'PE' ? 'B' : 'A');
 
-        let textoEixo5 = `No pilar de gestão fiscal e responsabilidade governamental, a UF registra Receita Corrente Líquida (RCL) de <strong>${formataMoedaCompacta(rcl.valAtual)}</strong> e investimentos liquidados de <strong>${formataMoedaCompacta(invest.valAtual)}</strong> (${invest.rank > 0 ? invest.rank + 'º maior volume de investimentos do país' : '-'}). O comprometimento com despesa de pessoal situa-se em <strong>${safeFmt(dtp.valAtual, 1, '%')} da RCL</strong>, assegurando equilíbrio perante a LRF e classificação de solvência fiscal STN.`;
+        let textoEixo5 = `No pilar de gestão fiscal e responsabilidade governamental, a UF registra Receita Corrente Líquida (RCL) de <strong>${formataMoedaCompacta(rcl.valAtual)}</strong> e investimentos de <strong>${formataMoedaCompacta(invest.valAtual)}</strong> (${invest.rank > 0 ? invest.rank + 'º maior volume de investimentos do país' : '-'}). O comprometimento com despesa de pessoal situa-se em <strong>${safeFmt(dtpVal.valAtual, 1, '%')} da RCL</strong>, assegurando equilíbrio perante a LRF e classificação de solvência fiscal STN.`;
 
         const htmlResumo = `
             <div class="resumo-exec-banner mb-4">
@@ -3542,24 +3763,30 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
                             <i class="fas fa-graduation-cap me-1 text-amber-300"></i> IDEB Médio: ${safeFmt(ideb3.valAtual, 1)} (${ideb3.rank > 0 ? ideb3.rank + 'º BR' : '-'})
                         </span>
                         <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
+                            <i class="fas fa-shield-halved me-1 text-rose-300"></i> Taxa MVI: ${safeFmt(txMviItem.valAtual, 1)} (${txMviItem.rank > 0 ? txMviItem.rank + 'º BR' : '-'})
+                        </span>
+                        <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
                             <i class="fas fa-briefcase me-1 text-emerald-300"></i> Desocupação: ${safeFmt(desemp.valAtual, 1, '%')}
                         </span>
                         <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
                             <i class="fas fa-landmark me-1 text-cyan-300"></i> RCL: ${formataMoedaCompacta(rcl.valAtual)}
                         </span>
                         <span class="badge bg-black/25 text-white border border-white/20 rounded-pill px-3 py-1 text-xs">
-                            <i class="fas fa-scale-balanced me-1 text-purple-300"></i> Pessoal: ${safeFmt(dtp.valAtual, 1, '%')}
+                            <i class="fas fa-scale-balanced me-1 text-purple-300"></i> Pessoal: ${safeFmt(dtpVal.valAtual, 1, '%')}
                         </span>
                     </div>
                 </div>
                 <p class="text-sm text-white leading-relaxed mb-0 font-medium" style="text-align: justify;">
-                    A Unidade Federativa <strong>${nomeUF} (${uf})</strong> posiciona-se no benchmarking nacional com IDEB do Ensino Médio de <strong>${safeFmt(ideb3.valAtual, 1)}</strong> (${ideb3.rank > 0 ? ideb3.rank + 'º no Brasil' : 'referência'}), taxa de desocupação de <strong>${safeFmt(desemp.valAtual, 1, '%')}</strong> e PIB per capita de <strong>${pibpc.valAtual > 0 ? 'R$ ' + Number(pibpc.valAtual).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '-'}</strong> (${pibpc.rank > 0 ? pibpc.rank + 'º BR' : '-'}). Na disciplina orçamentária, mobiliza uma Receita Corrente Líquida de <strong>${formataMoedaCompacta(rcl.valAtual)}</strong>, executando <strong>${formataMoedaCompacta(invest.valAtual)}</strong> em investimentos e mantendo a folha salarial em <strong>${safeFmt(dtp.valAtual, 1, '%')}</strong> da RCL.
+                    A Unidade Federativa <strong>${nomeUF} (${uf})</strong> posiciona-se no benchmarking nacional com Taxa de MVI de <strong>${safeFmt(txMviItem.valAtual, 1)}</strong> por 100k hab. (${txMviItem.rank > 0 ? txMviItem.rank + 'º maior no Brasil' : 'referência'}), IDEB do Ensino Médio em <strong>${safeFmt(ideb3.valAtual, 1)}</strong> e taxa de desocupação de <strong>${safeFmt(desemp.valAtual, 1, '%')}</strong>. No campo orçamentário e fiscal, mobiliza uma Receita Corrente Líquida de <strong>${formataMoedaCompacta(rcl.valAtual)}</strong>, executando <strong>${formataMoedaCompacta(despSeg.valAtual)}</strong> em Segurança Pública e <strong>${formataMoedaCompacta(invest.valAtual)}</strong> em investimentos, mantendo a folha salarial em <strong>${safeFmt(dtpVal.valAtual, 1, '%')}</strong> da RCL.
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                 <!-- EIXO 1: CONHECIMENTO E INOVAÇÃO -->
-                <div class="resumo-dim-card" style="border-top: 4px solid #D97706;">
+                <div class="resumo-dim-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5" 
+                     onclick="window.scrollToSection('sec_ufs_conhecimento')" 
+                     style="border-top: 4px solid #D97706; cursor: pointer;"
+                     title="Clique para ir aos indicadores de Conhecimento e Inovação">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-lightbulb text-amber-500 me-1.5"></i> Conhecimento</span>
                         <span class="badge bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-pill px-2">Eixo 1</span>
@@ -3576,16 +3803,20 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
                 </div>
 
                 <!-- EIXO 2: SEGURANÇA E CIDADANIA -->
-                <div class="resumo-dim-card" style="border-top: 4px solid #DC2626;">
+                <div class="resumo-dim-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5" 
+                     onclick="window.scrollToSection('sec_ufs_seguranca')" 
+                     style="border-top: 4px solid #DC2626; cursor: pointer;"
+                     title="Clique para ir aos indicadores de Segurança e Cidadania">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-shield-halved text-rose-600 me-1.5"></i> Segurança</span>
                         <span class="badge bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold rounded-pill px-2">Eixo 2</span>
                     </div>
                     <div class="space-y-1 mb-2.5">
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Desp. Segurança:</span> <strong class="text-slate-800">${formataMoedaCompacta(despSeg.valAtual)} <span class="text-[10px] text-slate-400">(${despSeg.rank > 0 ? despSeg.rank + 'º BR' : '-'})</span></strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Direitos Cidadania:</span> <strong class="text-slate-800">${formataMoedaCompacta(despCid.valAtual)}</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Variação Anual:</span> <strong class="text-slate-800">${varSegFmt}</strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Exercício Base:</span> <strong class="text-slate-800">${despSeg.exercicio || '-'}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Taxa MVI (/100k):</span> <strong class="text-slate-800">${safeFmt(txMviItem.valAtual, 1)} <span class="text-[10px] text-slate-400">(${txMviItem.rank > 0 ? txMviItem.rank + 'º BR' : '-'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Taxa CVP:</span> <strong class="text-slate-800">${safeFmt(txCvpItem.valAtual, 1)} <span class="text-[10px] text-slate-400">(${txCvpItem.rank > 0 ? txCvpItem.rank + 'º BR' : '-'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Taxa Celulares:</span> <strong class="text-slate-800">${safeFmt(txCelItem.valAtual, 1)} <span class="text-[10px] text-slate-400">(${txCelItem.rank > 0 ? txCelItem.rank + 'º BR' : '-'})</span></strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Pop. Carcerária:</span> <strong class="text-slate-800">${safeFmtInt(popCarcItem.valAtual)}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Desp. Segurança:</span> <strong class="text-slate-800">${formataMoedaCompacta(despSeg.valAtual)}</strong></div>
                     </div>
                     <div class="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-normal" style="text-align: justify;">
                         ${textoEixo2}
@@ -3593,7 +3824,10 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
                 </div>
 
                 <!-- EIXO 3: SAÚDE E QUALIDADE DE VIDA -->
-                <div class="resumo-dim-card" style="border-top: 4px solid #2563EB;">
+                <div class="resumo-dim-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5" 
+                     onclick="window.scrollToSection('sec_ufs_saude')" 
+                     style="border-top: 4px solid #2563EB; cursor: pointer;"
+                     title="Clique para ir aos indicadores de Saúde e Qualidade de Vida">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-heartbeat text-blue-600 me-1.5"></i> Saúde &amp; Vida</span>
                         <span class="badge bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold rounded-pill px-2">Eixo 3</span>
@@ -3610,7 +3844,10 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
                 </div>
 
                 <!-- EIXO 4: DESENVOLVIMENTO SUSTENTÁVEL -->
-                <div class="resumo-dim-card" style="border-top: 4px solid #059669;">
+                <div class="resumo-dim-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5" 
+                     onclick="window.scrollToSection('sec_ufs_sustentabilidade')" 
+                     style="border-top: 4px solid #059669; cursor: pointer;"
+                     title="Clique para ir aos indicadores de Desenvolvimento Sustentável">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-tree text-emerald-600 me-1.5"></i> Sustentabilidade</span>
                         <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-pill px-2">Eixo 4</span>
@@ -3627,14 +3864,17 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
                 </div>
 
                 <!-- EIXO 5: GESTÃO FISCAL -->
-                <div class="resumo-dim-card" style="border-top: 4px solid #7C3AED;">
+                <div class="resumo-dim-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5" 
+                     onclick="window.scrollToSection('sec_ufs_gestao')" 
+                     style="border-top: 4px solid #7C3AED; cursor: pointer;"
+                     title="Clique para ir aos indicadores de Gestão Fiscal">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="font-black text-slate-800 text-xs uppercase tracking-wider"><i class="fas fa-scale-balanced text-purple-600 me-1.5"></i> Gestão Fiscal</span>
                         <span class="badge bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold rounded-pill px-2">Eixo 5</span>
                     </div>
                     <div class="space-y-1 mb-2.5">
                         <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">RCL do Estado:</span> <strong class="text-slate-800">${formataMoedaCompacta(rcl.valAtual)} <span class="text-[10px] text-slate-400">(${rcl.rank > 0 ? rcl.rank + 'º BR' : '-'})</span></strong></div>
-                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">DTP (% da RCL):</span> <strong class="text-slate-800">${safeFmt(dtp.valAtual, 1, '%')}</strong></div>
+                        <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">DTP (% da RCL):</span> <strong class="text-slate-800">${safeFmt(dtpVal.valAtual, 1, '%')}</strong></div>
                         <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Investimentos:</span> <strong class="text-slate-800">${formataMoedaCompacta(invest.valAtual)} <span class="text-[10px] text-slate-400">(${invest.rank > 0 ? invest.rank + 'º BR' : '-'})</span></strong></div>
                         <div class="d-flex justify-content-between text-xs"><span class="text-slate-500">Solvência STN:</span> <strong class="badge bg-purple-100 text-purple-800 px-2 py-0.5 rounded-pill text-[11px]">CAPAG ${capagNota}</strong></div>
                     </div>
@@ -3642,6 +3882,12 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
                         ${textoEixo5}
                     </div>
                 </div>
+            </div> 
+                
+                
+
+                
+
             </div>
         `;
 
@@ -3649,4 +3895,155 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
     } catch (eResumo) {
         console.error("[UFs] Erro ao renderizar resumo executivo UFs:", eResumo);
     }
+}
+
+window.scrollToSection = function(sectionId) {
+    const el = document.getElementById(sectionId);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+};
+// =========================================================================
+// CONTROLE DE ROLAGEM: SUBIR AO TOPO (UFs)
+// =========================================================================
+
+window.subirAoTopoUFs = function() {
+    // Rola a janela principal
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Caso a rolagem esteja acontecendo dentro de um container com scroll próprio:
+    const mainContainer = document.querySelector('main') || document.querySelector('.content-wrapper') || document.getElementById('aba_ufs');
+    if (mainContainer) {
+        mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+    document.body.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// Função unificada para checar a rolagem
+function checarScrollTopoUFs() {
+    const btn = document.getElementById('ufs_btn_subir_topo');
+    if (!btn) return;
+
+    // Detecta scroll no window, body, html ou containers internos
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const containerScroll = document.querySelector('main')?.scrollTop || document.getElementById('aba_ufs')?.scrollTop || 0;
+    const scrollFinal = Math.max(scrollY, containerScroll);
+
+    if (scrollFinal > 300) {
+        btn.style.display = 'flex';
+    } else {
+        btn.style.display = 'none';
+    }
+}
+
+// Escuta rolagem na janela e com captura em containers filhos
+window.addEventListener('scroll', checarScrollTopoUFs, true);
+
+
+
+// =========================================================================
+// RENDERIZADOR HIERÁRQUICO AUTOMÁTICO DE KPIS (POR SUBDIMENSÃO)
+// =========================================================================
+
+const ICONES_SUBDIMENSOES = {
+    "Policiamento Ostensivo e Criminalidade Letal": "fas fa-shield-halved text-rose-600",
+    "Policiamento Ostensivo e Crimes Patrimoniais": "fas fa-person-burst text-amber-600",
+    "Prevenção Social e Proteção às Mulheres": "fas fa-person-dress text-purple-600",
+    "Custódia, Sistema Prisional e Ressocialização": "fas fa-building-shield text-slate-600",
+    "Alocação Orçamentária e Gestão da Justiça": "fas fa-hand-holding-dollar text-emerald-600",
+    
+    // Conhecimento e Inovação
+    "Educação Básica": "fas fa-graduation-cap text-blue-600",
+    "Fluxo Escolar": "fas fa-clock-rotate-left text-amber-600",
+    "Educação Infantil": "fas fa-children text-teal-600",
+    "Despesas Públicas": "fas fa-receipt text-indigo-600",
+    "Gestão e Equilíbrio Fiscal": "fas fa-scale-balanced text-purple-600",
+
+    // Adicionar ao objeto ICONES_SUBDIMENSOES:
+    "Atividade Econômica e Produtividade": "fas fa-chart-line text-blue-600",
+    "Mercado de Trabalho e Dinâmica Demográfica": "fas fa-users-gear text-emerald-600",
+    "Meio Ambiente e Unidades de Conservação": "fas fa-tree text-green-600",
+    "Alocação Orçamentária e Infraestrutura Sustentável": "fas fa-hand-holding-dollar text-teal-600",
+        // No objeto ICONES_SUBDIMENSOES em ufs.js:
+    "Transição Energética e Renováveis": "fas fa-solar-panel text-amber-500",
+    "Saneamento e Esgotamento Sanitário": "fas fa-faucet-drip text-cyan-600",
+    "Abastecimento de Água e Eficiência Hídrica": "fas fa-droplet text-blue-500",
+    "Logística e Agropecuária": "fas fa-ship text-indigo-600"
+
+};
+
+function renderizarGridComSubdimensoes(containerId, itensConfigurados) {
+    const elContainer = document.getElementById(containerId);
+    if (!elContainer) return;
+
+    // 1. Agrupa os itens por subdimensão mantendo a ordem de aparição
+    const grupos = {};
+    itensConfigurados.forEach(item => {
+        const meta = buscarMetadadoUFs(item.siglaOrKey) || {};
+        const sub = meta.subdimensao || item.subdimensaoFallback || "Outros Indicadores";
+        if (!grupos[sub]) grupos[sub] = [];
+        grupos[sub].push(item);
+    });
+
+    const nomesGrupos = Object.keys(grupos);
+    let html = '';
+
+    // 2. Cria barra de navegação rápida (Sub-pills) se houver mais de 1 subdimensão
+    if (nomesGrupos.length > 1) {
+        html += `
+            <div class="col-12 mb-3 d-print-none">
+                <div class="d-flex align-items-center gap-1.5 flex-wrap p-2 bg-slate-100 rounded-2xl border border-slate-200">
+                    <span class="text-xs font-black text-slate-500 uppercase px-2 me-1">
+                        <i class="fas fa-filter text-[#ff5a26] me-1"></i> Sub-eixos:
+                    </span>
+        `;
+        nomesGrupos.forEach((subNome, idx) => {
+            const subId = `${containerId}_sub_${idx}`;
+            const icone = ICONES_SUBDIMENSOES[subNome] || "fas fa-layer-group text-slate-500";
+            html += `
+                <button type="button" 
+                        class="btn btn-sm btn-white bg-white border border-slate-200 rounded-pill text-xs fw-bold text-slate-700 shadow-2xs d-flex align-items-center gap-1.5 px-3 py-1 hover:border-slate-400"
+                        onclick="document.getElementById('${subId}').scrollIntoView({ behavior: 'smooth', block: 'center' })">
+                    <i class="${icone}" style="font-size: 0.75rem;"></i>
+                    ${subNome}
+                    <span class="badge bg-slate-100 text-slate-600 rounded-pill ms-1" style="font-size: 0.65rem;">${grupos[subNome].length}</span>
+                </button>
+            `;
+        });
+        html += `
+                </div>
+            </div>
+        `;
+    }
+
+    // 3. Renderiza cada bloco com seu divisor estilizado e os cards
+    nomesGrupos.forEach((subNome, idx) => {
+        const subId = `${containerId}_sub_${idx}`;
+        const icone = ICONES_SUBDIMENSOES[subNome] || "fas fa-layer-group text-slate-500";
+        const cards = grupos[subNome];
+
+        html += `
+            <div id="${subId}" class="col-12 mt-3 mb-2" style="scroll-margin-top: 100px;">
+                <div class="d-flex align-items-center justify-content-between border-b-2 border-slate-200 pb-2 mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-lg bg-slate-100 p-2 border border-slate-200 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                            <i class="${icone}"></i>
+                        </div>
+                        <h6 class="text-sm font-black text-slate-800 uppercase tracking-wider mb-0">${subNome}</h6>
+                    </div>
+                    <span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill text-xs px-2.5 py-1 font-bold">
+                        ${cards.length} ${cards.length === 1 ? 'indicador' : 'indicadores'}
+                    </span>
+                </div>
+            </div>
+        `;
+
+        // Insere o HTML dos cards pertencentes a esse subgrupo
+        cards.forEach(c => {
+            html += c.cardHtml;
+        });
+    });
+
+    elContainer.innerHTML = html;
 }

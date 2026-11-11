@@ -99,22 +99,23 @@ func GetUFsData(c *gin.Context) {
 
 	// 1. Indicadores da UF selecionada com ranking nacional computado
 	queryUF := `
-		WITH ranking_calc AS (
-			SELECT 
-				cod_uf, sg_uf, nm_uf, CAST(ano AS INT) as ano, 
-				nm_indicador, sigla_indicador, grupo, tipo, 
-				TRY_CAST(indicador AS DOUBLE) as valor,
-				COALESCE(mes_referencia, '') as mes_referencia,
-				RANK() OVER (
-					PARTITION BY sigla_indicador, CAST(ano AS INT) 
-					ORDER BY 
-						CASE WHEN (sigla_indicador LIKE 'aba_em%' OR sigla_indicador LIKE 'tdi_em%' OR sigla_indicador = 'taxa_desocupacao_media') THEN TRY_CAST(indicador AS DOUBLE) END ASC,
-						CASE WHEN NOT (sigla_indicador LIKE 'aba_em%' OR sigla_indicador LIKE 'tdi_em%' OR sigla_indicador = 'taxa_desocupacao_media') THEN TRY_CAST(indicador AS DOUBLE) END DESC
-				) as rank_br
-			FROM v_indicadores_ufs
-			WHERE TRY_CAST(indicador AS DOUBLE) IS NOT NULL
-		)
-		SELECT 
+WITH ranking_calc AS (
+    SELECT 
+        cod_uf, sg_uf, nm_uf, CAST(ano AS INT) as ano, 
+        nm_indicador, sigla_indicador, grupo, tipo, 
+        TRY_CAST(indicador AS DOUBLE) as valor,
+        COALESCE(mes_referencia, '') as mes_referencia,
+        RANK() OVER (
+            PARTITION BY sigla_indicador, CAST(ano AS INT) 
+            ORDER BY 
+                CASE WHEN (sigla_indicador LIKE 'aba_em%' OR sigla_indicador LIKE 'tdi_em%') 
+                     THEN TRY_CAST(indicador AS DOUBLE) END ASC,
+                CASE WHEN NOT (sigla_indicador LIKE 'aba_em%' OR sigla_indicador LIKE 'tdi_em%') 
+                     THEN TRY_CAST(indicador AS DOUBLE) END DESC
+        ) as rank_br
+    FROM v_indicadores_ufs
+    WHERE TRY_CAST(indicador AS DOUBLE) IS NOT NULL
+)	SELECT 
 			cod_uf, sg_uf, nm_uf, ano, 
 			nm_indicador, sigla_indicador, grupo, tipo, 
 			valor, mes_referencia, rank_br
@@ -217,10 +218,13 @@ func GetUFsRanking(c *gin.Context) {
 		anoInt, _ = strconv.Atoi(anoStr)
 	}
 
-	orderDir := "DESC"
-	if strings.HasPrefix(sigla, "aba_em") || strings.HasPrefix(sigla, "tdi_em") || sigla == "taxa_desocupacao_media" {
-		orderDir = "ASC"
-	}
+    orderDir := "DESC"
+if strings.HasPrefix(sigla, "aba_em") || strings.HasPrefix(sigla, "tdi_em") ||
+   sigla == "perdas_distribuicao_agua" || sigla == "custo_medio_agua" ||
+   sigla == "tarifa_media_agua" || sigla == "custo_medio_esgoto" ||
+   sigla == "tarifa_media_esgoto" {
+    orderDir = "ASC"
+}
 
 	var query string
 	var args []interface{}
