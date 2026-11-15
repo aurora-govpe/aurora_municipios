@@ -86,7 +86,8 @@ func main() {
 		rg.Any("/ufs/data", handlers.GetUFsData)
 		rg.Any("/ufs/fiscal", handlers.GetUFsFiscal)
 		rg.Any("/ufs/ranking", handlers.GetUFsRanking)
-
+    rg.Any("/ufs/metadados", handlers.GetUFsMetadados)
+    
 		// Assistente Inteligente Aurora
 		rg.Any("/aurora/perguntar", handlers.PostAuroraPerguntar)
 	}
