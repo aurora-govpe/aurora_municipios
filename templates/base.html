@@ -36,30 +36,47 @@
       <div class="aurora-main-wrapper">
         <header class="aurora-topbar bg-white border-b border-slate-200 shadow-2xs d-flex flex-column w-100" style="position: relative; z-index: 1050; overflow: visible !important; height: auto !important;">
           
-          <!-- LINHA 1: MARCA AURORA E LOGOS INSTITUCIONAIS (CONDEPE < SEPLAG < GOVERNO) -->
+          <!-- LINHA 1: MARCA AURORA, HUB SEPLAG E LOGOS INSTITUCIONAIS (CONDEPE < SEPLAG < GOVERNO) -->
           <div class="d-flex justify-content-between align-items-center gap-3 px-4 py-2.5 border-b border-slate-200/80 w-100">
             
-            <!-- Marca Plataforma Aurora (Preservada integralmente) -->
-            <div class="d-flex align-items-center gap-2.5 cursor-pointer select-none flex-shrink-0" onclick="window.mudarAbaAurora('Início', null)" title="Ir para o Início">
-              <div class="rounded-full d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 38px; height: 38px; background: linear-gradient(135deg, #f59e0b, #ff5a26); padding: 6px; box-sizing: border-box; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
-                <div style="width: 100%; height: 100%;"><svg viewBox="0 0 100 100" style="width: 100%; height: 100%; fill: #231b18;"><circle cx="50" cy="45" r="28" fill="#ffaa00" /><path d="M50 8 L50 2M22 22 L17 17M8 50 L2 50M78 22 L83 17M92 50 L98 50" stroke="#ffaa00" stroke-width="4" stroke-linecap="round"/><path d="M10 75 Q 35 60, 60 75 T 100 70 L 100 90 Z" fill="#231b18"/><path d="M28 75 V 52 Q 28 50 30 50 Q 32 50 32 52 V 75 M25 60 H 35 M25 60 V 55 M35 60 V 57" stroke="#231b18" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M72 75 V 46 Q 72 44 74 44 Q 76 44 76 46 V 75 M68 56 H 80 M68 56 V 51 M80 56 V 53" stroke="#231b18" stroke-width="3" stroke-linecap="round" fill="none"/></svg></div>
-              </div>
-              <div class="d-flex flex-column justify-content-center">
-                <div class="d-flex align-items-center leading-none">
-                  <span class="fw-black text-slate-900 tracking-tight" style="font-size: 1.15rem; letter-spacing: -0.3px;">Plataforma</span>
-                  <span class="fw-black ms-1.5 tracking-tight" style="font-size: 1.15rem; letter-spacing: -0.3px; color: #ff5a26;">Aurora</span>
+            <!-- Marca Plataforma Aurora & Hub Seplag -->
+            <div class="d-flex align-items-center gap-3 gap-sm-4 flex-shrink-0">
+              
+              <!-- Marca Aurora (Sol Oficial) -->
+              <div class="d-flex align-items-center gap-2.5 sm:gap-3 cursor-pointer select-none flex-shrink-0" onclick="window.mudarAbaAurora('Início', null)" title="Ir para o Início">
+                <div class="rounded-full d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 42px; height: 42px; background: linear-gradient(135deg, #f59e0b, #ff5a26); padding: 7px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(255,90,38,0.25);">
+                  <div style="width: 100%; height: 100%;"><svg viewBox="0 0 100 100" style="width: 100%; height: 100%; fill: #231b18;"><circle cx="50" cy="45" r="28" fill="#ffaa00" /><path d="M50 8 L50 2M22 22 L17 17M8 50 L2 50M78 22 L83 17M92 50 L98 50" stroke="#ffaa00" stroke-width="4" stroke-linecap="round"/><path d="M10 75 Q 35 60, 60 75 T 100 70 L 100 90 Z" fill="#231b18"/><path d="M28 75 V 52 Q 28 50 30 50 Q 32 50 32 52 V 75 M25 60 H 35 M25 60 V 55 M35 60 V 57" stroke="#231b18" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M72 75 V 46 Q 72 44 74 44 Q 76 44 76 46 V 75 M68 56 H 80 M68 56 V 51 M80 56 V 53" stroke="#231b18" stroke-width="3" stroke-linecap="round" fill="none"/></svg></div>
                 </div>
-                <span class="font-black text-slate-500 uppercase" style="font-size: 0.62rem; letter-spacing: 0.12em; margin-top: 2px;">INTELIGÊNCIA GOVERNAMENTAL</span>
+                <div class="d-flex flex-column justify-content-center">
+                  <div class="d-flex align-items-center leading-none">
+                    <span class="fw-black text-slate-900 tracking-tight" style="font-size: 1.25rem; letter-spacing: -0.3px;">Plataforma</span>
+                    <span class="fw-black ms-1.5 tracking-tight" style="font-size: 1.25rem; letter-spacing: -0.3px; color: #ff5a26;">Aurora</span>
+                  </div>
+                  <span class="font-black text-slate-500 uppercase" style="font-size: 0.65rem; letter-spacing: 0.12em; margin-top: 2px;">INTELIGÊNCIA GOVERNAMENTAL</span>
+                </div>
               </div>
+
+              <!-- Divisor vertical discreto -->
+              <div class="d-none d-sm-block bg-slate-200" style="width: 1px; height: 32px;"></div>
+
+              <!-- Botão Hub Seplag Oficial -->
+              <a href="https://digital.seplag.pe.gov.br/" target="_blank" rel="noopener noreferrer" 
+                 class="d-none d-sm-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-950 text-xs font-bold transition-all shadow-2xs hover:shadow-xs text-decoration-none group" 
+                 title="Acessar o Hub da Plataforma Digital Seplag (https://digital.seplag.pe.gov.br/)">
+                <i class="fas fa-th-large text-[#ff5a26] transition-transform group-hover:scale-110"></i>
+                <span>Hub Seplag</span>
+                <i class="fas fa-arrow-up-right-from-square text-[10px] text-slate-400 group-hover:text-slate-600"></i>
+              </a>
+
             </div>
 
             <!-- Logos Institucionais na ordem: CONDEPE < SEPLAG < GOVERNO -->
-            <div class="d-flex align-items-center gap-3 gap-md-4 flex-shrink-0">
-              <img src="logos/logo_condepe_colorida.svg" alt="CONDEPE/FIDEM" class="aurora-navbar-logo" style="height: 34px; width: auto; object-fit: contain;"/>
-              <div class="d-none d-sm-block vr bg-slate-300" style="width: 1px; height: 26px; opacity: 0.45;"></div>
-              <img src="logos/seplag-nome-positivo.svg" alt="SEPLAG Pernambuco" class="aurora-navbar-logo" style="height: 36px; width: auto; object-fit: contain;"/>
-              <div class="d-none d-sm-block vr bg-slate-300" style="width: 1px; height: 26px; opacity: 0.45;"></div>
-              <img src="logos/governo-pe-colorido-cmyk.svg" alt="Governo de Pernambuco" class="aurora-navbar-logo" style="height: 38px; width: auto; object-fit: contain;"/>
+            <div class="d-flex align-items-center gap-3 gap-md-4 gap-lg-5 flex-shrink-0">
+              <img src="logos/logo_condepe_colorida.svg" alt="CONDEPE/FIDEM" class="aurora-navbar-logo" style="height: 42px; width: auto; object-fit: contain;"/>
+              <div class="d-none d-sm-block vr bg-slate-300" style="width: 1px; height: 32px; opacity: 0.45;"></div>
+              <img src="logos/seplag-nome-positivo.svg" alt="SEPLAG Pernambuco" class="aurora-navbar-logo" style="height: 46px; width: auto; object-fit: contain;"/>
+              <div class="d-none d-sm-block vr bg-slate-300" style="width: 1px; height: 32px; opacity: 0.45;"></div>
+              <img src="logos/governo-pe-colorido-cmyk.svg" alt="Governo de Pernambuco" class="aurora-navbar-logo" style="height: 46px; width: auto; object-fit: contain;"/>
             </div>
 
           </div>
