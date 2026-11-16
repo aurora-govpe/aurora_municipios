@@ -1679,11 +1679,29 @@ window.iniciarModuloFicha = async function () {
     $('.bs-container').remove();
     $('body > .dropdown-menu').remove();
 
+window.dadosMetadadosMapa = window.dadosMetadadosMapa || {};
+
     try {
-        const resMeta = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/metadados`.replace(/\/+/g, '/'));
+        let resMeta = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/metadados`.replace(/\/+/g, '/'));
+        if (!resMeta || !resMeta.ok) {
+            resMeta = await window.fetchSeguro(`${window.basePath || ''}/data/json/metadados_indicadores_mun.json`.replace(/\/+/g, '/'));
+        }
         if (resMeta && resMeta.ok) {
             const j = await resMeta.json();
-            window.dadosMetadados = j.indicadores_dicionario || [];
+            if (Array.isArray(j.indicadores_dicionario)) {
+                window.dadosMetadados = j.indicadores_dicionario;
+                window.dadosMetadadosMapa = j.indicadores_mapa || {};
+            } else if (j && typeof j === 'object' && !Array.isArray(j)) {
+                // Caso tenha lido direto o arquivo estático metadados_indicadores_mun.json
+                window.dadosMetadadosMapa = j;
+                const vistos = new Set();
+                window.dadosMetadados = Object.values(j).filter(item => {
+                    const id = item.cd_indicador || item.nm_indicador;
+                    if (!id || vistos.has(id)) return false;
+                    vistos.add(id);
+                    return true;
+                });
+            }
         } else {
             console.warn("Falha ao carregar os metadados da API.");
         }
@@ -4450,34 +4468,90 @@ function renderizarEmendasFicha(dados) {
    7. METADADOS (MODAL E TABELA)
    ========================================================================== */
 window.abrirModalMetadado = function (sigla) {
+    if (!sigla) return;
     const normKey = (str) => String(str || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const siglaNorm = normKey(sigla);
 
-    const meta = (window.dadosMetadados || []).find(m => {
-        const cd = normKey(m.cd_indicador);
-        const nm = normKey(m.nm_indicador);
-        return cd === siglaNorm || nm === siglaNorm || (cd && siglaNorm && (cd.includes(siglaNorm) || siglaNorm.includes(cd)));
-    });
+    // 1. Busca direta no mapa O(1)
+    let meta = (window.dadosMetadadosMapa && window.dadosMetadadosMapa[sigla]) || null;
+
+    // 2. Busca normalizada na lista unificada
+    if (!meta) {
+        meta = (window.dadosMetadados || []).find(m => {
+            const cd = normKey(m.cd_indicador);
+            const nm = normKey(m.nm_indicador);
+            const nf = normKey(m.nm_fantasia);
+            return cd === siglaNorm || nm === siglaNorm || nf === siglaNorm ||
+                   (cd && siglaNorm && (cd.includes(siglaNorm) || siglaNorm.includes(cd)));
+        });
+    }
+
     if (!meta) return;
 
-    $('#modalMetadadoTitle').text(meta.nm_indicador || sigla);
+    const ref = meta.referencia_analise || {};
+
+    $('#modalMetadadoTitle').text(meta.nm_indicador || meta.nm_fantasia || sigla);
     $('#modalMetadadoBadge').text(meta.natureza || 'Indicador Municipal');
-    const txtUnidade = meta.unidade ? `<div class="mt-1 text-xs text-slate-500 font-semibold"><i class="fas fa-ruler-combined text-blue-500 me-1"></i>Unidade: ${meta.unidade}</div>` : '';
-    $('#modalMetadadoDesc').html((meta.referencia_analise?.interpretacao || 'Sem descrição cadastrada.') + txtUnidade);
-    $('#modalMetadadoImpacto').text(meta.referencia_analise?.impacto_planejamento || '-');
-    $('#modalMetadadoLimiar').text(meta.referencia_analise?.limiar_corte || '-');
-    $('#modalMetadadoDirecao').text(meta.referencia_analise?.direcao_desejavel || '-');
+
+    const unidadeStr = meta.unidade || meta.natureza || '';
+    const txtUnidade = unidadeStr
+        ? `<div class="mt-1 text-xs text-slate-500 font-semibold"><i class="fas fa-ruler-combined text-blue-500 me-1"></i>Natureza / Unidade: ${unidadeStr}</div>`
+        : '';
+
+    const interpretacao = ref.interpretacao || meta.interpretacao || 'Sem descrição cadastrada.';
+    $('#modalMetadadoDesc').html(interpretacao + txtUnidade);
+    $('#modalMetadadoImpacto').text(ref.impacto_planejamento || meta.impacto_planejamento || '-');
+    $('#modalMetadadoLimiar').text(ref.limiar_corte || meta.limiar_corte || '-');
+    $('#modalMetadadoDirecao').text(ref.direcao_desejavel || meta.direcao_desejavel || '-');
 
     const formulaEl = document.getElementById('modalMetadadoFormula');
-    if (meta.formula_katex && typeof katex !== 'undefined') {
-        katex.render(meta.formula_katex, formulaEl, { displayMode: true, throwOnError: false });
-    } else {
-        formulaEl.innerText = meta.formula_katex || 'Fórmula não disponível.';
+    if (formulaEl) {
+        if (meta.formula_katex && typeof katex !== 'undefined') {
+            try {
+                katex.render(meta.formula_katex, formulaEl, { displayMode: true, throwOnError: false });
+            } catch (e) {
+                formulaEl.innerText = meta.formula_katex;
+            }
+        } else {
+            formulaEl.innerText = meta.formula_katex || 'Fórmula não disponível.';
+        }
+    }
+
+    // Renderização de Fonte e Hiperlink
+    const fonte = meta.fonte || 'Bases Oficiais / Órgão Setorial';
+    const link  = meta.hiperlink || '';
+
+    let fonteBox = document.getElementById('modalMetadadoFonteContainer');
+    if (!fonteBox) {
+        const modalBody = document.querySelector('#modalMetadado .modal-body');
+        if (modalBody) {
+            fonteBox = document.createElement('div');
+            fonteBox.id = 'modalMetadadoFonteContainer';
+            fonteBox.className = 'mt-3 pt-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-2';
+            modalBody.appendChild(fonteBox);
+        }
+    }
+
+    if (fonteBox) {
+        const botaoLinkHtml = link
+            ? `<a href="${link}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                   <i class="fas fa-arrow-up-right-from-square me-1"></i> Acessar Fonte Oficial
+               </a>`
+            : '';
+
+        fonteBox.innerHTML = `
+            <div class="text-muted small">
+                <i class="fas fa-database text-primary me-1"></i>
+                <strong>Fonte:</strong> <span id="modalMetadadoFonteTexto">${fonte}</span>
+            </div>
+            ${botaoLinkHtml}
+        `;
     }
 
     const modal = new bootstrap.Modal(document.getElementById('modalMetadado'));
     modal.show();
 };
+
 
 window.renderizarAbaMetadados = async function () {
     if (!window.dadosMetadados || !Array.isArray(window.dadosMetadados) || window.dadosMetadados.length === 0) {
@@ -4508,7 +4582,7 @@ window.renderizarAbaMetadados = async function () {
             language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
             pageLength: 15,
             order: [[0, 'asc'], [1, 'asc']],
-            columns: [
+columns: [
                 { 
                     title: "Subdimensão", 
                     data: "subdimensao", 
@@ -4550,6 +4624,19 @@ window.renderizarAbaMetadados = async function () {
                     }
                 },
                 { 
+                    title: "Fonte", 
+                    data: "fonte", 
+                    className: "align-middle text-xs", 
+                    defaultContent: "-",
+                    render: (d, t, r) => {
+                        const txt = d || '-';
+                        if (r.hiperlink) {
+                            return `<a href="${r.hiperlink}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-semibold" title="Abrir fonte oficial">${txt} <i class="fas fa-external-link-alt text-[10px] ms-0.5"></i></a>`;
+                        }
+                        return `<span class="text-slate-600 font-medium">${txt}</span>`;
+                    }
+                },
+                { 
                     title: "Limiar / Corte", 
                     data: "referencia_analise.limiar_corte", 
                     className: "align-middle text-sm", 
@@ -4557,7 +4644,7 @@ window.renderizarAbaMetadados = async function () {
                     render: d => `<span class="text-xs text-slate-600 font-medium">${d || '<span class="text-slate-400 italic">Não especificado</span>'}</span>`
                 }
             ]
-        });
+            });
     }
 };
 

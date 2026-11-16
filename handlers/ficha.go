@@ -8,13 +8,86 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
+
+var (
+	cacheFichaMetaMutex sync.RWMutex
+	cacheFichaMetaMap   map[string]map[string]interface{}
+	cacheFichaMetaList  []map[string]interface{}
+)
+
+var CaminhoMetadadosMunJSON = filepath.Join("data", "json", "metadados_indicadores_mun.json")
+
+// InvalidarCacheFichaMetadados limpa o cache em RAM caso o ETL atualize o JSON
+func InvalidarCacheFichaMetadados() {
+	cacheFichaMetaMutex.Lock()
+	defer cacheFichaMetaMutex.Unlock()
+	cacheFichaMetaMap = nil
+	cacheFichaMetaList = nil
+}
+
+// carregarMetadadosMunJSON lê o arquivo metadados_indicadores_mun.json para a RAM (mapa e lista deduplicada)
+func carregarMetadadosMunJSON() (map[string]map[string]interface{}, []map[string]interface{}, error) {
+	cacheFichaMetaMutex.RLock()
+	if cacheFichaMetaMap != nil && len(cacheFichaMetaList) > 0 {
+		m, l := cacheFichaMetaMap, cacheFichaMetaList
+		cacheFichaMetaMutex.RUnlock()
+		return m, l, nil
+	}
+	cacheFichaMetaMutex.RUnlock()
+
+	caminhos := []string{
+		CaminhoMetadadosMunJSON,
+		filepath.Join("etl", "data", "json", "metadados_indicadores_mun.json"),
+		filepath.Join("..", "data", "json", "metadados_indicadores_mun.json"),
+	}
+
+	var raw []byte
+	var err error
+	for _, p := range caminhos {
+		raw, err = os.ReadFile(p)
+		if err == nil && len(raw) > 0 {
+			break
+		}
+	}
+	if err != nil || len(raw) == 0 {
+		return nil, nil, fmt.Errorf("arquivo metadados_indicadores_mun.json não encontrado")
+	}
+
+	var parsedMap map[string]map[string]interface{}
+	if err := json.Unmarshal(raw, &parsedMap); err != nil {
+		return nil, nil, err
+	}
+
+	// Deduplica entradas (pois o JSON indexa por sigla, nm_indicador e nm_fantasia)
+	vistos := make(map[string]bool)
+	var listaUnica []map[string]interface{}
+	for k, item := range parsedMap {
+		cd, _ := item["cd_indicador"].(string)
+		if cd == "" {
+			cd = k
+		}
+		if !vistos[cd] {
+			vistos[cd] = true
+			listaUnica = append(listaUnica, item)
+		}
+	}
+
+	cacheFichaMetaMutex.Lock()
+	cacheFichaMetaMap = parsedMap
+	cacheFichaMetaList = listaUnica
+	cacheFichaMetaMutex.Unlock()
+
+	return parsedMap, listaUnica, nil
+}
 
 type FichaDataRequest struct {
 	Municipio string `json:"municipio"`
@@ -40,10 +113,19 @@ func GetFichaFiltros(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"municipios": lista})
 }
 
-// GetFichaMetadados retorna o dicionário unificado de metadados a partir do SQLite
+// GetFichaMetadados retorna o dicionário unificado de metadados a partir do JSON gerado pelo ETL (com fallback para SQLite)
 func GetFichaMetadados(c *gin.Context) {
+	if metaMap, metaList, err := carregarMetadadosMunJSON(); err == nil && len(metaList) > 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"indicadores_dicionario": metaList,
+			"indicadores_mapa":       metaMap,
+		})
+		return
+	}
+
+	// Fallback para SQLite caso o JSON ainda não exista
 	if SQLiteDB == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Banco SQLite não disponível"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Metadados JSON indisponíveis e banco SQLite não conectado"})
 		return
 	}
 
@@ -91,7 +173,6 @@ func GetFichaMetadados(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"indicadores_dicionario": metaList})
 }
-
 // PostFichaData retorna os dados completos da ficha municipal de um município
 func PostFichaData(c *gin.Context) {
 	var req FichaDataRequest
@@ -786,8 +867,48 @@ func GetMapaIndicador(c *gin.Context) {
 			}
 		}
 	} else {
-		// 1. Tentar buscar metadados no SQLite por cd_indicador ou nm_indicador para enriquecer
-		if SQLiteDB != nil {
+		// 1. Tentar buscar metadados no JSON em RAM (gerado pelo ETL)
+		if metaMap, _, errJSON := carregarMetadadosMunJSON(); errJSON == nil {
+			var metaItem map[string]interface{}
+			if m, ok := metaMap[sigla]; ok {
+				metaItem = m
+			} else {
+				for k, m := range metaMap {
+					if strings.EqualFold(k, sigla) {
+						metaItem = m
+						break
+					}
+				}
+			}
+			if metaItem != nil {
+				if nm, ok := metaItem["nm_indicador"].(string); ok && nm != "" {
+					nmIndicadorFinal = nm
+				}
+				if tp, ok := metaItem["tipo"].(string); ok && tp != "" {
+					tipoFinal = tp
+				} else if nat, ok := metaItem["natureza"].(string); ok && nat != "" {
+					natLower := strings.ToLower(nat)
+					switch {
+					case strings.Contains(natLower, "percent"):
+						tipoFinal = "percentual"
+					case strings.Contains(natLower, "índice") || strings.Contains(natLower, "indice") || strings.Contains(natLower, "razão") || strings.Contains(natLower, "razao"):
+						tipoFinal = "índice"
+					case strings.Contains(natLower, "taxa"):
+						tipoFinal = "taxa"
+					case strings.Contains(natLower, "monetário") || strings.Contains(natLower, "monetario") || strings.Contains(natLower, "r$"):
+						tipoFinal = "moeda"
+					case strings.Contains(natLower, "absoluto") || strings.Contains(natLower, "quantitativo"):
+						tipoFinal = "absoluto"
+					}
+				}
+				if pol, ok := metaItem["polaridade"].(string); ok && pol != "" {
+					polaridadeFinal = strings.ToLower(pol)
+				}
+			}
+		}
+
+		// 1b. Fallback: buscar metadados no SQLite por cd_indicador ou nm_indicador para enriquecer
+		if nmIndicadorFinal == "" && SQLiteDB != nil {
 			var nmMeta, uniMeta, natMeta sql.NullString
 			rowMeta := SQLiteDB.QueryRow(`
 				SELECT nm_indicador, unidade, natureza 
