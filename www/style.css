@@ -17,3 +17,54 @@
 .aurora-markdown p { margin-bottom: 0.5rem; }
 .aurora-markdown ul { list-style-type: disc !important; padding-left: 1.5rem !important; margin-bottom: 0.5rem; }
 .aurora-markdown strong { font-weight: 700; color: #c2410c; }
+
+/* Ajuste da estrutura flex para acomodar a navbar de 2 linhas sem cortar o conteúdo */
+.aurora-main-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.aurora-topbar {
+  height: auto !important;
+  min-height: unset !important;
+  flex-shrink: 0;
+}
+
+.aurora-content-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Estilo dos botões da Linha 2 idêntico ao layout de referência */
+.aurora-topbar-tabs .btn {
+  border-radius: 10px !important;
+  font-size: 0.82rem;
+  transition: all 0.15s ease-in-out;
+  white-space: nowrap;
+}
+
+.aurora-topbar-tabs .btn-primary {
+  background-color: #ff5a26 !important;
+  border-color: #ff5a26 !important;
+  color: #ffffff !important;
+}
+
+.aurora-topbar-tabs .btn-light {
+  background-color: transparent !important;
+  color: #334155 !important;
+}
+
+.aurora-topbar-tabs .btn-light:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Ajuste responsivo das logos em telas menores */
+@media (max-width: 768px) {
+  .aurora-navbar-logo {
+    height: 26px !important;
+  }
+}

@@ -34,13 +34,17 @@
     <div class="aurora-app-container p-0">
       <nav id="aurora-sidebar" class="d-none"></nav>
       <div class="aurora-main-wrapper">
-        <header class="aurora-topbar d-flex justify-content-between align-items-center gap-2 px-3 py-2" style="flex-wrap: nowrap; min-height: 54px; position: relative; z-index: 1050; overflow: visible !important;">
-          <div class="d-flex align-items-center gap-2 flex-nowrap flex-shrink-0" style="flex-shrink: 0;">
-            <div class="d-flex align-items-center gap-2.5 cursor-pointer select-none" onclick="window.mudarAbaAurora(&#39;Início&#39;, null)" title="Ir para o Início">
+        <header class="aurora-topbar bg-white border-b border-slate-200 shadow-2xs d-flex flex-column w-100" style="position: relative; z-index: 1050; overflow: visible !important; height: auto !important;">
+          
+          <!-- LINHA 1: MARCA AURORA E LOGOS INSTITUCIONAIS (CONDEPE < SEPLAG < GOVERNO) -->
+          <div class="d-flex justify-content-between align-items-center gap-3 px-4 py-2.5 border-b border-slate-200/80 w-100">
+            
+            <!-- Marca Plataforma Aurora (Preservada integralmente) -->
+            <div class="d-flex align-items-center gap-2.5 cursor-pointer select-none flex-shrink-0" onclick="window.mudarAbaAurora('Início', null)" title="Ir para o Início">
               <div class="rounded-full d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 38px; height: 38px; background: linear-gradient(135deg, #f59e0b, #ff5a26); padding: 6px; box-sizing: border-box; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                 <div style="width: 100%; height: 100%;"><svg viewBox="0 0 100 100" style="width: 100%; height: 100%; fill: #231b18;"><circle cx="50" cy="45" r="28" fill="#ffaa00" /><path d="M50 8 L50 2M22 22 L17 17M8 50 L2 50M78 22 L83 17M92 50 L98 50" stroke="#ffaa00" stroke-width="4" stroke-linecap="round"/><path d="M10 75 Q 35 60, 60 75 T 100 70 L 100 90 Z" fill="#231b18"/><path d="M28 75 V 52 Q 28 50 30 50 Q 32 50 32 52 V 75 M25 60 H 35 M25 60 V 55 M35 60 V 57" stroke="#231b18" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M72 75 V 46 Q 72 44 74 44 Q 76 44 76 46 V 75 M68 56 H 80 M68 56 V 51 M80 56 V 53" stroke="#231b18" stroke-width="3" stroke-linecap="round" fill="none"/></svg></div>
               </div>
-              <div class="d-none d-md-flex flex-column justify-content-center">
+              <div class="d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center leading-none">
                   <span class="fw-black text-slate-900 tracking-tight" style="font-size: 1.15rem; letter-spacing: -0.3px;">Plataforma</span>
                   <span class="fw-black ms-1.5 tracking-tight" style="font-size: 1.15rem; letter-spacing: -0.3px; color: #ff5a26;">Aurora</span>
@@ -48,39 +52,52 @@
                 <span class="font-black text-slate-500 uppercase" style="font-size: 0.62rem; letter-spacing: 0.12em; margin-top: 2px;">INTELIGÊNCIA GOVERNAMENTAL</span>
               </div>
             </div>
-            <div class="d-none d-md-block vr my-1 bg-slate-300 ms-1 me-1" style="width: 1px; height: 26px; opacity: 0.45;"></div>
-            <div class="d-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1 d-print-none aurora-topbar-tabs flex-shrink-0 flex-nowrap">
-              <button class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm aurora-default-tab" onclick="mudarAbaAurora(&#39;Início&#39;, this)">
-                <i class="fas fa-house me-1"></i>
+
+            <!-- Logos Institucionais na ordem: CONDEPE < SEPLAG < GOVERNO -->
+            <div class="d-flex align-items-center gap-3 gap-md-4 flex-shrink-0">
+              <img src="logos/logo_condepe_colorida.svg" alt="CONDEPE/FIDEM" class="aurora-navbar-logo" style="height: 34px; width: auto; object-fit: contain;"/>
+              <div class="d-none d-sm-block vr bg-slate-300" style="width: 1px; height: 26px; opacity: 0.45;"></div>
+              <img src="logos/seplag-nome-positivo.svg" alt="SEPLAG Pernambuco" class="aurora-navbar-logo" style="height: 36px; width: auto; object-fit: contain;"/>
+              <div class="d-none d-sm-block vr bg-slate-300" style="width: 1px; height: 26px; opacity: 0.45;"></div>
+              <img src="logos/governo-pe-colorido-cmyk.svg" alt="Governo de Pernambuco" class="aurora-navbar-logo" style="height: 38px; width: auto; object-fit: contain;"/>
+            </div>
+
+          </div>
+
+          <!-- LINHA 2: BOTÕES DE NAVEGAÇÃO (Preservados integralmente) -->
+          <div class="d-flex align-items-center px-4 py-2 bg-white w-100 overflow-x-auto d-print-none">
+            <div class="d-flex align-items-center gap-2 aurora-topbar-tabs flex-nowrap">
+              <button class="btn btn-sm btn-primary rounded-3 px-3.5 py-2 font-bold text-xs shadow-sm aurora-default-tab d-inline-flex align-items-center gap-1.5" onclick="mudarAbaAurora('Início', this)">
+                <i class="fas fa-house"></i>
                 Início
               </button>
-              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Regiões&#39;, this)">
-                <i class="fas fa-map-location-dot me-1"></i>
+              <button class="btn btn-sm btn-light text-slate-700 rounded-3 px-3.5 py-2 font-bold text-xs border-0 d-inline-flex align-items-center gap-1.5" onclick="mudarAbaAurora('Regiões', this)">
+                <i class="fas fa-map-location-dot"></i>
                 Regiões
               </button>
-              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Programas&#39;, this)">
-                <i class="fas fa-layer-group me-1"></i>
+              <button class="btn btn-sm btn-light text-slate-700 rounded-3 px-3.5 py-2 font-bold text-xs border-0 d-inline-flex align-items-center gap-1.5" onclick="mudarAbaAurora('Programas', this)">
+                <i class="fas fa-layer-group"></i>
                 Programas
               </button>
-              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Municípios&#39;, this)">
-                <i class="fas fa-city me-1"></i>
+              <button class="btn btn-sm btn-light text-slate-700 rounded-3 px-3.5 py-2 font-bold text-xs border-0 d-inline-flex align-items-center gap-1.5" onclick="mudarAbaAurora('Municípios', this)">
+                <i class="fas fa-city"></i>
                 Municípios
               </button>
-              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;UFs&#39;, this)">
-                <i class="fas fa-chart-column me-1"></i>
+              <button class="btn btn-sm btn-light text-slate-700 rounded-3 px-3.5 py-2 font-bold text-xs border-0 d-inline-flex align-items-center gap-1.5" onclick="mudarAbaAurora('UFs', this)">
+                <i class="fas fa-chart-column"></i>
                 UFs
               </button>
-              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Metadados&#39;, this)">
-                <i class="fas fa-book me-1"></i>
+              <button class="btn btn-sm btn-light text-slate-700 rounded-3 px-3.5 py-2 font-bold text-xs border-0 d-inline-flex align-items-center gap-1.5" onclick="mudarAbaAurora('Metadados', this)">
+                <i class="fas fa-book"></i>
                 Metadados
               </button>
-              <button class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 font-bold text-xs border-0" onclick="mudarAbaAurora(&#39;Nosso Time&#39;, this)">
-                <i class="fas fa-users me-1"></i>
+              <button class="btn btn-sm btn-light text-slate-700 rounded-3 px-3.5 py-2 font-bold text-xs border-0 d-inline-flex align-items-center gap-1.5" onclick="mudarAbaAurora('Nosso Time', this)">
+                <i class="fas fa-users"></i>
                 Sobre
               </button>
             </div>
           </div>
-          <div class="d-flex align-items-center gap-2 flex-nowrap flex-shrink-0 d-print-none"></div>
+
         </header>
         <main class="aurora-content-area">
           <div class="tab-content">
