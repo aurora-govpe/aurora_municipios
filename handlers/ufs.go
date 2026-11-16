@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -12,9 +14,63 @@ import (
 )
 
 var (
-	cacheUFsMutex sync.RWMutex
-	cacheUFsData  = make(map[string]gin.H)
+	cacheUFsMutex        sync.RWMutex
+	cacheUFsData         = make(map[string]gin.H)
+	cacheMetadadosUFsRaw []byte
 )
+
+// Caminho padrão onde o ETL R salva o JSON
+var CaminhoMetadadosUFsJSON = filepath.Join("data", "json", "metadados_indicadores_ufs.json")
+
+// InvalidarCacheUFs limpa a RAM caso o ETL atualize os arquivos em disco
+func InvalidarCacheUFs() {
+	cacheUFsMutex.Lock()
+	defer cacheUFsMutex.Unlock()
+	cacheUFsData = make(map[string]gin.H)
+	cacheMetadadosUFsRaw = nil
+}
+
+// GetUFsMetadados serve o arquivo metadados_indicadores_ufs.json direto da RAM
+func GetUFsMetadados(c *gin.Context) {
+	c.Header("Content-Type", "application/json; charset=utf-8")
+
+	cacheUFsMutex.RLock()
+	if len(cacheMetadadosUFsRaw) > 0 {
+		data := cacheMetadadosUFsRaw
+		cacheUFsMutex.RUnlock()
+		c.Writer.Write(data)
+		return
+	}
+	cacheUFsMutex.RUnlock()
+
+	// Busca em caminhos candidatos caso o binário rode da raiz ou de subpasta
+	caminhosCandidatos := []string{
+		CaminhoMetadadosUFsJSON,
+		filepath.Join("etl", "data", "json", "metadados_indicadores_ufs.json"),
+		filepath.Join("..", "data", "json", "metadados_indicadores_ufs.json"),
+	}
+
+	var conteudo []byte
+	var err error
+	for _, p := range caminhosCandidatos {
+		conteudo, err = os.ReadFile(p)
+		if err == nil && len(conteudo) > 0 {
+			break
+		}
+	}
+
+	if err != nil || len(conteudo) == 0 {
+		log.Printf("⚠️ Metadados UFs JSON não encontrado (%v). Retornando objeto vazio.", err)
+		c.JSON(http.StatusOK, gin.H{})
+		return
+	}
+
+	cacheUFsMutex.Lock()
+	cacheMetadadosUFsRaw = conteudo
+	cacheUFsMutex.Unlock()
+
+	c.Writer.Write(conteudo)
+}
 
 var ListaUFsPadrao = []string{
 	"AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO",
@@ -97,12 +153,13 @@ func GetUFsData(c *gin.Context) {
 	}
 	cacheUFsMutex.RUnlock()
 
-	// 1. Indicadores da UF selecionada com ranking nacional computado
+// 1. Indicadores da UF selecionada com ranking nacional computado
 	queryUF := `
 WITH ranking_calc AS (
     SELECT 
         cod_uf, sg_uf, nm_uf, CAST(ano AS INT) as ano, 
         nm_indicador, sigla_indicador, grupo, tipo, 
+        COALESCE(LOWER(TRIM(polaridade)), '') as polaridade,
         TRY_CAST(indicador AS DOUBLE) as valor,
         COALESCE(mes_referencia, '') as mes_referencia,
         RANK() OVER (
@@ -115,24 +172,25 @@ WITH ranking_calc AS (
         ) as rank_br
     FROM v_indicadores_ufs
     WHERE TRY_CAST(indicador AS DOUBLE) IS NOT NULL
-)	SELECT 
-			cod_uf, sg_uf, nm_uf, ano, 
-			nm_indicador, sigla_indicador, grupo, tipo, 
-			valor, mes_referencia, rank_br
-		FROM ranking_calc
-		WHERE UPPER(sg_uf) = ?
-		ORDER BY ano DESC, nm_indicador ASC
-	`
+)
+SELECT 
+    cod_uf, sg_uf, nm_uf, ano, 
+    nm_indicador, sigla_indicador, grupo, tipo, polaridade,
+    valor, mes_referencia, rank_br
+FROM ranking_calc
+WHERE UPPER(sg_uf) = ?
+ORDER BY ano DESC, nm_indicador ASC
+`
 	rowsUF, errUF := DuckDB.Query(queryUF, uf)
 	var indicadoresUF []map[string]interface{}
 	if errUF == nil {
 		defer rowsUF.Close()
 		for rowsUF.Next() {
-			var codUf, sgUf, nmUf, nmInd, siglaInd, grupo, tipo, mesRef string
+			var codUf, sgUf, nmUf, nmInd, siglaInd, grupo, tipo, polaridade, mesRef string
 			var ano int
 			var valor *float64
 			var rankBr *int
-			if err := rowsUF.Scan(&codUf, &sgUf, &nmUf, &ano, &nmInd, &siglaInd, &grupo, &tipo, &valor, &mesRef, &rankBr); err == nil {
+			if err := rowsUF.Scan(&codUf, &sgUf, &nmUf, &ano, &nmInd, &siglaInd, &grupo, &tipo, &polaridade, &valor, &mesRef, &rankBr); err == nil {
 				item := map[string]interface{}{
 					"cod_uf":          codUf,
 					"sg_uf":           sgUf,
@@ -142,6 +200,7 @@ WITH ranking_calc AS (
 					"sigla_indicador": siglaInd,
 					"grupo":           grupo,
 					"tipo":            tipo,
+					"polaridade":      polaridade,
 					"mes_referencia":  mesRef,
 					"valor":           valor,
 					"rank_br":         rankBr,
@@ -294,20 +353,20 @@ if strings.HasPrefix(sigla, "aba_em") || strings.HasPrefix(sigla, "tdi_em") ||
 		}
 	}
 
-	// Benchmark regional (NE e BR) no ano mais recente do indicador
+// Substitua a benchQuery em GetUFsRanking (ufs.go) por esta:
 	benchQuery := `
-		WITH ano_alvo AS (
+		WITH ano_reg AS (
 			SELECT COALESCE(
-				(SELECT MAX(CAST(ano AS INT)) FROM v_indicadores_ufs WHERE sigla_indicador = ? AND TRY_CAST(indicador AS DOUBLE) IS NOT NULL),
+				(SELECT CAST(ano AS INT) FROM v_indicadores_regioes WHERE sigla_indicador = ? AND CAST(ano AS INT) = (SELECT MAX(CAST(ano AS INT)) FROM v_indicadores_ufs WHERE sigla_indicador = ? AND TRY_CAST(indicador AS DOUBLE) IS NOT NULL) AND TRY_CAST(indicador AS DOUBLE) IS NOT NULL LIMIT 1),
 				(SELECT MAX(CAST(ano AS INT)) FROM v_indicadores_regioes WHERE sigla_indicador = ? AND TRY_CAST(indicador AS DOUBLE) IS NOT NULL)
 			) AS ano_escolhido
 		)
 		SELECT r.sg_regiao, r.nm_regiao, CAST(r.ano AS INT) as ano, TRY_CAST(r.indicador AS DOUBLE) as valor
 		FROM v_indicadores_regioes r
-		JOIN ano_alvo a ON CAST(r.ano AS INT) = a.ano_escolhido
+		JOIN ano_reg a ON CAST(r.ano AS INT) = a.ano_escolhido
 		WHERE r.sigla_indicador = ? AND r.sg_regiao IN ('NE', 'BR') AND TRY_CAST(r.indicador AS DOUBLE) IS NOT NULL
 	`
-	benchArgs := []interface{}{sigla, sigla, sigla}
+	benchArgs := []interface{}{sigla, sigla, sigla, sigla}
 
 	rowsBench, errBench := DuckDB.Query(benchQuery, benchArgs...)
 	var benchmarks []map[string]interface{}

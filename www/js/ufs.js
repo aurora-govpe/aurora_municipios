@@ -12,2483 +12,51 @@ window.moduloUFsIniciado = false;
 var chartModalUFsSerie = null;
 var chartModalUFsRanking = null;
 
-// Ajuste das subdimensões em metadadosSeguranca (ufs.js)
-const metadadosSeguranca = {
-    "tx_mvi": {
-        "cd_indicador": "tx_mvi",
-        "nm_indicador": "Taxa de Mortes Violentas Intencionais",
-        "subdimensao": "Policiamento Ostensivo e Criminalidade Letal",
-        "natureza": "Taxa por 100 mil hab.",
-        "formula_katex": "\\text{Taxa MVI} = \\left( \\frac{\\text{MVI}}{\\text{População Total}} \\right) \\times 100.000",
-        "referencia_analise": { "interpretacao": "Taxa padronizada de mortes violentas por 100 mil habitantes.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
-    },
-    "mvi": {
-        "cd_indicador": "mvi",
-        "nm_indicador": "Mortes Violentas Intencionais",
-        "subdimensao": "Policiamento Ostensivo e Criminalidade Letal",
-        "natureza": "Vítimas (Qtd)",
-        "formula_katex": "\\text{MVI} = \\sum \\text{Crimes Violentos Letais Intencionais}",
-        "referencia_analise": { "interpretacao": "Total absoluto de mortes violentas intencionais.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
-    },
-    "tx_cvp": {
-        "cd_indicador": "tx_cvp",
-        "nm_indicador": "Taxa de Crimes Violentos Contra o Patrimônio",
-        "subdimensao": "Policiamento Ostensivo e Crimes Patrimoniais",
-        "natureza": "Taxa por 100 mil hab.",
-        "formula_katex": "\\text{Taxa CVP} = \\left( \\frac{\\text{CVP}}{\\text{População Total}} \\right) \\times 100.000",
-        "referencia_analise": { "interpretacao": "Taxa de crimes contra o patrimônio com violência.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
-    },
-    "n_ab_cvp": {
-        "cd_indicador": "n_ab_cvp",
-        "nm_indicador": "Crimes Violentos Contra o Patrimônio",
-        "subdimensao": "Policiamento Ostensivo e Crimes Patrimoniais",
-        "natureza": "Ocorrências (Qtd)",
-        "formula_katex": "\\text{CVP} = \\sum \\text{Roubos com grave ameaça/violência}",
-        "referencia_analise": { "interpretacao": "Volume absoluto de roubos registrados.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
-    },
-    "tx_rfcelular": {
-        "cd_indicador": "tx_rfcelular",
-        "nm_indicador": "Taxa de Roubo e Furto de Celulares",
-        "subdimensao": "Policiamento Ostensivo e Crimes Patrimoniais",
-        "natureza": "Taxa por 100 mil hab.",
-        "formula_katex": "\\text{Taxa RF Celular} = \\left( \\frac{\\text{RF Celulares}}{\\text{População Total}} \\right) \\times 100.000",
-        "referencia_analise": { "interpretacao": "Frequência de celulares subtraídos por 100 mil hab.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
-    },
-    "rf_celular": {
-        "cd_indicador": "rf_celular",
-        "nm_indicador": "Roubo e Furto de Celulares",
-        "subdimensao": "Policiamento Ostensivo e Crimes Patrimoniais",
-        "natureza": "Ocorrências (Qtd)",
-        "formula_katex": "\\text{RF Celulares} = \\sum (\\text{Roubos} + \\text{Furtos})",
-        "referencia_analise": { "interpretacao": "Total de aparelhos celulares roubados ou furtados.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
-    },
-    "tx_feminicidio": {
-        "cd_indicador": "tx_feminicidio",
-        "nm_indicador": "Taxa de Feminicídio",
-        "subdimensao": "Prevenção Social e Proteção às Mulheres",
-        "natureza": "Taxa por 100 mil hab.",
-        "formula_katex": "\\text{Taxa Feminicídio} = \\left( \\frac{\\text{Feminicídios}}{\\text{Pop. Feminina}} \\right) \\times 100.000",
-        "referencia_analise": { "interpretacao": "Taxa por 100 mil mulheres residentes.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
-    },
-    "feminicidio": {
-        "cd_indicador": "feminicidio",
-        "nm_indicador": "Feminicídio",
-        "subdimensao": "Prevenção Social e Proteção às Mulheres",
-        "natureza": "Ocorrências (Qtd)",
-        "formula_katex": "\\text{Feminicídio} = \\sum \\text{Mortes por razão de gênero}",
-        "referencia_analise": { "interpretacao": "Total absoluto de feminicídios.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
-    },
-    "pop_carceraria": {
-        "cd_indicador": "pop_carceraria",
-        "nm_indicador": "População Carcerária",
-        "subdimensao": "Custódia, Sistema Prisional e Ressocialização",
-        "natureza": "Detentos (Qtd)",
-        "formula_katex": "\\text{PopCarcerária} = \\sum \\text{Pessoas privadas de liberdade}",
-        "referencia_analise": { "interpretacao": "Total de internos no sistema penitenciário.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
-    },
-    "pop_socioeducanda": {
-        "cd_indicador": "pop_socioeducanda",
-        "nm_indicador": "População Socioeducanda",
-        "subdimensao": "Custódia, Sistema Prisional e Ressocialização",
-        "natureza": "Adolescentes (Qtd)",
-        "formula_katex": "\\text{PopSocioeducanda} = \\sum \\text{Adolescentes em medida socioeducativa}",
-        "referencia_analise": { "interpretacao": "Total em regime de internação ou semiliberdade.", "direcao_desejavel": "Redução / Quanto menor, melhor" }
-    }
-};
+// Dicionário Unificado de Metadados para Indicadores das UFs (carregado via API/JSON)
+var dicionarioMetadadosUFs = {};
 
+// Lista oficial das UFs do Nordeste
+const UFS_NORDESTE = ["AL", "BA", "CE", "MA", "PB", "PE", "PI", "RN", "SE"];
 
-// Dicionário Unificado de Metadados para Indicadores das UFs
-const dicionarioMetadadosUFs = {
-    "Educação": {
-        "cd_indicador": "desp_educacao",
-        "nm_indicador": "Educação",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespEducação} = \\sum \\text{Empenhos liquidados na Função 12 - Educação}",
-        "referencia_analise": {
-            "interpretacao": "Volume total de despesas empenhadas e executadas na área de educação pública municipal no exercício.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mede a capacidade de investimento e custeio na rede municipal de ensino básico, creches e infraestrutura escolar."
-        }
-    },
-    "desp_educacao": {
-        "cd_indicador": "desp_educacao",
-        "nm_indicador": "Educação",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespEducação} = \\sum \\text{Empenhos liquidados na Função 12 - Educação}",
-        "referencia_analise": {
-            "interpretacao": "Volume total de despesas empenhadas e executadas na área de educação pública municipal no exercício.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mede a capacidade de investimento e custeio na rede municipal de ensino básico, creches e infraestrutura escolar."
-        }
-    },
-    "Saúde": {
-        "cd_indicador": "desp_saude",
-        "nm_indicador": "Saúde",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespSaúde} = \\sum \\text{Empenhos liquidados na Função 10 - Saúde}",
-        "referencia_analise": {
-            "interpretacao": "Volume total de recursos alocados na rede pública de saúde (Atenção Primária, Média e Alta Complexidade).",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mapeia o esforço orçamentário para manutenção de postos de saúde, UPAs, insumos médicos e equipes de estratégia da família."
-        }
-    },
-    "desp_saude": {
-        "cd_indicador": "desp_saude",
-        "nm_indicador": "Saúde",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespSaúde} = \\sum \\text{Empenhos liquidados na Função 10 - Saúde}",
-        "referencia_analise": {
-            "interpretacao": "Volume total de recursos alocados na rede pública de saúde (Atenção Primária, Média e Alta Complexidade).",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mapeia o esforço orçamentário para manutenção de postos de saúde, UPAs, insumos médicos e equipes de estratégia da família."
-        }
-    },
-    "Despesas de Capital - Emp.": {
-        "cd_indicador": "desp_capital_emp",
-        "nm_indicador": "Despesas de Capital - Emp.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespCapital} = \\sum \\text{Empenhos em Investimentos, Inversões Financeiras e Amortização de Dívida}",
-        "referencia_analise": {
-            "interpretacao": "Total de recursos comprometidos com obras, aquisição de equipamentos e investimentos estruturantes.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Indica o dinamismo de investimentos do município para expansão e melhoria dos equipamentos públicos."
-        }
-    },
-    "desp_capital_emp": {
-        "cd_indicador": "desp_capital_emp",
-        "nm_indicador": "Despesas de Capital - Emp.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespCapital} = \\sum \\text{Empenhos em Investimentos, Inversões Financeiras e Amortização de Dívida}",
-        "referencia_analise": {
-            "interpretacao": "Total de recursos comprometidos com obras, aquisição de equipamentos e investimentos estruturantes.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Indica o dinamismo de investimentos do município para expansão e melhoria dos equipamentos públicos."
-        }
-    },
-    "Transporte": {
-        "cd_indicador": "desp_transporte",
-        "nm_indicador": "Transporte",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespTransporte} = \\sum \\text{Empenhos liquidados na Função 26 - Transporte}",
-        "referencia_analise": {
-            "interpretacao": "Investimento e custeio na infraestrutura de vias públicas, mobilidade urbana e sistemas de transporte.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Orienta ações de pavimentação, manutenção malha viária, sinalização e subsídios ao transporte público."
-        }
-    },
-    "desp_transporte": {
-        "cd_indicador": "desp_transporte",
-        "nm_indicador": "Transporte",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespTransporte} = \\sum \\text{Empenhos liquidados na Função 26 - Transporte}",
-        "referencia_analise": {
-            "interpretacao": "Investimento e custeio na infraestrutura de vias públicas, mobilidade urbana e sistemas de transporte.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Orienta ações de pavimentação, manutenção malha viária, sinalização e subsídios ao transporte público."
-        }
-    },
-    "Urbanismo": {
-        "cd_indicador": "desp_urbanismo",
-        "nm_indicador": "Urbanismo",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespUrbanismo} = \\sum \\text{Empenhos liquidados na Função 15 - Urbanismo}",
-        "referencia_analise": {
-            "interpretacao": "Gastos destinados à infraestrutura urbana, iluminação pública, praças e limpeza/ordenação da cidade.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Dimensiona a capacidade municipal em manter espaços públicos adequados e investir na melhoria da qualidade de vida urbana."
-        }
-    },
-    "desp_urbanismo": {
-        "cd_indicador": "desp_urbanismo",
-        "nm_indicador": "Urbanismo",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespUrbanismo} = \\sum \\text{Empenhos liquidados na Função 15 - Urbanismo}",
-        "referencia_analise": {
-            "interpretacao": "Gastos destinados à infraestrutura urbana, iluminação pública, praças e limpeza/ordenação da cidade.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Dimensiona a capacidade municipal em manter espaços públicos adequados e investir na melhoria da qualidade de vida urbana."
-        }
-    },
-    "Habitação": {
-        "cd_indicador": "desp_habitacao",
-        "nm_indicador": "Habitação",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespHabitação} = \\sum \\text{Empenhos liquidados na Função 16 - Habitação}",
-        "referencia_analise": {
-            "interpretacao": "Despesas destinadas à promoção de habitação social, regularização fundiária e infraestrutura habitacional.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mede o investimento em moradia digna e redução do déficit habitacional no município."
-        }
-    },
-    "desp_habitacao": {
-        "cd_indicador": "desp_habitacao",
-        "nm_indicador": "Habitação",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespHabitação} = \\sum \\text{Empenhos liquidados na Função 16 - Habitação}",
-        "referencia_analise": {
-            "interpretacao": "Despesas destinadas à promoção de habitação social, regularização fundiária e infraestrutura habitacional.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mede o investimento em moradia digna e redução do déficit habitacional no município."
-        }
-    },
-    "Segurança Pública": {
-        "cd_indicador": "desp_seguranca_publica",
-        "nm_indicador": "Segurança Pública",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespSegurança} = \\sum \\text{Empenhos liquidados na Função 06 - Segurança Pública}",
-        "referencia_analise": {
-            "interpretacao": "Recursos empenhados na guarda municipal, videomonitoramento, prevenção à violência e defesa civil.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Avalia o aporte financeiro municipal para auxílio na segurança e proteção comunitária."
-        }
-    },
-    "desp_seguranca_publica": {
-        "cd_indicador": "desp_seguranca_publica",
-        "nm_indicador": "Segurança Pública",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespSegurança} = \\sum \\text{Empenhos liquidados na Função 06 - Segurança Pública}",
-        "referencia_analise": {
-            "interpretacao": "Recursos empenhados na guarda municipal, videomonitoramento, prevenção à violência e defesa civil.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Avalia o aporte financeiro municipal para auxílio na segurança e proteção comunitária."
-        }
-    },
-    "Ciência e Tecnologia": {
-        "cd_indicador": "desp_ciencia_tecnologia",
-        "nm_indicador": "Ciência e Tecnologia",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespCiênciaTecnologia} = \\sum \\text{Empenhos liquidados na Função 19 - Ciência e Tecnologia}",
-        "referencia_analise": {
-            "interpretacao": "Investimentos em inovação tecnológica, inclusão digital, parques tecnológicos e pesquisa.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mede o incentivo municipal ao ecossistema de inovação e modernização tecnológica."
-        }
-    },
-    "desp_ciencia_tecnologia": {
-        "cd_indicador": "desp_ciencia_tecnologia",
-        "nm_indicador": "Ciência e Tecnologia",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespCiênciaTecnologia} = \\sum \\text{Empenhos liquidados na Função 19 - Ciência e Tecnologia}",
-        "referencia_analise": {
-            "interpretacao": "Investimentos em inovação tecnológica, inclusão digital, parques tecnológicos e pesquisa.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mede o incentivo municipal ao ecossistema de inovação e modernização tecnológica."
-        }
-    },
-    "Despesas Correntes - Liq.": {
-        "cd_indicador": "desp_correntes_liq",
-        "nm_indicador": "Despesas Correntes - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespCorrentes}_{Liq} = \\sum \\text{Despesas liquidadas de Pessoal, Encargos e Custeio Operacional}",
-        "referencia_analise": {
-            "interpretacao": "Total de gastos rotineiros com manutenção e funcionamento da máquina pública municipal.",
-            "limiar_corte": "Compatível com a arrecadação.",
-            "direcao_desejavel": "Redução desejável",
-            "impacto_planejamento": "Reflete o custo fixo operacional para manutenção de serviços públicos contínuos."
-        }
-    },
-    "desp_correntes_liq": {
-        "cd_indicador": "desp_correntes_liq",
-        "nm_indicador": "Despesas Correntes - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespCorrentes}_{Liq} = \\sum \\text{Despesas liquidadas de Pessoal, Encargos e Custeio Operacional}",
-        "referencia_analise": {
-            "interpretacao": "Total de gastos rotineiros com manutenção e funcionamento da máquina pública municipal.",
-            "limiar_corte": "Compatível com a arrecadação.",
-            "direcao_desejavel": "Redução desejável",
-            "impacto_planejamento": "Reflete o custo fixo operacional para manutenção de serviços públicos contínuos."
-        }
-    },
-    "Despesas de Pessoal - Liq.": {
-        "cd_indicador": "desp_pessoal_liq",
-        "nm_indicador": "Despesas de Pessoal - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespPessoal}_{Liq} = \\sum \\text{Despesas liquidadas com Pessoal e Encargos Sociais}",
-        "referencia_analise": {
-            "interpretacao": "Total de recursos aplicados diretamente no pagamento de vencimentos, subsídios e encargos de servidores ativos, inativos e pensionistas.",
-            "limiar_corte": "Dentro dos limites da LRF.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mede o peso da folha de pagamento sobre a capacidade de custeio e investimento da prefeitura."
-        }
-    },
-    "desp_pessoal_liq": {
-        "cd_indicador": "desp_pessoal_liq",
-        "nm_indicador": "Despesas de Pessoal - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespPessoal}_{Liq} = \\sum \\text{Despesas liquidadas com Pessoal e Encargos Sociais}",
-        "referencia_analise": {
-            "interpretacao": "Total de recursos aplicados diretamente no pagamento de vencimentos, subsídios e encargos de servidores ativos, inativos e pensionistas.",
-            "limiar_corte": "Dentro dos limites da LRF.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mede o peso da folha de pagamento sobre a capacidade de custeio e investimento da prefeitura."
-        }
-    },
-    "Investimentos - Liq.": {
-        "cd_indicador": "desp_investimentos_liq",
-        "nm_indicador": "Investimentos - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{Investimentos}_{Liq} = \\sum \\text{Despesas liquidadas com planejamento/execução de obras e instalações}",
-        "referencia_analise": {
-            "interpretacao": "Despesas efetivamente liquidadas direcionadas à ampliação do patrimônio público e benfeitorias físicas.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Indica a capacidade efetiva do município de transformar orçamento em melhorias físicas duradouras."
-        }
-    },
-    "desp_investimentos_liq": {
-        "cd_indicador": "desp_investimentos_liq",
-        "nm_indicador": "Investimentos - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{Investimentos}_{Liq} = \\sum \\text{Despesas liquidadas com planejamento/execução de obras e instalações}",
-        "referencia_analise": {
-            "interpretacao": "Despesas efetivamente liquidadas direcionadas à ampliação do patrimônio público e benfeitorias físicas.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Indica a capacidade efetiva do município de transformar orçamento em melhorias físicas duradouras."
-        }
-    },
-    "Inversões - Liq.": {
-        "cd_indicador": "desp_inversoes_liq",
-        "nm_indicador": "Inversões - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{Inversões}_{Liq} = \\sum \\text{Despesas liquidadas com aquisição de imóveis e bens de capital já em uso}",
-        "referencia_analise": {
-            "interpretacao": "Aplicações de capital destinadas à aquisição de imóveis ou bens em utilização e constituição/aumento de capital de empresas.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Indica a expansão patrimonial do município via aquisições estratégicas."
-        }
-    },
-    "desp_inversoes_liq": {
-        "cd_indicador": "desp_inversoes_liq",
-        "nm_indicador": "Inversões - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{Inversões}_{Liq} = \\sum \\text{Despesas liquidadas com aquisição de imóveis e bens de capital já em uso}",
-        "referencia_analise": {
-            "interpretacao": "Aplicações de capital destinadas à aquisição de imóveis ou bens em utilização e constituição/aumento de capital de empresas.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Indica a expansão patrimonial do município via aquisições estratégicas."
-        }
-    },
-    "Amortização da Dívida - Liq.": {
-        "cd_indicador": "desp_amortizacao_divida_liq",
-        "nm_indicador": "Amortização da Dívida - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{AmortDívida}_{Liq} = \\sum \\text{Despesas liquidadas com amortização da dívida pública}",
-        "referencia_analise": {
-            "interpretacao": "Montante liquidado para pagamento do principal de dívidas fundadas ou contratuais.",
-            "limiar_corte": "Capacidade de pagamento.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mapeia o comprometimento de recursos para redução do passivo financeiro municipal."
-        }
-    },
-    "desp_amortizacao_divida_liq": {
-        "cd_indicador": "desp_amortizacao_divida_liq",
-        "nm_indicador": "Amortização da Dívida - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{AmortDívida}_{Liq} = \\sum \\text{Despesas liquidadas com amortização da dívida pública}",
-        "referencia_analise": {
-            "interpretacao": "Montante liquidado para pagamento do principal de dívidas fundadas ou contratuais.",
-            "limiar_corte": "Capacidade de pagamento.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mapeia o comprometimento de recursos para redução do passivo financeiro municipal."
-        }
-    },
-    "Juros e Encargos - Liq.": {
-        "cd_indicador": "desp_juros_encargos_liq",
-        "nm_indicador": "Juros e Encargos - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{JurosEncargos}_{Liq} = \\sum \\text{Despesas liquidadas com juros e encargos de operações de crédito}",
-        "referencia_analise": {
-            "interpretacao": "Custo financeiro associado ao serviço da dívida pública municipal.",
-            "limiar_corte": "Sustentabilidade da dívida.",
-            "direcao_desejavel": "Redução desejável",
-            "impacto_planejamento": "Mede a parcela do orçamento drenada por custos de endividamento."
-        }
-    },
-    "desp_juros_encargos_liq": {
-        "cd_indicador": "desp_juros_encargos_liq",
-        "nm_indicador": "Juros e Encargos - Liq.",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{JurosEncargos}_{Liq} = \\sum \\text{Despesas liquidadas com juros e encargos de operações de crédito}",
-        "referencia_analise": {
-            "interpretacao": "Custo financeiro associado ao serviço da dívida pública municipal.",
-            "limiar_corte": "Sustentabilidade da dívida.",
-            "direcao_desejavel": "Redução desejável",
-            "impacto_planejamento": "Mede a parcela do orçamento drenada por custos de endividamento."
-        }
-    },
-    "Receita Corrente Líquida": {
-        "cd_indicador": "rec_corrente_liquida",
-        "nm_indicador": "Receita Corrente Líquida",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{RCL} = \\text{Receitas Correntes} - \\text{Deduções Constitucionais/Legais}",
-        "referencia_analise": {
-            "interpretacao": "Somatório das receitas tributárias, de contribuições, patrimoniais, industriais, agropecuárias, de serviços e transferências correntes, deduzidas as transferências legais.",
-            "limiar_corte": "Capacidade arrecadatória.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Métrica central da LRF utilizada como base de cálculo para limites de pessoal, endividamento e garantias fiscais."
-        }
-    },
-    "rec_corrente_liquida": {
-        "cd_indicador": "rec_corrente_liquida",
-        "nm_indicador": "Receita Corrente Líquida",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{RCL} = \\text{Receitas Correntes} - \\text{Deduções Constitucionais/Legais}",
-        "referencia_analise": {
-            "interpretacao": "Somatório das receitas tributárias, de contribuições, patrimoniais, industriais, agropecuárias, de serviços e transferências correntes, deduzidas as transferências legais.",
-            "limiar_corte": "Capacidade arrecadatória.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Métrica central da LRF utilizada como base de cálculo para limites de pessoal, endividamento e garantias fiscais."
-        }
-    },
-    "Receitas Realizadas": {
-        "cd_indicador": "rec_realizadas",
-        "nm_indicador": "Receitas Realizadas",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{RecRealizadas} = \\sum \\text{Receitas efetivamente arrecadadas no exercício}",
-        "referencia_analise": {
-            "interpretacao": "Total geral de recursos que efetivamente deram entrada no cofre público municipal.",
-            "limiar_corte": "Execução orçamentária.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Avalia o cumprimento das metas da Lei Orçamentária Anual (LOA) e o grau de arrecadação do município."
-        }
-    },
-    "rec_realizadas": {
-        "cd_indicador": "rec_realizadas",
-        "nm_indicador": "Receitas Realizadas",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{RecRealizadas} = \\sum \\text{Receitas efetivamente arrecadadas no exercício}",
-        "referencia_analise": {
-            "interpretacao": "Total geral de recursos que efetivamente deram entrada no cofre público municipal.",
-            "limiar_corte": "Execução orçamentária.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Avalia o cumprimento das metas da Lei Orçamentária Anual (LOA) e o grau de arrecadação do município."
-        }
-    },
-    "Receitas de Capital": {
-        "cd_indicador": "rec_capital",
-        "nm_indicador": "Receitas de Capital",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{RecCapital} = \\sum (\\text{Operações de Crédito} + \\text{Alien. Bens} + \\text{Transf. Capital})",
-        "referencia_analise": {
-            "interpretacao": "Receitas oriundas de operações financeiras, alienação de patrimônio público ou transferências para investimentos.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Financia a execução de novos investimentos e obras públicas de longo prazo."
-        }
-    },
-    "rec_capital": {
-        "cd_indicador": "rec_capital",
-        "nm_indicador": "Receitas de Capital",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{RecCapital} = \\sum (\\text{Operações de Crédito} + \\text{Alien. Bens} + \\text{Transf. Capital})",
-        "referencia_analise": {
-            "interpretacao": "Receitas oriundas de operações financeiras, alienação de patrimônio público ou transferências para investimentos.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Financia a execução de novos investimentos e obras públicas de longo prazo."
-        }
-    },
-    "Receitas de Impostos": {
-        "cd_indicador": "rec_impostos",
-        "nm_indicador": "Receitas de Impostos",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{RecImpostos} = \\text{IPTU} + \\text{ISS} + \\text{ITBI} + \\text{IRRF}",
-        "referencia_analise": {
-            "interpretacao": "Volume arrecadado diretamente com tributos municipais próprios.",
-            "limiar_corte": "Arrecadação própria.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Mede o grau de autonomia financeira do município em relação a repasses de outras esferas federativas."
-        }
-    },
-    "rec_impostos": {
-        "cd_indicador": "rec_impostos",
-        "nm_indicador": "Receitas de Impostos",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{RecImpostos} = \\text{IPTU} + \\text{ISS} + \\text{ITBI} + \\text{IRRF}",
-        "referencia_analise": {
-            "interpretacao": "Volume arrecadado diretamente com tributos municipais próprios.",
-            "limiar_corte": "Arrecadação própria.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Mede o grau de autonomia financeira do município em relação a repasses de outras esferas federativas."
-        }
-    },
-    "Transf. União (Capital)": {
-        "cd_indicador": "rec_transf_uniao_cap",
-        "nm_indicador": "Transf. União (Capital)",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{TransfUnião}_{Cap} = \\sum \\text{Repasses federais vinculados a investimentos e capital}",
-        "referencia_analise": {
-            "interpretacao": "Montante de recursos repassados pelo Governo Federal destinados especificamente a investimentos estruturais.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Avalia a capacidade de captação de convênios federais e emendas parlamentares de investimento."
-        }
-    },
-    "rec_transf_uniao_cap": {
-        "cd_indicador": "rec_transf_uniao_cap",
-        "nm_indicador": "Transf. União (Capital)",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{TransfUnião}_{Cap} = \\sum \\text{Repasses federais vinculados a investimentos e capital}",
-        "referencia_analise": {
-            "interpretacao": "Montante de recursos repassados pelo Governo Federal destinados especificamente a investimentos estruturais.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Avalia a capacidade de captação de convênios federais e emendas parlamentares de investimento."
-        }
-    },
-    "Transf. União (Corrente)": {
-        "cd_indicador": "rec_transf_uniao_corr",
-        "nm_indicador": "Transf. União (Corrente)",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{TransfUnião}_{Corr} = \\sum \\text{Repasses federais para custeio (FPM, SUS, FNAS, etc.)}",
-        "referencia_analise": {
-            "interpretacao": "Transferências correntes oriundas da União para manutenção de serviços públicos operacionais.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Indica a dependência do fundo de participação (FPM) e blocos de financiamento do SUS/FNAS para custeio de serviços."
-        }
-    },
-    "rec_transf_uniao_corr": {
-        "cd_indicador": "rec_transf_uniao_corr",
-        "nm_indicador": "Transf. União (Corrente)",
-        "subdimensao": "Receitas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{TransfUnião}_{Corr} = \\sum \\text{Repasses federais para custeio (FPM, SUS, FNAS, etc.)}",
-        "referencia_analise": {
-            "interpretacao": "Transferências correntes oriundas da União para manutenção de serviços públicos operacionais.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Indica a dependência do fundo de participação (FPM) e blocos de financiamento do SUS/FNAS para custeio de serviços."
-        }
-    },
-    "Vinculação - Educação": {
-        "cd_indicador": "vinc_educacao",
-        "nm_indicador": "Vinculação - Educação",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Percentual",
-        "formula_katex": "\\text{VincEducação} = \\left( \\frac{\\text{Aplicação em MDE}}{\\text{Receita de Impostos e Transf.}} \\right) \\times 100",
-        "referencia_analise": {
-            "interpretacao": "Percentual da receita tributária e de transferências aplicados na Manutenção e Desenvolvimento do Ensino (MDE).",
-            "limiar_corte": ">= 25%",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Monitora o cumprimento do mandamento constitucional de aplicação mínima de 25% na educação."
-        }
-    },
-    "vinc_educacao": {
-        "cd_indicador": "vinc_educacao",
-        "nm_indicador": "Vinculação - Educação",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Percentual",
-        "formula_katex": "\\text{VincEducação} = \\left( \\frac{\\text{Aplicação em MDE}}{\\text{Receita de Impostos e Transf.}} \\right) \\times 100",
-        "referencia_analise": {
-            "interpretacao": "Percentual da receita tributária e de transferências aplicados na Manutenção e Desenvolvimento do Ensino (MDE).",
-            "limiar_corte": ">= 25%",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Monitora o cumprimento do mandamento constitucional de aplicação mínima de 25% na educação."
-        }
-    },
-    "Vinculação - Saúde": {
-        "cd_indicador": "vinc_saude",
-        "nm_indicador": "Vinculação - Saúde",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Percentual",
-        "formula_katex": "\\text{VincSaúde} = \\left( \\frac{\\text{Aplicação em Ações de Saúde}}{\\text{Receita de Impostos e Transf.}} \\right) \\times 100",
-        "referencia_analise": {
-            "interpretacao": "Percentual arrecadado aplicado em Ações e Serviços Públicos de Saúde (ASPS).",
-            "limiar_corte": ">= 15%",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Garante o cumprimento do piso constitucional de 15% na saúde de acordo com a LC 141/2012."
-        }
-    },
-    "vinc_saude": {
-        "cd_indicador": "vinc_saude",
-        "nm_indicador": "Vinculação - Saúde",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Percentual",
-        "formula_katex": "\\text{VincSaúde} = \\left( \\frac{\\text{Aplicação em Ações de Saúde}}{\\text{Receita de Impostos e Transf.}} \\right) \\times 100",
-        "referencia_analise": {
-            "interpretacao": "Percentual arrecadado aplicado em Ações e Serviços Públicos de Saúde (ASPS).",
-            "limiar_corte": ">= 15%",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Garante o cumprimento do piso constitucional de 15% na saúde de acordo com a LC 141/2012."
-        }
-    },
-    "Resultado Fiscal": {
-        "cd_indicador": "resultado_fiscal",
-        "nm_indicador": "Resultado Fiscal",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{ResFiscal} = \\text{Receitas Totais} - \\text{Despesas Totais}",
-        "referencia_analise": {
-            "interpretacao": "Avalia o desempenho financeiro global da gestão municipal entre receitas e despesas.",
-            "limiar_corte": ">= R$ 0,00",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Indica a suficiência financeira para manutenção do equilíbrio das contas públicas."
-        }
-    },
-    "resultado_fiscal": {
-        "cd_indicador": "resultado_fiscal",
-        "nm_indicador": "Resultado Fiscal",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{ResFiscal} = \\text{Receitas Totais} - \\text{Despesas Totais}",
-        "referencia_analise": {
-            "interpretacao": "Avalia o desempenho financeiro global da gestão municipal entre receitas e despesas.",
-            "limiar_corte": ">= R$ 0,00",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Indica a suficiência financeira para manutenção do equilíbrio das contas públicas."
-        }
-    },
-    "Resultado Orçamentário": {
-        "cd_indicador": "resultado_orcamentario",
-        "nm_indicador": "Resultado Orçamentário",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{ResOrçamentário} = \\text{Receitas Arrecadadas} - \\text{Despesas Empenhadas}",
-        "referencia_analise": {
-            "interpretacao": "Diferença entre o total de receitas arrecadadas e despesas executadas no período.",
-            "limiar_corte": ">= R$ 0,00",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Mede o superávit ou déficit orçamentário do município, refletindo o equilíbrio financeiro da gestão."
-        }
-    },
-    "resultado_orcamentario": {
-        "cd_indicador": "resultado_orcamentario",
-        "nm_indicador": "Resultado Orçamentário",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{ResOrçamentário} = \\text{Receitas Arrecadadas} - \\text{Despesas Empenhadas}",
-        "referencia_analise": {
-            "interpretacao": "Diferença entre o total de receitas arrecadadas e despesas executadas no período.",
-            "limiar_corte": ">= R$ 0,00",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Mede o superávit ou déficit orçamentário do município, refletindo o equilíbrio financeiro da gestão."
-        }
-    },
-    "Resultado Orçamentário Relativo": {
-        "cd_indicador": "resultado_orcamentario_relativo",
-        "nm_indicador": "Resultado Orçamentário Relativo",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Percentual",
-        "formula_katex": "\\text{ResOrçRelativo} = \\left( \\frac{\\text{Receitas} - \\text{Despesas}}{\\text{Receita Corrente Líquida}} \\right) \\times 100",
-        "referencia_analise": {
-            "interpretacao": "Proporção do superávit ou déficit orçamentário em relação à Receita Corrente Líquida.",
-            "limiar_corte": ">= 0%",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Permite comparar a saúde fiscal entre municípios de diferentes portes."
-        }
-    },
-    "resultado_orcamentario_relativo": {
-        "cd_indicador": "resultado_orcamentario_relativo",
-        "nm_indicador": "Resultado Orçamentário Relativo",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Percentual",
-        "formula_katex": "\\text{ResOrçRelativo} = \\left( \\frac{\\text{Receitas} - \\text{Despesas}}{\\text{Receita Corrente Líquida}} \\right) \\times 100",
-        "referencia_analise": {
-            "interpretacao": "Proporção do superávit ou déficit orçamentário em relação à Receita Corrente Líquida.",
-            "limiar_corte": ">= 0%",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Permite comparar a saúde fiscal entre municípios de diferentes portes."
-        }
-    },
-    "Resultado Orçamentário per capita": {
-        "cd_indicador": "resultado_orcamentario_per_capita",
-        "nm_indicador": "Resultado Orçamentário per capita",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{ResOrçPerCapita} = \\frac{\\text{Resultado Orçamentário}}{\\text{População Total}}",
-        "referencia_analise": {
-            "interpretacao": "Saldo orçamentário médio gerado por habitante do município.",
-            "limiar_corte": ">= R$ 0,00",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Mede o impacto relativo do resultado orçamentário sobre a população residente."
-        }
-    },
-    "resultado_orcamentario_per_capita": {
-        "cd_indicador": "resultado_orcamentario_per_capita",
-        "nm_indicador": "Resultado Orçamentário per capita",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{ResOrçPerCapita} = \\frac{\\text{Resultado Orçamentário}}{\\text{População Total}}",
-        "referencia_analise": {
-            "interpretacao": "Saldo orçamentário médio gerado por habitante do município.",
-            "limiar_corte": ">= R$ 0,00",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Mede o impacto relativo do resultado orçamentário sobre a população residente."
-        }
-    },
-    "Resultado Primário": {
-        "cd_indicador": "resultado_primario",
-        "nm_indicador": "Resultado Primário",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{ResPrimário} = \\text{Receitas Primárias} - \\text{Despesas Primárias}",
-        "referencia_analise": {
-            "interpretacao": "Mede a capacidade do município de honrar suas despesas correntes e de capital sem considerar receitas e despesas financeiras (juros e amortizações).",
-            "limiar_corte": ">= R$ 0,00",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Avalia a sustentabilidade das contas públicas e a capacidade de geração de caixa próprio."
-        }
-    },
-    "resultado_primario": {
-        "cd_indicador": "resultado_primario",
-        "nm_indicador": "Resultado Primário",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{ResPrimário} = \\text{Receitas Primárias} - \\text{Despesas Primárias}",
-        "referencia_analise": {
-            "interpretacao": "Mede a capacidade do município de honrar suas despesas correntes e de capital sem considerar receitas e despesas financeiras (juros e amortizações).",
-            "limiar_corte": ">= R$ 0,00",
-            "direcao_desejavel": "Aumento desejável",
-            "impacto_planejamento": "Avalia a sustentabilidade das contas públicas e a capacidade de geração de caixa próprio."
-        }
-    },
-    "Resultado Nominal": {
-        "cd_indicador": "resultado_nominal",
-        "nm_indicador": "Resultado Nominal",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{ResNominal} = \\Delta \\text{Dívida Consolidada Líquida}",
-        "referencia_analise": {
-            "interpretacao": "Mede a variação total do endividamento líquido do município ao longo do exercício fiscal, incluindo juros e correção monetária.",
-            "limiar_corte": "<= R$ 0,00",
-            "direcao_desejavel": "Redução desejável",
-            "impacto_planejamento": "Indica o crescimento ou redução do estoque total da dívida líquida da prefeitura."
-        }
-    },
-    "resultado_nominal": {
-        "cd_indicador": "resultado_nominal",
-        "nm_indicador": "Resultado Nominal",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{ResNominal} = \\Delta \\text{Dívida Consolidada Líquida}",
-        "referencia_analise": {
-            "interpretacao": "Mede a variação total do endividamento líquido do município ao longo do exercício fiscal, incluindo juros e correção monetária.",
-            "limiar_corte": "<= R$ 0,00",
-            "direcao_desejavel": "Redução desejável",
-            "impacto_planejamento": "Indica o crescimento ou redução do estoque total da dívida líquida da prefeitura."
-        }
-    },
-    "DTP/RCL": {
-        "cd_indicador": "dtp_rcl",
-        "nm_indicador": "Pessoal",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Percentual",
-        "formula_katex": "\\text{DTP/RCL} = \\left( \\frac{\\text{Despesa Total com Pessoal}}{\\text{Receita Corrente Líquida}} \\right) \\times 100",
-        "referencia_analise": {
-            "interpretacao": "Proporção do comprometimento da Receita Corrente Líquida com despesas de pessoal do Poder Executivo.",
-            "limiar_corte": "< 54%",
-            "direcao_desejavel": "Redução desejável",
-            "impacto_planejamento": "Monitoramento dos limites legal (54%), prudencial (51,3%) e de alerta (48,6%) estabelecidos pela LRF para evitar vedações de contratação e reajuste."
-        }
-    },
-    "dtp_rcl": {
-        "cd_indicador": "dtp_rcl",
-        "nm_indicador": "Pessoal",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Percentual",
-        "formula_katex": "\\text{DTP/RCL} = \\left( \\frac{\\text{Despesa Total com Pessoal}}{\\text{Receita Corrente Líquida}} \\right) \\times 100",
-        "referencia_analise": {
-            "interpretacao": "Proporção do comprometimento da Receita Corrente Líquida com despesas de pessoal do Poder Executivo.",
-            "limiar_corte": "< 54%",
-            "direcao_desejavel": "Redução desejável",
-            "impacto_planejamento": "Monitoramento dos limites legal (54%), prudencial (51,3%) e de alerta (48,6%) estabelecidos pela LRF para evitar vedações de contratação e reajuste."
-        }
-    },
-    "Dívida Consolidada Líquida": {
-        "cd_indicador": "divida_consolidada_liquida",
-        "nm_indicador": "Dívida Consolidada Líquida",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DCL} = \\text{Dívida Consolidada Bruta} - \\text{Ativos Financeiros e Haveres}",
-        "referencia_analise": {
-            "interpretacao": "Montante apurado da dívida do município descontadas as disponibilidades de caixa e haveres financeiros.",
-            "limiar_corte": "< 120% da RCL",
-            "direcao_desejavel": "Redução desejável",
-            "impacto_planejamento": "Determina a solvência de longo prazo do município e o cumprimento dos limites definidos pelo Senado Federal."
-        }
-    },
-    "divida_consolidada_liquida": {
-        "cd_indicador": "divida_consolidada_liquida",
-        "nm_indicador": "Dívida Consolidada Líquida",
-        "subdimensao": "Gestão e Equilíbrio Fiscal",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DCL} = \\text{Dívida Consolidada Bruta} - \\text{Ativos Financeiros e Haveres}",
-        "referencia_analise": {
-            "interpretacao": "Montante apurado da dívida do município descontadas as disponibilidades de caixa e haveres financeiros.",
-            "limiar_corte": "< 120% da RCL",
-            "direcao_desejavel": "Redução desejável",
-            "impacto_planejamento": "Determina a solvência de longo prazo do município e o cumprimento dos limites definidos pelo Senado Federal."
-        }
-    },
-    "Direitos da Cidadania": {
-        "cd_indicador": "desp_direitos_cidadania",
-        "nm_indicador": "Direitos da Cidadania",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespCidadania} = \\sum \\text{Empenhos na Função 14 - Direitos da Cidadania}",
-        "referencia_analise": {
-            "interpretacao": "Gastos voltados à promoção da cidadania, direitos humanos e defesa de minorias e coletividades.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Informa sobre o compromisso com garantias de direitos fundamentais e proteção a grupos vulnerabilizados."
-        }
-    },
-    "desp_direitos_cidadania": {
-        "cd_indicador": "desp_direitos_cidadania",
-        "nm_indicador": "Direitos da Cidadania",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespCidadania} = \\sum \\text{Empenhos na Função 14 - Direitos da Cidadania}",
-        "referencia_analise": {
-            "interpretacao": "Gastos voltados à promoção da cidadania, direitos humanos e defesa de minorias e coletividades.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Informa sobre o compromisso com garantias de direitos fundamentais e proteção a grupos vulnerabilizados."
-        }
-    },
-    "Judiciária": {
-        "cd_indicador": "desp_judiciaria",
-        "nm_indicador": "Judiciária",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespJudiciária} = \\sum \\text{Empenhos na Função 02 - Judiciária}",
-        "referencia_analise": {
-            "interpretacao": "Despesas alocadas na prestação jurisdicional e funcionamento dos órgãos do Poder Judiciário.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Reflete a dotação e execução orçamentária do Judiciário estadual."
-        }
-    },
-    "desp_judiciaria": {
-        "cd_indicador": "desp_judiciaria",
-        "nm_indicador": "Judiciária",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespJudiciária} = \\sum \\text{Empenhos na Função 02 - Judiciária}",
-        "referencia_analise": {
-            "interpretacao": "Despesas alocadas na prestação jurisdicional e funcionamento dos órgãos do Poder Judiciário.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Reflete a dotação e execução orçamentária do Judiciário estadual."
-        }
-    },
-    "Legislativa": {
-        "cd_indicador": "desp_legislativa",
-        "nm_indicador": "Legislativa",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespLegislativa} = \\sum \\text{Empenhos na Função 01 - Legislativa}",
-        "referencia_analise": {
-            "interpretacao": "Volume de gastos destinados ao Poder Legislativo e Tribunais de Contas.",
-            "limiar_corte": "Limites da LRF (Art. 29-A da CF/88).",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Dimensiona a estrutura do controle legislativo e fiscalizatório."
-        }
-    },
-    "desp_legislativa": {
-        "cd_indicador": "desp_legislativa",
-        "nm_indicador": "Legislativa",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespLegislativa} = \\sum \\text{Empenhos na Função 01 - Legislativa}",
-        "referencia_analise": {
-            "interpretacao": "Volume de gastos destinados ao Poder Legislativo e Tribunais de Contas.",
-            "limiar_corte": "Limites da LRF (Art. 29-A da CF/88).",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Dimensiona a estrutura do controle legislativo e fiscalizatório."
-        }
-    },
-    "Saneamento": {
-        "cd_indicador": "desp_saneamento",
-        "nm_indicador": "Saneamento",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespSaneamento} = \\sum \\text{Empenhos na Função 17 - Saneamento}",
-        "referencia_analise": {
-            "interpretacao": "Recursos executados em infraestrutura de esgotamento sanitário, água tratada e drenagem.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Impacto direto nas condições sanitárias e saúde pública da população."
-        }
-    },
-    "desp_saneamento": {
-        "cd_indicador": "desp_saneamento",
-        "nm_indicador": "Saneamento",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespSaneamento} = \\sum \\text{Empenhos na Função 17 - Saneamento}",
-        "referencia_analise": {
-            "interpretacao": "Recursos executados em infraestrutura de esgotamento sanitário, água tratada e drenagem.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Impacto direto nas condições sanitárias e saúde pública da população."
-        }
-    },
-    "Assistência Social": {
-        "cd_indicador": "desp_assistencia_social",
-        "nm_indicador": "Assistência Social",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespAssistência} = \\sum \\text{Empenhos na Função 08 - Assistência Social}",
-        "referencia_analise": {
-            "interpretacao": "Investimentos em proteção social básica, acolhimento e programas de transferência de renda.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mapeia a capacidade de amortecer crises socioeconômicas e apoiar populações vulneráveis."
-        }
-    },
-    "desp_assistencia_social": {
-        "cd_indicador": "desp_assistencia_social",
-        "nm_indicador": "Assistência Social",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespAssistência} = \\sum \\text{Empenhos na Função 08 - Assistência Social}",
-        "referencia_analise": {
-            "interpretacao": "Investimentos em proteção social básica, acolhimento e programas de transferência de renda.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mapeia a capacidade de amortecer crises socioeconômicas e apoiar populações vulneráveis."
-        }
-    },
-    "Previdência Social": {
-        "cd_indicador": "desp_previdencia_social",
-        "nm_indicador": "Previdência Social",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespPrevidência} = \\sum \\text{Empenhos na Função 09 - Previdência Social}",
-        "referencia_analise": {
-            "interpretacao": "Gastos com aposentadorias, pensões e equilíbrio atuarial do regime próprio de previdência.",
-            "limiar_corte": "Equilíbrio financeiro e atuarial.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Crucial para a sustentabilidade fiscal de longo prazo das contas do Estado."
-        }
-    },
-    "desp_previdencia_social": {
-        "cd_indicador": "desp_previdencia_social",
-        "nm_indicador": "Previdência Social",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespPrevidência} = \\sum \\text{Empenhos na Função 09 - Previdência Social}",
-        "referencia_analise": {
-            "interpretacao": "Gastos com aposentadorias, pensões e equilíbrio atuarial do regime próprio de previdência.",
-            "limiar_corte": "Equilíbrio financeiro e atuarial.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Crucial para a sustentabilidade fiscal de longo prazo das contas do Estado."
-        }
-    },
-    "Trabalho": {
-        "cd_indicador": "desp_trabalho",
-        "nm_indicador": "Trabalho",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespTrabalho} = \\sum \\text{Empenhos na Função 11 - Trabalho}",
-        "referencia_analise": {
-            "interpretacao": "Recursos aplicados na qualificação laboral, fomento ao emprego e relações do trabalho.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Apoia políticas de empregabilidade e produtividade da mão de obra."
-        }
-    },
-    "desp_trabalho": {
-        "cd_indicador": "desp_trabalho",
-        "nm_indicador": "Trabalho",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespTrabalho} = \\sum \\text{Empenhos na Função 11 - Trabalho}",
-        "referencia_analise": {
-            "interpretacao": "Recursos aplicados na qualificação laboral, fomento ao emprego e relações do trabalho.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Apoia políticas de empregabilidade e produtividade da mão de obra."
-        }
-    },
-    "Gestão Ambiental": {
-        "cd_indicador": "desp_gestao_ambiental",
-        "nm_indicador": "Gestão Ambiental",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespAmbiental} = \\sum \\text{Empenhos na Função 18 - Gestão Ambiental}",
-        "referencia_analise": {
-            "interpretacao": "Despesas voltadas à preservação ecológica, recursos hídricos e controle ambiental.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mede o empenho do ente federado na transição ecológica e proteção dos biomas."
-        }
-    },
-    "desp_gestao_ambiental": {
-        "cd_indicador": "desp_gestao_ambiental",
-        "nm_indicador": "Gestão Ambiental",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespAmbiental} = \\sum \\text{Empenhos na Função 18 - Gestão Ambiental}",
-        "referencia_analise": {
-            "interpretacao": "Despesas voltadas à preservação ecológica, recursos hídricos e controle ambiental.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Mede o empenho do ente federado na transição ecológica e proteção dos biomas."
-        }
-    },
-    "Agricultura": {
-        "cd_indicador": "desp_agricultura",
-        "nm_indicador": "Agricultura",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespAgricultura} = \\sum \\text{Empenhos na Função 20 - Agricultura}",
-        "referencia_analise": {
-            "interpretacao": "Gastos com extensão rural, fomento à agricultura familiar e infraestrutura produtiva.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Estimula o desenvolvimento agrário e a segurança alimentar."
-        }
-    },
-    "desp_agricultura": {
-        "cd_indicador": "desp_agricultura",
-        "nm_indicador": "Agricultura",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespAgricultura} = \\sum \\text{Empenhos na Função 20 - Agricultura}",
-        "referencia_analise": {
-            "interpretacao": "Gastos com extensão rural, fomento à agricultura familiar e infraestrutura produtiva.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Estimula o desenvolvimento agrário e a segurança alimentar."
-        }
-    },
-    "Administração": {
-        "cd_indicador": "desp_administracao",
-        "nm_indicador": "Administração",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespAdministração} = \\sum \\text{Empenhos na Função 04 - Administração}",
-        "referencia_analise": {
-            "interpretacao": "Custeio e manutenção da máquina pública, planejamento governamental e gestão fazendária.",
-            "limiar_corte": "Eficiência administrativa.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Informa sobre o custo operacional da governança estadual."
-        }
-    },
-    "desp_administracao": {
-        "cd_indicador": "desp_administracao",
-        "nm_indicador": "Administração",
-        "subdimensao": "Despesas Públicas",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{DespAdministração} = \\sum \\text{Empenhos na Função 04 - Administração}",
-        "referencia_analise": {
-            "interpretacao": "Custeio e manutenção da máquina pública, planejamento governamental e gestão fazendária.",
-            "limiar_corte": "Eficiência administrativa.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Informa sobre o custo operacional da governança estadual."
-        }
-    },
-    "População Total": {
-        "cd_indicador": "populacao_total",
-        "nm_indicador": "População Total",
-        "subdimensao": "Demografia",
-        "natureza": "Habitantes (hab.)",
-        "formula_katex": "\\text{População Total} = \\sum \\text{Habitantes Residentes}",
-        "referencia_analise": {
-            "interpretacao": "População total residente na Unidade da Federação segundo projeções e censos do IBGE.",
-            "limiar_corte": "Monitoramento censitário.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Parâmetro fundamental para escala de serviços públicos, representação política e repartição tributária."
-        }
-    },
-    "populacao_total": {
-        "cd_indicador": "populacao_total",
-        "nm_indicador": "População Total",
-        "subdimensao": "Demografia",
-        "natureza": "Habitantes (hab.)",
-        "formula_katex": "\\text{População Total} = \\sum \\text{Habitantes Residentes}",
-        "referencia_analise": {
-            "interpretacao": "População total residente na Unidade da Federação segundo projeções e censos do IBGE.",
-            "limiar_corte": "Monitoramento censitário.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Parâmetro fundamental para escala de serviços públicos, representação política e repartição tributária."
-        }
-    },
-    "População em Idade Ativa (Média)": {
-        "cd_indicador": "pia_media",
-        "nm_indicador": "População em Idade Ativa (Média)",
-        "subdimensao": "Demografia / Força de Trabalho",
-        "natureza": "Pessoas (hab.)",
-        "formula_katex": "\\text{PIA} = \\sum \\text{Pessoas com 14 anos ou mais de idade}",
-        "referencia_analise": {
-            "interpretacao": "Média anual da população de 14 anos ou mais de idade, em condições potenciais de integrar a força de trabalho (PNADC).",
-            "limiar_corte": "Bônus demográfico.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Indica a base produtiva potencial do Estado para políticas ativas de qualificação e emprego."
-        }
-    },
-    "pia_media": {
-        "cd_indicador": "pia_media",
-        "nm_indicador": "População em Idade Ativa (Média)",
-        "subdimensao": "Demografia / Força de Trabalho",
-        "natureza": "Pessoas (hab.)",
-        "formula_katex": "\\text{PIA} = \\sum \\text{Pessoas com 14 anos ou mais de idade}",
-        "referencia_analise": {
-            "interpretacao": "Média anual da população de 14 anos ou mais de idade, em condições potenciais de integrar a força de trabalho (PNADC).",
-            "limiar_corte": "Bônus demográfico.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Indica a base produtiva potencial do Estado para políticas ativas de qualificação e emprego."
-        }
-    },
-    "Taxa de Desocupação Média (%)": {
-        "cd_indicador": "taxa_desocupacao_media",
-        "nm_indicador": "Taxa de Desocupação Média (%)",
-        "subdimensao": "Mercado de Trabalho",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Taxa Desocupação} = \\frac{\\text{Pessoas Desocupadas}}{\\text{Força de Trabalho}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual da população na força de trabalho que se encontrava desocupada na média dos trimestres do ano (PNADC/IBGE).",
-            "limiar_corte": "Redução contínua em direção ao pleno emprego.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Indicador chave do dinamismo econômico e vulnerabilidade social da população trabalhadora."
-        }
-    },
-    "taxa_desocupacao_media": {
-        "cd_indicador": "taxa_desocupacao_media",
-        "nm_indicador": "Taxa de Desocupação Média (%)",
-        "subdimensao": "Mercado de Trabalho",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Taxa Desocupação} = \\frac{\\text{Pessoas Desocupadas}}{\\text{Força de Trabalho}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual da população na força de trabalho que se encontrava desocupada na média dos trimestres do ano (PNADC/IBGE).",
-            "limiar_corte": "Redução contínua em direção ao pleno emprego.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Indicador chave do dinamismo econômico e vulnerabilidade social da população trabalhadora."
-        }
-    },
-    "População Ocupada (Média)": {
-        "cd_indicador": "pop_ocupada_media",
-        "nm_indicador": "População Ocupada (Média)",
-        "subdimensao": "Mercado de Trabalho",
-        "natureza": "Pessoas Ocupadas (Qtd)",
-        "formula_katex": "\\text{Pop Ocupada} = \\sum \\text{Trabalhadores Formais e Informais Ocupados}",
-        "referencia_analise": {
-            "interpretacao": "Contingente médio de pessoas exercendo atividade remunerada no mercado de trabalho estadual.",
-            "limiar_corte": "Expansão do emprego formal.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mede o nível de geração de postos de trabalho e circulação de massa salarial."
-        }
-    },
-    "pop_ocupada_media": {
-        "cd_indicador": "pop_ocupada_media",
-        "nm_indicador": "População Ocupada (Média)",
-        "subdimensao": "Mercado de Trabalho",
-        "natureza": "Pessoas Ocupadas (Qtd)",
-        "formula_katex": "\\text{Pop Ocupada} = \\sum \\text{Trabalhadores Formais e Informais Ocupados}",
-        "referencia_analise": {
-            "interpretacao": "Contingente médio de pessoas exercendo atividade remunerada no mercado de trabalho estadual.",
-            "limiar_corte": "Expansão do emprego formal.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mede o nível de geração de postos de trabalho e circulação de massa salarial."
-        }
-    },
-    "Trimestres Observados (PNADC)": {
-        "cd_indicador": "trimestres_observados",
-        "nm_indicador": "Trimestres Observados (PNADC)",
-        "subdimensao": "Metodologia Amostral",
-        "natureza": "Trimestres (Qtd)",
-        "formula_katex": "\\text{Trimestres} = \\text{Contagem de rodadas trimestrais apuradas}",
-        "referencia_analise": {
-            "interpretacao": "Quantidade de trimestres da Pesquisa Nacional por Amostra de Domicílios Contínua consolidados no ano.",
-            "limiar_corte": "4 trimestres para fechamento do ano civil.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Garante o rigor estatístico e a comparabilidade das métricas anuais de trabalho."
-        }
-    },
-    "trimestres_observados": {
-        "cd_indicador": "trimestres_observados",
-        "nm_indicador": "Trimestres Observados (PNADC)",
-        "subdimensao": "Metodologia Amostral",
-        "natureza": "Trimestres (Qtd)",
-        "formula_katex": "\\text{Trimestres} = \\text{Contagem de rodadas trimestrais apuradas}",
-        "referencia_analise": {
-            "interpretacao": "Quantidade de trimestres da Pesquisa Nacional por Amostra de Domicílios Contínua consolidados no ano.",
-            "limiar_corte": "4 trimestres para fechamento do ano civil.",
-            "direcao_desejavel": "Análise contextual",
-            "impacto_planejamento": "Garante o rigor estatístico e a comparabilidade das métricas anuais de trabalho."
-        }
-    },
-    "PIB Total": {
-        "cd_indicador": "pib_total_reais",
-        "nm_indicador": "PIB Total",
-        "subdimensao": "Atividade Econômica",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{PIB} = \\sum \\text{VAB dos Setores} + \\text{Impostos Líquidos}",
-        "referencia_analise": {
-            "interpretacao": "Produto Interno Bruto a preços correntes consolidado pelas Contas Regionais / IBGE.",
-            "limiar_corte": "Crescimento real positivo.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mede o porte global da economia estadual e a capacidade de geração de riqueza."
-        }
-    },
-    "pib_total_reais": {
-        "cd_indicador": "pib_total_reais",
-        "nm_indicador": "PIB Total",
-        "subdimensao": "Atividade Econômica",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{PIB} = \\sum \\text{VAB dos Setores} + \\text{Impostos Líquidos}",
-        "referencia_analise": {
-            "interpretacao": "Produto Interno Bruto a preços correntes consolidado pelas Contas Regionais / IBGE.",
-            "limiar_corte": "Crescimento real positivo.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mede o porte global da economia estadual e a capacidade de geração de riqueza."
-        }
-    },
-    "PIB per capita": {
-        "cd_indicador": "pib_per_capita",
-        "nm_indicador": "PIB per capita",
-        "subdimensao": "Atividade Econômica",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{PIB per capita} = \\frac{\\text{PIB Total}}{\\text{População Residente}}",
-        "referencia_analise": {
-            "interpretacao": "Relação entre a produção total de riquezas e a população residente do Estado.",
-            "limiar_corte": "Convergência em relação à média nacional.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Avalia o padrão de produtividade e desenvolvimento econômico médio por habitante."
-        }
-    },
-    "pib_per_capita": {
-        "cd_indicador": "pib_per_capita",
-        "nm_indicador": "PIB per capita",
-        "subdimensao": "Atividade Econômica",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{PIB per capita} = \\frac{\\text{PIB Total}}{\\text{População Residente}}",
-        "referencia_analise": {
-            "interpretacao": "Relação entre a produção total de riquezas e a população residente do Estado.",
-            "limiar_corte": "Convergência em relação à média nacional.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Avalia o padrão de produtividade e desenvolvimento econômico médio por habitante."
-        }
-    },
-    "PIB por População Ocupada (Produtividade)": {
-        "cd_indicador": "pib_por_pop_ocupada",
-        "nm_indicador": "PIB por População Ocupada (Produtividade)",
-        "subdimensao": "Produtividade",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{Produtividade} = \\frac{\\text{PIB Total}}{\\text{População Ocupada Média}}",
-        "referencia_analise": {
-            "interpretacao": "Valor adicionado médio gerado por cada trabalhador ocupado na economia estadual.",
-            "limiar_corte": "Ganhos reais de eficiência do trabalho.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Reflete a densidade tecnológica, sofisticação produtiva e capital humano do Estado."
-        }
-    },
-    "pib_por_pop_ocupada": {
-        "cd_indicador": "pib_por_pop_ocupada",
-        "nm_indicador": "PIB por População Ocupada (Produtividade)",
-        "subdimensao": "Produtividade",
-        "natureza": "Monetário (R$)",
-        "formula_katex": "\\text{Produtividade} = \\frac{\\text{PIB Total}}{\\text{População Ocupada Média}}",
-        "referencia_analise": {
-            "interpretacao": "Valor adicionado médio gerado por cada trabalhador ocupado na economia estadual.",
-            "limiar_corte": "Ganhos reais de eficiência do trabalho.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Reflete a densidade tecnológica, sofisticação produtiva e capital humano do Estado."
-        }
-    },
-    "IDEB Anos Iniciais (5º) - Estadual": {
-        "cd_indicador": "ideb_5ano_estadual",
-        "nm_indicador": "IDEB Anos Iniciais (5º) - Estadual",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos iniciais do ensino fundamental na rede estadual de ensino.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Qualidade do aprendizado e rendimento nos primeiros anos escolares."
-        }
-    },
-    "ideb_5ano_estadual": {
-        "cd_indicador": "ideb_5ano_estadual",
-        "nm_indicador": "IDEB Anos Iniciais (5º) - Estadual",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos iniciais do ensino fundamental na rede estadual de ensino.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Qualidade do aprendizado e rendimento nos primeiros anos escolares."
-        }
-    },
-    "IDEB Anos Iniciais (5º) - Pública": {
-        "cd_indicador": "ideb_5ano_publica",
-        "nm_indicador": "IDEB Anos Iniciais (5º) - Pública",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{pública} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos iniciais consolidando as redes estadual e municipais de ensino público.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Expressa a qualidade global do ensino fundamental público no Estado."
-        }
-    },
-    "ideb_5ano_publica": {
-        "cd_indicador": "ideb_5ano_publica",
-        "nm_indicador": "IDEB Anos Iniciais (5º) - Pública",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{pública} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos iniciais consolidando as redes estadual e municipais de ensino público.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Expressa a qualidade global do ensino fundamental público no Estado."
-        }
-    },
-    "IDEB Anos Iniciais (5º) - Privada": {
-        "cd_indicador": "ideb_5ano_privada",
-        "nm_indicador": "IDEB Anos Iniciais (5º) - Privada",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{privada} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos iniciais nas instituições privadas de ensino.",
-            "limiar_corte": "Referência de excelência educacional.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Permite comparar o aprendizado entre a rede privada e as redes públicas."
-        }
-    },
-    "ideb_5ano_privada": {
-        "cd_indicador": "ideb_5ano_privada",
-        "nm_indicador": "IDEB Anos Iniciais (5º) - Privada",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{privada} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos iniciais nas instituições privadas de ensino.",
-            "limiar_corte": "Referência de excelência educacional.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Permite comparar o aprendizado entre a rede privada e as redes públicas."
-        }
-    },
-    "IDEB Anos Iniciais (5º) - Total": {
-        "cd_indicador": "ideb_5ano_total",
-        "nm_indicador": "IDEB Anos Iniciais (5º) - Total",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{total} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos iniciais consolidado em todas as redes do Estado.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Visão agregada da educação básica no início do ensino fundamental."
-        }
-    },
-    "ideb_5ano_total": {
-        "cd_indicador": "ideb_5ano_total",
-        "nm_indicador": "IDEB Anos Iniciais (5º) - Total",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{total} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos iniciais consolidado em todas as redes do Estado.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Visão agregada da educação básica no início do ensino fundamental."
-        }
-    },
-    "IDEB Anos Finais (9º) - Estadual": {
-        "cd_indicador": "ideb_9ano_estadual",
-        "nm_indicador": "IDEB Anos Finais (9º) - Estadual",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos finais do ensino fundamental na rede estadual.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Identifica o desempenho na etapa final do ensino fundamental estadual."
-        }
-    },
-    "ideb_9ano_estadual": {
-        "cd_indicador": "ideb_9ano_estadual",
-        "nm_indicador": "IDEB Anos Finais (9º) - Estadual",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos finais do ensino fundamental na rede estadual.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Identifica o desempenho na etapa final do ensino fundamental estadual."
-        }
-    },
-    "IDEB Anos Finais (9º) - Pública": {
-        "cd_indicador": "ideb_9ano_publica",
-        "nm_indicador": "IDEB Anos Finais (9º) - Pública",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{pública} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos finais consolidando as redes estadual e municipais de ensino.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Avalia a preparação dos estudantes públicos antes do ingresso no ensino médio."
-        }
-    },
-    "ideb_9ano_publica": {
-        "cd_indicador": "ideb_9ano_publica",
-        "nm_indicador": "IDEB Anos Finais (9º) - Pública",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{pública} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos finais consolidando as redes estadual e municipais de ensino.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Avalia a preparação dos estudantes públicos antes do ingresso no ensino médio."
-        }
-    },
-    "IDEB Anos Finais (9º) - Privada": {
-        "cd_indicador": "ideb_9ano_privada",
-        "nm_indicador": "IDEB Anos Finais (9º) - Privada",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{privada} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos finais do fundamental na rede particular.",
-            "limiar_corte": "Padrão pedagógico do segmento privado.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Baliza comparativa de desempenho escolar na transição para o ensino médio."
-        }
-    },
-    "ideb_9ano_privada": {
-        "cd_indicador": "ideb_9ano_privada",
-        "nm_indicador": "IDEB Anos Finais (9º) - Privada",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{privada} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos finais do fundamental na rede particular.",
-            "limiar_corte": "Padrão pedagógico do segmento privado.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Baliza comparativa de desempenho escolar na transição para o ensino médio."
-        }
-    },
-    "IDEB Anos Finais (9º) - Total": {
-        "cd_indicador": "ideb_9ano_total",
-        "nm_indicador": "IDEB Anos Finais (9º) - Total",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{total} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos finais do ensino fundamental consolidado em todas as redes.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Métrica geral da qualidade dos concluintes do ensino fundamental."
-        }
-    },
-    "ideb_9ano_total": {
-        "cd_indicador": "ideb_9ano_total",
-        "nm_indicador": "IDEB Anos Finais (9º) - Total",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{total} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB dos anos finais do ensino fundamental consolidado em todas as redes.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Métrica geral da qualidade dos concluintes do ensino fundamental."
-        }
-    },
-    "IDEB Ensino Médio (3º) - Estadual": {
-        "cd_indicador": "ideb_3ano_estadual",
-        "nm_indicador": "IDEB Ensino Médio (3º) - Estadual",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{EM} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB da 3ª série do ensino médio na rede estadual (responsabilidade primária do Estado).",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Principal indicador de êxito da política pedagógica gerida diretamente pelo Governo do Estado."
-        }
-    },
-    "ideb_3ano_estadual": {
-        "cd_indicador": "ideb_3ano_estadual",
-        "nm_indicador": "IDEB Ensino Médio (3º) - Estadual",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{EM} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB da 3ª série do ensino médio na rede estadual (responsabilidade primária do Estado).",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Principal indicador de êxito da política pedagógica gerida diretamente pelo Governo do Estado."
-        }
-    },
-    "IDEB Ensino Médio (3º) - Privada": {
-        "cd_indicador": "ideb_3ano_privada",
-        "nm_indicador": "IDEB Ensino Médio (3º) - Privada",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{EM, privada} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB do ensino médio na rede privada de ensino.",
-            "limiar_corte": "Desempenho da rede particular.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Parâmetro de comparação para o rendimento e aprendizado no ensino médio."
-        }
-    },
-    "ideb_3ano_privada": {
-        "cd_indicador": "ideb_3ano_privada",
-        "nm_indicador": "IDEB Ensino Médio (3º) - Privada",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{EM, privada} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB do ensino médio na rede privada de ensino.",
-            "limiar_corte": "Desempenho da rede particular.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Parâmetro de comparação para o rendimento e aprendizado no ensino médio."
-        }
-    },
-    "IDEB Ensino Médio (3º) - Total": {
-        "cd_indicador": "ideb_3ano_total",
-        "nm_indicador": "IDEB Ensino Médio (3º) - Total",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{EM, total} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB do ensino médio consolidando todas as redes do Estado.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mede o nível geral de conhecimento dos concluintes da educação básica."
-        }
-    },
-    "ideb_3ano_total": {
-        "cd_indicador": "ideb_3ano_total",
-        "nm_indicador": "IDEB Ensino Médio (3º) - Total",
-        "subdimensao": "Educação Básica",
-        "natureza": "Índice (0 a 10)",
-        "formula_katex": "\\text{IDEB}_{EM, total} = N \\times P",
-        "referencia_analise": {
-            "interpretacao": "IDEB do ensino médio consolidando todas as redes do Estado.",
-            "limiar_corte": "Meta Inep/MEC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mede o nível geral de conhecimento dos concluintes da educação básica."
-        }
-    },
-    "Taxa de Abandono - E. Médio (Estadual)": {
-        "cd_indicador": "aba_em_estadual",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Estadual)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono} = \\frac{\\text{Evadidos}}{\\text{Matrícula Inicial}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de estudantes da rede estadual que abandonaram o ensino médio no ano letivo.",
-            "limiar_corte": "Redução contínua em direção a zero.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Direciona ações de permanência escolar, ensino integral e assistência estudantil."
-        }
-    },
-    "aba_em_estadual": {
-        "cd_indicador": "aba_em_estadual",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Estadual)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono} = \\frac{\\text{Evadidos}}{\\text{Matrícula Inicial}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de estudantes da rede estadual que abandonaram o ensino médio no ano letivo.",
-            "limiar_corte": "Redução contínua em direção a zero.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Direciona ações de permanência escolar, ensino integral e assistência estudantil."
-        }
-    },
-    "Taxa de Abandono - E. Médio (Pública)": {
-        "cd_indicador": "aba_em_publica",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Pública)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono}_{pública} = \\frac{\\text{Evadidos Redes Públicas}}{\\text{Matrículas Públicas}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de evasão no ensino médio das redes públicas (estadual e federal).",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Mede a perda de estudantes em todo o sistema público de ensino médio."
-        }
-    },
-    "aba_em_publica": {
-        "cd_indicador": "aba_em_publica",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Pública)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono}_{pública} = \\frac{\\text{Evadidos Redes Públicas}}{\\text{Matrículas Públicas}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de evasão no ensino médio das redes públicas (estadual e federal).",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Mede a perda de estudantes em todo o sistema público de ensino médio."
-        }
-    },
-    "Taxa de Abandono - E. Médio (Privada)": {
-        "cd_indicador": "aba_em_privada",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Privada)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono}_{privada} = \\frac{\\text{Evadidos Privada}}{\\text{Matrículas Privada}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Taxa de abandono escolar no ensino médio das escolas particulares.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Referência comparativa sobre retenção discente."
-        }
-    },
-    "aba_em_privada": {
-        "cd_indicador": "aba_em_privada",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Privada)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono}_{privada} = \\frac{\\text{Evadidos Privada}}{\\text{Matrículas Privada}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Taxa de abandono escolar no ensino médio das escolas particulares.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Referência comparativa sobre retenção discente."
-        }
-    },
-    "Taxa de Abandono - E. Médio (Federal)": {
-        "cd_indicador": "aba_em_federal",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Federal)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono}_{federal} = \\frac{\\text{Evadidos Federal}}{\\text{Matrículas Federal}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Taxa de evasão nos Institutos Federais e colégios de aplicação federais.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Desempenho da rede técnica federal no Estado."
-        }
-    },
-    "aba_em_federal": {
-        "cd_indicador": "aba_em_federal",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Federal)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono}_{federal} = \\frac{\\text{Evadidos Federal}}{\\text{Matrículas Federal}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Taxa de evasão nos Institutos Federais e colégios de aplicação federais.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Desempenho da rede técnica federal no Estado."
-        }
-    },
-    "Taxa de Abandono - E. Médio (Municipal)": {
-        "cd_indicador": "aba_em_municipal",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Municipal)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono}_{municipal} = \\frac{\\text{Evadidos Municipal}}{\\text{Matrículas Municipal}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Taxa de abandono em escolas municipais autorizadas a ofertar ensino médio.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Acompanhamento de turmas pontuais de ensino médio municipal."
-        }
-    },
-    "aba_em_municipal": {
-        "cd_indicador": "aba_em_municipal",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Municipal)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono}_{municipal} = \\frac{\\text{Evadidos Municipal}}{\\text{Matrículas Municipal}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Taxa de abandono em escolas municipais autorizadas a ofertar ensino médio.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Acompanhamento de turmas pontuais de ensino médio municipal."
-        }
-    },
-    "Taxa de Abandono - E. Médio (Total)": {
-        "cd_indicador": "aba_em_total",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Total)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono}_{total} = \\frac{\\text{Total Evadidos}}{\\text{Total Matrículas}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Taxa total de abandono escolar no ensino médio consolidando todas as redes.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Métrica agregada de preservação do vínculo escolar da juventude."
-        }
-    },
-    "aba_em_total": {
-        "cd_indicador": "aba_em_total",
-        "nm_indicador": "Taxa de Abandono - E. Médio (Total)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{Abandono}_{total} = \\frac{\\text{Total Evadidos}}{\\text{Total Matrículas}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Taxa total de abandono escolar no ensino médio consolidando todas as redes.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Métrica agregada de preservação do vínculo escolar da juventude."
-        }
-    },
-    "Distorção Idade-Série - E. Médio (Estadual)": {
-        "cd_indicador": "tdi_em_estadual",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Estadual)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI} = \\frac{\\text{Alunos com 2+ anos de atraso}}{\\text{Total de Alunos Matriculados}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de estudantes do ensino médio estadual com atraso escolar de 2 ou mais anos.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Orienta políticas de correção de fluxo, aceleração e combate à repetência."
-        }
-    },
-    "tdi_em_estadual": {
-        "cd_indicador": "tdi_em_estadual",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Estadual)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI} = \\frac{\\text{Alunos com 2+ anos de atraso}}{\\text{Total de Alunos Matriculados}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de estudantes do ensino médio estadual com atraso escolar de 2 ou mais anos.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Orienta políticas de correção de fluxo, aceleração e combate à repetência."
-        }
-    },
-    "Distorção Idade-Série - E. Médio (Pública)": {
-        "cd_indicador": "tdi_em_publica",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Pública)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI}_{pública} = \\frac{\\text{Alunos com atraso nas redes públicas}}{\\text{Matrículas Públicas}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de defasagem idade-série nas redes públicas de ensino médio.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Mede o acúmulo de reprovações e evasões pregressas no ensino público."
-        }
-    },
-    "tdi_em_publica": {
-        "cd_indicador": "tdi_em_publica",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Pública)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI}_{pública} = \\frac{\\text{Alunos com atraso nas redes públicas}}{\\text{Matrículas Públicas}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de defasagem idade-série nas redes públicas de ensino médio.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Mede o acúmulo de reprovações e evasões pregressas no ensino público."
-        }
-    },
-    "Distorção Idade-Série - E. Médio (Privada)": {
-        "cd_indicador": "tdi_em_privada",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Privada)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI}_{privada} = \\frac{\\text{Alunos com atraso na rede privada}}{\\text{Matrículas Privadas}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de atraso escolar no ensino médio das escolas privadas.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Parâmetro de fluxo escolar do setor privado."
-        }
-    },
-    "tdi_em_privada": {
-        "cd_indicador": "tdi_em_privada",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Privada)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI}_{privada} = \\frac{\\text{Alunos com atraso na rede privada}}{\\text{Matrículas Privadas}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de atraso escolar no ensino médio das escolas privadas.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Parâmetro de fluxo escolar do setor privado."
-        }
-    },
-    "Distorção Idade-Série - E. Médio (Federal)": {
-        "cd_indicador": "tdi_em_federal",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Federal)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI}_{federal} = \\frac{\\text{Alunos com atraso na rede federal}}{\\text{Matrículas Federais}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Defasagem idade-série nas escolas técnicas e institutos federais.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Monitoramento do fluxo na rede técnica federal."
-        }
-    },
-    "tdi_em_federal": {
-        "cd_indicador": "tdi_em_federal",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Federal)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI}_{federal} = \\frac{\\text{Alunos com atraso na rede federal}}{\\text{Matrículas Federais}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Defasagem idade-série nas escolas técnicas e institutos federais.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Monitoramento do fluxo na rede técnica federal."
-        }
-    },
-    "Distorção Idade-Série - E. Médio (Municipal)": {
-        "cd_indicador": "tdi_em_municipal",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Municipal)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI}_{municipal} = \\frac{\\text{Alunos com atraso na rede municipal}}{\\text{Matrículas Municipais}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Defasagem idade-série em turmas de ensino médio municipais.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Acompanhamento do rendimento em redes municipais."
-        }
-    },
-    "tdi_em_municipal": {
-        "cd_indicador": "tdi_em_municipal",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Municipal)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI}_{municipal} = \\frac{\\text{Alunos com atraso na rede municipal}}{\\text{Matrículas Municipais}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Defasagem idade-série em turmas de ensino médio municipais.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Acompanhamento do rendimento em redes municipais."
-        }
-    },
-    "Distorção Idade-Série - E. Médio (Total)": {
-        "cd_indicador": "tdi_em_total",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Total)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI}_{total} = \\frac{\\text{Total Alunos com atraso}}{\\text{Total Alunos Matriculados}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Distorção idade-série no ensino médio considerando todas as redes de ensino do Estado.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Panorama consolidado de retenção e fluxo escolar na juventude."
-        }
-    },
-    "tdi_em_total": {
-        "cd_indicador": "tdi_em_total",
-        "nm_indicador": "Distorção Idade-Série - E. Médio (Total)",
-        "subdimensao": "Fluxo Escolar",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TDI}_{total} = \\frac{\\text{Total Alunos com atraso}}{\\text{Total Alunos Matriculados}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Distorção idade-série no ensino médio considerando todas as redes de ensino do Estado.",
-            "limiar_corte": "Redução contínua.",
-            "direcao_desejavel": "Redução / Quanto menor, melhor",
-            "impacto_planejamento": "Panorama consolidado de retenção e fluxo escolar na juventude."
-        }
-    },
-    "Taxa Bruta de Creche (%)": {
-        "cd_indicador": "tx_creche_pct",
-        "nm_indicador": "Taxa Bruta de Creche (%)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TaxaBrutaCreche} = \\frac{\\text{Matrículas em Creche}}{\\text{População de 0 a 3 anos}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Razão entre o total de matrículas em creche e a população de 0 a 3 anos.",
-            "limiar_corte": "Meta 1 do PNE (50%).",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mede o esforço de ampliação da cobertura na primeira infância."
-        }
-    },
-    "tx_creche_pct": {
-        "cd_indicador": "tx_creche_pct",
-        "nm_indicador": "Taxa Bruta de Creche (%)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TaxaBrutaCreche} = \\frac{\\text{Matrículas em Creche}}{\\text{População de 0 a 3 anos}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Razão entre o total de matrículas em creche e a população de 0 a 3 anos.",
-            "limiar_corte": "Meta 1 do PNE (50%).",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mede o esforço de ampliação da cobertura na primeira infância."
-        }
-    },
-    "Taxa Líquida de Creche (%)": {
-        "cd_indicador": "tx_liq_creche_pct",
-        "nm_indicador": "Taxa Líquida de Creche (%)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TaxaLíquidaCreche} = \\frac{\\text{Crianças de 0 a 3 anos em Creche}}{\\text{População de 0 a 3 anos}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de crianças na faixa de 0 a 3 anos efetivamente matriculadas em creches.",
-            "limiar_corte": "Atendimento na faixa etária correta.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Atendimento estrito da faixa etária correta na primeira infância."
-        }
-    },
-    "tx_liq_creche_pct": {
-        "cd_indicador": "tx_liq_creche_pct",
-        "nm_indicador": "Taxa Líquida de Creche (%)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TaxaLíquidaCreche} = \\frac{\\text{Crianças de 0 a 3 anos em Creche}}{\\text{População de 0 a 3 anos}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de crianças na faixa de 0 a 3 anos efetivamente matriculadas em creches.",
-            "limiar_corte": "Atendimento na faixa etária correta.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Atendimento estrito da faixa etária correta na primeira infância."
-        }
-    },
-    "Matrículas em Creche (Abs.)": {
-        "cd_indicador": "tx_creche_abs",
-        "nm_indicador": "Matrículas em Creche (Abs.)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Matrículas (Qtd)",
-        "formula_katex": "\\text{Matrículas Creche} = \\sum \\text{Matrículas apuradas no Censo Escolar}",
-        "referencia_analise": {
-            "interpretacao": "Número absoluto total de crianças atendidas em creches no Estado.",
-            "limiar_corte": "Expansão contínua da rede física de vagas.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Dimensiona a infraestrutura existente e a demanda por novos centros infantis."
-        }
-    },
-    "tx_creche_abs": {
-        "cd_indicador": "tx_creche_abs",
-        "nm_indicador": "Matrículas em Creche (Abs.)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Matrículas (Qtd)",
-        "formula_katex": "\\text{Matrículas Creche} = \\sum \\text{Matrículas apuradas no Censo Escolar}",
-        "referencia_analise": {
-            "interpretacao": "Número absoluto total de crianças atendidas em creches no Estado.",
-            "limiar_corte": "Expansão contínua da rede física de vagas.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Dimensiona a infraestrutura existente e a demanda por novos centros infantis."
-        }
-    },
-    "Matrículas Líquidas em Creche (Abs.)": {
-        "cd_indicador": "tx_liq_creche_abs",
-        "nm_indicador": "Matrículas Líquidas em Creche (Abs.)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Matrículas (Qtd)",
-        "formula_katex": "\\text{Matrículas Líquidas} = \\sum \\text{Matrículas de crianças de 0 a 3 anos}",
-        "referencia_analise": {
-            "interpretacao": "Contingente absoluto de crianças de 0 a 3 anos atendidas em creche.",
-            "limiar_corte": "Adequação etária.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Foco na proteção social e desenvolvimento motor/cognitivo na idade certa."
-        }
-    },
-    "tx_liq_creche_abs": {
-        "cd_indicador": "tx_liq_creche_abs",
-        "nm_indicador": "Matrículas Líquidas em Creche (Abs.)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Matrículas (Qtd)",
-        "formula_katex": "\\text{Matrículas Líquidas} = \\sum \\text{Matrículas de crianças de 0 a 3 anos}",
-        "referencia_analise": {
-            "interpretacao": "Contingente absoluto de crianças de 0 a 3 anos atendidas em creche.",
-            "limiar_corte": "Adequação etária.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Foco na proteção social e desenvolvimento motor/cognitivo na idade certa."
-        }
-    },
-    "Taxa Bruta de Pré-escola (%)": {
-        "cd_indicador": "tx_pre_escola_pct",
-        "nm_indicador": "Taxa Bruta de Pré-escola (%)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TaxaBrutaPréEscola} = \\frac{\\text{Matrículas em Pré-escola}}{\\text{População de 4 a 5 anos}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Proporção entre total de matrículas na pré-escola e população de 4 e 5 anos.",
-            "limiar_corte": "Universalização (100%) conforme PNE.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Etapa constitucionalmente obrigatória da educação infantil."
-        }
-    },
-    "tx_pre_escola_pct": {
-        "cd_indicador": "tx_pre_escola_pct",
-        "nm_indicador": "Taxa Bruta de Pré-escola (%)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TaxaBrutaPréEscola} = \\frac{\\text{Matrículas em Pré-escola}}{\\text{População de 4 a 5 anos}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Proporção entre total de matrículas na pré-escola e população de 4 e 5 anos.",
-            "limiar_corte": "Universalização (100%) conforme PNE.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Etapa constitucionalmente obrigatória da educação infantil."
-        }
-    },
-    "Taxa Líquida de Pré-escola (%)": {
-        "cd_indicador": "tx_liq_pre_escola_pct",
-        "nm_indicador": "Taxa Líquida de Pré-escola (%)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TaxaLíquidaPréEscola} = \\frac{\\text{Crianças de 4 a 5 anos em Pré-escola}}{\\text{População de 4 a 5 anos}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de crianças de 4 e 5 anos matriculadas na etapa correta de pré-escola.",
-            "limiar_corte": "100% de atendimento.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Garante o ingresso oportuno no ciclo obrigatório de ensino formal."
-        }
-    },
-    "tx_liq_pre_escola_pct": {
-        "cd_indicador": "tx_liq_pre_escola_pct",
-        "nm_indicador": "Taxa Líquida de Pré-escola (%)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Percentual (%)",
-        "formula_katex": "\\text{TaxaLíquidaPréEscola} = \\frac{\\text{Crianças de 4 a 5 anos em Pré-escola}}{\\text{População de 4 a 5 anos}} \\times 100\\%",
-        "referencia_analise": {
-            "interpretacao": "Percentual de crianças de 4 e 5 anos matriculadas na etapa correta de pré-escola.",
-            "limiar_corte": "100% de atendimento.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Garante o ingresso oportuno no ciclo obrigatório de ensino formal."
-        }
-    },
-    "Matrículas em Pré-escola (Abs.)": {
-        "cd_indicador": "tx_pre_escola_abs",
-        "nm_indicador": "Matrículas em Pré-escola (Abs.)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Matrículas (Qtd)",
-        "formula_katex": "\\text{Matrículas Pré-escola} = \\sum \\text{Matrículas no Censo Escolar}",
-        "referencia_analise": {
-            "interpretacao": "Total de vagas preenchidas na pré-escola em todo o território estadual.",
-            "limiar_corte": "Universalização das vagas.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Avalia a oferta de vagas pré-escolares nos municípios do Estado."
-        }
-    },
-    "tx_pre_escola_abs": {
-        "cd_indicador": "tx_pre_escola_abs",
-        "nm_indicador": "Matrículas em Pré-escola (Abs.)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Matrículas (Qtd)",
-        "formula_katex": "\\text{Matrículas Pré-escola} = \\sum \\text{Matrículas no Censo Escolar}",
-        "referencia_analise": {
-            "interpretacao": "Total de vagas preenchidas na pré-escola em todo o território estadual.",
-            "limiar_corte": "Universalização das vagas.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Avalia a oferta de vagas pré-escolares nos municípios do Estado."
-        }
-    },
-    "Matrículas Líquidas em Pré-escola (Abs.)": {
-        "cd_indicador": "tx_liq_pre_escola_abs",
-        "nm_indicador": "Matrículas Líquidas em Pré-escola (Abs.)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Matrículas (Qtd)",
-        "formula_katex": "\\text{Matrículas Líquidas} = \\sum \\text{Matrículas de crianças de 4 e 5 anos}",
-        "referencia_analise": {
-            "interpretacao": "Crianças de 4 e 5 anos matriculadas estritamente na pré-escola.",
-            "limiar_corte": "Atendimento na idade adequada.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Consolidação das turmas de pré-escola pré-ensino fundamental."
-        }
-    },
-    "tx_liq_pre_escola_abs": {
-        "cd_indicador": "tx_liq_pre_escola_abs",
-        "nm_indicador": "Matrículas Líquidas em Pré-escola (Abs.)",
-        "subdimensao": "Educação Infantil",
-        "natureza": "Matrículas (Qtd)",
-        "formula_katex": "\\text{Matrículas Líquidas} = \\sum \\text{Matrículas de crianças de 4 e 5 anos}",
-        "referencia_analise": {
-            "interpretacao": "Crianças de 4 e 5 anos matriculadas estritamente na pré-escola.",
-            "limiar_corte": "Atendimento na idade adequada.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Consolidação das turmas de pré-escola pré-ensino fundamental."
-        }
-    },
-    "Área Total Protegida em UCs (ha)": {
-        "cd_indicador": "area_uc_total",
-        "nm_indicador": "Área Total Protegida em UCs (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{ÁreaUC}_{total} = \\sum \\text{Área (ha) de todas as Unidades de Conservação}",
-        "referencia_analise": {
-            "interpretacao": "Área geográfica sob proteção ambiental formal através de unidades de conservação.",
-            "limiar_corte": "Metas globais de conservação de biodiversidade.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Preservação de recursos hídricos, proteção de biomas e mitigação climática."
-        }
-    },
-    "area_uc_total": {
-        "cd_indicador": "area_uc_total",
-        "nm_indicador": "Área Total Protegida em UCs (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{ÁreaUC}_{total} = \\sum \\text{Área (ha) de todas as Unidades de Conservação}",
-        "referencia_analise": {
-            "interpretacao": "Área geográfica sob proteção ambiental formal através de unidades de conservação.",
-            "limiar_corte": "Metas globais de conservação de biodiversidade.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Preservação de recursos hídricos, proteção de biomas e mitigação climática."
-        }
-    },
-    "Área Protegida em UCs Estaduais (ha)": {
-        "cd_indicador": "area_uc_est",
-        "nm_indicador": "Área Protegida em UCs Estaduais (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{ÁreaUC}_{estadual} = \\sum \\text{Área (ha) de UCs geridas pelo Estado}",
-        "referencia_analise": {
-            "interpretacao": "Extensão territorial protegida sob governança e fiscalização dos órgãos estaduais de meio ambiente.",
-            "limiar_corte": "Expansão da cobertura protegida.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mede o esforço direto da gestão estadual na criação e manutenção de parques e reservas."
-        }
-    },
-    "area_uc_est": {
-        "cd_indicador": "area_uc_est",
-        "nm_indicador": "Área Protegida em UCs Estaduais (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{ÁreaUC}_{estadual} = \\sum \\text{Área (ha) de UCs geridas pelo Estado}",
-        "referencia_analise": {
-            "interpretacao": "Extensão territorial protegida sob governança e fiscalização dos órgãos estaduais de meio ambiente.",
-            "limiar_corte": "Expansão da cobertura protegida.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mede o esforço direto da gestão estadual na criação e manutenção de parques e reservas."
-        }
-    },
-    "Área Protegida em UCs Federais (ha)": {
-        "cd_indicador": "area_uc_fed",
-        "nm_indicador": "Área Protegida em UCs Federais (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{ÁreaUC}_{federal} = \\sum \\text{Área (ha) de UCs federais no Estado}",
-        "referencia_analise": {
-            "interpretacao": "Área sob proteção em Unidades de Conservação geridas pelo Instituto Chico Mendes (ICMBio).",
-            "limiar_corte": "Integração ao SNUC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mapeia os refúgios federais e reservas biológicas estabelecidas na UF."
-        }
-    },
-    "area_uc_fed": {
-        "cd_indicador": "area_uc_fed",
-        "nm_indicador": "Área Protegida em UCs Federais (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{ÁreaUC}_{federal} = \\sum \\text{Área (ha) de UCs federais no Estado}",
-        "referencia_analise": {
-            "interpretacao": "Área sob proteção em Unidades de Conservação geridas pelo Instituto Chico Mendes (ICMBio).",
-            "limiar_corte": "Integração ao SNUC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Mapeia os refúgios federais e reservas biológicas estabelecidas na UF."
-        }
-    },
-    "Área Protegida em UCs Municipais (ha)": {
-        "cd_indicador": "area_uc_mun",
-        "nm_indicador": "Área Protegida em UCs Municipais (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{ÁreaUC}_{municipal} = \\sum \\text{Área (ha) de UCs geridas por municípios}",
-        "referencia_analise": {
-            "interpretacao": "Hectares protegidos sob legislação e fiscalização dos municípios da UF.",
-            "limiar_corte": "Municipalização ambiental.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Fortalece o mosaico verde e áreas de proteção ambiental urbana."
-        }
-    },
-    "area_uc_mun": {
-        "cd_indicador": "area_uc_mun",
-        "nm_indicador": "Área Protegida em UCs Municipais (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{ÁreaUC}_{municipal} = \\sum \\text{Área (ha) de UCs geridas por municípios}",
-        "referencia_analise": {
-            "interpretacao": "Hectares protegidos sob legislação e fiscalização dos municípios da UF.",
-            "limiar_corte": "Municipalização ambiental.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Fortalece o mosaico verde e áreas de proteção ambiental urbana."
-        }
-    },
-    "Área em Proteção Integral (ha)": {
-        "cd_indicador": "area_uc_pi",
-        "nm_indicador": "Área em Proteção Integral (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{Área}_{PI} = \\sum \\text{Área de Parques, Estações Ecológicas e Reservas Biológicas}",
-        "referencia_analise": {
-            "interpretacao": "Unidades de Conservação voltadas exclusivamente à preservação ecológica sem uso direto de recursos.",
-            "limiar_corte": "Preservação estrita.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Garantia de santuários ecológicos intocados para preservação de fauna e flora."
-        }
-    },
-    "area_uc_pi": {
-        "cd_indicador": "area_uc_pi",
-        "nm_indicador": "Área em Proteção Integral (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{Área}_{PI} = \\sum \\text{Área de Parques, Estações Ecológicas e Reservas Biológicas}",
-        "referencia_analise": {
-            "interpretacao": "Unidades de Conservação voltadas exclusivamente à preservação ecológica sem uso direto de recursos.",
-            "limiar_corte": "Preservação estrita.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Garantia de santuários ecológicos intocados para preservação de fauna e flora."
-        }
-    },
-    "Área em Uso Sustentável (ha)": {
-        "cd_indicador": "area_uc_us",
-        "nm_indicador": "Área em Uso Sustentável (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{Área}_{US} = \\sum \\text{Área de APAs, FLONAS e Reservas Extrativistas}",
-        "referencia_analise": {
-            "interpretacao": "Áreas protegidas que compatibilizam a conservação ambiental com atividades humanas e manejo sustentável.",
-            "limiar_corte": "Manejo sustentável regulamentado.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Integra desenvolvimento econômico local sustentável com proteção ecológica."
-        }
-    },
-    "area_uc_us": {
-        "cd_indicador": "area_uc_us",
-        "nm_indicador": "Área em Uso Sustentável (ha)",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Hectares (ha)",
-        "formula_katex": "\\text{Área}_{US} = \\sum \\text{Área de APAs, FLONAS e Reservas Extrativistas}",
-        "referencia_analise": {
-            "interpretacao": "Áreas protegidas que compatibilizam a conservação ambiental com atividades humanas e manejo sustentável.",
-            "limiar_corte": "Manejo sustentável regulamentado.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Integra desenvolvimento econômico local sustentável com proteção ecológica."
-        }
-    },
-    "Total de Unidades de Conservação": {
-        "cd_indicador": "qtd_uc_total",
-        "nm_indicador": "Total de Unidades de Conservação",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC} = \\text{Contagem de todas as UCs formalmente instituídas}",
-        "referencia_analise": {
-            "interpretacao": "Número total de Unidades de Conservação formalmente estabelecidas no território estadual.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Densidade da malha de áreas protegidas no Estado."
-        }
-    },
-    "qtd_uc_total": {
-        "cd_indicador": "qtd_uc_total",
-        "nm_indicador": "Total de Unidades de Conservação",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC} = \\text{Contagem de todas as UCs formalmente instituídas}",
-        "referencia_analise": {
-            "interpretacao": "Número total de Unidades de Conservação formalmente estabelecidas no território estadual.",
-            "limiar_corte": "Monitoramento contínuo.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Densidade da malha de áreas protegidas no Estado."
-        }
-    },
-    "Unidades de Conservação Estaduais": {
-        "cd_indicador": "qtd_uc_est",
-        "nm_indicador": "Unidades de Conservação Estaduais",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC}_{estadual} = \\text{Contagem de UCs do órgão ambiental estadual}",
-        "referencia_analise": {
-            "interpretacao": "Número de Unidades de Conservação de competência executiva do Estado.",
-            "limiar_corte": "Fortalecimento do SNUC estadual.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Reflete o alcance da fiscalização e planos de manejo do governo estadual."
-        }
-    },
-    "qtd_uc_est": {
-        "cd_indicador": "qtd_uc_est",
-        "nm_indicador": "Unidades de Conservação Estaduais",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC}_{estadual} = \\text{Contagem de UCs do órgão ambiental estadual}",
-        "referencia_analise": {
-            "interpretacao": "Número de Unidades de Conservação de competência executiva do Estado.",
-            "limiar_corte": "Fortalecimento do SNUC estadual.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Reflete o alcance da fiscalização e planos de manejo do governo estadual."
-        }
-    },
-    "Unidades de Conservação Federais": {
-        "cd_indicador": "qtd_uc_fed",
-        "nm_indicador": "Unidades de Conservação Federais",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC}_{federal} = \\text{Contagem de UCs federais no Estado}",
-        "referencia_analise": {
-            "interpretacao": "Número de unidades administradas pelo governo federal na UF.",
-            "limiar_corte": "Articulação federativa SNUC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Cooperação entre esferas estadual e federal no manejo dos parques."
-        }
-    },
-    "qtd_uc_fed": {
-        "cd_indicador": "qtd_uc_fed",
-        "nm_indicador": "Unidades de Conservação Federais",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC}_{federal} = \\text{Contagem de UCs federais no Estado}",
-        "referencia_analise": {
-            "interpretacao": "Número de unidades administradas pelo governo federal na UF.",
-            "limiar_corte": "Articulação federativa SNUC.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Cooperação entre esferas estadual e federal no manejo dos parques."
-        }
-    },
-    "Unidades de Conservação Municipais": {
-        "cd_indicador": "qtd_uc_mun",
-        "nm_indicador": "Unidades de Conservação Municipais",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC}_{municipal} = \\text{Contagem de UCs municipais no Estado}",
-        "referencia_analise": {
-            "interpretacao": "Número de unidades criadas e mantidas pelos municípios da UF.",
-            "limiar_corte": "Engajamento local.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Capilaridade da rede de proteção nos municípios."
-        }
-    },
-    "qtd_uc_mun": {
-        "cd_indicador": "qtd_uc_mun",
-        "nm_indicador": "Unidades de Conservação Municipais",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC}_{municipal} = \\text{Contagem de UCs municipais no Estado}",
-        "referencia_analise": {
-            "interpretacao": "Número de unidades criadas e mantidas pelos municípios da UF.",
-            "limiar_corte": "Engajamento local.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Capilaridade da rede de proteção nos municípios."
-        }
-    },
-    "Unidades de Conservação em Proteção Integral": {
-        "cd_indicador": "qtd_uc_pi",
-        "nm_indicador": "Unidades de Conservação em Proteção Integral",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC}_{PI} = \\text{Contagem de UCs de Proteção Integral}",
-        "referencia_analise": {
-            "interpretacao": "Quantidade de parques, refúgios da vida silvestre e reservas biológicas.",
-            "limiar_corte": "Preservação de ecossistemas frágeis.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Equipamentos estaduais de pesquisa, ecoturismo e conservação."
-        }
-    },
-    "qtd_uc_pi": {
-        "cd_indicador": "qtd_uc_pi",
-        "nm_indicador": "Unidades de Conservação em Proteção Integral",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC}_{PI} = \\text{Contagem de UCs de Proteção Integral}",
-        "referencia_analise": {
-            "interpretacao": "Quantidade de parques, refúgios da vida silvestre e reservas biológicas.",
-            "limiar_corte": "Preservação de ecossistemas frágeis.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Equipamentos estaduais de pesquisa, ecoturismo e conservação."
-        }
-    },
-    "Unidades de Conservação em Uso Sustentável": {
-        "cd_indicador": "qtd_uc_us",
-        "nm_indicador": "Unidades de Conservação em Uso Sustentável",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC}_{US} = \\text{Contagem de UCs de Uso Sustentável}",
-        "referencia_analise": {
-            "interpretacao": "Quantidade de Áreas de Proteção Ambiental (APAs) e reservas de uso sustentável.",
-            "limiar_corte": "Zoneamento ecológico-econômico.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Harmonização de atividades produtivas com manutenção dos serviços ecossistêmicos."
-        }
-    },
-    "qtd_uc_us": {
-        "cd_indicador": "qtd_uc_us",
-        "nm_indicador": "Unidades de Conservação em Uso Sustentável",
-        "subdimensao": "Meio Ambiente",
-        "natureza": "Unidades (Qtd)",
-        "formula_katex": "\\text{QtdUC}_{US} = \\text{Contagem de UCs de Uso Sustentável}",
-        "referencia_analise": {
-            "interpretacao": "Quantidade de Áreas de Proteção Ambiental (APAs) e reservas de uso sustentável.",
-            "limiar_corte": "Zoneamento ecológico-econômico.",
-            "direcao_desejavel": "Aumento / Quanto maior, melhor",
-            "impacto_planejamento": "Harmonização de atividades produtivas com manutenção dos serviços ecossistêmicos."
+// Helper que garante a presença de Nordeste (NE) e Brasil (BR) em qualquer ranking
+function garantirBenchmarksRegionais(rankingArr, config) {
+    if (!rankingArr || rankingArr.length === 0) return rankingArr;
+
+    // Define se a agregação automática deve ser média (taxas, %, índices, R$/ha) ou soma (absolutos, R$ totais)
+    const usarMedia = config.isPct || config.isIndice || config.isPerCapita || config.isMoedaUnit;
+
+    const temNE = rankingArr.some(d => d.uf === 'Nordeste (NE)');
+    const temBR = rankingArr.some(d => d.uf === 'Brasil (BR)');
+
+    // Filtra apenas as UFs reais (exclui benchmarks já existentes)
+    const apenasUFs = rankingArr.filter(d => !d.isBenchmark && d.uf.length === 2);
+
+    if (!temNE && apenasUFs.length > 0) {
+        const ufsNE = apenasUFs.filter(d => UFS_NORDESTE.includes(d.uf.toUpperCase()));
+        if (ufsNE.length > 0) {
+            const somaNE = ufsNE.reduce((acc, item) => acc + (Number(item.valor) || 0), 0);
+            const valNE = usarMedia ? (somaNE / ufsNE.length) : somaNE;
+            rankingArr.push({
+                uf: 'Nordeste (NE)',
+                valor: valNE,
+                isBenchmark: true
+            });
         }
     }
-};
 
-// Vincula tanto pela sigla quanto pelo nome completo
-Object.assign(dicionarioMetadadosUFs, metadadosSeguranca);
-for (const k in metadadosSeguranca) {
-    dicionarioMetadadosUFs[metadadosSeguranca[k].nm_indicador] = metadadosSeguranca[k];
+    if (!temBR && apenasUFs.length > 0) {
+        const somaBR = apenasUFs.reduce((acc, item) => acc + (Number(item.valor) || 0), 0);
+        const valBR = usarMedia ? (somaBR / apenasUFs.length) : somaBR;
+        rankingArr.push({
+            uf: 'Brasil (BR)',
+            valor: valBR,
+            isBenchmark: true
+        });
+    }
+
+    return rankingArr;
 }
 
-
-// Despesas Fiscais com subdimensão explícita
-dicionarioMetadadosUFs["Segurança Pública"].subdimensao = "Alocação Orçamentária e Gestão da Justiça";
-dicionarioMetadadosUFs["Direitos da Cidadania"].subdimensao = "Alocação Orçamentária e Gestão da Justiça";
-dicionarioMetadadosUFs["Judiciária"].subdimensao = "Alocação Orçamentária e Gestão da Justiça";
-dicionarioMetadadosUFs["Legislativa"].subdimensao = "Alocação Orçamentária e Gestão da Justiça";
-
-// Atribuição de subdimensão orçamentária do Eixo 4
-if (dicionarioMetadadosUFs["Gestão Ambiental"]) dicionarioMetadadosUFs["Gestão Ambiental"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
-if (dicionarioMetadadosUFs["desp_gestao_ambiental"]) dicionarioMetadadosUFs["desp_gestao_ambiental"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
-
-if (dicionarioMetadadosUFs["Transporte"]) dicionarioMetadadosUFs["Transporte"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
-if (dicionarioMetadadosUFs["desp_transporte"]) dicionarioMetadadosUFs["desp_transporte"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
-
-if (dicionarioMetadadosUFs["Agricultura"]) dicionarioMetadadosUFs["Agricultura"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
-if (dicionarioMetadadosUFs["desp_agricultura"]) dicionarioMetadadosUFs["desp_agricultura"].subdimensao = "Alocação Orçamentária e Infraestrutura Sustentável";
 
 // Helper de Normalização de String para Busca de Metadados
 function normKeyUFs(str) {
@@ -2525,14 +93,17 @@ function buscarMetadadoUFs(siglaOrKey) {
 
 // Abre o Modal de Metadados (reutiliza o modal unificado #modalMetadado)
 window.abrirModalMetadadoUFs = function(siglaOrKey, tipoDado) {
-    const meta = buscarMetadadoUFs(siglaOrKey);
+    const meta = buscarMetadadoUFs(siglaOrKey) || {};
+    const ref = meta.referencia_analise || {};
 
-    const titulo = meta?.nm_indicador || siglaOrKey;
-    const badge = meta?.natureza || (tipoDado === 'fiscal' ? 'Contábil / Fiscal' : 'Socioambiental');
-    const desc = meta?.referencia_analise?.interpretacao || 'Indicador estratégico de acompanhamento federativo e benchmarking das UFs.';
-    const impacto = meta?.referencia_analise?.impacto_planejamento || 'Subsidia a análise comparativa de eficiência e alocação de recursos públicos entre os Estados.';
-    const limiar = meta?.referencia_analise?.limiar_corte || '-';
-    const direcao = meta?.referencia_analise?.direcao_desejavel || '-';
+    const titulo   = meta.nm_indicador || meta.nm_fantasia || siglaOrKey;
+    const badge    = meta.natureza || (tipoDado === 'fiscal' ? 'Contábil / Fiscal' : 'Socioambiental');
+    const desc     = ref.interpretacao || meta.interpretacao || 'Indicador estratégico de acompanhamento federativo e benchmarking das UFs.';
+    const impacto  = ref.impacto_planejamento || meta.impacto_planejamento || 'Subsidia a análise comparativa de eficiência e alocação de recursos públicos entre os Estados.';
+    const limiar   = ref.limiar_corte || meta.limiar_corte || '-';
+    const direcao  = ref.direcao_desejavel || meta.direcao_desejavel || '-';
+    const fonte    = meta.fonte || 'Bases Oficiais / Órgão Setorial';
+    const link     = meta.hiperlink || '';
 
     $('#modalMetadadoTitle').text(titulo);
     $('#modalMetadadoBadge').text(badge);
@@ -2541,17 +112,46 @@ window.abrirModalMetadadoUFs = function(siglaOrKey, tipoDado) {
     $('#modalMetadadoLimiar').text(limiar);
     $('#modalMetadadoDirecao').text(direcao);
 
+    // Renderização da Fórmula KaTeX
     const formulaEl = document.getElementById('modalMetadadoFormula');
     if (formulaEl) {
-        if (meta?.formula_katex && typeof katex !== 'undefined') {
+        if (meta.formula_katex && typeof katex !== 'undefined') {
             try {
                 katex.render(meta.formula_katex, formulaEl, { displayMode: true, throwOnError: false });
             } catch (e) {
                 formulaEl.innerText = meta.formula_katex;
             }
         } else {
-            formulaEl.innerText = meta?.formula_katex || 'Fórmula sob apuração contábil / metodológica do órgão de origem.';
+            formulaEl.innerText = meta.formula_katex || 'Fórmula sob apuração contábil / metodológica do órgão de origem.';
         }
+    }
+
+    // Renderização de Fonte e Hiperlink (cria o bloco dinamicamente no modal se não existir no HTML)
+    let fonteBox = document.getElementById('modalMetadadoFonteContainer');
+    if (!fonteBox) {
+        const modalBody = document.querySelector('#modalMetadado .modal-body');
+        if (modalBody) {
+            fonteBox = document.createElement('div');
+            fonteBox.id = 'modalMetadadoFonteContainer';
+            fonteBox.className = 'mt-3 pt-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-2';
+            modalBody.appendChild(fonteBox);
+        }
+    }
+
+    if (fonteBox) {
+        const botaoLinkHtml = link
+            ? `<a href="${link}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                   <i class="fas fa-arrow-up-right-from-square me-1"></i> Acessar Fonte Oficial
+               </a>`
+            : '';
+
+        fonteBox.innerHTML = `
+            <div class="text-muted small">
+                <i class="fas fa-database text-primary me-1"></i>
+                <strong>Fonte:</strong> <span id="modalMetadadoFonteTexto">${fonte}</span>
+            </div>
+            ${botaoLinkHtml}
+        `;
     }
 
     const modalEl = document.getElementById('modalMetadado');
@@ -2560,40 +160,42 @@ window.abrirModalMetadadoUFs = function(siglaOrKey, tipoDado) {
         modal.show();
     }
 };
-
 // Retorna o Badge de Polaridade / Sinalização no padrão de Municípios
-function obterBadgePolaridadeUFs(siglaOrKey, tipoDado, config) {
-    const meta = buscarMetadadoUFs(siglaOrKey);
-    let dirRaw = meta?.referencia_analise?.direcao_desejavel || '';
-
-    if (dirRaw) {
-        const dir = normKeyUFs(dirRaw);
-        if (dir.includes('acompanhamento') || dir.includes('vocacao') || dir.includes('estabilidade') || dir.includes('faixa') || dir.includes('manter') || dir.includes('informativo') || dir.includes('contextual') || dir.includes('neutro') || dir.includes('analise')) {
-            return `<span class="badge-polaridade badge-polaridade-neutra" title="Indicador de perfil estrutural: ${dirRaw}">
-                        <i class="fas fa-circle-info"></i> Contextual
-                    </span>`;
-        } else if (dir.includes('aumento') || dir.includes('maior') || dir.includes('crescimento')) {
+function obterBadgePolaridadeUFs(siglaOrKey, tipoDado, config, polaridadeDb) {
+    // 1. Prioridade absoluta: coluna polaridade do banco de dados ('positiva' ou 'negativa')
+    if (polaridadeDb) {
+        const pol = String(polaridadeDb).toLowerCase();
+        if (pol === 'positiva') {
             return `<span class="badge-polaridade badge-polaridade-alta" title="Direção desejável: Quanto maior, melhor">
                         <i class="fas fa-arrow-trend-up"></i> Maior melhor
                     </span>`;
-        } else if (dir.includes('reducao') || dir.includes('menor') || dir.includes('queda')) {
+        } else if (pol === 'negativa') {
             return `<span class="badge-polaridade badge-polaridade-baixa" title="Direção desejável: Quanto menor, melhor">
                         <i class="fas fa-arrow-trend-down"></i> Menor melhor
                     </span>`;
         }
     }
 
-    // Fallback baseado na configuração do indicador
+    // 2. Busca no dicionário de metadados
+    const meta = buscarMetadadoUFs(siglaOrKey);
+    let dirRaw = meta?.referencia_analise?.direcao_desejavel || '';
+    if (dirRaw) {
+        const dir = normKeyUFs(dirRaw);
+        if (dir.includes('maior') || dir.includes('aumento')) {
+            return `<span class="badge-polaridade badge-polaridade-alta" title="Direção desejável: Quanto maior, melhor">
+                        <i class="fas fa-arrow-trend-up"></i> Maior melhor
+                    </span>`;
+        } else if (dir.includes('menor') || dir.includes('reducao')) {
+            return `<span class="badge-polaridade badge-polaridade-baixa" title="Direção desejável: Quanto menor, melhor">
+                        <i class="fas fa-arrow-trend-down"></i> Menor melhor
+                    </span>`;
+        }
+    }
+
+    // 3. Fallback pela configuração de isLowerBetter
     if (config && config.isLowerBetter) {
         return `<span class="badge-polaridade badge-polaridade-baixa" title="Direção desejável: Quanto menor, melhor">
                     <i class="fas fa-arrow-trend-down"></i> Menor melhor
-                </span>`;
-    }
-
-    const s = (siglaOrKey || '').toLowerCase();
-    if (s.includes('ideb') || s.includes('creche') || s.includes('pre_escola') || s.includes('area_uc') || s.includes('qtd_uc') || s.includes('resultado') || s.includes('vinculação') || s.includes('pib') || s.includes('ocupada')) {
-        return `<span class="badge-polaridade badge-polaridade-alta" title="Direção desejável: Quanto maior, melhor">
-                    <i class="fas fa-arrow-trend-up"></i> Maior melhor
                 </span>`;
     }
 
@@ -2601,7 +203,6 @@ function obterBadgePolaridadeUFs(siglaOrKey, tipoDado, config) {
                 <i class="fas fa-circle-info"></i> Contextual
             </span>`;
 }
-
 // Inicialização Lazy do Módulo
 window.iniciarModuloUFs = async function() {
     if (window.moduloUFsIniciado) {
@@ -2612,6 +213,19 @@ window.iniciarModuloUFs = async function() {
     try {
         console.log("⚡ [UFs] Inicializando Módulo de Benchmarking das UFs...");
         const basePath = window.basePath || '';
+        
+        // 0. Carrega dicionário unificado de metadados gerado pelo ETL
+        try {
+            let resMetaUFs = await window.fetchSeguro(`${basePath}/api/ufs/metadados`);
+            if (!resMetaUFs.ok) {
+                resMetaUFs = await window.fetchSeguro(`${basePath}/data/json/metadados_indicadores_ufs.json`);
+            }
+            if (resMetaUFs.ok) {
+                dicionarioMetadadosUFs = await resMetaUFs.json();
+            }
+        } catch (errMeta) {
+            console.warn("[UFs] Aviso ao carregar JSON de metadados:", errMeta);
+        }
 
         // Carrega metadados globais se ainda não carregados
         if (!window.dadosMetadados || !Array.isArray(window.dadosMetadados) || window.dadosMetadados.length === 0) {
@@ -2785,31 +399,54 @@ window.filtrarUFsLocal = function() {
 // Formatação padrão de valores
 function formatarValorUFs(v, config) {
     if (v === null || v === undefined || isNaN(v) || v === 0) return '-';
+    
+    // Percentuais e Índices
     if (config.isPct) return v.toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 2}) + '%';
     if (config.isIndice) return v.toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 2});
+    
+    // Potência em kW
+    if (config.isPotencia) {
+        return Math.round(v).toLocaleString('pt-BR') + ' kW';
+    }
+    
+    // Carga em Toneladas
+    if (config.isToneladas) {
+        return Math.round(v).toLocaleString('pt-BR') + ' t';
+    }
+    
+    // Valores monetários por unidade (R$/ha ou tarifas R$)
+    if (config.isMoedaUnit) {
+        const suf = config.suffix ? ` ${config.suffix}` : '';
+        return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + suf;
+    }
+    
     if (config.isAbs) return Math.round(v).toLocaleString('pt-BR');
+    
     if (config.isPerCapita) {
         if (v > 1e6) {
             return 'R$ ' + (v / 1e6).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' mi';
         }
         return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
+
+    // Despesas e receitas orçamentárias gerais (Bilhões / Milhões)
     if (v >= 1e9) {
         return 'R$ ' + (v / 1e9).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' bi';
     }
     if (v >= 1e6) {
         return 'R$ ' + (v / 1e6).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' mi';
     }
-    return 'R$ ' + (v / 1e9).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' bi';
+    return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
-
 // Gerador de Cards de KPIs com Ranking, Sinalização, Modal de Metadados e Título em 2 Linhas
-function gerarHTMLCardUFs(titulo, valAtual, valAnt, varPct, config, siglaOrKey, tipoDado, rank) {
+function gerarHTMLCardUFs(titulo, valAtual, valAnt, varPct, config, siglaOrKey, tipoDado, rank, polaridadeDb) {
     let strAtual = formatarValorUFs(valAtual, config);
     let strAnt = formatarValorUFs(valAnt, config);
 
-    let isLowerBetter = config.isLowerBetter || false;
+    // Se for polaridade negativa do DB ou isLowerBetter, menor é melhor
+    let isLowerBetter = (polaridadeDb === 'negativa') || (config && config.isLowerBetter) || false;
     let isPositivo = varPct >= 0;
+    
     let corVar = isPositivo ? '#27AE60' : '#E74C3C';
     let iconeVar = isPositivo ? 'fa-arrow-up' : 'fa-arrow-down';
 
@@ -2825,8 +462,7 @@ function gerarHTMLCardUFs(titulo, valAtual, valAnt, varPct, config, siglaOrKey, 
         ? `<span class="badge bg-slate-100 text-slate-700 border" style="font-size: 0.65rem; padding: 2px 6px; font-weight: 700; border-radius: 6px;"><i class="fas fa-trophy text-amber-500 me-0.5"></i> ${rank}º no Brasil</span>`
         : '';
 
-    let badgePolaridadeHtml = obterBadgePolaridadeUFs(siglaOrKey, tipoDado, config);
-
+    let badgePolaridadeHtml = obterBadgePolaridadeUFs(siglaOrKey, tipoDado, config, polaridadeDb);
     return `
     <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2" style="page-break-inside: avoid;">
         <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background-color: #fafbfc; transition: transform 0.2s;">
@@ -2910,14 +546,23 @@ if (s === 'tx_cvp' || s === 'tx_rfcelular' || s === 'tx_feminicidio' || s === 't
       if (s === 'pop_carceraria') return { color: "#475569", icon: "fas fa-building-shield", isAbs: true, isLowerBetter: true };
       if (s === 'pop_socioeducanda') return { color: "#0284C7", icon: "fas fa-user-group", isAbs: true, isLowerBetter: true };
       
-      // Dentro de obterConfigUFs(nomeOuSigla) em ufs.js:
-        // Energia Renovável
-        if (s === 'qtd_energia_solar') return { color: "#F59E0B", icon: "fas fa-solar-panel", isAbs: true };
-        if (s === 'qtd_energia_eolica') return { color: "#10B981", icon: "fas fa-wind", isAbs: true };
+        // 1. Energia Solar e Eólica (kW)
+        if (s === 'qtd_energia_solar' || s.includes('energia solar')) {
+            return { color: "#F59E0B", icon: "fas fa-solar-panel", isPotencia: true, suffix: " kW" };
+        }
+        if (s === 'qtd_energia_eolica' || s.includes('energia eólica') || s.includes('energia eolica')) {
+            return { color: "#10B981", icon: "fas fa-wind", isPotencia: true, suffix: " kW" };
+        }
         
-        // Logística e Agro
-        if (s === 'carga_bruta_suape') return { color: "#2563EB", icon: "fas fa-ship", isAbs: true };
-        if (s === 'valor_producao_hec_colhido') return { color: "#059669", icon: "fas fa-wheat-awn", isPerCapita: true };
+        // 2. Carga Bruta de Suape (Toneladas)
+          if (s === 'carga_bruta_suape' || s.includes('suape')) {
+              return { color: "#2563EB", icon: "fas fa-ship", isToneladas: true, suffix: " t" };
+          }
+          
+          // 3. Valor da Produção por Hectare (R$/ha)
+          if (s === 'valor_producao_hec_colhido' || s.includes('por hectare')) {
+              return { color: "#059669", icon: "fas fa-wheat-awn", isMoedaUnit: true, suffix: "/ha" };
+          }
         
         // Custos, Tarifas e Perdas (Menor é melhor)
         if (s.includes('custo_medio') || s.includes('tarifa_media')) {
@@ -2934,6 +579,11 @@ if (s === 'tx_cvp' || s === 'tx_rfcelular' || s === 'tx_feminicidio' || s === 't
         if (s.startsWith('abastecimento_') || s.startsWith('esgoto_tratado_')) {
             let icon = s.includes('esgoto') ? "fas fa-faucet-drip" : "fas fa-droplet";
             return { color: "#0284C7", icon: icon, isPct: true };
+        }
+        
+        // 5. Tarifas e Custos Médios de Água e Esgoto (R$)
+        if (s.includes('tarifa_media') || s.includes('custo_medio') || s.includes('receita direta média') || s.includes('despesa média de')) {
+            return { color: "#D97706", icon: "fas fa-file-invoice-dollar", isMoedaUnit: true, isLowerBetter: true };
         }
 
     // Mercado de Trabalho & Demografia
@@ -2993,10 +643,9 @@ if (s === 'tx_cvp' || s === 'tx_rfcelular' || s === 'tx_feminicidio' || s === 't
     return { color: "#1a3c6e", icon: "fas fa-chart-column" };
 }
 
-// Extrai o valor mais recente, o anterior e o ranking de um indicador socioambiental
 function extrairSocio(baseSocio, sigla) {
-    const rows = baseSocio.filter(d => d.sigla_indicador === sigla && d.valor !== null && !isNaN(d.valor));
-    if (rows.length === 0) return { valAtual: 0, valAnt: 0, varPct: 0, ano: '-', rank: 0 };
+    const rows = baseSocio.filter(d => (d.sigla_indicador === sigla || d.nm_indicador === sigla) && d.valor !== null && !isNaN(d.valor));
+    if (rows.length === 0) return { valAtual: 0, valAnt: 0, varPct: 0, ano: '-', rank: 0, polaridade: '' };
 
     rows.sort((a, b) => Number(b.ano) - Number(a.ano));
     const atual = rows[0];
@@ -3012,10 +661,10 @@ function extrairSocio(baseSocio, sigla) {
         varPct, 
         ano: atual.ano, 
         nome: atual.nm_indicador || sigla,
-        rank: atual.rank_br || 0
+        rank: atual.rank_br || 0,
+        polaridade: atual.polaridade ? String(atual.polaridade).trim().toLowerCase() : ''
     };
 }
-
 // Extrai o valor mais recente, o anterior e o ranking nacional de um indicador fiscal
 function extrairFiscal(uf, nomeInd) {
     const config = obterConfigUFs(nomeInd);
@@ -3225,17 +874,19 @@ function renderizarEixoSustentabilidade(baseSocio, uf) {
     const listaItens = [];
 
     // Helper para extrair e montar card padronizado
-    const adicionarItem = (sigla, label, subdim) => {
-        const dados = extrairSocio(baseSocio, sigla);
-        const config = obterConfigUFs(sigla);
-        const cardHtml = gerarHTMLCardUFs(label, dados.valAtual, dados.valAnt, dados.varPct, config, sigla, 'socio', dados.rank);
-        listaItens.push({
-            siglaOrKey: sigla,
-            subdimensaoFallback: subdim,
-            cardHtml: cardHtml
-        });
-    };
-
+      const adicionarItem = (sigla, label, subdim) => {
+          const dados = extrairSocio(baseSocio, sigla);
+          const config = obterConfigUFs(sigla);
+          const cardHtml = gerarHTMLCardUFs(
+              label, dados.valAtual, dados.valAnt, dados.varPct, 
+              config, sigla, 'socio', dados.rank, dados.polaridade
+          );
+          listaItens.push({
+              siglaOrKey: sigla,
+              subdimensaoFallback: subdim,
+              cardHtml: cardHtml
+          });
+      };
     // 1. Transição Energética e Energia Renovável
     adicionarItem("qtd_energia_solar", "Capacidade em Operação - Energia Solar", "Transição Energética e Renováveis");
     adicionarItem("qtd_energia_eolica", "Capacidade em Operação - Energia Eólica", "Transição Energética e Renováveis");
@@ -3424,7 +1075,8 @@ async function renderizarModalFiscal(indicador, uf) {
         if (Number(d.periodo) !== bim) return false;
         return true;
     });
-
+    
+    // Dentro de renderizarModalFiscal (ufs.js):
     const isLowerBetter = config.isLowerBetter || false;
     const rankingArr = baseAnoUFs.map(d => {
         let v = Number(d.valor) || 0;
@@ -3433,7 +1085,12 @@ async function renderizarModalFiscal(indicador, uf) {
             uf: d.uf,
             valor: (isPct || config.isPerCapita) ? v : v / 1e9
         };
-    }).sort((a, b) => isLowerBetter ? (a.valor - b.valor) : (b.valor - a.valor));
+    });
+
+    // Injeta Nordeste (NE) e Brasil (BR) nos indicadores fiscais
+    garantirBenchmarksRegionais(rankingArr, config);
+
+    rankingArr.sort((a, b) => isLowerBetter ? (a.valor - b.valor) : (b.valor - a.valor));
 
     let descPeriodo = `${bim}º ${periodicidade === 'Quadrimestral' ? 'Quadrimestre' : 'Bimestre'} de ${anoAtual}`;
     renderGraficoBarrasRanking(rankingArr, uf, indicador, config, descPeriodo);
@@ -3476,13 +1133,13 @@ async function renderizarModalSocio(sigla, uf) {
 
         renderGraficoLinhaModal(anos, valores, nomeExibicao, uf, config);
         
-        // Por este:
+        // Dentro de renderizarModalSocio (ufs.js):
         const rankingArr = rankingData.map(r => ({
             uf: r.sg_uf,
             valor: Number(r.valor) || 0
         }));
-    
-        // Adiciona referências regionais (NE e BR) se disponíveis
+
+        // Adiciona referências regionais (NE e BR) se vierem do banco
         benchmarks.forEach(b => {
             rankingArr.push({
                 uf: b.sg_regiao === 'NE' ? 'Nordeste (NE)' : 'Brasil (BR)',
@@ -3490,7 +1147,10 @@ async function renderizarModalSocio(sigla, uf) {
                 isBenchmark: true
             });
         });
-    
+
+        // Garante NE e BR mesmo se a view regional não tiver o indicador
+        garantirBenchmarksRegionais(rankingArr, config);
+
         // Ordenação decrescente padrão (maior valor no topo)
         rankingArr.sort((a, b) => b.valor - a.valor);
 
@@ -3501,6 +1161,18 @@ async function renderizarModalSocio(sigla, uf) {
     } catch (e) {
         console.error("Erro ao renderizar modal socioambiental:", e);
     }
+}
+
+// Helper unificado de sufixo para os eixos dos gráficos
+function obterSufixoGrafico(config) {
+    if (config.isPct) return '%';
+    if (config.isIndice) return '';
+    if (config.isPotencia) return ' kW';
+    if (config.isToneladas) return ' t';
+    if (config.isMoedaUnit) return config.suffix ? ` R$${config.suffix}` : ' R$';
+    if (config.isAbs) return '';
+    if (config.isPerCapita) return ' R$';
+    return ' R$ bi';
 }
 
 // Gráfico de Linha Plurianual (ECharts)
@@ -3516,7 +1188,7 @@ function renderGraficoLinhaModal(anos, valores, indicador, uf, config) {
         return;
     }
 
-    const suf = config.isPct ? '%' : (config.isIndice ? '' : (config.isAbs ? '' : ' R$ bi'));
+    const suf = obterSufixoGrafico(config);
 
     chartModalUFsSerie.setOption({
         tooltip: {
@@ -3577,7 +1249,7 @@ function renderGraficoBarrasRanking(rankingArr, ufAlvo, indicador, config, ano) 
         };
     });
 
-    const suf = config.isPct ? '%' : (config.isIndice ? '' : (config.isAbs ? '' : ' bi'));
+    const suf = obterSufixoGrafico(config);
 
     chartModalUFsRanking.setOption({
         tooltip: {
@@ -3600,14 +1272,16 @@ function renderGraficoBarrasRanking(rankingArr, ufAlvo, indicador, config, ano) 
     });
 }
 
-// Resumo / Storytelling no Modal
+// Dentro de renderStorytellingModal (ufs.js):
 function renderStorytellingModal(indicador, uf, rankingArr, config, ano) {
     const box = document.getElementById('modal_ufs_kpi_storytelling');
     if (!box) return;
 
-    const rankPos = rankingArr.findIndex(d => d.uf === uf) + 1;
-    const totalUfs = rankingArr.filter(d => !d.isBenchmark).length;
-    const itemUF = rankingArr.find(d => d.uf === uf);
+    // Filtra apenas as 27 UFs para calcular a posição exata no ranking estadual
+    const apenasUFs = rankingArr.filter(d => !d.isBenchmark);
+    const rankPos = apenasUFs.findIndex(d => d.uf === uf) + 1;
+    const totalUfs = apenasUFs.length;
+    const itemUF = apenasUFs.find(d => d.uf === uf);
 
     if (!itemUF) {
         box.innerHTML = `Dados comparativos consolidados para o indicador <strong>${indicador}</strong> em <strong>${ano}</strong>.`;
@@ -3622,12 +1296,11 @@ function renderStorytellingModal(indicador, uf, rankingArr, config, ano) {
             <i class="fas fa-circle-info text-primary fs-5"></i>
             <div>
                 O estado de <strong>${uf}</strong> registrou <strong>${valFmt}</strong> para o indicador <strong>${indicador}</strong> (${ano}), ${textoRank}.
-                As barras em destaque representam o estado selecionado e os parâmetros de referência regional.
+                As barras em destaque (laranja) representam os parâmetros de referência do Nordeste e do Brasil.
             </div>
         </div>
     `;
 }
-
 // Redimensionamento de Gráficos no ciclo de vida das abas
 window.redimensionarGraficosUFs = function() {
     if (chartModalUFsSerie) chartModalUFsSerie.resize();
@@ -4047,3 +1720,5 @@ function renderizarGridComSubdimensoes(containerId, itensConfigurados) {
 
     elContainer.innerHTML = html;
 }
+
+
