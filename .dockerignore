@@ -9,6 +9,9 @@ data/*
 *.csv
 *.xlsx
 *.geojson
+!www/data/*.geojson
+!www/data/*.json
+
 
 # Arquivos de rotas, interface e scripts legados em R (build e Go nativo)
 api.R
@@ -35,8 +38,10 @@ _site/
 .git/
 .gitignore
 .repomixignore
+bin/
 *.exe
 server
+server.exe
 repomix*.txt
 lista.txt
 instrucoes.txt

@@ -15,6 +15,7 @@ data/
 !manifest.json
 
 # Binarios e temporarios Go
+bin/
 server
 server.exe
 *.exe

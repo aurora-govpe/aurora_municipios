@@ -1,5 +1,37 @@
 // www/js/regioes.js
 
+if (typeof window.obterEstiloBaseMapa !== 'function') {
+    window.obterEstiloBaseMapa = function () {
+        return {
+            version: 8,
+            sources: {
+                'esri-gray': {
+                    type: 'raster',
+                    tiles: [
+                        'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+                    ],
+                    tileSize: 256,
+                    attribution: '&copy; Esri'
+                }
+            },
+            layers: [
+                {
+                    id: 'background',
+                    type: 'background',
+                    paint: { 'background-color': '#f8fafc' }
+                },
+                {
+                    id: 'esri-gray-layer',
+                    type: 'raster',
+                    source: 'esri-gray',
+                    minzoom: 0,
+                    maxzoom: 18
+                }
+            ]
+        };
+    };
+}
+
 var mapasRD = { 0: null, 1: null, 2: null, 3: null, 4: null, 5: null };
 var chartsRD = { 0: null, 1: null, 2: null, 3: null, 4: null, 5: null };
 var histChartsRD = { 1: null, 2: null, 3: null, 4: null, 5: null }; // A Dimensão 0 (REGIC) não possui evolução temporal
@@ -2005,7 +2037,7 @@ function renderizarMapaRotasCluster0(containerId, legendaId, siglaChave, geojson
     if (instMapa) instMapa.remove();
     let mapa = new maplibregl.Map({
         container: containerId,
-        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        style: window.obterEstiloBaseMapa(),
         center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
     });
     mapa.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
@@ -2268,7 +2300,7 @@ function renderizarMapaClusterRD(cNum, containerId, legendaId, siglaChave, geojs
     if (instMapa) instMapa.remove();
     let mapa = new maplibregl.Map({
         container: containerId,
-        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        style: window.obterEstiloBaseMapa(),
         center: [-37.8, -8.3], zoom: 7, preserveDrawingBuffer: true
     });
 

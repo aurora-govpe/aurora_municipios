@@ -40,6 +40,7 @@ WORKDIR /app
 COPY --from=builder /app/server /app/server
 RUN mkdir -p /app/data
 COPY www /app/www
+COPY templates /app/templates
 
 # Configuração da porta da aplicação
 ENV PORT=8000

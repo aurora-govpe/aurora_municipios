@@ -1,0 +1,2670 @@
+{{ define "tematicas" }}
+            <div class="tab-pane relative" data-value="Programas" id="aba_tematicas">
+              <div class="container-fluid mt-3 px-4 pb-5">
+                <div class="border-b-2 border-slate-200 pb-3 mb-4 mt-2">
+                  <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Programas Prioritários</h2>
+                  <p class="text-sm font-bold text-slate-500 mb-0">Programas Prioritários, Investimentos Estruturadores e Visão Territorial do Estado</p>
+                </div>
+                <div id="sec_tematicas_resumo_executivo" class="border-b-2 border-slate-200 pb-2 mb-3 mt-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <div>
+                    <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight mb-0">Painel Executivo de Programas</h3>
+                    <p class="text-xs font-bold text-slate-500 mb-0">Visão Transversal Integrada das Entregas e Investimentos Estruturadores no Estado</p>
+                  </div>
+                  <button id="btn_toggle_painel_executivo_programas" type="button" class="btn btn-outline-dark btn-sm rounded-pill font-bold px-3 py-1 text-xs shadow-2xs transition-all" onclick="window.togglePainelExecutivoProgramas()">
+                    <i id="icon_toggle_painel_programas" class="fas fa-chevron-up me-1"></i>
+                    <span id="txt_toggle_painel_programas">Recolher Painel</span>
+                  </button>
+                </div>
+                <div id="tematicas_container_resumo_executivo" class="mb-4"></div>
+                <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-sliders text-[#ff5a26] text-sm"></i>
+                    <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Selecionar Pauta Prioritária:</span>
+                  </div>
+                  <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1 flex-wrap">
+                    <button id="btn_pauta_resumo_cozinhas" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-xs transition-all" onclick="window.alternarPautaResumos(&#39;cozinhas&#39;, this)">
+                      <i class="fas fa-utensils me-1.5 text-slate-900"></i>
+                      Superação da Pobreza, Segurança Alimentar e Proteção Social
+                    </button>
+                    <button id="btn_pauta_resumo_obras" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;obras&#39;, this)">
+                      <i class="fas fa-helmet-safety me-1.5 text-[#ff5a26]"></i>
+                      Obras e Equipamentos Públicos
+                    </button>
+                    <button id="btn_pauta_resumo_creches" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;creches&#39;, this)">
+                      <i class="fas fa-shapes me-1.5 text-rose-500"></i>
+                      Creches e Educação Infantil
+                    </button>
+                    <button id="btn_pauta_resumo_educacao" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;educacao&#39;, this)">
+                      <i class="fas fa-bus-school me-1.5 text-yellow-500"></i>
+                      Educação (Transporte Escolar)
+                    </button>
+                    <button id="btn_pauta_resumo_iluminacao" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;iluminacao&#39;, this)">
+                      <i class="fas fa-lightbulb me-1.5 text-emerald-500"></i>
+                      Eficiência Energética e Sustentabilidade
+                    </button>
+                    <button id="btn_pauta_resumo_habitacao" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;habitacao&#39;, this)">
+                      <i class="fas fa-house-chimney me-1.5 text-slate-900"></i>
+                      Habitação e Regularização Fundiária
+                    </button>
+                    <button id="btn_pauta_resumo_aguas" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;aguas&#39;, this)">
+                      <i class="fas fa-droplet me-1.5 text-slate-900"></i>
+                      Segurança Hídrica e Saneamento Básico
+                    </button>
+                    <button id="btn_pauta_resumo_capag" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;capag&#39;, this)">
+                      <i class="fas fa-building-columns me-1.5 text-slate-900"></i>
+                      Governança e Sustentabilidade Fiscal, Parcerias e Apoio aos Municípios
+                    </button>
+                    <button id="btn_pauta_resumo_estradas" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarPautaResumos(&#39;estradas&#39;, this)">
+                      <i class="fas fa-road me-1.5 text-slate-900"></i>
+                      Conectividade Logística, Eixos Viários e Mobilidade Regional
+                    </button>
+                  </div>
+                </div>
+                <div id="resumo_pauta_cozinhas" class="resumo-pauta-bloco">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-amber-50 text-amber-700 border border-amber-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">SEGURANÇA ALIMENTAR &amp; ASSISTÊNCIA SOCIAL</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Superação da Pobreza, Segurança Alimentar e Proteção Social</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-shield-heart text-amber-600 me-1"></i>
+                        SAS / Governo de Pernambuco
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="fas fa-utensils text-slate-900"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Rede de Cozinhas Comunitárias</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total de Cozinhas</span>
+                          <div class="aurora-kpi-icon">
+                            <i class="fas fa-utensils text-slate-500"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cozinhas_kpi_total" class="aurora-kpi-number">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Mapeadas no Estado</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Funcionamento</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-check-circle"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cozinhas_kpi_funcionamento" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Servindo Refeições</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Implantação</span>
+                          <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                            <i class="fas fa-clock"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cozinhas_kpi_implantacao" class="aurora-kpi-number text-amber-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Em Preparação</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Aguard. Pactuação</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-file-signature"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cozinhas_kpi_pactuacao" class="aurora-kpi-number text-blue-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Fase de Adesão</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Não Aderiu</span>
+                          <div class="aurora-kpi-icon text-rose-600 bg-rose-50">
+                            <i class="fas fa-circle-xmark"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cozinhas_kpi_nao_aderiu" class="aurora-kpi-number text-rose-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Sem Adesão</div>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                      <i class="fas fa-person-breastfeeding text-pink-500"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Programa Mães de Pernambuco (Transferência de Renda)</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Mães Beneficiadas</span>
+                          <div class="aurora-kpi-icon text-pink-600 bg-pink-50">
+                            <i class="fas fa-person-breastfeeding"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="maes_kpi_total" class="aurora-kpi-number text-pink-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Mães e Crianças</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento Acumulado</span>
+                          <div class="aurora-kpi-icon text-slate-900 bg-purple-50">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="maes_kpi_investimento" class="aurora-kpi-number text-purple-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Recursos Pagos</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios Atendidos</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="maes_kpi_municipios" class="aurora-kpi-number">185</span>
+                        </div>
+                        <div class="aurora-kpi-footer">100% de Cobertura Estadual</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Benefício Mensal</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-money-bill-transfer"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="maes_kpi_auxilio" class="aurora-kpi-number text-emerald-700">R$ 300 / mãe</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Transferência Direta</div>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                      <i class="fas fa-wheat-awn text-amber-600"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Programa Chapéu de Palha (Apoio aos Trabalhadores Rurais e Pesca)</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Beneficiários Totais</span>
+                          <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                            <i class="fas fa-users"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="pcp_kpi_beneficiarios" class="aurora-kpi-number text-amber-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Trabalhadores Atendidos</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Recurso Pago</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="pcp_kpi_valor_pago" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Transferência Concluída</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios Atendidos</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="pcp_kpi_municipios" class="aurora-kpi-number text-blue-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="pcp_kpi_rds">RDs Atendidas</span>
+                        </div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Cana-de-Açúcar</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-seedling"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="pcp_kpi_cana" class="aurora-kpi-number text-slate-800">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Zona da Mata</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Fruticultura e Pesca</span>
+                          <div class="aurora-kpi-icon text-cyan-600 bg-cyan-50">
+                            <i class="fas fa-apple-whole"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="pcp_kpi_fruta_pesca" class="aurora-kpi-number text-cyan-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="pcp_kpi_fruta_pesca_desc">Fruta e Pesca Artesanal</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                      <i class="fas fa-hand-holding-dollar text-blue-500"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Cofinanciamento da Assistência Social (SAS / FEAS)</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total Pago</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-check-double"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cofin_kpi_pago" class="aurora-kpi-number text-blue-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Transferência Concluída</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total Validado</span>
+                          <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                            <i class="fas fa-clipboard-check"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cofin_kpi_validado" class="aurora-kpi-number">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Pactuado em PE</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>% Executado / Pago</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-chart-pie"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cofin_kpi_percentual" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Execução Orçamentária</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Saldo a Pagar</span>
+                          <div class="aurora-kpi-icon text-slate-900 bg-purple-50">
+                            <i class="fas fa-hourglass-half"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cofin_kpi_a_pagar" class="aurora-kpi-number text-purple-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Parcelas Futuras</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios</span>
+                          <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                            <i class="fas fa-city"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="cofin_kpi_municipios" class="aurora-kpi-number">185</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Cobertura em Todo PE</div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      <div>
+                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa de Cobertura Territorial e Equipamentos</h5>
+                        <span id="sem_fome_camada_label" class="text-xs text-slate-400 font-semibold">Exibindo: Localização das Cozinhas Comunitárias</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1 flex-wrap">
+                          <button id="btn_visao_sem_fome_cozinhas" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.alternarVisaoSemFome(&#39;cozinhas&#39;, this)">
+                            <i class="fas fa-utensils me-1.5"></i>
+                            Cozinhas Comunitárias
+                          </button>
+                          <button id="btn_visao_sem_fome_maes" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoSemFome(&#39;maes&#39;, this)">
+                            <i class="fas fa-person-breastfeeding me-1.5 text-pink-500"></i>
+                            Mães de Pernambuco
+                          </button>
+                          <button id="btn_visao_sem_fome_pcp" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoSemFome(&#39;pcp&#39;, this)">
+                            <i class="fas fa-wheat-awn me-1.5 text-amber-600"></i>
+                            Chapéu de Palha
+                          </button>
+                          <button id="btn_visao_sem_fome_cofin" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoSemFome(&#39;cofin&#39;, this)">
+                            <i class="fas fa-hand-holding-dollar me-1.5 text-blue-500"></i>
+                            Cofinanciamento
+                          </button>
+                          <button id="btn_visao_sem_fome_ivcad" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoSemFome(&#39;ivcad&#39;, this)">
+                            <i class="fas fa-shield-heart me-1.5 text-slate-900"></i>
+                            Vulnerabilidade (IVCAD)
+                          </button>
+                        </div>
+                        <div id="legenda_visao_cozinhas" class="d-flex align-items-center gap-1.5 flex-wrap">
+                          <span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs">● Funcionando</span>
+                          <span class="badge bg-amber-100 text-amber-800 border border-amber-300 text-xs">● Implantação</span>
+                          <span class="badge bg-blue-100 text-blue-800 border border-blue-300 text-xs">● Pactuação</span>
+                          <span class="badge bg-rose-100 text-rose-800 border border-rose-300 text-xs">● Não Aderiu</span>
+                        </div>
+                        <div id="legenda_visao_maes" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Beneficiárias:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #fce7f3; color: #831843;">&lt; 400</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #f472b6;">400 - 800</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #db2777;">800 - 1.500</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #831843;">&gt; 1.500</span>
+                        </div>
+                        <div id="legenda_visao_pcp" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Beneficiários PCP:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #fef3c7; color: #92400e;">1 - 100</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #f59e0b;">100 - 500</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #d97706;">500 - 1.500</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #78350f;">&gt; 1.500</span>
+                        </div>
+                        <div id="legenda_visao_cofin" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Repasse Pago:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #dbeafe; color: #1e40af;">&lt; R$ 10M</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #60a5fa;">R$ 10M - 20M</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #2563eb;">R$ 20M - 40M</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #1e3a8a;">&gt; R$ 40M</span>
+                        </div>
+                        <div id="legenda_visao_ivcad" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Vulnerab. Cuidados (Ponderada):</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #e0e7ff; color: #3730a3;">&lt; 0,10 (Baixa)</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #818cf8;">0,10 - 0,18</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #4f46e5;">0,18 - 0,28</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #312e81;">&gt; 0,28 (Alta)</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-5">
+                      <div class="col-lg-8 col-xl-8">
+                        <div class="position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-100" style="min-height: 520px;">
+                          <div id="resumo_cozinhas_spinner" class="position-absolute top-0 start-0 w-100 h-100 bg-white/75 d-flex align-items-center justify-content-center z-10">
+                            <div class="spinner-border text-primary" role="status"></div>
+                          </div>
+                          <div id="resumo_cozinhas_map" style="width: 100%; height: 100%; min-height: 520px; background-color: #f8fafc;"></div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4 col-xl-4">
+                        <div id="sem_fome_hover_box" class="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 shadow-sm h-100 d-flex flex-column justify-content-between" style="min-height: 520px; max-height: 520px; overflow-y: auto;">
+                          <div id="sem_fome_box_content_default" class="text-center py-4 my-auto">
+                            <div class="w-14 h-14 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
+                              <i class="fas fa-map-location-dot"></i>
+                            </div>
+                            <h5 class="font-black text-slate-800 text-base mb-1">Detalhamento Territorial</h5>
+                            <p class="text-xs text-slate-500 mb-3 px-2 leading-relaxed">Passe o cursor sobre os municípios ou cozinhas no mapa para inspecionar os indicadores locais em tempo real.</p>
+                            <div class="grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-200/80">
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Municípios</span>
+                                <span class="text-sm font-black text-slate-700">185</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Cozinhas</span>
+                                <span class="text-sm font-black text-amber-600">402</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Mães de PE</span>
+                                <span class="text-sm font-black text-pink-600">157.196</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Cofinanciamento</span>
+                                <span class="text-sm font-black text-blue-600">R$ 3,0 Bi</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div id="sem_fome_box_content_active" class="d-none flex-column h-100"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                      <div class="row g-4 mb-5">
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Série Histórica do Cofinanciamento</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Valores Validados vs. Pagos por ano de competência (2024-2026)</span>
+                              </div>
+                              <span class="badge bg-blue-100 text-blue-800 text-xs font-bold rounded-pill px-2.5 py-1">Evolução Anual</span>
+                            </div>
+                            <div id="chart_cofin_serie_historica" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Cofinanciamento por Município</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Top municípios com maior volume financeiro recebido</span>
+                              </div>
+                              <span class="badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-2.5 py-1">Top 20 Municípios</span>
+                            </div>
+                            <div id="chart_cofin_por_mun" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-2 pt-4 border-t border-slate-100">
+                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                          <h5 id="sem_fome_chart_title" class="font-bold text-slate-700 text-sm md:text-base mb-0">Cozinhas Comunitárias por Município</h5>
+                          <span id="sem_fome_chart_subtitle" class="text-xs text-slate-400 font-semibold">Top municípios com maior número de unidades do programa</span>
+                        </div>
+                        <span id="cozinhas_badge_total_muns" class="badge bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 text-xs rounded-pill font-bold">
+                          <i class="fas fa-map-pin text-slate-900 me-1"></i>
+                          185 Municípios Mapeados
+                        </span>
+                      </div>
+                      <div id="resumo_cozinhas_chart_muns" style="width: 100%; height: 460px;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_obras" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-orange-50 text-[#c2410c] border border-orange-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">INFRAESTRUTURA &amp; EQUIPAMENTOS</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Obras Públicas e Equipamentos Estruturadores</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-helmet-safety text-[#ff5a26] me-1"></i>
+                        SEDUH - CEHAB • Governo de Pernambuco
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="fas fa-trowel-bricks text-[#ff5a26]"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Panorama Consolidado de Obras e Equipamentos</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total de Obras</span>
+                          <div class="aurora-kpi-icon text-slate-500">
+                            <i class="fas fa-trowel-bricks"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="obras_kpi_total" class="aurora-kpi-number">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Contratos Registrados</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Execução</span>
+                          <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                            <i class="fas fa-person-digging"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="obras_kpi_execucao" class="aurora-kpi-number text-amber-600">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Canteiros Ativos</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Concluídas</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-circle-check"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="obras_kpi_concluidas" class="aurora-kpi-number text-emerald-600">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Obras Entregues</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento Total</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="obras_kpi_investimento" class="aurora-kpi-number text-blue-600">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Volume Contratual Global</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Exec. Física Média</span>
+                          <div class="aurora-kpi-icon text-slate-900 bg-purple-50">
+                            <i class="fas fa-chart-line"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="obras_kpi_exec_media" class="aurora-kpi-number text-purple-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Avanço Físico Médio</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios Atendidos</span>
+                          <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="obras_kpi_municipios" class="aurora-kpi-number text-teal-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Cobertura Estadual</div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      <div>
+                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa de Distribuição Territorial de Obras</h5>
+                        <span id="obras_camada_label" class="text-xs text-slate-400 font-semibold">Exibindo: Localização e Clusters de Canteiros</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1">
+                          <button id="btn_visao_obras_todos" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.alternarVisaoObras(&#39;todos&#39;, this)">
+                            <i class="fas fa-circle-nodes me-1.5"></i>
+                            Visão Geral (Clusters)
+                          </button>
+                          <button id="btn_visao_obras_andamento" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoObras(&#39;andamento&#39;, this)">
+                            <i class="fas fa-person-digging me-1.5 text-amber-600"></i>
+                            Em Execução
+                          </button>
+                          <button id="btn_visao_obras_investimento" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoObras(&#39;investimento&#39;, this)">
+                            <i class="fas fa-sack-dollar me-1.5 text-emerald-600"></i>
+                            Investimento (R$)
+                          </button>
+                          <button id="btn_visao_obras_pontos" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoObras(&#39;pontos&#39;, this)">
+                            <i class="fas fa-building me-1.5 text-blue-600"></i>
+                            Qtd. de Obras
+                          </button>
+                        </div>
+                        <div id="legenda_obras_cluster" class="d-flex align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Volume Agrupado:</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #f59e0b;">&lt; 10</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #ea580c;">10 - 50</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #c2410c;">&gt; 50</span>
+                        </div>
+                        <div id="legenda_obras_andamento" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Obras em Execução:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #fffbeb; color: #92400e;">0</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #fde68a; color: #78350f;">&lt; 5</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #f59e0b;">5 - 20</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #b45309;">&gt; 20</span>
+                        </div>
+                        <div id="legenda_obras_investimento" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Investimento Total:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #f0fdf4; color: #166534;">R$ 0</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #86efac; color: #14532d;">&lt; R$ 5M</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #22c55e;">R$ 5M - 20M</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #15803d;">&gt; R$ 20M</span>
+                        </div>
+                        <div id="legenda_obras_pontos" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Total de Obras:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #eff6ff; color: #1e40af;">0</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #93c5fd; color: #1e3a8a;">1 - 3</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #3b82f6;">4 - 10</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #1d4ed8;">&gt; 10</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-5">
+                      <div class="col-lg-8 col-xl-8">
+                        <div class="position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-100" style="min-height: 520px;">
+                          <div id="resumo_obras_spinner" class="position-absolute top-0 start-0 w-100 h-100 bg-white/75 d-flex align-items-center justify-content-center z-10 d-none">
+                            <div class="spinner-border text-primary" role="status"></div>
+                          </div>
+                          <div id="resumo_obras_map" style="width: 100%; height: 100%; min-height: 520px; background-color: #f8fafc;"></div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4 col-xl-4">
+                        <div id="obras_hover_box" class="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 shadow-sm h-100 d-flex flex-column justify-content-between" style="min-height: 520px; max-height: 520px; overflow-y: auto;">
+                          <div id="obras_box_content_default" class="text-center py-4 my-auto">
+                            <div class="w-14 h-14 rounded-full bg-orange-100 text-[#ff5a26] flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
+                              <i class="fas fa-map-location-dot"></i>
+                            </div>
+                            <h5 class="font-black text-slate-800 text-base mb-1">Detalhamento Territorial</h5>
+                            <p class="text-xs text-slate-500 mb-3 px-2 leading-relaxed">Passe o cursor sobre os municípios ou canteiros de obras no mapa para visualizar os indicadores locais em tempo real.</p>
+                            <div class="grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-200/80">
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Municípios</span>
+                                <span id="obras_box_stat_muns" class="text-sm font-black text-slate-700">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Obras Ativas</span>
+                                <span id="obras_box_stat_ativas" class="text-sm font-black text-amber-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Concluídas</span>
+                                <span id="obras_box_stat_concluidas" class="text-sm font-black text-emerald-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Investimento</span>
+                                <span id="obras_box_stat_investimento" class="text-sm font-black text-blue-600">-</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div id="obras_box_content_active" class="d-none flex-column h-100"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                      <div class="row g-4 mb-5">
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Status das Obras Públicas</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Distribuição das obras por estágio de execução</span>
+                              </div>
+                              <span class="badge bg-orange-100 text-[#c2410c] text-xs font-bold rounded-pill px-2.5 py-1">Obras SEDUH/CEHAB</span>
+                            </div>
+                            <div id="chart_obras_status" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Obras e Investimentos por Município</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Top municípios com maior volume de obras e investimento</span>
+                              </div>
+                              <span class="badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-2.5 py-1">Top 20 Municípios</span>
+                            </div>
+                            <div id="chart_obras_por_mun" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                          <h5 class="font-black text-slate-800 text-base mb-0">Carteira Detalhada de Obras Públicas</h5>
+                          <p class="text-xs text-slate-400 mb-0">Relação de contratos, intervenções, status executivo e investimento contratado</p>
+                        </div>
+                        <div id="obras_filtro_ativo_badge_container" class="d-none align-items-center gap-2">
+                          <span class="badge bg-orange-100 text-[#c2410c] font-bold px-3 py-1.5 rounded-pill" id="obras_filtro_ativo_badge">Filtro Ativo</span>
+                          <button class="btn btn-outline-secondary btn-sm rounded-pill font-bold text-xs py-0.5 px-2" onclick="window.limparFiltroObras()">Limpar Filtro</button>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <table id="resumo_obras_tabela" class="table table-hover align-middle w-100 text-sm"></table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_creches" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-rose-50 text-rose-700 border border-rose-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">PRIMEIRA INFÂNCIA &amp; EDUCAÇÃO</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Creches e Pré-Escola</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-shapes text-rose-500 me-1"></i>
+                        SEDUH / CEHAB / SEE • Governo de Pernambuco
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="fas fa-child-reaching text-rose-500"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Panorama de Obras de Creches e Educação Infantil</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total de Creches</span>
+                          <div class="aurora-kpi-icon text-slate-500">
+                            <i class="fas fa-school"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="creches_kpi_total" class="aurora-kpi-number">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Unidades Contratadas</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Execução</span>
+                          <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                            <i class="fas fa-person-digging"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="creches_kpi_execucao" class="aurora-kpi-number text-amber-600">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Canteiros Ativos</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Concluídas</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-circle-check"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="creches_kpi_concluidas" class="aurora-kpi-number text-emerald-600">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Entregues à População</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento Total</span>
+                          <div class="aurora-kpi-icon text-rose-600 bg-rose-50">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="creches_kpi_investimento" class="aurora-kpi-number text-rose-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Aporte Contratual Global</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios Atendidos</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="creches_kpi_municipios" class="aurora-kpi-number text-blue-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Cobertura Territorial</div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      <div>
+                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa Territorial de Creches e Pré-Escolas</h5>
+                        <span id="creches_camada_label" class="text-xs text-slate-400 font-semibold">Exibindo: Localização e Clusters de Creches</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1">
+                          <button id="btn_visao_creches_todos" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.alternarVisaoCreches(&#39;todos&#39;, this)">
+                            <i class="fas fa-circle-nodes me-1.5"></i>
+                            Visão Geral (Clusters)
+                          </button>
+                          <button id="btn_visao_creches_andamento" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoCreches(&#39;andamento&#39;, this)">
+                            <i class="fas fa-person-digging me-1.5 text-amber-600"></i>
+                            Em Execução
+                          </button>
+                          <button id="btn_visao_creches_pontos" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoCreches(&#39;pontos&#39;, this)">
+                            <i class="fas fa-school me-1.5 text-rose-500"></i>
+                            Qtd. por Município
+                          </button>
+                        </div>
+                        <div id="legenda_creches_cluster" class="d-flex align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Volume Agrupado:</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #f43f5e;">&lt; 5</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #e11d48;">5 - 15</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #9f1239;">&gt; 15</span>
+                        </div>
+                        <div id="legenda_creches_andamento" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Creches em Obras:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #fff1f2; color: #9f1239;">0</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #fda4af; color: #881337;">1</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #f43f5e;">2 - 4</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #9f1239;">&gt; 4</span>
+                        </div>
+                        <div id="legenda_creches_pontos" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Total de Creches:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #fff1f2; color: #9f1239;">0</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #fecdd3; color: #881337;">1 - 2</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #f43f5e;">3 - 5</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #881337;">&gt; 5</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-5">
+                      <div class="col-lg-8 col-xl-8">
+                        <div class="position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-100" style="min-height: 520px;">
+                          <div id="resumo_creches_spinner" class="position-absolute top-0 start-0 w-100 h-100 bg-white/75 d-flex align-items-center justify-content-center z-10 d-none">
+                            <div class="spinner-border text-primary" role="status"></div>
+                          </div>
+                          <div id="resumo_creches_map" style="width: 100%; height: 100%; min-height: 520px; background-color: #f8fafc;"></div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4 col-xl-4">
+                        <div id="creches_hover_box" class="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 shadow-sm h-100 d-flex flex-column justify-content-between" style="min-height: 520px; max-height: 520px; overflow-y: auto;">
+                          <div id="creches_box_content_default" class="text-center py-4 my-auto">
+                            <div class="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
+                              <i class="fas fa-shapes"></i>
+                            </div>
+                            <h5 class="font-black text-slate-800 text-base mb-1">Detalhamento de Creches</h5>
+                            <p class="text-xs text-slate-500 mb-3 px-2 leading-relaxed">Passe o cursor sobre os municípios ou canteiros de creches no mapa para visualizar os indicadores.</p>
+                            <div class="grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-200/80">
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Municípios</span>
+                                <span id="creches_box_stat_muns" class="text-sm font-black text-slate-700">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Em Obras</span>
+                                <span id="creches_box_stat_ativas" class="text-sm font-black text-amber-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Concluídas</span>
+                                <span id="creches_box_stat_concluidas" class="text-sm font-black text-emerald-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Investimento</span>
+                                <span id="creches_box_stat_investimento" class="text-sm font-black text-rose-600">-</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div id="creches_box_content_active" class="d-none flex-column h-100"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                      <div class="row g-4 mb-5">
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Status das Obras de Creches</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Distribuição das unidades por estágio de execução</span>
+                              </div>
+                              <span class="badge bg-rose-100 text-rose-800 text-xs font-bold rounded-pill px-2.5 py-1">Educação Infantil</span>
+                            </div>
+                            <div id="chart_creches_status" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Creches por Município</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Top municípios com maior número de creches pactuadas</span>
+                              </div>
+                              <span class="badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-2.5 py-1">Top 20 Municípios</span>
+                            </div>
+                            <div id="chart_creches_por_mun" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                          <h5 class="font-black text-slate-800 text-base mb-0">Carteira Detalhada de Creches e Pré-Escolas</h5>
+                          <p class="text-xs text-slate-400 mb-0">Relação de canteiros, contratos, avanço físico e investimento</p>
+                        </div>
+                        <div id="creches_filtro_ativo_badge_container" class="d-none align-items-center gap-2">
+                          <span class="badge bg-rose-100 text-rose-800 font-bold px-3 py-1.5 rounded-pill" id="creches_filtro_ativo_badge">Filtro Ativo</span>
+                          <button class="btn btn-outline-secondary btn-sm rounded-pill font-bold text-xs py-0.5 px-2" onclick="window.limparFiltroCreches()">Limpar Filtro</button>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <table id="resumo_creches_tabela" class="table table-hover align-middle w-100 text-sm"></table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_educacao" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-amber-50 text-amber-800 border border-amber-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">TRANSPORTE ESCOLAR &amp; ACESSIBILIDADE</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Frota Escolar: Aquisição e Entrega de Ônibus e Vans</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-bus text-amber-500 me-1"></i>
+                        SEE • Governo de Pernambuco
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="fas fa-bus-simple text-amber-600"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Frota Municipal de Transporte Escolar</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Frota Total</span>
+                          <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                            <i class="fas fa-bus"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="transp_kpi_total" class="aurora-kpi-number text-amber-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Veículos Entregues</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Ônibus Escolares</span>
+                          <div class="aurora-kpi-icon text-yellow-600 bg-yellow-50">
+                            <i class="fas fa-bus-simple"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="transp_kpi_onibus" class="aurora-kpi-number text-yellow-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Ônibus Padronizados</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Vans Escolares</span>
+                          <div class="aurora-kpi-icon text-sky-600 bg-sky-50">
+                            <i class="fas fa-van-shuttle"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="transp_kpi_vans" class="aurora-kpi-number text-sky-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Transporte Complementar</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento Total</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="transp_kpi_investimento" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Recurso Estadual Aplicado</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios Atendidos</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="transp_kpi_municipios" class="aurora-kpi-number text-blue-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">100% dos Territórios</div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      <div>
+                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa de Cobertura da Frota Escolar por Município</h5>
+                        <span id="educacao_camada_label" class="text-xs text-slate-400 font-semibold">Exibindo: Total de Veículos Entregues (Ônibus + Vans)</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1">
+                          <button id="btn_visao_transp_total" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.alternarVisaoEducacao(&#39;total&#39;, this)">
+                            <i class="fas fa-bus-simple me-1.5"></i>
+                            Total de Veículos
+                          </button>
+                          <button id="btn_visao_transp_onibus" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoEducacao(&#39;onibus&#39;, this)">
+                            <i class="fas fa-bus me-1.5 text-yellow-600"></i>
+                            Apenas Ônibus
+                          </button>
+                          <button id="btn_visao_transp_vans" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoEducacao(&#39;vans&#39;, this)">
+                            <i class="fas fa-van-shuttle me-1.5 text-sky-600"></i>
+                            Apenas Vans
+                          </button>
+                        </div>
+                        <div id="legenda_transp_total" class="d-flex align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Veículos:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #fef3c7; color: #92400e;">&lt; 5</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #f59e0b;">5 - 10</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #d97706;">10 - 20</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #78350f;">&gt; 20</span>
+                        </div>
+                        <div id="legenda_transp_onibus" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Ônibus:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #fef9c3; color: #854d0e;">&lt; 5</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #eab308;">5 - 10</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #ca8a04;">10 - 15</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #713f12;">&gt; 15</span>
+                        </div>
+                        <div id="legenda_transp_vans" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Vans:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #f0f9ff; color: #075985;">0</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #38bdf8;">1</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #0284c7;">2 - 3</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #0c4a6e;">&gt; 3</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-5">
+                      <div class="col-lg-8 col-xl-8">
+                        <div class="position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-100" style="min-height: 520px;">
+                          <div id="resumo_educacao_spinner" class="position-absolute top-0 start-0 w-100 h-100 bg-white/75 d-flex align-items-center justify-content-center z-10 d-none">
+                            <div class="spinner-border text-primary" role="status"></div>
+                          </div>
+                          <div id="resumo_educacao_map" style="width: 100%; height: 100%; min-height: 520px; background-color: #f8fafc;"></div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4 col-xl-4">
+                        <div id="educacao_hover_box" class="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 shadow-sm h-100 d-flex flex-column justify-content-between" style="min-height: 520px; max-height: 520px; overflow-y: auto;">
+                          <div id="educacao_box_content_default" class="text-center py-4 my-auto">
+                            <div class="w-14 h-14 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
+                              <i class="fas fa-bus-school"></i>
+                            </div>
+                            <h5 class="font-black text-slate-800 text-base mb-1">Detalhamento da Frota Escolar</h5>
+                            <p class="text-xs text-slate-500 mb-3 px-2 leading-relaxed">Passe o cursor sobre os municípios ou clique em um para fixar as informações.</p>
+                            <div class="grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-200/80">
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Municípios</span>
+                                <span id="educacao_box_stat_muns" class="text-sm font-black text-slate-700">185</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Ônibus</span>
+                                <span id="educacao_box_stat_onibus" class="text-sm font-black text-yellow-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Vans</span>
+                                <span id="educacao_box_stat_vans" class="text-sm font-black text-sky-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Investimento</span>
+                                <span id="educacao_box_stat_investimento" class="text-sm font-black text-emerald-600">-</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div id="educacao_box_content_active" class="d-none flex-column h-100"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                      <div class="row g-4 mb-5">
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Composição da Frota Escolar</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Distribuição entre Ônibus e Vans Escolares</span>
+                              </div>
+                              <span class="badge bg-amber-100 text-amber-800 text-xs font-bold rounded-pill px-2.5 py-1">Frota SEE</span>
+                            </div>
+                            <div id="chart_educacao_composicao" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Frota Escolar por Município</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Top 20 municípios com maior quantidade de veículos entregues</span>
+                              </div>
+                              <span class="badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-2.5 py-1">Top 20 Municípios</span>
+                            </div>
+                            <div id="chart_educacao_por_mun" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                          <h5 class="font-black text-slate-800 text-base mb-0">Detalhamento da Entrega de Ônibus e Vans por Município</h5>
+                          <p class="text-xs text-slate-400 mb-0">Relação de municípios, quantidades de ônibus e vans entregues e valor total investido</p>
+                        </div>
+                        <div id="educacao_filtro_ativo_badge_container" class="d-none align-items-center gap-2">
+                          <span class="badge bg-amber-100 text-amber-800 font-bold px-3 py-1.5 rounded-pill" id="educacao_filtro_ativo_badge">Filtro Ativo</span>
+                          <button class="btn btn-outline-secondary btn-sm rounded-pill font-bold text-xs py-0.5 px-2" onclick="window.limparFiltroEducacao()">Limpar Filtro</button>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <table id="resumo_educacao_tabela" class="table table-hover align-middle w-100 text-sm"></table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_iluminacao" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">ILUMINAÇÃO PÚBLICA &amp; SUSTENTABILIDADE</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Programa Ilumina Pernambuco (Modernização LED e Eficiência Energética)</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-lightbulb text-emerald-500 me-1"></i>
+                        SEDUH - SEDU • Governo de Pernambuco
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="fas fa-bolt text-emerald-600"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Panorama de Modernização do Parque de Iluminação</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Pontos Executados</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-lightbulb"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="ilumina_kpi_pontos_exec" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Lâmpadas/Pontos em LED</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Pontos Previstos</span>
+                          <div class="aurora-kpi-icon text-slate-500">
+                            <i class="fas fa-bullseye"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="ilumina_kpi_pontos_prev" class="aurora-kpi-number">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Meta Contratada</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Taxa de Execução</span>
+                          <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                            <i class="fas fa-chart-pie"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="ilumina_kpi_taxa_exec" class="aurora-kpi-number text-teal-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="ilumina_kpi_etapas">Avanço Físico Global</span>
+                        </div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento Total</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="ilumina_kpi_investimento" class="aurora-kpi-number text-blue-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="ilumina_kpi_pago_sub">Valor Contratado</span>
+                        </div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios Atendidos</span>
+                          <div class="aurora-kpi-icon text-indigo-600 bg-indigo-50">
+                            <i class="fas fa-city"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="ilumina_kpi_municipios" class="aurora-kpi-number text-indigo-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Cobertura Territorial</div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      <div>
+                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa de Cobertura e Canteiros do Ilumina PE</h5>
+                        <span id="iluminacao_camada_label" class="text-xs text-slate-400 font-semibold">Exibindo: Localização e Clusters de Contratos de Iluminação</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1">
+                          <button id="btn_visao_ilumina_todos" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.alternarVisaoIluminacao(&#39;todos&#39;, this)">
+                            <i class="fas fa-circle-nodes me-1.5"></i>
+                            Visão Geral (Clusters)
+                          </button>
+                          <button id="btn_visao_ilumina_pontos_exec" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoIluminacao(&#39;pontos_exec&#39;, this)">
+                            <i class="fas fa-lightbulb me-1.5 text-emerald-600"></i>
+                            Pontos Instalados
+                          </button>
+                          <button id="btn_visao_ilumina_investimento" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoIluminacao(&#39;investimento&#39;, this)">
+                            <i class="fas fa-sack-dollar me-1.5 text-blue-600"></i>
+                            Investimento (R$)
+                          </button>
+                        </div>
+                        <div id="legenda_ilumina_cluster" class="d-flex align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Volume Agrupado:</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #10b981;">&lt; 5</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #059669;">5 - 15</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #047857;">&gt; 15</span>
+                        </div>
+                        <div id="legenda_ilumina_pontos_exec" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Pontos LED:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #f0fdf4; color: #166534;">0</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #86efac; color: #14532d;">&lt; 300</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #22c55e;">300 - 800</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #15803d;">&gt; 800</span>
+                        </div>
+                        <div id="legenda_ilumina_investimento" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Investimento:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #eff6ff; color: #1e40af;">R$ 0</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #93c5fd; color: #1e3a8a;">&lt; R$ 300 mil</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #3b82f6;">R$ 300k - 700k</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #1d4ed8;">&gt; R$ 700 mil</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-5">
+                      <div class="col-lg-8 col-xl-8">
+                        <div class="position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-100" style="min-height: 520px;">
+                          <div id="resumo_iluminacao_spinner" class="position-absolute top-0 start-0 w-100 h-100 bg-white/75 d-flex align-items-center justify-content-center z-10 d-none">
+                            <div class="spinner-border text-primary" role="status"></div>
+                          </div>
+                          <div id="resumo_iluminacao_map" style="width: 100%; height: 100%; min-height: 520px; background-color: #f8fafc;"></div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4 col-xl-4">
+                        <div id="iluminacao_hover_box" class="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 shadow-sm h-100 d-flex flex-column justify-content-between" style="min-height: 520px; max-height: 520px; overflow-y: auto;">
+                          <div id="iluminacao_box_content_default" class="text-center py-4 my-auto">
+                            <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
+                              <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <h5 class="font-black text-slate-800 text-base mb-1">Detalhamento de Iluminação</h5>
+                            <p class="text-xs text-slate-500 mb-3 px-2 leading-relaxed">Passe o cursor sobre os municípios ou canteiros no mapa para inspecionar os indicadores locais.</p>
+                            <div class="grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-200/80">
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Municípios</span>
+                                <span id="ilumina_box_stat_muns" class="text-sm font-black text-slate-700">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Pontos LED</span>
+                                <span id="ilumina_box_stat_exec" class="text-sm font-black text-emerald-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Previstos</span>
+                                <span id="ilumina_box_stat_prev" class="text-sm font-black text-slate-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Investimento</span>
+                                <span id="ilumina_box_stat_investimento" class="text-sm font-black text-blue-600">-</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div id="iluminacao_box_content_active" class="d-none flex-column h-100"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                      <div class="row g-4 mb-5">
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Status das Obras de Iluminação</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Distribuição das etapas por estágio de execução</span>
+                              </div>
+                              <span class="badge bg-emerald-100 text-emerald-800 text-xs font-bold rounded-pill px-2.5 py-1">Ilumina PE</span>
+                            </div>
+                            <div id="chart_iluminacao_status" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Pontos de LED por Município</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Top 20 municípios com maior quantidade de pontos executados</span>
+                              </div>
+                              <span class="badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-2.5 py-1">Top 20 Municípios</span>
+                            </div>
+                            <div id="chart_iluminacao_por_mun" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                          <h5 class="font-black text-slate-800 text-base mb-0">Carteira Detalhada do Ilumina Pernambuco</h5>
+                          <p class="text-xs text-slate-400 mb-0">Relação de etapas, contratos, pontos executados vs. previstos e valores</p>
+                        </div>
+                        <div id="iluminacao_filtro_ativo_badge_container" class="d-none align-items-center gap-2">
+                          <span class="badge bg-emerald-100 text-emerald-800 font-bold px-3 py-1.5 rounded-pill" id="iluminacao_filtro_ativo_badge">Filtro Ativo</span>
+                          <button class="btn btn-outline-secondary btn-sm rounded-pill font-bold text-xs py-0.5 px-2" onclick="window.limparFiltroIluminacao()">Limpar Filtro</button>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <table id="resumo_iluminacao_tabela" class="table table-hover align-middle w-100 text-sm"></table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_capag" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-purple-50 text-purple-700 border border-purple-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">GESTÃO FISCAL &amp; CRÉDITO</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Governança e Sustentabilidade Fiscal, Parcerias e Apoio aos Municípios</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-building-columns text-primary me-1"></i>
+                        Secretaria do Tesouro Nacional (STN)
+                      </span>
+                    </div>
+                    <div class="text-center mb-3">
+                      <h5 class="font-bold text-slate-700 text-sm md:text-base mb-1">CAPAG por Município</h5>
+                    </div>
+                    <div id="resumo_capag_map_container" class="map-clean-container rounded-2xl border border-slate-200 overflow-hidden relative shadow-inner mx-auto" style="height: 520px; width: 100%; max-width: 1100px; background-color: #f8fafc; position: relative;">
+                      <div id="resumo_capag_spinner" class="d-none position-absolute top-50 start-50 translate-middle text-center bg-white/90 p-4 rounded-2xl shadow-lg border border-slate-200 z-10">
+                        <div class="spinner-border text-primary mb-2" role="status"></div>
+                        <div class="text-xs font-bold text-slate-700">Carregando dados da CAPAG...</div>
+                      </div>
+                      <div id="resumo_capag_map" style="width: 100%; height: 100%;"></div>
+                    </div>
+                    <div class="mt-5 d-flex flex-column align-items-center">
+                      <h5 class="font-bold text-slate-700 text-sm md:text-base mb-3 text-center">Quantidade de municípios de Pernambuco por nota final na CAPAG</h5>
+                      <div class="table-responsive w-100 d-flex justify-content-center">
+                        <table class="table table-bordered text-center align-middle shadow-sm rounded-xl overflow-hidden mb-2" style="max-width: 860px; border: 1.5px solid #205090;">
+                          <thead>
+                            <tr style="background-color: #205090; color: #ffffff; font-weight: 800; font-size: 0.8rem; border-color: #1a4278;">
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nota</th>
+                              <th style="width: 12.5%; background-color: #205090; color: #ffffff; padding: 10px 4px;">Nº de municípios</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr style="font-size: 0.88rem;">
+                              <td style="background-color: #92D050; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">A</td>
+                              <td id="capag_count_A" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                              <td style="background-color: #00A8A8; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">B</td>
+                              <td id="capag_count_B" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                              <td style="background-color: #C55A11; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">C</td>
+                              <td id="capag_count_C" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                              <td style="background-color: #595959; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">n.d.</td>
+                              <td id="capag_count_nd" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                            </tr>
+                            <tr style="font-size: 0.88rem;">
+                              <td style="background-color: #70AD47; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">A+</td>
+                              <td id="capag_count_Aplus" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                              <td style="background-color: #00B0B9; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">B+</td>
+                              <td id="capag_count_Bplus" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                              <td style="background-color: #843C0C; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">D</td>
+                              <td id="capag_count_D" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">0</td>
+                              <td style="background-color: #404040; color: #ffffff; font-weight: 900; border-color: #e2e8f0; padding: 8px 4px;">n.e.</td>
+                              <td id="capag_count_ne" class="bg-white text-slate-800 fw-black" style="border-color: #e2e8f0; font-size: 0.95rem;">-</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="text-center text-slate-400 text-xs mt-2">Fonte: Secretaria do Tesouro Nacional (STN). Classificação da Capacidade de Pagamento (CAPAG). n.d. = Não Disponível; n.e. = Não Elegível.</div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_aguas" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-blue-50 text-blue-700 border border-blue-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">SANEAMENTO &amp; RECURSOS HÍDRICOS</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Segurança Hídrica e Saneamento Básico</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-water text-primary me-1"></i>
+                        COMPESA / SRHS
+                      </span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento Total</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-faucet-drip"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="aguas_kpi_investimento" class="aurora-kpi-number text-blue-700">R$ 14,8 Bi</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Plano Plurianual</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Projetos / Obras</span>
+                          <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                            <i class="fas fa-trowel-bricks"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="aguas_kpi_projetos" class="aurora-kpi-number">560</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Intervenções Mapeadas</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios</span>
+                          <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="aguas_kpi_municipios" class="aurora-kpi-number">185</span>
+                        </div>
+                        <div class="aurora-kpi-footer">100% dos Territórios</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Pop. Beneficiada</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-users"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="aguas_kpi_populacao" class="aurora-kpi-number text-emerald-700">9,5 Mi</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Alcance Estimado</div>
+                      </div>
+                      <div class="aurora-kpi-card col-span-2 md:col-span-1">
+                        <div class="aurora-kpi-header">
+                          <span>Desembolso Futuro</span>
+                          <div class="aurora-kpi-icon text-slate-900 bg-purple-50">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="aguas_kpi_desembolso" class="aurora-kpi-number text-purple-700">R$ 7,7 Bi</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Contratos em Andamento</div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                      <div>
+                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa Interativo do Plano de Investimentos COMPESA</h5>
+                        <span id="aguas_camada_ativa_label" class="text-xs text-slate-500 font-bold">Camada Ativa: Rodízio atual</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="d-flex align-items-center gap-2 bg-blue-50/70 border border-blue-200 px-3 py-1.5 rounded-pill shadow-xs">
+                          <div class="form-check form-switch mb-0 d-flex align-items-center gap-1.5 ps-0">
+                            <input class="form-check-input ms-0 cursor-pointer" type="checkbox" role="switch" id="aguas_toggle_adutoras" checked="checked" style="cursor: pointer;" onchange="window.toggleCamadaSobrepostaCompesa(&#39;linhas&#39;, this.checked)"/>
+                            <label class="form-check-label text-xs font-bold text-blue-900 cursor-pointer mb-0 select-none" for="aguas_toggle_adutoras">
+                              <i class="fas fa-water text-blue-600 me-1"></i>
+                              Sistemas Produtores / Adutoras
+                            </label>
+                          </div>
+                          <span class="text-slate-300 mx-1">|</span>
+                          <div class="form-check form-switch mb-0 d-flex align-items-center gap-1.5 ps-0">
+                            <input class="form-check-input ms-0 cursor-pointer" type="checkbox" role="switch" id="aguas_toggle_iniciativas" checked="checked" style="cursor: pointer;" onchange="window.toggleCamadaSobrepostaCompesa(&#39;pontos&#39;, this.checked)"/>
+                            <label class="form-check-label text-xs font-bold text-sky-900 cursor-pointer mb-0 select-none" for="aguas_toggle_iniciativas">
+                              <i class="fas fa-helmet-safety text-amber-500 me-1"></i>
+                              Iniciativas SRHS (Obras)
+                            </label>
+                          </div>
+                          <span class="text-slate-300 mx-1">|</span>
+                          <div class="form-check form-switch mb-0 d-flex align-items-center gap-1.5 ps-0">
+                            <input class="form-check-input ms-0 cursor-pointer" type="checkbox" role="switch" id="aguas_toggle_mananciais" checked="checked" style="cursor: pointer;" onchange="window.toggleCamadaSobrepostaCompesa(&#39;mananciais&#39;, this.checked)"/>
+                            <label class="form-check-label text-xs font-bold text-teal-900 cursor-pointer mb-0 select-none" for="aguas_toggle_mananciais">
+                              <i class="fas fa-faucet text-teal-600 me-1"></i>
+                              Mananciais (APAC)
+                            </label>
+                          </div>
+                          <span class="text-slate-300 mx-1">|</span>
+                          <div class="form-check form-switch mb-0 d-flex align-items-center gap-1.5 ps-0">
+                            <input class="form-check-input ms-0 cursor-pointer" type="checkbox" role="switch" id="aguas_toggle_bacias" style="cursor: pointer;" onchange="window.toggleCamadaSobrepostaCompesa(&#39;bacias&#39;, this.checked)"/>
+                            <label class="form-check-label text-xs font-bold text-indigo-900 cursor-pointer mb-0 select-none" for="aguas_toggle_bacias">
+                              <i class="fas fa-draw-polygon text-indigo-600 me-1"></i>
+                              Bacias (UPs)
+                            </label>
+                          </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                          <label class="text-xs font-bold text-slate-600 mb-0">Colorir por:</label>
+                          <select id="aguas_select_camada" class="form-select form-select-sm fw-bold text-slate-800 bg-white border-slate-300 rounded-pill shadow-xs cursor-pointer" style="width: 250px; font-size: 0.82rem;" onchange="window.alternarCamadaTematicaCompesa(this.value)">
+                            <option value="Rodízio atual" selected="selected">1. Rodízio Atual de Abastecimento</option>
+                            <option value="Rodízio pós obras">2. Rodízio Pós Obras (Impacto)</option>
+                            <option value="Situação C2 (com obras)">3. Situação C2 (Com Obras Previstas)</option>
+                            <option value="Situação C1 (sem obras)">4. Situação C1 (Sem Obras)</option>
+                            <option value="Situação C3 (Dem. PRSB)">5. Situação C3 (Dem. PRSB)</option>
+                            <option value="Categoria (A/B/C)">6. Categoria do Município (A/B/C)</option>
+                            <option value="Concessão">7. Situação da Concessão Compesa</option>
+                            <option value="Microrregião">8. Microrregião de Saneamento</option>
+                            <option value="Com projetos">9. Municípios com Projetos no Plano</option>
+                            <option value="Investimento planejado">10. Volume de Investimento Planejado</option>
+                            <option value="Regionalização Anexo XIV">11. Regionalização Anexo XIV</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="resumo_aguas_map_container" class="map-clean-container rounded-2xl border border-slate-200 overflow-hidden relative shadow-inner mx-auto mb-4" style="height: 560px; width: 100%; background-color: #f8fafc; position: relative;">
+                      <div id="resumo_aguas_spinner" class="d-none position-absolute top-50 start-50 translate-middle text-center bg-white/90 p-4 rounded-2xl shadow-lg border border-slate-200 z-10">
+                        <div class="spinner-border text-primary mb-2" role="status"></div>
+                        <div class="text-xs font-bold text-slate-700">Carregando mapa e camadas do Plano COMPESA...</div>
+                      </div>
+                      <div id="resumo_aguas_map" style="width: 100%; height: 100%;"></div>
+                      <div id="resumo_aguas_legenda" class="bg-white/95 backdrop-blur border border-slate-200 rounded-xl p-3 shadow-md position-absolute bottom-4 left-4 z-10 text-xs" style="max-width: 320px; max-height: 280px; overflow-y: auto;">
+                        <div id="resumo_aguas_legenda_titulo" class="fw-bold text-slate-800 mb-1.5 border-b border-slate-100 pb-1" style="font-size: 0.75rem;">Legenda da Camada</div>
+                        <div id="resumo_aguas_legenda_itens" class="d-flex flex-column gap-1 mb-2"></div>
+                      </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-3xl p-4 p-md-5 mb-5">
+                      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-2 border-b border-slate-200">
+                        <div>
+                          <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">SEGURANÇA HÍDRICA &amp; RODÍZIO</span>
+                          <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Diagnóstico de Rodízio e Eficácia das Obras</h4>
+                        </div>
+                        <span class="badge bg-white text-slate-600 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold shadow-xs">
+                          <i class="fas fa-chart-line text-emerald-600 me-1"></i>
+                          Impacto Direto na População
+                        </span>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Diário Atual</span>
+                            <div class="aurora-kpi-icon text-slate-700 bg-slate-100">
+                              <i class="fas fa-clock"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="aguas_kpi_rodizio_atual_diario" class="aurora-kpi-number text-slate-800">26</span>
+                          </div>
+                          <div class="aurora-kpi-footer">14,1% dos municípios</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Diário Pós-Obras</span>
+                            <div class="aurora-kpi-icon text-emerald-700 bg-emerald-50">
+                              <i class="fas fa-faucet"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="aguas_kpi_rodizio_pos_diario" class="aurora-kpi-number text-emerald-700">68</span>
+                          </div>
+                          <div class="aurora-kpi-footer text-emerald-700 font-bold">+42 municípios (+161%)</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Sem Déficit (C2)</span>
+                            <div class="aurora-kpi-icon text-blue-700 bg-blue-50">
+                              <i class="fas fa-shield-halved"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="aguas_kpi_c2_sem_deficit" class="aurora-kpi-number text-blue-700">86</span>
+                          </div>
+                          <div class="aurora-kpi-footer">46,5% do Estado</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Déficit Solucionado</span>
+                            <div class="aurora-kpi-icon text-amber-700 bg-amber-50">
+                              <i class="fas fa-wrench"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="aguas_kpi_c2_solucionado" class="aurora-kpi-number text-amber-700">51</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Com obras em execução</div>
+                        </div>
+                      </div>
+                      <div class="row g-4">
+                        <div class="col-lg-7">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 h-100 shadow-xs">
+                            <h6 class="font-extrabold text-slate-800 text-sm mb-1">Impacto no Rodízio de Abastecimento: Situação Atual vs. Pós-Obras</h6>
+                            <p class="text-xs text-slate-400 mb-3">Migração de municípios saindo do rodízio crítico e alcançando abastecimento diário pleno</p>
+                            <div id="resumo_aguas_chart_rodizio_comp" style="width: 100%; height: 340px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-5">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 h-100 shadow-xs">
+                            <h6 class="font-extrabold text-slate-800 text-sm mb-1">Distribuição por Situação C2 e Categoria A/B/C</h6>
+                            <p class="text-xs text-slate-400 mb-3">Classificação de porte municipal e resolução de déficits hídricos</p>
+                            <div id="resumo_aguas_chart_situacao_c2" style="width: 100%; height: 340px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-3xl p-4 p-md-5 mb-5">
+                      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-2 border-b border-slate-200">
+                        <div>
+                          <span class="badge bg-purple-50 text-purple-700 border border-purple-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">FINANCIAMENTO &amp; PRIORIZAÇÃO</span>
+                          <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Necessidade de Recursos, Déficit BNDES e Iniciativas SRHS</h4>
+                        </div>
+                        <span class="badge bg-white text-slate-600 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold shadow-xs">
+                          <i class="fas fa-coins text-purple-600 me-1"></i>
+                          R$ 12,5 Bi em Recursos Não Agrupados
+                        </span>
+                      </div>
+                      <div class="row g-4 mb-4">
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 h-100 shadow-xs">
+                            <h6 class="font-extrabold text-slate-800 text-sm mb-1">Necessidade de Recursos por Fonte Agrupadora (R$ Bi)</h6>
+                            <p class="text-xs text-slate-400 mb-3">Soma de Total Geral (filtrando subtotais agrupados para evitar dupla contagem)</p>
+                            <div id="resumo_aguas_chart_recursos_fonte" style="width: 100%; height: 340px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 h-100 shadow-xs">
+                            <h6 class="font-extrabold text-slate-800 text-sm mb-1">Necessidade de Recursos por Status da Ação</h6>
+                            <p class="text-xs text-slate-400 mb-3">Alocação financeira conforme estágio de contratação e execução</p>
+                            <div id="resumo_aguas_chart_recursos_status" style="width: 100%; height: 340px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row g-4">
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 h-100 shadow-xs">
+                            <h6 class="font-extrabold text-slate-800 text-sm mb-1">Municípios com Déficit Persistente (Análise BNDES)</h6>
+                            <p class="text-xs text-slate-400 mb-3">Top intervenções e microrregiões mais demandantes nos 40 municípios críticos</p>
+                            <div id="resumo_aguas_chart_deficit_bndes" style="width: 100%; height: 340px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 h-100 shadow-xs">
+                            <h6 class="font-extrabold text-slate-800 text-sm mb-1">Iniciativas Estruturantes da SRHS (R$ 5,45 Bi)</h6>
+                            <p class="text-xs text-slate-400 mb-3">Ações prioritárias de segurança hídrica por fonte financiadora</p>
+                            <div id="resumo_aguas_chart_iniciativas_srhs" style="width: 100%; height: 340px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-3xl p-4 p-md-5 mb-5">
+                      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-2 border-b border-slate-200">
+                        <div>
+                          <span class="badge bg-cyan-50 text-cyan-800 border border-cyan-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">APAC · SISTEMA DE INFORMAÇÕES DE RECURSOS HÍDRICOS (SIRH)</span>
+                          <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Nível dos Mananciais &amp; Reservatórios do Estado</h4>
+                        </div>
+                        <span class="badge bg-white text-slate-600 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold shadow-xs">
+                          <i class="fas fa-database text-cyan-600 me-1"></i>
+                          99 Mananciais Monitorados em Tempo Real
+                        </span>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Volume Acumulado</span>
+                            <div class="aurora-kpi-icon text-cyan-700 bg-cyan-50">
+                              <i class="fas fa-water"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="apac_kpi_volume_percent" class="aurora-kpi-number text-cyan-700">27,8%</span>
+                          </div>
+                          <div class="aurora-kpi-footer">911,7 Mi m³ de 3,28 Bi m³</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Mananciais em Colapso</span>
+                            <div class="aurora-kpi-icon text-rose-700 bg-rose-50">
+                              <i class="fas fa-triangle-exclamation"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="apac_kpi_colapso_count" class="aurora-kpi-number text-rose-700">30</span>
+                          </div>
+                          <div class="aurora-kpi-footer text-rose-700 font-bold">Abaixo de 10% ou Secos (30,3%)</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Alerta Crítico (10-30%)</span>
+                            <div class="aurora-kpi-icon text-amber-700 bg-amber-50">
+                              <i class="fas fa-circle-exclamation"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="apac_kpi_critico_count" class="aurora-kpi-number text-amber-700">17</span>
+                          </div>
+                          <div class="aurora-kpi-footer">17,2% dos mananciais</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Mananciais Seguros</span>
+                            <div class="aurora-kpi-icon text-emerald-700 bg-emerald-50">
+                              <i class="fas fa-shield-heart"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="apac_kpi_seguro_count" class="aurora-kpi-number text-emerald-700">31</span>
+                          </div>
+                          <div class="aurora-kpi-footer text-emerald-700 font-bold">24 cheios e 7 vertendo</div>
+                        </div>
+                      </div>
+                      <div class="row g-4 mb-4">
+                        <div class="col-lg-7">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 h-100 shadow-xs">
+                            <h6 class="font-extrabold text-slate-800 text-sm mb-1">Volume Armazenado e Capacidade por Bacia Hidrográfica (Mi m³)</h6>
+                            <p class="text-xs text-slate-400 mb-3">Comparativo entre capacidade máxima de projeto e volume acumulado atual</p>
+                            <div id="resumo_aguas_chart_bacias_volume" style="width: 100%; height: 350px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-5">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 h-100 shadow-xs">
+                            <h6 class="font-extrabold text-slate-800 text-sm mb-1">Distribuição da Capacidade Hídrica por Faixa Operacional</h6>
+                            <p class="text-xs text-slate-400 mb-3">Alocação do volume estadual segundo classificação oficial da APAC</p>
+                            <div id="resumo_aguas_chart_faixas_capacidade" style="width: 100%; height: 350px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                          <div>
+                            <h6 class="font-extrabold text-slate-800 text-sm mb-0">
+                              <i class="fas fa-table-list text-cyan-600 me-2"></i>
+                              Inventário Completo dos 99 Reservatórios Monitorados
+                            </h6>
+                            <p class="text-xs text-slate-400 mb-0">Cotas, capacidade nominal, volume acumulado e status em tempo real</p>
+                          </div>
+                        </div>
+                        <div class="table-responsive">
+                          <table id="resumo_aguas_tabela_mananciais" class="table table-hover w-100 text-sm"></table>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 mt-4 flex-wrap gap-2">
+                      <div>
+                        <h5 class="font-black text-slate-800 text-base mb-0">Portfólio de Obras &amp; Cronograma de Desembolso (560 Projetos)</h5>
+                        <p class="text-xs text-slate-400 mb-0">Acompanhamento físico-financeiro por diretoria e município beneficiado</p>
+                      </div>
+                    </div>
+                    <div class="row g-4 mb-5">
+                      <div class="col-lg-6">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 h-100">
+                          <h6 class="font-extrabold text-slate-700 text-sm mb-1">Cronograma Plurianual de Desembolso Financeiro</h6>
+                          <p class="text-xs text-slate-400 mb-3">Necessidade de recursos projetada por ano (em R$ Milhões)</p>
+                          <div id="resumo_aguas_chart_desembolso" style="width: 100%; height: 320px;"></div>
+                        </div>
+                      </div>
+                      <div class="col-lg-6">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 h-100">
+                          <h6 class="font-extrabold text-slate-700 text-sm mb-1">Carteira de Projetos por Situação</h6>
+                          <p class="text-xs text-slate-400 mb-3">Distribuição do número de projetos por status de execução</p>
+                          <div id="resumo_aguas_chart_status" style="width: 100%; height: 320px;"></div>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                          <h6 class="font-extrabold text-slate-700 text-sm mb-1">Top 15 Municípios com Maior Volume de Recursos Rateados</h6>
+                          <p class="text-xs text-slate-400 mb-3">Soma dos valores rateados das obras e intervenções hídricas (em R$ Milhões)</p>
+                          <div id="resumo_aguas_chart_top_muns" style="width: 100%; height: 380px;"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4">
+                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                          <h5 class="font-bold text-slate-800 text-base mb-0">Portfólio Detalhado de Projetos e Obras da Compesa</h5>
+                          <p class="text-xs text-slate-400 mb-0">Listagem consolidada de todas as intervenções com diretoria, orçamento e execução</p>
+                        </div>
+                        <div id="aguas_filtro_municipio_ativo" class="d-none align-items-center gap-2">
+                          <span class="badge bg-blue-100 text-blue-800 font-bold px-3 py-1.5 rounded-pill" id="aguas_filtro_municipio_badge">Filtro: Todos</span>
+                          <button class="btn btn-outline-secondary btn-sm rounded-pill font-bold text-xs py-0.5 px-2" onclick="window.limparFiltroMunTabelaAguas()">Limpar Filtro</button>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <table id="resumo_aguas_tabela_projetos" class="table table-hover w-100 text-sm"></table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_estradas" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">INFRAESTRUTURA RODOVIÁRIA &amp; LOGÍSTICA</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Conectividade Logística, Eixos Viários e Mobilidade Regional</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-road text-indigo-600 me-1"></i>
+                        DER-PE / SEINFRA • Governo de Pernambuco
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="fas fa-chart-pie text-slate-900"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Panorama Geral das Obras Rodoviárias</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total de Obras</span>
+                          <div class="aurora-kpi-icon">
+                            <i class="fas fa-trowel-bricks text-slate-500"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="estradas_kpi_total" class="aurora-kpi-number">193</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Contratos DER-PE</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Rodovias</span>
+                          <div class="aurora-kpi-icon text-indigo-600 bg-indigo-50">
+                            <i class="fas fa-road"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="estradas_kpi_rodovias" class="aurora-kpi-number text-indigo-700">81</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Trechos Mapeados</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-sack-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="estradas_kpi_investimento" class="aurora-kpi-number text-emerald-700">R$ 4,72 Bi</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Total Previsto</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Concluídas</span>
+                          <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                            <i class="fas fa-circle-check"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="estradas_kpi_concluidas" class="aurora-kpi-number text-teal-700">129</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Entregues à População</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Execução</span>
+                          <div class="aurora-kpi-icon text-sky-600 bg-sky-50">
+                            <i class="fas fa-person-digging"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="estradas_kpi_execucao" class="aurora-kpi-number text-sky-700">59</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Obras Ativas</div>
+                      </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-3xl p-3 p-md-4 mb-4">
+                      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                        <div>
+                          <h6 class="font-black text-slate-800 text-sm mb-0 uppercase tracking-wider">
+                            <i class="fas fa-map-location-dot text-indigo-600 me-1.5"></i>
+                            Mapa Territorial da Malha Rodoviária
+                          </h6>
+                          <p class="text-xs text-slate-500 mb-0">Traçados georreferenciados coloridos pelo status da intervenção</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                          <div class="d-inline-flex bg-white p-1 rounded-pill border border-slate-200 gap-1">
+                            <button id="filtro_estradas_todos" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs btn-primary text-white" onclick="window.filtrarEstradasStatus(&#39;todos&#39;, this)">Todos</button>
+                            <button id="filtro_estradas_concluida" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.filtrarEstradasStatus(&#39;Concluída&#39;, this)">Concluídas</button>
+                            <button id="filtro_estradas_execucao" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.filtrarEstradasStatus(&#39;Em Execução&#39;, this)">Em Execução</button>
+                            <button id="filtro_estradas_paralisada" class="btn btn-xs rounded-pill px-2.5 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.filtrarEstradasStatus(&#39;Paralisada&#39;, this)">Paralisadas</button>
+                          </div>
+                          <div class="d-flex align-items-center gap-2 bg-white rounded-pill px-3 py-1 border border-slate-200 shadow-xs">
+                            <i class="fas fa-road text-slate-900 text-xs"></i>
+                            <select id="select_filtro_rodovia" class="form-select form-select-sm fw-bold text-slate-700 bg-transparent border-0 shadow-none cursor-pointer" style="max-width: 170px; font-size: 0.8rem; outline: none; box-shadow: none;" onchange="window.selecionarRodoviaFiltro(this.value)">
+                              <option value="">Todas Rodovias</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-100" style="height: 480px;">
+                        <div id="estradas_map_container" style="width: 100%; height: 100%;"></div>
+                        <div id="estradas_map_spinner" class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-white bg-opacity-75 z-10 d-none">
+                          <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+                        <div class="position-absolute bottom-3 start-3 bg-white/95 backdrop-blur-md p-2.5 rounded-xl border border-slate-200 shadow-md text-xs z-10">
+                          <span class="font-extrabold text-slate-700 block mb-1 text-[11px] uppercase tracking-wider">Legenda das Rodovias:</span>
+                          <div class="d-flex flex-column gap-1">
+                            <div class="d-flex align-items-center gap-2">
+                              <span class="w-3 h-3 rounded-full bg-emerald-500 d-inline-block"></span>
+                              <span class="text-slate-600 font-bold text-[11px]">Concluída</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                              <span class="w-3 h-3 rounded-full bg-sky-600 d-inline-block"></span>
+                              <span class="text-slate-600 font-bold text-[11px]">Em Execução</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                              <span class="w-3 h-3 rounded-full bg-rose-500 d-inline-block"></span>
+                              <span class="text-slate-600 font-bold text-[11px]">Paralisada</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4">
+                      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                          <h5 class="font-black text-slate-800 text-base mb-0">Portfólio de Obras e Intervenções Rodoviárias</h5>
+                          <p class="text-xs text-slate-400 mb-0">Listagem completa dos contratos do DER-PE com status e avanço físico</p>
+                        </div>
+                        <div id="estradas_filtro_ativo_badge_container" class="d-none align-items-center gap-2">
+                          <span class="badge bg-indigo-100 text-indigo-800 font-bold px-3 py-1.5 rounded-pill" id="estradas_filtro_ativo_badge">Filtro Ativo</span>
+                          <button class="btn btn-outline-secondary btn-sm rounded-pill font-bold text-xs py-0.5 px-2" onclick="window.limparFiltroEstradas()">Limpar Filtro</button>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <table id="tabela_estradas_pe" class="table table-hover w-100 text-sm"></table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="resumo_pauta_habitacao" class="resumo-pauta-bloco d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 p-md-5 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-teal-50 text-teal-700 border border-teal-200 rounded-pill px-3 py-1 text-xs font-bold mb-1">HABITAÇÃO &amp; DESENVOLVIMENTO URBANO</span>
+                        <h4 class="font-black text-slate-800 text-lg md:text-xl mb-0 tracking-tight">Habitação de Interesse Social e Regularização Fundiária</h4>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs rounded-pill font-bold">
+                        <i class="fas fa-house-chimney text-teal-600 me-1"></i>
+                        SEDUH - SEHAB/ PERPART • Governo de Pernambuco
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="fas fa-house-chimney text-teal-600"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Programa Morar Bem PE (Produção Habitacional)</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-3">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Total Previsto</span>
+                          <div class="aurora-kpi-icon text-slate-500">
+                            <i class="fas fa-city"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_total" class="aurora-kpi-number">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Entregues</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-key"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_entregues" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Unidades Concluídas</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Construção</span>
+                          <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                            <i class="fas fa-trowel-bricks"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_obras" class="aurora-kpi-number text-amber-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Canteiros Ativos</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Investimento Total</span>
+                          <div class="aurora-kpi-icon text-slate-900 bg-purple-50">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_investimento" class="aurora-kpi-number text-purple-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Valor Global Orçado</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Contrapartida Geral</span>
+                          <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                            <i class="fas fa-coins"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_contrapartida" class="aurora-kpi-number text-teal-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Aporte Estadual</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios Atendidos</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="morar_bem_kpi_municipios" class="aurora-kpi-number">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Cobertura Territorial</div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-center my-3 pt-2 border-t border-slate-100">
+                      <button id="btn_toggle_habitacao_detalhes" type="button" class="btn btn-sm rounded-pill font-bold px-4 py-2 text-xs shadow-xs transition-all d-flex align-items-center gap-2" style="background-color: #ff5a26; color: #ffffff; border: 1px solid #ff5a26;" onmouseover="this.style.backgroundColor=&#39;#e04a1b&#39;; this.style.borderColor=&#39;#e04a1b&#39;;" onmouseout="this.style.backgroundColor=&#39;#ff5a26&#39;; this.style.borderColor=&#39;#ff5a26&#39;;" onclick="window.toggleDetalhesHabitacao()">
+                        <span id="txt_toggle_habitacao">Exibir Programas e Modalidades Habitacionais Detalhadas</span>
+                        <i id="icon_toggle_habitacao" class="fas fa-chevron-down transition-transform"></i>
+                      </button>
+                    </div>
+                    <div id="bloco_habitacao_detalhes_extras" class="d-none transition-all mb-4">
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-2">
+                        <i class="fas fa-hammer text-orange-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — Reforma no Lar (Melhorias Habitacionais)</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº de Cadastrados</span>
+                            <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                              <i class="fas fa-clipboard-user"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="rnl_kpi_cadastrados" class="aurora-kpi-number text-slate-800">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Famílias Inscritas</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Reformas Realizadas</span>
+                            <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                              <i class="fas fa-circle-check"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="rnl_kpi_concluidas" class="aurora-kpi-number text-emerald-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Entregues</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Valor Contratual</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-file-contract"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="rnl_kpi_valor_contratual" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Total Contratado</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Valor Total Medido</span>
+                            <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                              <i class="fas fa-ruler-combined"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="rnl_kpi_valor_medido" class="aurora-kpi-number text-purple-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Execução Medida</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Municípios Atendidos</span>
+                            <div class="aurora-kpi-icon text-orange-600 bg-orange-50">
+                              <i class="fas fa-city"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="rnl_kpi_municipios" class="aurora-kpi-number text-orange-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Com Ações RNL</div>
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                        <i class="fas fa-handshake-angle text-indigo-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — Entrada Garantida (Subsídio para Aquisição)</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Quantidade de UH</span>
+                            <div class="aurora-kpi-icon text-indigo-600 bg-indigo-50">
+                              <i class="fas fa-door-open"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="ent_kpi_uh" class="aurora-kpi-number text-indigo-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº Empreendimentos</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-building"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="ent_kpi_empreendimentos" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Empreendimentos Atendidos</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Valor Total</span>
+                            <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                              <i class="fas fa-sack-dollar"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="ent_kpi_valor_total" class="aurora-kpi-number text-emerald-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Aporte Global Previsto</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Municípios Atendidos</span>
+                            <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                              <i class="fas fa-map-location-dot"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="ent_kpi_municipios" class="aurora-kpi-number text-purple-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Municípios Beneficiados</div>
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                        <i class="fas fa-landmark text-sky-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — FAR (Fundo de Arrendamento Residencial)</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Quantidade de UH</span>
+                            <div class="aurora-kpi-icon text-sky-600 bg-sky-50">
+                              <i class="fas fa-door-open"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="far_kpi_uh" class="aurora-kpi-number text-sky-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº Empreendimentos</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-building"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="far_kpi_empreendimentos" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Empreendimentos Mapeados</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Recurso Federal</span>
+                            <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                              <i class="fas fa-landmark-flag"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="far_kpi_recurso_federal" class="aurora-kpi-number text-emerald-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Aporte Federal Global</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Contrapartida Obras</span>
+                            <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                              <i class="fas fa-trowel-bricks"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="far_kpi_contrapartida_obras" class="aurora-kpi-number text-amber-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Não Incidentes</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Contrapartida Terrenos</span>
+                            <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                              <i class="fas fa-map-pin"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="far_kpi_contrapartida_terrenos" class="aurora-kpi-number text-purple-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Terrenos Doados</div>
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                        <i class="fas fa-users-rays text-emerald-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — FDS (Fundo de Desenvolvimento Social)</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Quantidade de UH</span>
+                            <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                              <i class="fas fa-door-open"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="fds_kpi_uh" class="aurora-kpi-number text-emerald-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº Empreendimentos</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-building"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="fds_kpi_empreendimentos" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Empreendimentos Atendidos</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Contrapartida Obras</span>
+                            <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                              <i class="fas fa-coins"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="fds_kpi_contrapartida" class="aurora-kpi-number text-teal-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Não Incidentes</div>
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                        <i class="fas fa-city text-cyan-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — SUB-50 (Municípios até 50 mil habitantes)</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Quantidade de UH</span>
+                            <div class="aurora-kpi-icon text-cyan-600 bg-cyan-50">
+                              <i class="fas fa-door-open"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="sub50_kpi_uh" class="aurora-kpi-number text-cyan-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº Empreendimentos</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-building"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="sub50_kpi_empreendimentos" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Empreendimentos Atendidos</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Valor Total Licitação</span>
+                            <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                              <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="sub50_kpi_licitacao" class="aurora-kpi-number text-purple-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Orçamento Licitado</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Contrapartida Obras</span>
+                            <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                              <i class="fas fa-coins"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="sub50_kpi_contrapartida" class="aurora-kpi-number text-teal-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Não Incidentes</div>
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                        <i class="fas fa-arrows-rotate text-rose-600"></i>
+                        <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Morar Bem PE — Retomadas de Obras Paralisadas</h6>
+                      </div>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Quantidade de UH</span>
+                            <div class="aurora-kpi-icon text-rose-600 bg-rose-50">
+                              <i class="fas fa-door-open"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="retomadas_kpi_uh" class="aurora-kpi-number text-rose-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Unidades Habitacionais</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Nº Empreendimentos</span>
+                            <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                              <i class="fas fa-building"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="retomadas_kpi_empreendimentos" class="aurora-kpi-number text-blue-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Reiniciadas</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Recurso Federal</span>
+                            <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                              <i class="fas fa-landmark-flag"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="retomadas_kpi_recurso_federal" class="aurora-kpi-number text-emerald-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Repasse da União</div>
+                        </div>
+                        <div class="aurora-kpi-card">
+                          <div class="aurora-kpi-header">
+                            <span>Contrapartida Obras</span>
+                            <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                              <i class="fas fa-coins"></i>
+                            </div>
+                          </div>
+                          <div class="aurora-kpi-body">
+                            <span id="retomadas_kpi_contrapartida" class="aurora-kpi-number text-amber-700">-</span>
+                          </div>
+                          <div class="aurora-kpi-footer">Obras Não Incidentes</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2 mt-4 pt-2 border-t border-slate-100">
+                      <i class="fas fa-file-signature text-blue-600"></i>
+                      <h6 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-0">Regularização Fundiária e Títulos de Propriedade (PERPART / REURB)</h6>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-3">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Títulos Previstos</span>
+                          <div class="aurora-kpi-icon text-slate-600 bg-slate-50">
+                            <i class="fas fa-folder-open"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_previstos" class="aurora-kpi-number text-slate-800">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Meta Total Planejada</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Títulos Entregues</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-certificate"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_entregues" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Situação: Realizados</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Em Andamento</span>
+                          <div class="aurora-kpi-icon text-amber-600 bg-amber-50">
+                            <i class="fas fa-clock-rotate-left"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_andamento" class="aurora-kpi-number text-amber-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Processos em Tramitação</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Titularidade Feminina</span>
+                          <div class="aurora-kpi-icon text-pink-600 bg-pink-50">
+                            <i class="fas fa-person-dress"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_mulheres" class="aurora-kpi-number text-pink-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="reurb_kpi_mulheres_pct">0% do total</span>
+                        </div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Núcleos Urbanos (NC)</span>
+                          <div class="aurora-kpi-icon text-blue-600 bg-blue-50">
+                            <i class="fas fa-map-pin"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_nucleos" class="aurora-kpi-number text-blue-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Comunidades / Poligonais</div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Municípios Atendidos</span>
+                          <div class="aurora-kpi-icon text-teal-600 bg-teal-50">
+                            <i class="fas fa-city"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_municipios" class="aurora-kpi-number text-teal-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">Cobertura Territorial</div>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>REGMEL</span>
+                          <div class="aurora-kpi-icon text-indigo-600 bg-indigo-50">
+                            <i class="fas fa-house-user"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_classif_regmel" class="aurora-kpi-number text-indigo-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="reurb_kpi_classif_regmel_desc">Previstos / Entregues (0%)</span>
+                        </div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Regularização Fundiária</span>
+                          <div class="aurora-kpi-icon text-emerald-600 bg-emerald-50">
+                            <i class="fas fa-map-location-dot"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_classif_fundiaria" class="aurora-kpi-number text-emerald-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="reurb_kpi_classif_fundiaria_desc">Previstos / Entregues (0%)</span>
+                        </div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>REURB</span>
+                          <div class="aurora-kpi-icon text-purple-600 bg-purple-50">
+                            <i class="fas fa-file-shield"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_classif_reurb" class="aurora-kpi-number text-purple-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="reurb_kpi_classif_reurb_desc">Previstos / Entregues (0%)</span>
+                        </div>
+                      </div>
+                      <div class="aurora-kpi-card">
+                        <div class="aurora-kpi-header">
+                          <span>Imobiliária</span>
+                          <div class="aurora-kpi-icon text-cyan-600 bg-cyan-50">
+                            <i class="fas fa-building-circle-check"></i>
+                          </div>
+                        </div>
+                        <div class="aurora-kpi-body">
+                          <span id="reurb_kpi_classif_imobiliaria" class="aurora-kpi-number text-cyan-700">-</span>
+                        </div>
+                        <div class="aurora-kpi-footer">
+                          <span id="reurb_kpi_classif_imobiliaria_desc">Previstos / Entregues (0%)</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      <div>
+                        <h5 class="font-bold text-slate-700 text-sm md:text-base mb-0">Mapa de Cobertura Territorial e Empreendimentos</h5>
+                        <span id="habitacao_camada_label" class="text-xs text-slate-400 font-semibold">Exibindo: Clusters de Empreendimentos e Obras</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 gap-1">
+                          <button id="btn_visao_hab_todos" class="btn btn-sm btn-primary rounded-pill px-3 py-1 font-bold text-xs shadow-sm transition-all" onclick="window.alternarVisaoHabitacao(&#39;todos&#39;, this)">
+                            <i class="fas fa-circle-nodes me-1.5"></i>
+                            Visão Geral (Clusters)
+                          </button>
+                          <button id="btn_visao_hab_morarbem" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoHabitacao(&#39;morarbem&#39;, this)">
+                            <i class="fas fa-house-chimney me-1.5 text-teal-600"></i>
+                            Morar Bem (Obras)
+                          </button>
+                          <button id="btn_visao_hab_reurb" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoHabitacao(&#39;reurb&#39;, this)">
+                            <i class="fas fa-file-signature me-1.5 text-blue-600"></i>
+                            Regularização (Títulos)
+                          </button>
+                          <button id="btn_visao_hab_pontos" class="btn btn-sm btn-light text-slate-600 rounded-pill px-3 py-1 font-bold text-xs transition-all" onclick="window.alternarVisaoHabitacao(&#39;pontos&#39;, this)">
+                            <i class="fas fa-building me-1.5 text-amber-600"></i>
+                            Empreendimentos
+                          </button>
+                        </div>
+                        <div id="legenda_hab_cluster" class="d-flex align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Volume Agrupado:</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #51bbd6;">&lt; 10</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #f1f075; color: #1e293b !important;">10 - 50</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #f28cb1;">&gt; 50</span>
+                        </div>
+                        <div id="legenda_hab_uh" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Unidades em Obras:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #f0fdfa; color: #115e59;">0</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #5eead4; color: #042f2e;">&lt; 100</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #14b8a6;">100 - 500</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #0f766e;">&gt; 500</span>
+                        </div>
+                        <div id="legenda_hab_reurb" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Títulos Entregues:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #eff6ff; color: #1e3a8a;">0</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #93c5fd; color: #1e3a8a;">&lt; 200</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #3b82f6;">200 - 1.000</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #1d4ed8;">&gt; 1.000</span>
+                        </div>
+                        <div id="legenda_hab_empreendimentos" class="d-none align-items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-600">
+                          <span>Qtd. de Empreendimentos:</span>
+                          <span class="badge px-2 py-0.5" style="background-color: #fff7ed; color: #9a3412;">0</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #fdba74; color: #7c2d12;">1 - 2</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #fb923c;">3 - 5</span>
+                          <span class="badge text-white px-2 py-0.5" style="background-color: #c2410c;">&gt; 5</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-5">
+                      <div class="col-lg-8 col-xl-8">
+                        <div class="position-relative rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-100" style="min-height: 520px;">
+                          <div id="resumo_habitacao_spinner" class="position-absolute top-0 start-0 w-100 h-100 bg-white/75 d-flex align-items-center justify-content-center z-10 d-none">
+                            <div class="spinner-border text-primary" role="status"></div>
+                          </div>
+                          <div id="resumo_habitacao_map" style="width: 100%; height: 100%; min-height: 520px; background-color: #f8fafc;"></div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4 col-xl-4">
+                        <div id="habitacao_hover_box" class="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 shadow-sm h-100 d-flex flex-column justify-content-between" style="min-height: 520px; max-height: 520px; overflow-y: auto;">
+                          <div id="habitacao_box_content_default" class="text-center py-4 my-auto">
+                            <div class="w-14 h-14 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
+                              <i class="fas fa-map-location-dot"></i>
+                            </div>
+                            <h5 class="font-black text-slate-800 text-base mb-1">Detalhamento Territorial</h5>
+                            <p class="text-xs text-slate-500 mb-3 px-2 leading-relaxed">Passe o cursor sobre os municípios ou empreendimentos habitacionais no mapa para visualizar os indicadores locais.</p>
+                            <div class="grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-200/80">
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Municípios</span>
+                                <span id="hab_box_stat_muns" class="text-sm font-black text-slate-700">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Unidades</span>
+                                <span id="hab_box_stat_unidades" class="text-sm font-black text-teal-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Títulos REURB</span>
+                                <span id="hab_box_stat_titulos" class="text-sm font-black text-blue-600">-</span>
+                              </div>
+                              <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Investimento</span>
+                                <span id="hab_box_stat_investimento" class="text-sm font-black text-purple-600">-</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div id="habitacao_box_content_active" class="d-none flex-column h-100"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                      <div class="row g-4 mb-5">
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Status das Obras Habitacionais</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Distribuição das unidades habitacionais por estágio de execução</span>
+                              </div>
+                              <span class="badge bg-teal-100 text-teal-800 text-xs font-bold rounded-pill px-2.5 py-1">Morar Bem PE</span>
+                            </div>
+                            <div id="chart_habitacao_status" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                <h5 class="font-bold text-slate-800 text-sm md:text-base mb-0">Habitação e REURB por Município</h5>
+                                <span class="text-xs text-slate-400 font-semibold">Top municípios com maior volume de unidades e títulos</span>
+                              </div>
+                              <span class="badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-2.5 py-1">Top 20 Municípios</span>
+                            </div>
+                            <div id="chart_habitacao_por_mun" style="width: 100%; height: 380px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-4 mt-2">
+                      <div class="col-12">
+                        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4">
+                          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-b border-slate-100 flex-wrap gap-2">
+                            <div>
+                              <h5 class="font-black text-slate-800 uppercase tracking-tight mb-0 text-base">
+                                <i class="fas fa-city text-primary me-2"></i>
+                                Empreendimentos Habitacionais (Habitação)
+                              </h5>
+                              <p class="text-xs text-slate-500 font-semibold mb-0">Projetos de novas habitações, FAR, FDS, Entrada Garantida e Reforma no Lar</p>
+                            </div>
+                            <span class="badge bg-orange-100 text-orange-950 font-bold px-3 py-1 rounded-pill text-xs">df_habitacao</span>
+                          </div>
+                          <div class="table-responsive">
+                            <table id="tabela_tematicas_habitacao" class="table table-hover align-middle w-100 text-xs"></table>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4">
+                          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-b border-slate-100 flex-wrap gap-2">
+                            <div>
+                              <h5 class="font-black text-slate-800 uppercase tracking-tight mb-0 text-base">
+                                <i class="fas fa-certificate text-emerald-600 me-2"></i>
+                                Regularização Fundiária e Títulos de Posse (REURB)
+                              </h5>
+                              <p class="text-xs text-slate-500 font-semibold mb-0">Núcleos urbanos informais consolidados, titulação e beneficiárias do programa</p>
+                            </div>
+                            <span class="badge bg-emerald-100 text-emerald-900 font-bold px-3 py-1 rounded-pill text-xs">df_regularizacoes</span>
+                          </div>
+                          <div class="table-responsive">
+                            <table id="tabela_tematicas_regularizacao" class="table table-hover align-middle w-100 text-xs"></table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+{{ end }}

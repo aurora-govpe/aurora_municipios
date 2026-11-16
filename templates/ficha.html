@@ -1,0 +1,1638 @@
+{{ define "ficha" }}
+            <div class="tab-pane relative" data-value="Municípios" id="aba_ficha">
+              <div class="container-fluid mt-3 px-4">
+                <div class="capa-relatorio d-none d-print-flex flex-column justify-content-center align-items-center text-center" style="display: none;">
+                  <img src="images/brasao_gov_pe.png" style="width: 120px; margin-bottom: 20px;"/>
+                  <h5 class="fw-bold text-dark">GOVERNO DO ESTADO DE PERNAMBUCO</h5>
+                  <h6 class="fw-bold text-dark">Secretaria de Planejamento, Gestão e Desenvolvimento Regional — SEPLAG</h6>
+                  <p class="text-muted mb-5">Secretaria de Planejamento, Gestão e Desenvolvimento Regional</p>
+                  <br/>
+                  <br/>
+                  <br/>
+                  <span class="badge bg-dark rounded-pill px-3 py-2 mb-3">PAINEL AURORA</span>
+                  <h1 class="display-4 fw-black text-primary">MUNICÍPIOS</h1>
+                  <h2 id="capa_nome_municipio" class="fw-bold text-secondary mb-5">MUNICÍPIO</h2>
+                  <h4 id="capa_tipo_relatorio" class="fw-bold text-secondary mt-4">RELATÓRIO EXECUTIVO</h4>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-b border-slate-200 flex-wrap gap-2 d-print-none">
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="d-inline-flex bg-slate-100 p-1 rounded-pill border border-slate-200 shadow-2xs">
+                      <button id="btn_subaba_ficha" type="button" class="btn btn-sm rounded-pill px-3 py-1 font-bold text-xs shadow-xs btn-primary text-white" onclick="window.trocarSubabaMunicipios(&#39;ficha&#39;)" title="Visualizar Ficha Municipal Completa">
+                        <i class="fas fa-file-invoice me-1.5"></i>
+                        Ficha Municipal
+                      </button>
+                      <button id="btn_subaba_comparacao" type="button" class="btn btn-sm rounded-pill px-3 py-1 font-bold text-xs text-slate-600 bg-transparent border-0" onclick="window.trocarSubabaMunicipios(&#39;comparacao&#39;)" title="Comparar 2 ou 3 Municípios Multidimensionalmente">
+                        <i class="fas fa-code-compare me-1.5"></i>
+                        Comparativo Municipal
+                      </button>
+                    </div>
+                    <div id="box_filtro_municipio_individual" class="d-flex align-items-center gap-2 bg-slate-100 rounded-pill px-3 py-1 border border-slate-200 shadow-2xs">
+                      <i class="fas fa-location-dot text-[#ff5a26]"></i>
+                      <select id="ficha_f_municipio" class="form-select-municipio" data-live-search="true" data-live-search-normalize="true" data-live-search-placeholder="Buscar município..." data-none-results-text="Nenhum município encontrado" data-size="10" data-style="btn-sm btn-light fw-bold text-slate-800 border-0 bg-transparent py-0 px-1 shadow-none" data-width="240px"></select>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-dark btn-sm fw-bold shadow-sm rounded-pill px-3 transition-all" onclick="window.print()">
+                      <i class="fas fa-file-pdf me-1 text-danger"></i>
+                      Salvar PDF
+                    </button>
+                    <span class="badge bg-orange-50 text-orange-700 border border-orange-200 text-xs font-bold rounded-pill px-3 py-1">
+                      <i class="fas fa-compass me-1 text-[#ff5a26]"></i>
+                      184 Municípios
+                    </span>
+                  </div>
+                </div>
+                <div id="subaba_ficha_municipal">
+                  <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md py-2.5 px-3 mb-4 rounded-2xl border border-slate-200/80 shadow-xs d-print-none">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                      <div class="d-flex align-items-center gap-1.5 overflow-x-auto pb-1 text-nowrap scrollbar-thin flex-grow-1" id="ficha_atalhos_nav">
+                        <span class="text-[11px] font-black uppercase text-slate-400 me-1 tracking-wider d-none d-sm-inline">
+                          <i class="fas fa-compass me-1 text-[#ff5a26]"></i>
+                          Atalhos:
+                        </span>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_mapa_multidimensional&#39;)">
+                          <i class="fas fa-map-marked-alt text-[#ff5a26] me-1"></i>
+                          Mapa Comparativo
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_caracterizacao&#39;)">
+                          <i class="fas fa-landmark text-amber-600 me-1"></i>
+                          Caracterização
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_resumo_executivo&#39;)">
+                          <i class="fas fa-chart-pie text-purple-600 me-1"></i>
+                          Resumo Executivo
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_diagnostico_regional&#39;)">
+                          <i class="fas fa-bullseye text-red-600 me-1"></i>
+                          Diagnóstico
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_demografia&#39;)">
+                          <i class="fas fa-users text-sky-600 me-1"></i>
+                          Demografia
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;subsecao_seguranca&#39;)">
+                          <i class="fas fa-shield-halved text-rose-600 me-1"></i>
+                          Segurança
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;subsecao_educacao&#39;)">
+                          <i class="fas fa-graduation-cap text-indigo-600 me-1"></i>
+                          Educação
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;subsecao_saude&#39;)">
+                          <i class="fas fa-heart-pulse text-emerald-600 me-1"></i>
+                          Saúde
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;subsecao_cadunico&#39;)">
+                          <i class="fas fa-hand-holding-heart text-pink-600 me-1"></i>
+                          Vulnerabilidade
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;subsecao_saneamento&#39;)">
+                          <i class="fas fa-faucet-droplet text-cyan-600 me-1"></i>
+                          Saneamento &amp; Águas
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_indicadores_economicos&#39;)">
+                          <i class="fas fa-briefcase text-amber-600 me-1"></i>
+                          Economia &amp; Trabalho
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_fiscal&#39;)">
+                          <i class="fas fa-building-columns text-violet-600 me-1"></i>
+                          Fiscal (CAPAG)
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_iniciativas_regionais&#39;)">
+                          <i class="fas fa-diagram-project text-orange-600 me-1"></i>
+                          Programas &amp; Obras
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_emendas_parlamentares&#39;)">
+                          <i class="fas fa-file-invoice-dollar text-teal-600 me-1"></i>
+                          Emendas
+                        </button>
+                      </div>
+                      <button class="btn btn-xs btn-outline-secondary rounded-pill px-2.5 py-1 text-[11px] font-bold text-slate-500 hover:text-slate-800" onclick="window.scrollTo({ top: 0, behavior: &#39;smooth&#39; })" title="Voltar ao topo">
+                        <i class="fas fa-arrow-up"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div id="sec_caracterizacao" class="border-b-2 border-slate-200 pb-2 mb-4 mt-2">
+                    <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Caracterização Municipal</h2>
+                    <p class="text-sm font-bold text-slate-500 mb-0">Identidade Institucional, Perfil Territorial e Estrutura Produtiva</p>
+                  </div>
+                  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+                    <div>
+                      <h1 id="ficha_nome_municipio" class="display-5 fw-black text-slate-900 mb-0 text-uppercase tracking-tight">MUNICÍPIO</h1>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 d-print-none">
+                      <button class="btn btn-primary btn-sm fw-bold shadow-xs rounded-pill px-3 py-1.5 transition-all" onclick="window.imprimirResumoExecutivo()">
+                        <i class="fas fa-file-contract me-1.5"></i>
+                        Resumo Executivo
+                      </button>
+                      <button class="btn btn-outline-dark btn-sm fw-bold shadow-xs rounded-pill px-3 py-1.5 transition-all" onclick="window.imprimirRelatorioCompleto()">
+                        <i class="fas fa-file-pdf me-1.5 text-danger"></i>
+                        Relatório Completo
+                      </button>
+                    </div>
+                  </div>
+                  <div class="row g-4 mb-5">
+                    <div class="col-lg-5">
+                      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                          <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-b border-slate-100">
+                            <span class="font-black text-xs uppercase tracking-wider text-slate-500">
+                              <i class="fas fa-landmark me-1.5 text-[#ff5a26]"></i>
+                              Identidade &amp; Gestão Municipal
+                            </span>
+                            <span class="badge bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-pill px-2.5 py-1">
+                              <i class="fas fa-cake-candles me-1 text-[#ff5a26]"></i>
+                              <span id="ficha_aniversario_subtitle">Aniversário: -</span>
+                            </span>
+                          </div>
+                          <div class="p-3 rounded-xl bg-orange-50/60 border border-orange-100 mb-3 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                              <div class="w-10 h-10 rounded-full bg-orange-100 text-[#c2410c] d-flex align-items-center justify-content-center font-bold text-lg">
+                                <i class="fas fa-user-tie"></i>
+                              </div>
+                              <div>
+                                <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Chefe do Executivo Municipal</div>
+                                <div id="ficha_prefeito_subtitle" class="text-sm font-black text-slate-900">Prefeito(a): -</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="space-y-2.5">
+                            <div class="d-flex align-items-center justify-content-between text-xs py-1.5 border-b border-slate-50">
+                              <span class="text-slate-500 font-bold">
+                                <i class="fas fa-industry text-purple-500 me-1.5"></i>
+                                Arranjo Produtivo (APL):
+                              </span>
+                              <span id="ficha_apl_subtitle" class="font-bold text-slate-800">Sem APL</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between text-xs py-1.5 border-b border-slate-50">
+                              <span class="text-slate-500 font-bold">
+                                <i class="fas fa-briefcase text-emerald-600 me-1.5"></i>
+                                Vocações Econômicas:
+                              </span>
+                              <span id="ficha_vocacoes_subtitle" class="font-bold text-slate-800 text-end">-</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between text-xs py-1.5">
+                              <span class="text-slate-500 font-bold">
+                                <i class="fas fa-wifi text-blue-500 me-1.5"></i>
+                                Conectividade Digital:
+                              </span>
+                              <span id="badge_fibra_container" class="badge bg-light text-dark border px-2.5 py-1 rounded-pill transition-colors">
+                                <i id="icon_fibra" class="fas fa-wifi me-1 text-secondary"></i>
+                                <span id="ficha_fibra_subtitle">Fibra: -</span>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                          <span class="text-xs text-slate-400 font-bold">Região de Desenvolvimento:</span>
+                          <span id="ficha_rd_subtitle" class="text-xs font-black text-slate-800 text-uppercase">RD</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-7">
+                      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-b border-slate-100">
+                          <span class="font-black text-xs uppercase tracking-wider text-slate-500">
+                            <i class="fas fa-earth-americas me-1.5 text-blue-600"></i>
+                            Perfil Territorial &amp; Demográfico
+                          </span>
+                          <span class="text-xs font-bold text-slate-400">Censo 2022 &amp; IBGE 2026</span>
+                        </div>
+                        <div class="row g-3 align-items-center">
+                          <div class="col-md-7">
+                            <div class="mb-3">
+                              <div class="d-flex align-items-baseline gap-2">
+                                <span id="ficha_pop_subtitle" class="text-2xl font-black text-slate-900">Pop: -</span>
+                              </div>
+                              <div class="text-[11px] text-slate-400 font-medium mt-0.5">Estimativa IBGE/TCU 2026</div>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 mb-3">
+                              <div class="d-flex justify-content-between text-[11px] font-bold text-slate-600 mb-1.5">
+                                <span>
+                                  <i class="fas fa-city me-1 text-slate-500"></i>
+                                  <span id="ficha_pop_urb_subtitle">Pop. Urbana: -</span>
+                                </span>
+                                <span>
+                                  <i class="fas fa-tree me-1 text-emerald-600"></i>
+                                  <span id="ficha_pop_rur_subtitle">Pop. Rural: -</span>
+                                </span>
+                              </div>
+                              <div class="w-full bg-slate-200 rounded-full h-2 d-flex overflow-hidden">
+                                <div id="ficha_bar_pop_urb" class="bg-blue-600 h-2 transition-all" style="width: 50%;"></div>
+                                <div id="ficha_bar_pop_rur" class="bg-emerald-500 h-2 transition-all" style="width: 50%;"></div>
+                              </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs mb-2">
+                              <div class="p-2 rounded-lg bg-orange-50/40 border border-orange-100">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                                  <i class="fas fa-people-group me-1 text-[#ff5a26]"></i>
+                                  Quilombolas
+                                </div>
+                                <div id="ficha_pop_quilombola_subtitle" class="font-black text-slate-800 text-xs mt-0.5">Pop. Quilombola: -</div>
+                              </div>
+                              <div class="p-2 rounded-lg bg-amber-50/40 border border-amber-100">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                                  <i class="fas fa-feather-pointed me-1 text-[#ff5a26]"></i>
+                                  Indígenas
+                                </div>
+                                <div id="ficha_pop_indigena_subtitle" class="font-black text-slate-800 text-xs mt-0.5">Pop. Indígena: -</div>
+                              </div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between pt-2 border-t border-slate-100 text-xs">
+                              <span class="text-slate-500 font-bold">
+                                <i class="fas fa-ruler-combined text-slate-400 me-1"></i>
+                                Área Territorial:
+                              </span>
+                              <span id="ficha_area_subtitle" class="font-bold text-slate-800">Área: -</span>
+                            </div>
+                          </div>
+                          <div class="col-md-5">
+                            <div class="map-clean-container map-small rounded-xl overflow-hidden border border-slate-200 shadow-2xs" style="height: 240px; width: 100%;">
+                              <div id="ficha_map_container" style="width: 100%; height: 100%;"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-5">
+                    <div class="d-flex align-items-center justify-content-between pb-2 mb-3 border-b border-slate-200">
+                      <div>
+                        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight mb-0">Estrutura Econômica &amp; Desenvolvimento</h3>
+                        <p class="text-xs font-bold text-slate-400 mb-0">Grandezas Macroeconômicas, Renda per Capita e Matriz Setorial do VAB</p>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      <div class="kpi-modern-card" style="border-left-color: #8E44AD;">
+                        <div class="kpi-modern-header">PIB TOTAL</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-money-bill-wave kpi-modern-icon" style="color: #8E44AD;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_pib_1000">-</span>
+                        </div>
+                        <div class="kpi-modern-footer text-uppercase" id="ficha_ano_pib_1000">R$ 1.000</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #3498DB;">
+                        <div class="kpi-modern-header">PIB PER CAPITA</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-user-tag kpi-modern-icon" style="color: #3498DB;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_pibpc">-</span>
+                        </div>
+                        <div class="kpi-modern-footer text-uppercase" id="ficha_ano_pibpc">R$</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #27AE60;">
+                        <div class="kpi-modern-header">PARTICIPAÇÃO PIB ESTADUAL</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-chart-pie kpi-modern-icon" style="color: #27AE60;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_pib_pct">-</span>
+                        </div>
+                        <div class="kpi-modern-footer text-uppercase" id="ficha_ano_pib_pct">%</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #F39C12;">
+                        <div class="kpi-modern-header">IDHM</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-graduation-cap kpi-modern-icon" style="color: #F39C12;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_idhm">-</span>
+                        </div>
+                        <div class="kpi-modern-footer text-uppercase" id="ficha_ano_idhm">Índice</div>
+                      </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-4">
+                      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-b border-slate-100 flex-wrap gap-2">
+                        <div>
+                          <span class="font-black text-xs uppercase tracking-wider text-slate-700">Composição do Valor Adicionado Bruto (VAB Setorial)</span>
+                          <span class="text-[11px] text-slate-400 ms-2 font-medium">Distribuição relativa e Quocientes Locacionais (QL)</span>
+                        </div>
+                        <span class="badge bg-slate-100 text-slate-600 border text-[11px] font-bold rounded-pill px-2.5 py-0.5">Soma: 100% do VAB</span>
+                      </div>
+                      <div class="w-full bg-slate-100 rounded-full h-2.5 d-flex overflow-hidden mb-4 shadow-inner">
+                        <div id="vab_bar_agro" class="h-2.5 transition-all" style="width: 25%; background-color: #1ABC9C;" title="Agropecuária"></div>
+                        <div id="vab_bar_ind" class="h-2.5 transition-all" style="width: 25%; background-color: #34495E;" title="Indústria"></div>
+                        <div id="vab_bar_serv" class="h-2.5 transition-all" style="width: 25%; background-color: #F1C40F;" title="Serviços"></div>
+                        <div id="vab_bar_adm" class="h-2.5 transition-all" style="width: 25%; background-color: #E74C3C;" title="Administração Pública"></div>
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="kpi-modern-card" style="border-left-color: #1ABC9C;">
+                          <div class="kpi-modern-header">VAB AGROPECUÁRIA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-tractor kpi-modern-icon" style="color: #1ABC9C;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_vab_agro">-</span>
+                          </div>
+                          <div class="kpi-ql-badge-row" id="ficha_ql_box_vab_agro"></div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_vab_agro">% do VAB</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #34495E;">
+                          <div class="kpi-modern-header">VAB INDÚSTRIA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-industry kpi-modern-icon" style="color: #34495E;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_vab_ind">-</span>
+                          </div>
+                          <div class="kpi-ql-badge-row" id="ficha_ql_box_vab_ind"></div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_vab_ind">% do VAB</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #F1C40F;">
+                          <div class="kpi-modern-header">VAB SERVIÇOS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-concierge-bell kpi-modern-icon" style="color: #F1C40F;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_vab_serv">-</span>
+                          </div>
+                          <div class="kpi-ql-badge-row" id="ficha_ql_box_vab_serv"></div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_vab_serv">% do VAB</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E74C3C;">
+                          <div class="kpi-modern-header">VAB ADM PÚBLICA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-university kpi-modern-icon" style="color: #E74C3C;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_vab_adm">-</span>
+                          </div>
+                          <div class="kpi-ql-badge-row" id="ficha_ql_box_vab_adm"></div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_vab_adm">% do VAB</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="sec_mapa_multidimensional" class="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 mb-5">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-b border-slate-100 gap-3">
+                      <div>
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="badge bg-orange-50 text-orange-700 border border-orange-200 rounded-pill px-3 py-1 text-xs font-bold">
+                            <i class="fas fa-map-location-dot me-1 text-[#ff5a26]"></i>
+                            PANORAMA TERRITORIAL COMPARATIVO
+                          </span>
+                          <span id="mapa_multi_badge_ano" class="badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-2.5 py-1">Ano: 2024</span>
+                          <span id="mapa_multi_badge_polaridade" class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-pill px-2.5 py-1">Maior é Melhor</span>
+                        </div>
+                        <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mt-1 mb-0">Mapa Multidimensional de Pernambuco</h3>
+                        <p class="text-xs font-bold text-slate-400 mb-0">Todos os 184 municípios de Pernambuco coloridos pelo indicador selecionado, com demarcação da RD e foco municipal.</p>
+                      </div>
+                      <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                        <button type="button" class="btn btn-outline-secondary btn-sm font-bold text-xs rounded-pill px-3 py-1.5" onclick="window.mapaMultiResetZoom(&#39;estado&#39;)">
+                          <i class="fas fa-compress me-1"></i>
+                          Ver Estado
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm font-bold text-xs rounded-pill px-3 py-1.5" onclick="window.mapaMultiResetZoom(&#39;rd&#39;)">
+                          <i class="fas fa-crosshairs me-1"></i>
+                          Focar na RD
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm font-bold text-xs rounded-pill px-3 py-1.5" onclick="window.mapaMultiResetZoom(&#39;mun&#39;)">
+                          <i class="fas fa-location-dot me-1"></i>
+                          Focar no Município
+                        </button>
+                      </div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 mb-3">
+                      <div class="row g-2 align-items-center">
+                        <div class="col-md-3">
+                          <label class="form-label text-[11px] font-black uppercase text-slate-500 mb-1 tracking-wider">
+                            <i class="fas fa-layer-group text-blue-600 me-1"></i>
+                            1. Dimensão:
+                          </label>
+                          <select id="mapa_multi_f_dimensao" class="form-select form-select-sm font-bold text-slate-800 rounded-lg border-slate-300 shadow-none" onchange="window.mapaMultiMudarDimensao(this.value)"></select>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label text-[11px] font-black uppercase text-slate-500 mb-1 tracking-wider">
+                            <i class="fas fa-folder-tree text-teal-600 me-1"></i>
+                            2. Subdimensão:
+                          </label>
+                          <select id="mapa_multi_f_subdimensao" class="form-select form-select-sm font-bold text-slate-800 rounded-lg border-slate-300 shadow-none" onchange="window.mapaMultiMudarSubdimensao(this.value)"></select>
+                        </div>
+                        <div class="col-md-5">
+                          <label class="form-label text-[11px] font-black uppercase text-slate-500 mb-1 tracking-wider">
+                            <i class="fas fa-chart-line text-[#ff5a26] me-1"></i>
+                            3. Indicador:
+                          </label>
+                          <select id="mapa_multi_f_indicador" class="form-select form-select-sm font-bold text-slate-800 rounded-lg border-slate-300 shadow-none" onchange="window.mapaMultiMudarIndicador(this.value)"></select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-lg-8">
+                        <div class="map-clean-container rounded-xl overflow-hidden border border-slate-200 shadow-2xs position-relative" style="height: 520px; width: 100%; min-height: 520px;">
+                          <div id="ficha_mapa_multidimensional_container" style="width: 100%; height: 100%; background-color: #f8fafc;"></div>
+                          <div id="mapa_multi_spinner" class="d-none position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white/70 backdrop-blur-xs z-20">
+                            <div class="spinner-border text-primary" role="status"></div>
+                          </div>
+                          <div id="mapa_multi_legenda_box" class="position-absolute bottom-3 start-3 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-xl px-3 py-2 shadow-sm z-10" style="max-width: 380px;">
+                            <div id="mapa_multi_legenda_titulo" class="text-[11px] font-black text-slate-700 uppercase tracking-tight mb-1 truncate">Escala de Valores</div>
+                            <div class="d-flex align-items-center gap-1.5 mb-1">
+                              <div id="mapa_multi_legenda_grad" class="h-2.5 rounded-full flex-grow-1 shadow-inner" style="background: linear-gradient(to right, #eff6ff, #93c5fd, #3b82f6, #1d4ed8, #1e3a8a); min-width: 160px;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between text-[10px] font-bold text-slate-500">
+                              <span id="mapa_multi_legenda_min">Min: -</span>
+                              <span id="mapa_multi_legenda_med">Média: -</span>
+                              <span id="mapa_multi_legenda_max">Max: -</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4 d-flex flex-column gap-3">
+                        <div class="p-3.5 rounded-2xl bg-orange-50/70 border border-orange-200 shadow-2xs">
+                          <div class="d-flex align-items-center justify-content-between pb-2 mb-2 border-b border-orange-100">
+                            <span class="text-[10px] uppercase font-black tracking-wider text-orange-700">
+                              <i class="fas fa-map-pin me-1"></i>
+                              Município em Tela
+                            </span>
+                            <span id="mapa_multi_card_mun_rd" class="badge bg-white text-orange-900 border border-orange-200 text-[10px] font-bold rounded-pill">RD</span>
+                          </div>
+                          <h4 id="mapa_multi_card_mun_nome" class="text-lg font-black text-slate-900 uppercase tracking-tight mb-1">MUNICÍPIO</h4>
+                          <div class="d-flex align-items-baseline gap-2 mb-2">
+                            <span id="mapa_multi_card_mun_valor" class="text-2xl font-black text-[#ff5a26]">-</span>
+                            <span id="mapa_multi_card_mun_tipo" class="text-xs font-bold text-slate-500"></span>
+                          </div>
+                          <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="p-2 rounded-xl bg-white border border-orange-100">
+                              <div class="text-[10px] font-bold text-slate-400 uppercase">Posição em PE</div>
+                              <div id="mapa_multi_card_mun_rank_pe" class="text-sm font-black text-slate-800 mt-0.5">-º de 184</div>
+                            </div>
+                            <div class="p-2 rounded-xl bg-white border border-orange-100">
+                              <div class="text-[10px] font-bold text-slate-400 uppercase">Posição na RD</div>
+                              <div id="mapa_multi_card_mun_rank_rd" class="text-sm font-black text-slate-800 mt-0.5">-º de -</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs flex-grow-1 d-flex flex-column justify-content-between">
+                          <div>
+                            <div class="d-flex align-items-center justify-content-between pb-2 mb-2 border-b border-slate-100">
+                              <span class="text-[10px] uppercase font-black tracking-wider text-slate-500">
+                                <i class="fas fa-crosshairs me-1 text-blue-600"></i>
+                                Inspeção Territorial (Hover)
+                              </span>
+                              <span id="mapa_multi_hover_rd" class="badge bg-slate-100 text-slate-700 text-[10px] font-bold rounded-pill">Passe o cursor</span>
+                            </div>
+                            <h5 id="mapa_multi_hover_mun_nome" class="text-base font-black text-slate-800 uppercase tracking-tight mb-1">Selecione no mapa</h5>
+                            <div class="d-flex align-items-baseline gap-2 mb-3">
+                              <span id="mapa_multi_hover_valor" class="text-xl font-black text-blue-600">-</span>
+                              <span id="mapa_multi_hover_tipo" class="text-xs font-bold text-slate-400"></span>
+                            </div>
+                            <div class="space-y-2 text-xs">
+                              <div class="d-flex justify-content-between align-items-center py-1 border-b border-slate-50">
+                                <span class="text-slate-500 font-bold">Ranking em Pernambuco:</span>
+                                <span id="mapa_multi_hover_rank_pe" class="font-black text-slate-800">-</span>
+                              </div>
+                              <div class="d-flex justify-content-between align-items-center py-1 border-b border-slate-50">
+                                <span class="text-slate-500 font-bold">Ranking na RD:</span>
+                                <span id="mapa_multi_hover_rank_rd" class="font-black text-slate-800">-</span>
+                              </div>
+                              <div class="d-flex justify-content-between align-items-center py-1">
+                                <span class="text-slate-500 font-bold">Comparativo com Média PE:</span>
+                                <span id="mapa_multi_hover_comp_media" class="font-bold text-slate-700">-</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="mt-3 pt-2 border-t border-slate-100 text-[11px] text-slate-400 italic text-center">
+                            <i class="fas fa-arrow-pointer me-1 text-slate-400"></i>
+                            Clique em qualquer município para carregar sua ficha.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="sec_resumo_executivo" class="border-b-2 border-slate-200 pb-2 mb-4 mt-6">
+                    <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Resumo Executivo Integrado</h2>
+                    <p class="text-sm font-bold text-slate-500 mb-0">Síntese Estratégica Multidimensional: Demografia, Economia, Social, Fiscal e Tecnologia &amp; Inovação</p>
+                  </div>
+                  <div id="ficha_container_resumo_executivo" class="mb-5"></div>
+                  <div id="sec_diagnostico_regional" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                      <div>
+                        <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Diagnóstico de Desenvolvimento Regional</h2>
+                        <p class="text-sm font-bold text-slate-500 mb-0">Reorientação Estrutural e Diretrizes Técnicas por Eixo de Desenvolvimento (Matriz &amp; Corpus Bibliográfico)</p>
+                      </div>
+                      <div id="ficha_diag_badges_header" class="d-flex flex-wrap gap-1.5"></div>
+                    </div>
+                  </div>
+                  <div id="ficha_container_diagnostico_regional" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5"></div>
+                  <div id="ficha_bloco_secoes_detalhadas" class="ficha-secoes-detalhadas">
+                    <div id="sec_demografia" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8">
+                      <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Demografia</h2>
+                      <p class="text-sm font-bold text-slate-500 mb-0">Estrutura Etária e Dependência</p>
+                    </div>
+                    <div class="subsecao-print-break">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-5">
+                        <div class="kpi-modern-card" style="border-left-color: #3498DB;">
+                          <div class="kpi-modern-header">RAZÃO DE DEPENDÊNCIA TOTAL</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-users kpi-modern-icon" style="color: #3498DB;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_rd_pop">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_rd_pop">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #2ECC71;">
+                          <div class="kpi-modern-header">RAZÃO DE DEPENDÊNCIA JOVEM</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-child kpi-modern-icon" style="color: #2ECC71;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_rd_jovem">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_rd_jovem">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #9B59B6;">
+                          <div class="kpi-modern-header">RAZÃO DE DEPENDÊNCIA IDOSA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-clock kpi-modern-icon" style="color: #9B59B6;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_rd_idosa">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_rd_idosa">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E67E22;">
+                          <div class="kpi-modern-header">PESO DA POP. EM IDADE ATIVA (PIA)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-briefcase kpi-modern-icon" style="color: #E67E22;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_pct_pia">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_pct_pia">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E74C3C;">
+                          <div class="kpi-modern-header">ÍNDICE DE ENVELHECIMENTO</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-blind kpi-modern-icon" style="color: #E74C3C;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ind_envelhecimento">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ind_envelhecimento">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #1ABC9C;">
+                          <div class="kpi-modern-header">TAXA DE SUPERLONGEVIDADE</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-heartbeat kpi-modern-icon" style="color: #1ABC9C;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_pct_longevidade">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_pct_longevidade">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #F1C40F;">
+                          <div class="kpi-modern-header">ÍNDICE DE RENOVAÇÃO DA PIA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-sync kpi-modern-icon" style="color: #F1C40F;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ind_ir_pia">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ind_ir_pia">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #34495E;">
+                          <div class="kpi-modern-header">PESO RELATIVO DA JUVENTUDE</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-graduate kpi-modern-icon" style="color: #34495E;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_pct_jovem">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_pct_jovem">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #2980B9;">
+                          <div class="kpi-modern-header">RAZÃO DE RENOVAÇÃO DO TRABALHO</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-people-arrows kpi-modern-icon" style="color: #2980B9;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ind_renov_trabalho">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ind_renov_trabalho">Índice</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="sec_indicadores_sociais" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8">
+                      <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Indicadores Sociais</h2>
+                      <p class="text-sm font-bold text-slate-500 mb-0">Segurança Pública, Educação e Saúde</p>
+                    </div>
+                    <div id="subsecao_seguranca" class="subsecao-seguranca">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base">Segurança Pública</h5>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                        <div class="kpi-modern-card" style="border-left-color: #C0392B;">
+                          <div class="kpi-modern-header">MVI (ABSOLUTO)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-skull-crossbones kpi-modern-icon" style="color: #C0392B;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_mvi_abs">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_mvi_abs">Casos</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E74C3C;">
+                          <div class="kpi-modern-header">TAXA MVI</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-chart-line kpi-modern-icon" style="color: #E74C3C;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_mvi_taxa">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_mvi_taxa">por 100k hab.</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #D35400;">
+                          <div class="kpi-modern-header">CVP (ABSOLUTO)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-mask kpi-modern-icon" style="color: #D35400;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_cvp_abs">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_cvp_abs">Ocorrências</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E67E22;">
+                          <div class="kpi-modern-header">TAXA CVP</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-percent kpi-modern-icon" style="color: #E67E22;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_cvp_taxa">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_cvp_taxa">por 100k hab.</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #8E44AD;">
+                          <div class="kpi-modern-header">FEMINICÍDIO</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-person-dress kpi-modern-icon" style="color: #8E44AD;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_feminicidio">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_feminicidio">Casos</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #A569BD;">
+                          <div class="kpi-modern-header">TENTATIVA DE MVI</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-ninja kpi-modern-icon" style="color: #A569BD;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_tent_mvi">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_tent_mvi">Ocorrências</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E91E63;">
+                          <div class="kpi-modern-header">RFV</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-hand-holding-hand kpi-modern-icon" style="color: #E91E63;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_rfv">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_rfv">Ocorrências</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #F06292;">
+                          <div class="kpi-modern-header">VCM (AMEAÇA)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-triangle-exclamation kpi-modern-icon" style="color: #F06292;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_vcm_ameaca">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_vcm_ameaca">Ocorrências</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #C2185B;">
+                          <div class="kpi-modern-header">VCM (LESÃO CORPORAL)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-injured kpi-modern-icon" style="color: #C2185B;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_vcm_lesao">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_vcm_lesao">Ocorrências</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #880E4F;">
+                          <div class="kpi-modern-header">VCM (VIOLÊNCIA SEXUAL)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-shield-cat kpi-modern-icon" style="color: #880E4F;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_vcm_vs">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_vcm_vs">Ocorrências</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="subsecao-print-break">
+                      <h5 id="subsecao_educacao" class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-8">Educação</h5>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                        <div class="kpi-modern-card" style="border-left-color: #27AE60;">
+                          <div class="kpi-modern-header">IDEB ANOS INICIAIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-school kpi-modern-icon" style="color: #27AE60;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ideb_5ano">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ideb_5ano">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #2ECC71;">
+                          <div class="kpi-modern-header">TDI ANOS INICIAIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-chart-line kpi-modern-icon" style="color: #2ECC71;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_tdi_5ano">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_tdi_5ano">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E74C3C;">
+                          <div class="kpi-modern-header">ABANDONO ANOS INICIAIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-times kpi-modern-icon" style="color: #E74C3C;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_aba_5ano">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_aba_5ano">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #3498DB;">
+                          <div class="kpi-modern-header">APROVAÇÃO ANOS INICIAIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-check kpi-modern-icon" style="color: #3498DB;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_apr_5ano">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_apr_5ano">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E67E22;">
+                          <div class="kpi-modern-header">REPROVAÇÃO ANOS INICIAIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-minus kpi-modern-icon" style="color: #E67E22;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_rep_5ano">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_rep_5ano">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #2980B9;">
+                          <div class="kpi-modern-header">IDEB ANOS FINAIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-graduate kpi-modern-icon" style="color: #2980B9;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ideb_9ano">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ideb_9ano">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #3498DB;">
+                          <div class="kpi-modern-header">TDI ANOS FINAIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-chart-line kpi-modern-icon" style="color: #3498DB;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_tdi_9ano">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_tdi_9ano">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #C0392B;">
+                          <div class="kpi-modern-header">ABANDONO ANOS FINAIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-times kpi-modern-icon" style="color: #C0392B;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_aba_9ano">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_aba_9ano">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #2980B9;">
+                          <div class="kpi-modern-header">APROVAÇÃO ANOS FINAIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-check kpi-modern-icon" style="color: #2980B9;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_apr_9ano">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_apr_9ano">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #D35400;">
+                          <div class="kpi-modern-header">REPROVAÇÃO ANOS FINAIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-minus kpi-modern-icon" style="color: #D35400;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_rep_9ano">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_rep_9ano">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #9B59B6;">
+                          <div class="kpi-modern-header">MATRÍCULAS 6 A 10</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-users kpi-modern-icon" style="color: #9B59B6;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_mat_6_10">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_mat_6_10">Alunos</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #8E44AD;">
+                          <div class="kpi-modern-header">MATRÍCULAS 11 A 14</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-users kpi-modern-icon" style="color: #8E44AD;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_mat_11_14">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_mat_11_14">Alunos</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #1ABC9C;">
+                          <div class="kpi-modern-header">MATRÍCULAS INTEGRAIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-clock kpi-modern-icon" style="color: #1ABC9C;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_perc_mat_int">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_perc_mat_int">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #F1C40F;">
+                          <div class="kpi-modern-header">ALFABETIZAÇÃO</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-spell-check kpi-modern-icon" style="color: #F1C40F;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_perc_alfabetizacao">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_perc_alfabetizacao">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #16A085;">
+                          <div class="kpi-modern-header">ATEND. CRECHE (LÍQ)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-baby kpi-modern-icon" style="color: #16A085;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_atliq_creche">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_atliq_creche">%</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="subsecao-print-break">
+                      <h5 id="subsecao_saude" class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-8">Saúde</h5>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                        <div class="kpi-modern-card" style="border-left-color: #1ABC9C;">
+                          <div class="kpi-modern-header">PRÉ-NATAL (COBERTURA)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-baby kpi-modern-icon" style="color: #1ABC9C;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_pre_natal">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_pre_natal">%</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E74C3C;">
+                          <div class="kpi-modern-header">MORTALIDADE MATERNA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-female kpi-modern-icon" style="color: #E74C3C;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_razao_mm">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_razao_mm">por 100k nasc. vivos</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #3498DB;">
+                          <div class="kpi-modern-header">TAXA ATT</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-stethoscope kpi-modern-icon" style="color: #3498DB;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_tx_att">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_tx_att">Taxa</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #9B59B6;">
+                          <div class="kpi-modern-header">MORTALIDADE DCNT</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-heartbeat kpi-modern-icon" style="color: #9B59B6;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_tx_dcnt">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_tx_dcnt">Taxa</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E67E22;">
+                          <div class="kpi-modern-header">CAUSAS EVITÁVEIS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-user-shield kpi-modern-icon" style="color: #E67E22;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_tx_evitaveis">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_tx_evitaveis">Taxa</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #C0392B;">
+                          <div class="kpi-modern-header">MORTALIDADE INFÂNCIA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-child kpi-modern-icon" style="color: #C0392B;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_tx_infancia">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_tx_infancia">por 1k nasc. vivos</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #D35400;">
+                          <div class="kpi-modern-header">MORTALIDADE INFANTIL</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-baby-carriage kpi-modern-icon" style="color: #D35400;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_tx_infantil">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_tx_infantil">por 1k nasc. vivos</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="sec_vulnerabilidade_social" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8">
+                      <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Vulnerabilidade Social</h2>
+                      <p class="text-sm font-bold text-slate-500 mb-2">Índice de Vulnerabilidade das Famílias do Cadastro Único (IVCAD)</p>
+                      <p class="text-xs text-slate-600 mb-0">
+                        O Índice de Vulnerabilidade das Famílias do Cadastro Único (IVCAD) possibilita identificar situações de vulnerabilidade social por meio das informações presentes no Cadastro Único. 
+                        <a href="https://www.gov.br/mds/pt-br/orgaos/SAGICAD/dados-e-ferramentas-informacionais/ivcad" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline ms-1">Saiba mais</a>
+                      </p>
+                    </div>
+                    <div class="subsecao-print-break">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-6">IVCAD e Transferências de Renda</h5>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                        <div class="kpi-modern-card" style="border-left-color: #8E44AD;">
+                          <div class="kpi-modern-header">PESSOAS NO CAD ÚNICO</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-users kpi-modern-icon" style="color: #8E44AD;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_cad_pessoas">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_cad_pessoas">Pessoas</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E67E22;">
+                          <div class="kpi-modern-header">TX. PESSOAS NO CAD ÚNICO</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-percent kpi-modern-icon" style="color: #E67E22;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_tx_cad_pessoas">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_tx_cad_pessoas">% da População</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #ff5a26;">
+                          <div class="kpi-modern-header">ÍNDICE DE GINI</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-scale-unbalanced kpi-modern-icon" style="color: #ff5a26;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_indice_gini">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_indice_gini">Índice (Desigualdade)</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #9B59B6;">
+                          <div class="kpi-modern-header">ÍNDICE DE VULNERABILIDADE</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-chart-bar kpi-modern-icon" style="color: #9B59B6;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ivcad">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ivcad">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #3498DB;">
+                          <div class="kpi-modern-header">NECESSIDADE DE CUIDADOS (NC)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-hand-holding-medical kpi-modern-icon" style="color: #3498DB;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ivcad_nc">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ivcad_nc">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #F1C40F;">
+                          <div class="kpi-modern-header">DESENV. PRIMEIRA INFÂNCIA (DPI)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-child kpi-modern-icon" style="color: #F1C40F;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ivcad_dpi">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ivcad_dpi">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #2ECC71;">
+                          <div class="kpi-modern-header">DESENV. CRIANÇAS E ADOL. (DCA)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-child-reaching kpi-modern-icon" style="color: #2ECC71;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ivcad_dca">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ivcad_dca">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E74C3C;">
+                          <div class="kpi-modern-header">TRABALHO E QUALIFICAÇÃO (TQA)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-briefcase kpi-modern-icon" style="color: #E74C3C;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ivcad_tqa">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ivcad_tqa">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #16A085;">
+                          <div class="kpi-modern-header">DISPONIBILIDADE DE RECURSOS (DR)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-wallet kpi-modern-icon" style="color: #16A085;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ivcad_dr">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ivcad_dr">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #34495E;">
+                          <div class="kpi-modern-header">CONDIÇÕES HABITACIONAIS (CH)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-home kpi-modern-icon" style="color: #34495E;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_ivcad_ch">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_ivcad_ch">Índice</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #E91E63;">
+                          <div class="kpi-modern-header">MÃES DE PERNAMBUCO</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-female kpi-modern-icon" style="color: #E91E63;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_maes_qtd">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_maes_qtd">Mulheres Atendidas</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #C0392B;">
+                          <div class="kpi-modern-header">MÃES DE PERNAMBUCO</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-sack-dollar kpi-modern-icon" style="color: #C0392B;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_maes_val">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_maes_val">Investimento</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #F1C40F;">
+                          <div class="kpi-modern-header">CHAPÉU DE PALHA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-hat-cowboy kpi-modern-icon" style="color: #F1C40F;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_pcp_qtd">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_pcp_qtd">Pessoas Atendidas</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #D35400;">
+                          <div class="kpi-modern-header">CHAPÉU DE PALHA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-hand-holding-usd kpi-modern-icon" style="color: #D35400;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_pcp_val">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_pcp_val">Investimento</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #F59E0B;">
+                          <div class="kpi-modern-header">COZINHAS COMUNITÁRIAS</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-utensils kpi-modern-icon" style="color: #F59E0B;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_vuln_cozinhas">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_vuln_cozinhas">Unidades</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #3B82F6;">
+                          <div class="kpi-modern-header">COFINANCIAMENTO SOCIAL</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-hand-holding-dollar kpi-modern-icon" style="color: #3B82F6;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_vuln_cofin">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_vuln_cofin">Investimento Estadual</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="subsecao-print-break">
+                      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 mt-6">
+                        <div>
+                          <h5 id="subsecao_saneamento" class="font-black text-slate-700 uppercase tracking-tight mb-0 text-base">Condições Habitacionais e Saneamento</h5>
+                          <p class="text-xs font-semibold text-slate-400 mb-0">Indicadores baseados nas dimensões do Cadastro Único (IVCAD). Em breve complementados com dados municipais censitários gerais.</p>
+                        </div>
+                        <span class="badge bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold rounded-pill px-2.5 py-1">Dimensões IVCAD / Compesa</span>
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                        <div class="kpi-modern-card" style="border-left-color: #00BCD4;">
+                          <div class="kpi-modern-header">ÁGUA (REDE GERAL)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-faucet kpi-modern-icon" style="color: #00BCD4;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_pct_agua_rede">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase font-semibold text-slate-500" id="ficha_ano_pct_agua_rede">% Domicílios</div>
+                          <div class="text-[10px] text-amber-700 font-bold px-3 pb-2">
+                            <i class="fas fa-id-card me-1"></i>
+                            Fonte: Cadastro Único (CadÚnico)
+                          </div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #8D6E63;">
+                          <div class="kpi-modern-header">ESGOTO (REDE GERAL)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-toilet kpi-modern-icon" style="color: #8D6E63;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_pct_esgoto_rede">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase font-semibold text-slate-500" id="ficha_ano_pct_esgoto_rede">% Domicílios</div>
+                          <div class="text-[10px] text-amber-700 font-bold px-3 pb-2">
+                            <i class="fas fa-id-card me-1"></i>
+                            Fonte: Cadastro Único (CadÚnico)
+                          </div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #0284C7;">
+                          <div class="kpi-modern-header">INVESTIMENTO EM ÁGUA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-hand-holding-droplet kpi-modern-icon" style="color: #0284C7;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_hab_aguas_val">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_hab_aguas_val">Investimento Compesa</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #0EA5E9;">
+                          <div class="kpi-modern-header">OBRAS DE ÁGUA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-faucet-drip kpi-modern-icon" style="color: #0EA5E9;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_hab_aguas_qtd">-</span>
+                          </div>
+                          <div class="kpi-modern-footer text-uppercase" id="ficha_ano_hab_aguas_qtd">Intervenções Hídricas</div>
+                        </div>
+                      </div>
+                      <div id="ficha_container_compesa_saneamento" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-5">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 pb-2 border-b border-slate-200">
+                          <div>
+                            <h6 class="font-black text-slate-800 uppercase tracking-tight mb-0 text-sm">Plano de Investimentos COMPESA &amp; Segurança Hídrica</h6>
+                            <p class="text-xs font-semibold text-slate-400 mb-0">Diagnóstico contratual, rodízio de abastecimento, déficit hídrico e obras previstas</p>
+                          </div>
+                          <span class="badge bg-blue-100 text-blue-800 text-[11px] font-bold rounded-pill px-3 py-1">
+                            <i class="fas fa-faucet-drip me-1 text-blue-600"></i>
+                            COMPESA / SRHS
+                          </span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+                            <div class="text-[11px] font-bold text-slate-400 text-uppercase mb-1">Rodízio Atual</div>
+                            <div id="ficha_compesa_badge_rodizio_atual" class="badge bg-slate-100 text-slate-700 font-extrabold text-xs px-2.5 py-1.5 rounded-pill text-truncate w-100 text-start">-</div>
+                            <div class="text-[10px] text-slate-400 mt-1">Situação Vigente</div>
+                          </div>
+                          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+                            <div class="text-[11px] font-bold text-slate-400 text-uppercase mb-1">Rodízio Pós-Obras</div>
+                            <div id="ficha_compesa_badge_rodizio_pos" class="badge bg-emerald-50 text-emerald-700 font-extrabold text-xs px-2.5 py-1.5 rounded-pill text-truncate w-100 text-start">-</div>
+                            <div class="text-[10px] text-slate-400 mt-1">Impacto com Investimentos</div>
+                          </div>
+                          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+                            <div class="text-[11px] font-bold text-slate-400 text-uppercase mb-1">Situação C2 (Obras)</div>
+                            <div id="ficha_compesa_badge_sit_c2" class="badge bg-blue-50 text-blue-700 font-extrabold text-xs px-2.5 py-1.5 rounded-pill text-truncate w-100 text-start">-</div>
+                            <div class="text-[10px] text-slate-400 mt-1">Resolução de Déficit</div>
+                          </div>
+                          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+                            <div class="text-[11px] font-bold text-slate-400 text-uppercase mb-1">Categoria &amp; Concessão</div>
+                            <div id="ficha_compesa_badge_cat_concessao" class="badge bg-purple-50 text-purple-700 font-extrabold text-xs px-2.5 py-1.5 rounded-pill text-truncate w-100 text-start">-</div>
+                            <div class="text-[10px] text-slate-400 mt-1">Porte &amp; Regime Contratual</div>
+                          </div>
+                        </div>
+                        <div id="ficha_compesa_container_bndes" class="d-none bg-amber-50/80 border border-amber-200 rounded-xl p-3 mb-3 text-xs text-amber-900">
+                          <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="fas fa-triangle-exclamation text-amber-600"></i>
+                            <strong>Município com Déficit Persistente (Análise BNDES)</strong>
+                          </div>
+                          <div id="ficha_compesa_txt_bndes" class="text-amber-800"></div>
+                        </div>
+                        <div id="ficha_container_apac_manancial" class="bg-sky-50/80 border border-sky-200 rounded-xl p-3.5 mb-3 text-xs text-sky-950">
+                          <div class="d-flex justify-content-between align-items-center mb-2 pb-1.5 border-b border-sky-200 flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                              <i class="fas fa-water text-sky-600 text-sm"></i>
+                              <strong class="text-sky-950 font-black">Monitoramento de Mananciais e Recursos Hídricos (APAC)</strong>
+                            </div>
+                            <span id="ficha_apac_badge_status" class="badge bg-sky-100 text-sky-800 border border-sky-300 font-bold px-2.5 py-1 rounded-pill">Carregando...</span>
+                          </div>
+                          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-2.5">
+                            <div class="bg-white p-2.5 rounded-lg border border-sky-100">
+                              <div class="text-[10px] text-slate-400 font-bold uppercase">Bacia Hidrográfica</div>
+                              <div id="ficha_apac_bacia_nome" class="font-black text-slate-800 text-xs mt-0.5">-</div>
+                              <div id="ficha_apac_bacia_status" class="text-[10px] text-slate-500">Região Hidrográfica</div>
+                            </div>
+                            <div class="bg-white p-2.5 rounded-lg border border-sky-100">
+                              <div class="text-[10px] text-slate-400 font-bold uppercase">Armazenamento da Bacia</div>
+                              <div id="ficha_apac_bacia_acumulacao" class="font-black text-sky-700 text-xs mt-0.5">-</div>
+                              <div id="ficha_apac_bacia_faixa" class="text-[10px] text-slate-500">Volume Acumulado</div>
+                            </div>
+                            <div class="bg-white p-2.5 rounded-lg border border-sky-100">
+                              <div class="text-[10px] text-slate-400 font-bold uppercase">Mananciais Locais</div>
+                              <div id="ficha_apac_mun_reservatorios_count" class="font-black text-slate-800 text-xs mt-0.5">-</div>
+                              <div class="text-[10px] text-slate-500">No território municipal</div>
+                            </div>
+                          </div>
+                          <div id="ficha_apac_txt_detalhes" class="text-sky-900 leading-relaxed bg-white/70 rounded-lg p-2.5 border border-sky-100"></div>
+                        </div>
+                        <div id="ficha_compesa_container_projetos" class="mt-2">
+                          <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-xs font-bold text-slate-700">
+                              <i class="fas fa-trowel-bricks text-blue-600 me-1"></i>
+                              Intervenções do Portfólio COMPESA no Município
+                            </span>
+                            <span id="ficha_compesa_count_projetos" class="badge bg-blue-100 text-blue-800 font-bold rounded-pill">0 projetos</span>
+                          </div>
+                          <div id="ficha_compesa_lista_projetos" class="d-flex flex-column gap-2 text-xs"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="sec_indicadores_economicos" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                      <div>
+                        <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Indicadores Econômicos</h2>
+                        <p class="text-sm font-bold text-slate-500 mb-0">Vocações, Mercado de Trabalho, Inovação e Comércio Exterior • Fonte: RAIS / Ministério do Trabalho e Emprego</p>
+                      </div>
+                      <span class="badge bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-pill px-3 py-1">
+                        <i class="fas fa-database me-1 text-slate-500"></i>
+                        Fonte: RAIS / MTE
+                      </span>
+                    </div>
+                    <div class="subsecao-print-break">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-4">Vocações Econômicas Locais</h5>
+                      <div id="ficha_container_vocacoes" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5"></div>
+                    </div>
+                    <div class="subsecao-print-break">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-6">Mercado de Trabalho e Estrutura Ocupacional</h5>
+                      <div id="ficha_container_kpis_trabalho" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
+                    </div>
+                    <div class="subsecao-print-break">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-8">Conectividade</h5>
+                      <div id="ficha_container_kpis_conectividade" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
+                    </div>
+                    <div class="subsecao-print-break">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-4">Trabalho, Tecnologia e Inovação</h5>
+                      <div class="bg-slate-50/80 rounded-2xl border border-cyan-100 p-4 mb-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                          <div>
+                            <h6 class="font-black text-slate-800 uppercase tracking-tight mb-0.5 text-sm">
+                              <i class="fas fa-network-wired text-cyan-600 me-1.5"></i>
+                              Participação das Atividades de Informação e Comunicação (InfoCom) em relação a Serviços
+                            </h6>
+                            <p class="text-xs font-semibold text-slate-500 mb-0">Peso relativo do segmento de TI e Comunicação dentro do setor terciário municipal e vantagem comparativa estadual</p>
+                          </div>
+                        </div>
+                        <div id="ficha_container_kpis_infocom_serv" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
+                      </div>
+                      <div id="ficha_container_kpis_inovacao" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
+                    </div>
+                    <div class="subsecao-print-break">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-8">Comércio Exterior e Tecnologia</h5>
+                      <div id="ficha_container_kpis_comercio" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
+                    </div>
+                    <div id="sec_fiscal" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8">
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Fiscal</h2>
+                        <span id="ficha_badge_capag" class="badge text-white px-3 py-2 text-uppercase rounded-pill fw-bold ms-2" style="background-color: #595959; font-size: 0.75rem; letter-spacing: 0.05em;">CAPAG: -</span>
+                      </div>
+                      <p class="text-sm font-bold text-slate-500 mb-0">Execução Orçamentária e Indicadores Fiscais</p>
+                    </div>
+                    <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base">Receitas</h5>
+                    <div id="ficha_container_fiscal_receitas" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
+                    <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base">Despesas por Tipo</h5>
+                    <div id="ficha_container_fiscal_despesas_tipo" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
+                    <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base">Despesas por Tema / Função</h5>
+                    <div id="ficha_container_fiscal_despesas_tema" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
+                    <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base">Resultados</h5>
+                    <div id="ficha_container_fiscal_resultados" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
+                    <div id="sec_iniciativas_regionais" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8">
+                      <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Iniciativas de Desenvolvimento Regional</h2>
+                      <p class="text-sm font-bold text-slate-500 mb-0">Programas, Ações Estaduais e Convênios de Despesa</p>
+                    </div>
+                    <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base">Ações e Programas Governamentais no Território</h5>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                      <div class="kpi-modern-card" style="border-left-color: #34495E;">
+                        <div class="kpi-modern-header">TOTAL INICIATIVAS</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-lightbulb kpi-modern-icon" style="color: #34495E;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_ini_total">0</span>
+                        </div>
+                        <div class="kpi-modern-footer">Projetos e Ações</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #27AE60;">
+                        <div class="kpi-modern-header">EM EXECUÇÃO</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-tools kpi-modern-icon" style="color: #27AE60;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_ini_execucao">0</span>
+                        </div>
+                        <div class="kpi-modern-footer text-truncate" id="ficha_kpi_ini_top_status">Outros status...</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #2980B9;">
+                        <div class="kpi-modern-header">VALOR TOTAL</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-sack-dollar kpi-modern-icon" style="color: #2980B9;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_ini_val_tot">R$ 0</span>
+                        </div>
+                        <div class="kpi-modern-footer">Investimento Estratégico</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #0284C7;">
+                        <div class="kpi-modern-header">INVESTIMENTO EM ÁGUA</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-hand-holding-droplet kpi-modern-icon" style="color: #0284C7;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_ini_aguas_val">-</span>
+                        </div>
+                        <div class="kpi-modern-footer">Obras Compesa / SRHS</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #0EA5E9;">
+                        <div class="kpi-modern-header">OBRAS DE ÁGUA</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-faucet-drip kpi-modern-icon" style="color: #0EA5E9;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_ini_aguas_qtd">-</span>
+                        </div>
+                        <div class="kpi-modern-footer">Projetos Hídricos</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #3B82F6;">
+                        <div class="kpi-modern-header">COFINANCIAMENTO SOCIAL</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-hand-holding-dollar kpi-modern-icon" style="color: #3B82F6;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_ini_cofin_val">-</span>
+                        </div>
+                        <div class="kpi-modern-footer">Assistência Social</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #4F46E5;">
+                        <div class="kpi-modern-header">RODOVIAS &amp; EIXOS VIÁRIOS</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-road kpi-modern-icon" style="color: #4F46E5;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_ini_estradas_qtd">-</span>
+                        </div>
+                        <div class="kpi-modern-footer">Estradas de PE / DER</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #F59E0B;">
+                        <div class="kpi-modern-header">COZINHAS COMUNITÁRIAS</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-utensils kpi-modern-icon" style="color: #F59E0B;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_ini_cozinhas">0</span>
+                        </div>
+                        <div class="kpi-modern-footer text-truncate" id="ficha_kpi_ini_cozinhas_sub">Segurança Alimentar</div>
+                      </div>
+                    </div>
+                    <div class="row g-4 mb-5">
+                      <div class="col-md-6">
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 h-100">
+                          <h6 class="font-extrabold text-slate-600 uppercase text-xs tracking-wider mb-2">Volume de Projetos por Secretaria (Top 5)</h6>
+                          <div id="ficha_chart_iniciativas_sec" style="width: 100%; height: 250px;"></div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 h-100 overflow-hidden">
+                          <h6 class="font-extrabold text-slate-600 uppercase text-xs tracking-wider mb-2">Volume de Recursos por Secretaria (Top 5)</h6>
+                          <div id="ficha_chart_valor_sec" style="width: 100%; height: 250px;"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-8">Convênios de Despesa</h5>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                      <div class="kpi-modern-card" style="border-left-color: #0066FF;">
+                        <div class="kpi-modern-header">TOTAL CONVÊNIOS</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-file-contract kpi-modern-icon" style="color: #0066FF;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_conv_total">0</span>
+                        </div>
+                        <div class="kpi-modern-footer">Termos Celebrados</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #27AE60;">
+                        <div class="kpi-modern-header">EM EXECUÇÃO</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-tools kpi-modern-icon" style="color: #27AE60;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_conv_execucao">0</span>
+                        </div>
+                        <div class="kpi-modern-footer text-truncate" id="ficha_kpi_conv_top_status">Outros status...</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #2980B9;">
+                        <div class="kpi-modern-header">VALOR TOTAL</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-sack-dollar kpi-modern-icon" style="color: #2980B9;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_conv_val_tot">R$ 0</span>
+                        </div>
+                        <div class="kpi-modern-footer">Montante Conveniado</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #8E44AD;">
+                        <div class="kpi-modern-header">TOTAL PAGO</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-hand-holding-usd kpi-modern-icon" style="color: #8E44AD;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_conv_val_pag">R$ 0</span>
+                        </div>
+                        <div class="kpi-modern-footer">Recurso Repassado</div>
+                      </div>
+                    </div>
+                    <div id="sec_emendas_parlamentares" class="border-t-2 border-slate-100 pt-4 pb-2 mb-4 mt-8">
+                      <h4 class="font-black text-slate-700 uppercase tracking-tight mb-1 text-lg">Emendas Parlamentares</h4>
+                      <p class="text-xs font-bold text-slate-500 mb-0">Alocações e Recursos Indicados por Parlamentares</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div class="kpi-modern-card" style="border-left-color: #E67E22;">
+                        <div class="kpi-modern-header">TOTAL DE EMENDAS</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-file-invoice-dollar kpi-modern-icon" style="color: #E67E22;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_eme_total">0</span>
+                        </div>
+                        <div class="kpi-modern-footer">Indicações Registradas</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #16A085;">
+                        <div class="kpi-modern-header">VALOR TOTAL</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-coins kpi-modern-icon" style="color: #16A085;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_eme_val_tot">R$ 0</span>
+                        </div>
+                        <div class="kpi-modern-footer">Investimento Alocado</div>
+                      </div>
+                      <div class="kpi-modern-card" style="border-left-color: #27AE60;">
+                        <div class="kpi-modern-header">VALOR PAGO</div>
+                        <div class="kpi-modern-body">
+                          <i class="fas fa-check-circle kpi-modern-icon" style="color: #27AE60;"></i>
+                          <span class="kpi-modern-number" id="ficha_kpi_eme_val_pag">R$ 0</span>
+                        </div>
+                        <div class="kpi-modern-footer">Recurso Desembolsado</div>
+                      </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-5">
+                      <h6 class="font-black text-slate-700 uppercase tracking-tight text-xs mb-3">Detalhamento por Tipo de Despesa</h6>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="kpi-modern-card" style="border-left-color: #0066FF;">
+                          <div class="kpi-modern-header">APLICAÇÃO DIRETA</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-hand-holding-usd kpi-modern-icon" style="color: #0066FF;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_eme_td_aplicacao_qtd">0</span>
+                          </div>
+                          <div class="kpi-modern-footer text-truncate" id="ficha_kpi_eme_td_aplicacao_sub">R$ 0 (0%)</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #8E44AD;">
+                          <div class="kpi-modern-header">ENTIDADE (3º SETOR)</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-building kpi-modern-icon" style="color: #8E44AD;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_eme_td_entidade_qtd">0</span>
+                          </div>
+                          <div class="kpi-modern-footer text-truncate" id="ficha_kpi_eme_td_entidade_sub">R$ 0 (0%)</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #27AE60;">
+                          <div class="kpi-modern-header">MUNICÍPIO</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-city kpi-modern-icon" style="color: #27AE60;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_eme_td_municipio_qtd">0</span>
+                          </div>
+                          <div class="kpi-modern-footer text-truncate" id="ficha_kpi_eme_td_municipio_sub">R$ 0 (0%)</div>
+                        </div>
+                        <div class="kpi-modern-card" style="border-left-color: #F39C12;">
+                          <div class="kpi-modern-header">UNIÃO</div>
+                          <div class="kpi-modern-body">
+                            <i class="fas fa-landmark kpi-modern-icon" style="color: #F39C12;"></i>
+                            <span class="kpi-modern-number" id="ficha_kpi_eme_td_uniao_qtd">0</span>
+                          </div>
+                          <div class="kpi-modern-footer text-truncate" id="ficha_kpi_eme_td_uniao_sub">R$ 0 (0%)</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-5">
+                      <div class="col-md-4">
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 h-100">
+                          <h6 class="font-extrabold text-slate-600 uppercase text-xs tracking-wider mb-2">Principais Parlamentares</h6>
+                          <div id="ficha_chart_eme_parlamentares" style="width: 100%; height: 250px;"></div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 h-100">
+                          <h6 class="font-extrabold text-slate-600 uppercase text-xs tracking-wider mb-2">Principais Partidos</h6>
+                          <div id="ficha_chart_eme_partidos" style="width: 100%; height: 250px;"></div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 h-100">
+                          <h6 class="font-extrabold text-slate-600 uppercase text-xs tracking-wider mb-2">Recursos por Tema</h6>
+                          <div id="ficha_chart_eme_temas" style="width: 100%; height: 250px;"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="subaba_comparacao_municipal" class="d-none">
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 mb-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-b border-slate-100">
+                      <div>
+                        <span class="badge bg-orange-100 text-orange-950 font-bold px-3 py-1.5 rounded-pill uppercase tracking-wider text-xs mb-1 d-inline-block">
+                          <i class="fas fa-code-compare me-1 text-[#ff5a26]"></i>
+                          Benchmarking Municipal
+                        </span>
+                        <h3 class="text-xl font-black text-slate-800 tracking-tight mb-0">Comparativo Multidimensional de Municípios</h3>
+                        <p class="text-xs font-medium text-slate-500 mb-0">Compare 2 ou 3 municípios de Pernambuco lado a lado pelas 5 dimensões estratégicas do Aurora.</p>
+                      </div>
+                      <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 font-bold text-xs shadow-2xs" onclick="window.trocarOrdemMunicipiosComparacao()">
+                          <i class="fas fa-arrow-right-arrow-left me-1"></i>
+                          Inverter 1 &amp; 2
+                        </button>
+                        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3.5 font-bold text-xs shadow-xs text-white" onclick="window.atualizarComparacaoMunicipal()">
+                          <i class="fas fa-rotate me-1"></i>
+                          Atualizar Comparação
+                        </button>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-4">
+                        <div class="p-3 rounded-2xl border-2 border-[#ff5a26] bg-orange-50/40 h-100 transition-all">
+                          <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-[#ff5a26] text-white rounded-pill px-2.5 py-1 text-xs font-bold">Município 1 (Base)</span>
+                            <span id="comp_badge_rd_mun1" class="badge bg-orange-100 text-orange-900 text-[11px] font-semibold">-</span>
+                          </div>
+                          <select id="comp_select_mun1" class="form-select form-select-sm fw-bold border-orange-200 text-orange-950 rounded-xl" onchange="window.aoMudarMunicipioComparacao(1)"></select>
+                          <div id="comp_meta_mun1" class="mt-2.5 pt-2 border-t border-orange-200/60 d-flex justify-content-between text-xs text-orange-950">
+                            <span>
+                              População:
+                              <strong id="comp_pop_mun1" class="ms-1">-</strong>
+                            </span>
+                            <span>
+                              PIB pc:
+                              <strong id="comp_pibpc_mun1" class="ms-1">-</strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="p-3 rounded-2xl border-2 border-emerald-500 bg-emerald-50/40 h-100 transition-all">
+                          <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-emerald-600 text-white rounded-pill px-2.5 py-1 text-xs font-bold">Município 2</span>
+                            <span id="comp_badge_rd_mun2" class="badge bg-emerald-100 text-emerald-800 text-[11px] font-semibold">-</span>
+                          </div>
+                          <select id="comp_select_mun2" class="form-select form-select-sm fw-bold border-emerald-200 text-emerald-900 rounded-xl" onchange="window.aoMudarMunicipioComparacao(2)"></select>
+                          <div id="comp_meta_mun2" class="mt-2.5 pt-2 border-t border-emerald-200/60 d-flex justify-content-between text-xs text-emerald-950">
+                            <span>
+                              População:
+                              <strong id="comp_pop_mun2" class="ms-1">-</strong>
+                            </span>
+                            <span>
+                              PIB pc:
+                              <strong id="comp_pibpc_mun2" class="ms-1">-</strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="p-3 rounded-2xl border-2 border-purple-400 bg-purple-50/40 h-100 transition-all">
+                          <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-purple-600 text-white rounded-pill px-2.5 py-1 text-xs font-bold">Município 3 (Opcional)</span>
+                            <span id="comp_badge_rd_mun3" class="badge bg-purple-100 text-purple-800 text-[11px] font-semibold">-</span>
+                          </div>
+                          <select id="comp_select_mun3" class="form-select form-select-sm fw-bold border-purple-200 text-purple-900 rounded-xl" onchange="window.aoMudarMunicipioComparacao(3)"></select>
+                          <div id="comp_meta_mun3" class="mt-2.5 pt-2 border-t border-purple-200/60 d-flex justify-content-between text-xs text-purple-950">
+                            <span>
+                              População:
+                              <strong id="comp_pop_mun3" class="ms-1">-</strong>
+                            </span>
+                            <span>
+                              PIB pc:
+                              <strong id="comp_pibpc_mun3" class="ms-1">-</strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="comp_container_resumo_executivo" class="mb-4"></div>
+                  <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                          <div>
+                            <h5 class="font-black text-slate-800 text-sm uppercase tracking-tight mb-0">
+                              <i class="fas fa-hexagon-nodes text-blue-600 me-2"></i>
+                              Perfil Radial Multidimensional (5 Dimensões)
+                            </h5>
+                            <span class="text-[11px] text-slate-500 font-medium">Escala Normalizada 0-100 (Benchmarking Estadual)</span>
+                          </div>
+                          <span class="badge bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold rounded-pill px-2.5 py-1">Radar</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-3">Compara os polígonos de capacidade em Demografia, Economia, Social, Fiscal e Inovação.</p>
+                        <div id="comp_chart_radar_dimensoes" style="width: 100%; height: 380px;"></div>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                          <div>
+                            <h5 class="font-black text-slate-800 text-sm uppercase tracking-tight mb-0">
+                              <i class="fas fa-chart-column text-emerald-600 me-2"></i>
+                              Gráfico de Pirulito (Lollipop): Confronto Direto
+                            </h5>
+                            <span class="text-[11px] text-slate-500 font-medium">Valores relativos e absolutos por indicador</span>
+                          </div>
+                          <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-pill px-2.5 py-1">Lollipop</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-3">Visualização da distância exata entre os municípios nas principais métricas do Estado.</p>
+                        <div id="comp_chart_lollipop_principais" style="width: 100%; height: 380px;"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                          <h5 class="font-black text-slate-800 text-sm uppercase tracking-tight mb-0">
+                            <i class="fas fa-chart-pie text-amber-500 me-2"></i>
+                            Dimensão 2 (Economia): Composição do VAB (%)
+                          </h5>
+                          <span class="badge bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-pill px-2">Agro / Ind / Serv / Adm</span>
+                        </div>
+                        <div id="comp_chart_vab_setorial" style="width: 100%; height: 320px;"></div>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                          <h5 class="font-black text-slate-800 text-sm uppercase tracking-tight mb-0">
+                            <i class="fas fa-landmark text-purple-600 me-2"></i>
+                            Dimensão 4 (Fiscal): Custeio, Pessoal, Investimentos e Dívida
+                          </h5>
+                          <span class="badge bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold rounded-pill px-2">Lollipop Fiscal</span>
+                        </div>
+                        <div id="comp_chart_lollipop_fiscal" style="width: 100%; height: 320px;"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 mb-5">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-b border-slate-100">
+                      <div>
+                        <h5 class="font-black text-slate-800 text-base uppercase tracking-tight mb-0">
+                          <i class="fas fa-table-list text-primary me-2"></i>
+                          Matriz de Confronto Direto por Dimensões
+                        </h5>
+                        <span class="text-xs text-slate-500">Detalhamento de todos os indicadores das 5 dimensões estratégicas da Ficha Municipal</span>
+                      </div>
+                      <span class="badge bg-orange-50 text-orange-700 border border-orange-200 text-xs font-bold rounded-pill px-3 py-1">Benchmarking</span>
+                    </div>
+                    <div class="table-responsive">
+                      <table id="comp_tabela_confronto" class="table table-hover align-middle mb-0 text-sm w-100">
+                        <thead class="table-light text-xs text-slate-600 uppercase font-black">
+                          <tr>
+                            <th style="width: 32%;">Dimensão &amp; Indicador</th>
+                            <th id="comp_th_mun1" class="text-center text-blue-700" style="width: 20%;">Município 1</th>
+                            <th id="comp_th_mun2" class="text-center text-emerald-700" style="width: 20%;">Município 2</th>
+                            <th id="comp_th_mun3" class="text-center text-purple-700" style="width: 20%;">Município 3</th>
+                            <th class="text-center text-slate-600" style="width: 8%;">Destaque</th>
+                          </tr>
+                        </thead>
+                        <tbody id="comp_tbody_confronto"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal fade" id="modalFonteReferencia" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-2xl border-0 shadow-2xl overflow-hidden">
+                      <div class="modal-header bg-slate-900 text-white border-0 px-4 py-3">
+                        <div>
+                          <span class="badge bg-blue-500 text-white rounded-pill px-2.5 py-1 text-xs font-bold mb-1" id="modalFonteSigla">FONTE</span>
+                          <h5 class="modal-title font-black text-base text-white mb-0" id="modalFonteTitulo">Título da Fonte</h5>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                      </div>
+                      <div class="modal-body p-4 bg-slate-50">
+                        <div class="mb-3 bg-white p-3 rounded-xl border border-slate-200">
+                          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider d-block mb-1">Órgão / Autoria Responsável</span>
+                          <div class="font-bold text-slate-800 text-sm" id="modalFonteOrgao">-</div>
+                        </div>
+                        <div class="mb-3 bg-white p-3 rounded-xl border border-slate-200">
+                          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider d-block mb-1">Tipo de Documento / Corpus</span>
+                          <div class="font-bold text-slate-800 text-sm" id="modalFonteTipo">-</div>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200">
+                          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider d-block mb-1">Arquivo de Referência no Repositório</span>
+                          <code class="text-xs text-blue-700 font-mono" id="modalFonteArquivo">-</code>
+                        </div>
+                      </div>
+                      <div class="modal-footer bg-slate-100 border-0 px-4 py-2">
+                        <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3 font-bold" data-bs-dismiss="modal">Fechar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal fade" id="modal_ficha_kpi_serie" tabindex="-1" aria-labelledby="modal_ficha_kpi_titulo" aria-hidden="true">
+                  <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-2xl" style="border-radius: 20px; overflow: hidden;">
+                      <div class="modal-header bg-slate-900 text-white px-4 py-3 border-0">
+                        <div>
+                          <span class="badge bg-blue-500 text-white rounded-pill px-2.5 py-1 text-xs font-bold mb-1" id="modal_ficha_kpi_badge_tipo">INDICADOR</span>
+                          <h5 id="modal_ficha_kpi_titulo" class="modal-title font-black text-base text-white mb-0">Série Histórica e Comparativo Regional</h5>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                      </div>
+                      <div class="modal-body p-4 bg-slate-50">
+                        <div id="modal_ficha_kpi_storytelling" class="alert bg-white border border-slate-200 shadow-sm rounded-2xl p-3.5 mb-4 text-sm text-slate-700">Carregando informações...</div>
+                        <div class="row g-4">
+                          <div class="col-lg-6">
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm h-100">
+                              <h6 class="fw-black text-slate-800 text-sm mb-3 d-flex align-items-center gap-1.5">
+                                <i class="fas fa-chart-line text-primary"></i>
+                                Evolução Histórica do Município
+                              </h6>
+                              <div id="modal_ficha_chart_serie" style="width: 100%; height: 350px;"></div>
+                            </div>
+                          </div>
+                          <div class="col-lg-6">
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm h-100">
+                              <h6 id="modal_ficha_ranking_titulo" class="fw-black text-slate-800 text-sm mb-3 d-flex align-items-center gap-1.5">
+                                <i class="fas fa-chart-bar text-purple-600"></i>
+                                Comparativo Regional
+                              </h6>
+                              <div id="modal_ficha_chart_ranking" style="width: 100%; height: 350px;"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="modal-footer bg-slate-100 border-0 px-4 py-2.5 d-flex justify-content-between align-items-center">
+                        <span id="modal_ficha_kpi_fonte" class="text-xs text-slate-500 font-medium">Fonte: Sistema Integrado Aurora</span>
+                        <button type="button" class="btn btn-sm btn-secondary rounded-pill px-4 font-bold shadow-xs" data-bs-dismiss="modal">Fechar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+{{ end }}

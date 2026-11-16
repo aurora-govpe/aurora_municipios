@@ -53,6 +53,18 @@ func main() {
 	// Ativar compressão GZIP em todas as rotas
 	r.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
 
+	// Carregar templates HTML nativos
+	r.LoadHTMLGlob("templates/*")
+
+	// Rota raiz e SPA fallbacks
+	renderHome := func(c *gin.Context) {
+		c.HTML(http.StatusOK, "base.html", gin.H{})
+	}
+	r.GET("/", renderHome)
+	r.GET("/index.html", renderHome)
+	r.GET("/app/aurora_municipios", renderHome)
+	r.GET("/app/aurora_municipios/", renderHome)
+
 	// 4. Registrar rotas resilientes em /api e /
 	registerRoutes := func(rg *gin.RouterGroup) {
 		// Módulo Municípios (Novo padrão) & Ficha Municipal (Retrocompatibilidade)
@@ -66,8 +78,10 @@ func main() {
 		rg.Any("/municipios/resumo/habitacao", handlers.GetHabitacaoResumo)
 		rg.Any("/municipios/resumo/obras", handlers.GetObrasResumo)
 		rg.Any("/municipios/resumo/creches", handlers.GetCrechesResumo)
+		rg.Any("/municipios/mapa_indicador", handlers.GetMapaIndicador)
+		rg.Any("/municipios/mapa-indicador", handlers.GetMapaIndicador)
 
-    rg.Any("/ficha/filtros", handlers.GetFichaFiltros)
+		rg.Any("/ficha/filtros", handlers.GetFichaFiltros)
 		rg.Any("/ficha/metadados", handlers.GetFichaMetadados)
 		rg.Any("/ficha/data", handlers.PostFichaData)
 		rg.Any("/ficha/resumo/capag", handlers.GetCapagResumo)
@@ -76,6 +90,8 @@ func main() {
 		rg.Any("/ficha/resumo/estradas", handlers.GetEstradasResumo)
 		rg.Any("/ficha/resumo/habitacao", handlers.GetHabitacaoResumo)
 		rg.Any("/ficha/resumo/obras", handlers.GetObrasResumo)
+		rg.Any("/ficha/mapa_indicador", handlers.GetMapaIndicador)
+		rg.Any("/ficha/mapa-indicador", handlers.GetMapaIndicador)
 
 		// Regiões de Desenvolvimento
 		rg.Any("/regioes/filtros", handlers.GetRegioesFiltros)
@@ -114,13 +130,23 @@ func main() {
 		}
 
 		path := c.Request.URL.Path
+		if path == "/" || path == "/index.html" || path == "/app/aurora_municipios" || path == "/app/aurora_municipios/" {
+			c.HTML(http.StatusOK, "base.html", gin.H{})
+			return
+		}
+
 		if strings.HasPrefix(path, "/js/") || strings.HasPrefix(path, "/css/") {
 			c.Header("Cache-Control", "no-cache, must-revalidate")
 		} else if strings.HasPrefix(path, "/images/") {
 			c.Header("Cache-Control", "public, max-age=86400")
 		}
 
-		c.FileFromFS(path, http.Dir("./www"))
+		fsPath := path
+		if strings.HasPrefix(fsPath, "/app/aurora_municipios/") {
+			fsPath = strings.TrimPrefix(fsPath, "/app/aurora_municipios")
+		}
+
+		c.FileFromFS(fsPath, http.Dir("./www"))
 	})
 
 	port := os.Getenv("PORT")

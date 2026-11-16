@@ -1,0 +1,290 @@
+{{ define "landing" }}
+            <div class="tab-pane active show relative" data-value="Início" id="aba_inicio">
+              <div class="container-fluid mt-3 px-4 pb-5">
+                <div class="relative rounded-3xl p-6 md:p-10 mb-5 overflow-hidden shadow-xl text-white" style="background: linear-gradient(135deg, #ff5a26 0%, #ea580c 55%, #c2410c 100%); border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: 0 16px 36px -8px rgba(255, 90, 38, 0.35);">
+                  <div class="absolute -right-12 -bottom-16 w-80 h-80 rounded-full opacity-10 pointer-events-none" style="background: radial-gradient(circle, #fbbf24 0%, transparent 70%); filter: blur(30px); opacity: 0.18;"></div>
+                  <div class="d-flex align-items-center justify-content-between gap-3 mb-3 flex-wrap">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <span class="badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-white shadow-sm" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.25);">
+                        <i class="fas fa-landmark me-1.5 text-amber-300"></i>
+                        Governo de Pernambuco
+                      </span>
+                      <span class="badge rounded-pill px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-white shadow-sm" style="background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.25);">
+                        <i class="fas fa-shield-halved me-1.5 text-amber-200"></i>
+                        Secretaria de Planejamento, Gestão e Desenvolvimento Regional
+                      </span>
+                    </div>
+                    <a href="https://digital.seplag.pe.gov.br/" target="_blank" rel="noopener noreferrer" class="btn btn-sm rounded-pill px-4 py-2 font-black text-xs text-orange-950 d-inline-flex align-items-center gap-2 shadow-md transition-all hover:scale-105" style="background: #ffffff; color: #c2410c; border: 1px solid #ffffff; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); text-decoration: none;" title="Acessar o Hub Geral de Aplicativos SEPLAG Digital">
+                      <i class="fas fa-arrow-left text-[#ff5a26]"></i>
+                      <span>Hub SEPLAG Digital</span>
+                      <i class="fas fa-external-link-alt text-[10px] text-amber-600 opacity-90 ms-0.5"></i>
+                    </a>
+                  </div>
+                  <div class="row align-items-center mb-4">
+                    <div class="col-lg-9">
+                      <h1 class="text-3xl md:text-5xl font-black tracking-tight mb-3 text-white leading-tight">Aurora Desenvolvimento Regional</h1>
+                      <p class="text-sm md:text-base text-white max-w-3xl leading-relaxed mb-0 font-medium">
+                        A plataforma estratégica de inteligência de dados e apoio ao planejamento governamental do Estado de Pernambuco. 
+                        Monitore indicadores socioeconômicos, avalie a convergência inter e intra-regional e acesse o diagnóstico dos 184 municípios e 12 Regiões de Desenvolvimento.
+                      </p>
+                    </div>
+                    <div class="col-lg-3 d-none d-lg-flex justify-content-end">
+                      <img src="images/brasao_gov_pe.png" alt="Brasão Governo de Pernambuco" class="opacity-85 filter drop-shadow-lg" style="max-height: 110px; object-fit: contain;"/>
+                    </div>
+                  </div>
+                  <div class="mt-4 pt-3 border-t border-white/10">
+                    <div class="row g-2 align-items-center">
+                      <div class="col-md-7 col-lg-8">
+                        <div class="relative flex items-center">
+                          <i class="fas fa-search absolute left-4 text-slate-400 text-sm pointer-events-none"></i>
+                          <input id="landing_search_input" type="text" class="w-full bg-white text-slate-800 placeholder-slate-400 pl-11 pr-28 py-3 rounded-2xl text-sm font-semibold shadow-lg focus:outline-none focus:ring-2 focus:ring-[#ff5a26] border-0 transition-all" placeholder="Buscar município (ex: Caruaru, Petrolina, Serra Talhada) ou Região (ex: Agreste Central)..." onkeydown="if(event.key===&#39;Enter&#39;) window.executarBuscaLanding();"/>
+                          <button id="btn_executar_busca_landing" type="button" class="absolute right-2 btn btn-primary btn-sm rounded-xl px-3.5 py-1.5 font-bold text-xs shadow-sm cursor-pointer" onclick="window.executarBuscaLanding()">Acessar</button>
+                        </div>
+                      </div>
+                      <div class="col-md-5 col-lg-4 d-flex align-items-center gap-1.5 flex-wrap">
+                        <span class="text-xs font-bold text-white uppercase tracking-wider me-1 opacity-90">Acesso Rápido:</span>
+                        <button type="button" class="btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all" onclick="window.irParaMunicipio(&#39;Recife&#39;)">Recife</button>
+                        <button type="button" class="btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all" onclick="window.irParaMunicipio(&#39;Caruaru&#39;)">Caruaru</button>
+                        <button type="button" class="btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all" onclick="window.irParaMunicipio(&#39;Petrolina&#39;)">Petrolina</button>
+                        <button type="button" class="btn btn-xs rounded-pill bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs px-2.5 py-1 transition-all" onclick="window.irParaMunicipio(&#39;Garanhuns&#39;)">Garanhuns</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-5">
+                  <div class="d-flex justify-content-between align-items-center border-b-2 border-slate-200 pb-2 mb-3">
+                    <div>
+                      <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
+                        <i class="fas fa-chart-line text-primary me-2"></i>
+                        Grandes Números de Pernambuco
+                      </h3>
+                      <p class="text-xs font-bold text-slate-500 mb-0">Principais macroindicadores socioeconômicos e territoriais consolidados do Estado</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                      <span id="tag_atualizacao_dados" class="badge bg-white text-slate-700 border border-slate-200 rounded-pill px-3 py-1.5 text-xs font-bold shadow-2xs d-inline-flex align-items-center gap-1.5">
+                        <i class="fas fa-clock text-[#ff5a26]"></i>
+                        <span id="landing_data_atualizacao_txt">Atualizado em: Novembro/2026</span>
+                      </span>
+                      <span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-3 py-1 text-xs font-bold">Base Oficial</span>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">População Total</span>
+                        <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                          <i class="fas fa-users"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">9.058.931</span>
+                        <span class="text-xs font-bold text-slate-500 block">Habitantes Estimados (2026)</span>
+                      </div>
+                      <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-blue-100 text-blue-800 rounded-pill text-[11px] font-bold px-2.5 py-1">7º no Brasil</span>
+                        <span class="text-xs text-slate-500 font-semibold">2º no Nordeste</span>
+                      </div>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">PIB Estadual</span>
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                          <i class="fas fa-sack-dollar"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">R$ 254,8 Bi</span>
+                        <span class="text-xs font-bold text-slate-500 block">Soma das Economias Municipais</span>
+                      </div>
+                      <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-emerald-100 text-emerald-800 rounded-pill text-[11px] font-bold px-2.5 py-1">2º Maior do NE</span>
+                        <span class="text-xs text-slate-500 font-semibold">Indústria, Agro &amp; Serv.</span>
+                      </div>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">PIB per Capita</span>
+                        <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
+                          <i class="fas fa-chart-line"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">R$ 27.910</span>
+                        <span class="text-xs font-bold text-slate-500 block">Renda Econômica Média Anual</span>
+                      </div>
+                      <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-amber-100 text-amber-800 rounded-pill text-[11px] font-bold px-2.5 py-1">Média Estadual</span>
+                        <span class="text-xs text-slate-500 font-semibold">Por Habitante</span>
+                      </div>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Área Territorial</span>
+                        <div class="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg">
+                          <i class="fas fa-map"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">98.067 km²</span>
+                        <span class="text-xs font-bold text-slate-500 block">Extensão Territorial de PE</span>
+                      </div>
+                      <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-purple-100 text-purple-800 rounded-pill text-[11px] font-bold px-2.5 py-1">12 Regiões (RDs)</span>
+                        <span class="text-xs text-slate-500 font-semibold">184 Muns + Noronha</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-5">
+                  <div class="border-b-2 border-slate-200 pb-2 mb-4">
+                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-0">
+                      <i class="fas fa-sitemap text-primary me-2"></i>
+                      O Que Você Encontra no Aurora
+                    </h3>
+                    <p class="text-xs font-bold text-slate-500 mb-0">Navegue diretamente pelos módulos de análise conforme sua necessidade de informação</p>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl bg-blue-100 text-primary flex items-center justify-center text-xl mb-4">
+                          <i class="fas fa-map-location-dot"></i>
+                        </div>
+                        <span class="badge bg-blue-50 text-blue-700 border border-blue-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Escala Regional</span>
+                        <h4 class="font-black text-slate-800 text-lg mb-2">Regiões de Desenvolvimento (RDs)</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Diagnóstico territorial consolidado das 12 RDs e Consórcios Intermunicipais. Analise clusters de desenvolvimento, redes de influência (REGIC), fluxos pendulares e recursos estaduais alocados.</p>
+                      </div>
+                      <button type="button" class="btn btn-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2 shadow-sm" onclick="window.mudarAbaAurora(&#39;Regiões&#39;, null)">
+                        <i class="fas fa-arrow-right"></i>
+                        Explorar Regiões
+                      </button>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl mb-4">
+                          <i class="fas fa-layer-group"></i>
+                        </div>
+                        <span class="badge bg-amber-50 text-amber-800 border border-amber-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Pautas Estruturadoras</span>
+                        <h4 class="font-black text-slate-800 text-lg mb-2">Programas Prioritários</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Acompanhamento em profundidade dos programas centrais do Governo de Pernambuco: Superação da Pobreza, Segurança Alimentar e Proteção Social (Cozinhas e Mães de PE), Segurança Hídrica e Saneamento Básico (Compesa e Adutoras), Governança e Sustentabilidade Fiscal (CAPAG) e Conectividade Logística, Eixos Viários e Mobilidade Regional.</p>
+                      </div>
+                      <button type="button" class="btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Programas&#39;, null)">
+                        <i class="fas fa-arrow-right"></i>
+                        Ver Programas Prioritários
+                      </button>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl mb-4">
+                          <i class="fas fa-city"></i>
+                        </div>
+                        <span class="badge bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Escala Local (184 Municípios)</span>
+                        <h4 class="font-black text-slate-800 text-lg mb-2">Fichas Municipais</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Raio-X de cada um dos 184 municípios em 11 dimensões detalhadas: Demografia, Indicadores Sociais, Econômicos, Ciência e Tecnologia, Meio Ambiente, Finanças, Iniciativas e Emendas Parlamentares.</p>
+                      </div>
+                      <button type="button" class="btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Municípios&#39;, null)">
+                        <i class="fas fa-arrow-right"></i>
+                        Consultar Municípios
+                      </button>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl mb-4">
+                          <i class="fas fa-chart-column"></i>
+                        </div>
+                        <span class="badge bg-indigo-50 text-indigo-800 border border-indigo-200 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Escala Inter-Regional / Nacional</span>
+                        <h4 class="font-black text-slate-800 text-lg mb-2">UFs (Benchmarking Nacional)</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Benchmarking das 27 Unidades da Federação estruturado em 5 Eixos Estratégicos: Conhecimento e Inovação (IDEB), Segurança e Cidadania, Saúde e Qualidade de Vida, Desenvolvimento Sustentável e Gestão Fiscal.</p>
+                      </div>
+                      <button type="button" class="btn btn-outline-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;UFs&#39;, null)">
+                        <i class="fas fa-arrow-right"></i>
+                        Explorar UFs
+                      </button>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center text-xl mb-4">
+                          <i class="fas fa-book"></i>
+                        </div>
+                        <span class="badge bg-slate-100 text-slate-700 border border-slate-300 rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1">Transparência &amp; Governança</span>
+                        <h4 class="font-black text-slate-800 text-lg mb-2">Dicionário de Metadados</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Documentação rigorosa com as fórmulas de cálculo, limiares de corte, direções desejáveis, periodicidade e impacto no planejamento para cada indicador presente no sistema.</p>
+                      </div>
+                      <button type="button" class="btn btn-outline-secondary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2" onclick="window.mudarAbaAurora(&#39;Metadados&#39;, null)">
+                        <i class="fas fa-arrow-right"></i>
+                        Ver Metadados
+                      </button>
+                    </div>
+                    <div class="rounded-3xl p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between text-white" style="background: linear-gradient(135deg, #1c1917 0%, #292524 50%, #431407 100%); border: 1px solid rgba(255, 90, 38, 0.35); box-shadow: 0 10px 25px -5px rgba(28, 25, 23, 0.3);">
+                      <div>
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-4 shadow-xs" style="background: rgba(255, 90, 38, 0.15); color: #ff5a26; border: 1px solid rgba(255, 90, 38, 0.3);">
+                          <i class="fas fa-robot"></i>
+                        </div>
+                        <span class="badge rounded-pill text-xs font-bold mb-2 uppercase px-2.5 py-1" style="background: rgba(255, 90, 38, 0.15); color: #fdba74; border: 1px solid rgba(255, 90, 38, 0.3);">Inteligência Artificial</span>
+                        <h4 class="font-black text-white text-lg mb-2">Assistente de Dados Aurora</h4>
+                        <p class="text-stone-300 text-sm leading-relaxed mb-4">Converse diretamente com os dados de Pernambuco em linguagem natural. Obtenha comparativos imediatos, sínteses territoriais e respostas rápidas sobre qualquer município ou região.</p>
+                      </div>
+                      <button type="button" class="btn btn-primary rounded-xl font-bold text-xs py-2.5 px-4 w-full d-flex align-items-center justify-content-center gap-2 shadow-sm text-white" onclick="window.toggleAuroraChat()">
+                        <i class="fas fa-comments text-white"></i>
+                        Conversar com a Aurora
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-slate-100 rounded-3xl p-6 md:p-8 border border-slate-200">
+                  <div class="border-b border-slate-200 pb-3 mb-4">
+                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">
+                      <i class="fas fa-compass text-primary me-2"></i>
+                      Como Usar o Aurora (Fluxos Recomendados)
+                    </h3>
+                    <p class="text-xs font-bold text-slate-500 mb-0">Escolha a jornada que melhor atende aos seus objetivos de planejamento e tomada de decisão</p>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div class="text-emerald-600 font-black text-sm mb-1 d-flex align-items-center gap-1.5">
+                          <i class="fas fa-building"></i>
+                          Gestores Municipais
+                        </div>
+                        <h5 class="font-black text-slate-800 text-sm mb-2">Panorama e Monitoramento Local</h5>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3">Acesse a ficha da sua cidade para analisar as 11 dimensões sociais e econômicas, verificar a nota CAPAG e acompanhar convênios e emendas parlamentares em execução.</p>
+                      </div>
+                      <button class="btn btn-xs btn-outline-emerald border-emerald-500 text-emerald-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-emerald-50" onclick="window.mudarAbaAurora(&#39;Municípios&#39;, null)">Ir para Municípios</button>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div class="text-blue-600 font-black text-sm mb-1 d-flex align-items-center gap-1.5">
+                          <i class="fas fa-map"></i>
+                          Planejamento Territorial
+                        </div>
+                        <h5 class="font-black text-slate-800 text-sm mb-2">Articulação de RDs e Consórcios</h5>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3">Identifique disparidades inter-regionais entre as 12 RDs, analise bacias de emprego e conectividade territorial para orientar investimentos descentralizados.</p>
+                      </div>
+                      <button class="btn btn-xs btn-outline-primary font-bold rounded-lg py-1.5 px-3 w-full hover:bg-blue-50" onclick="window.mudarAbaAurora(&#39;Regiões&#39;, null)">Ir para Regiões</button>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div class="text-amber-600 font-black text-sm mb-1 d-flex align-items-center gap-1.5">
+                          <i class="fas fa-utensils"></i>
+                          Programas de Governo
+                        </div>
+                        <h5 class="font-black text-slate-800 text-sm mb-2">Ações Estruturantes de Estado</h5>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3">Consulte o mapa de cozinhas comunitárias do Superação da Pobreza e Segurança Alimentar, a malha de adutoras de Segurança Hídrica, os eixos de Conectividade Logística e a Sustentabilidade Fiscal dos municípios.</p>
+                      </div>
+                      <button class="btn btn-xs btn-outline-amber border-amber-500 text-amber-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-amber-50" onclick="window.mudarAbaAurora(&#39;Programas&#39;, null)">Ir para Programas</button>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div class="text-indigo-600 font-black text-sm mb-1 d-flex align-items-center gap-1.5">
+                          <i class="fas fa-chart-pie"></i>
+                          Analistas Estratégicos
+                        </div>
+                        <h5 class="font-black text-slate-800 text-sm mb-2">Benchmarking Interestadual</h5>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3">Compare Pernambuco frente aos outros estados do Nordeste e do Brasil em segurança pública, educação básica (IDEB), investimentos em C&amp;T e equilíbrio fiscal.</p>
+                      </div>
+                      <button class="btn btn-xs btn-outline-indigo border-indigo-500 text-indigo-700 font-bold rounded-lg py-1.5 px-3 w-full hover:bg-indigo-50" onclick="window.mudarAbaAurora(&#39;UFs&#39;, null)">Ir para UFs</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+{{ end }}
