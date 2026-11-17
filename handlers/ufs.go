@@ -153,7 +153,7 @@ func GetUFsData(c *gin.Context) {
 	}
 	cacheUFsMutex.RUnlock()
 
-// 1. Indicadores da UF selecionada com ranking nacional computado
+	// 1. Indicadores da UF selecionada com ranking nacional computado (particionado também por mes_referencia)
 	queryUF := `
 WITH ranking_calc AS (
     SELECT 
@@ -161,25 +161,36 @@ WITH ranking_calc AS (
         nm_indicador, sigla_indicador, grupo, tipo, 
         COALESCE(LOWER(TRIM(polaridade)), '') as polaridade,
         TRY_CAST(indicador AS DOUBLE) as valor,
-        COALESCE(mes_referencia, '') as mes_referencia,
+        COALESCE(CAST(mes_referencia AS VARCHAR), '') as mes_referencia,
         RANK() OVER (
-            PARTITION BY sigla_indicador, CAST(ano AS INT) 
+            PARTITION BY sigla_indicador, CAST(ano AS INT), COALESCE(CAST(mes_referencia AS VARCHAR), '')
             ORDER BY 
-                CASE WHEN (sigla_indicador LIKE 'aba_em%' OR sigla_indicador LIKE 'tdi_em%') 
+                CASE WHEN (sigla_indicador LIKE 'aba_em%' OR sigla_indicador LIKE 'tdi_em%' OR sigla_indicador = 'deficit_hab') 
                      THEN TRY_CAST(indicador AS DOUBLE) END ASC,
-                CASE WHEN NOT (sigla_indicador LIKE 'aba_em%' OR sigla_indicador LIKE 'tdi_em%') 
+                CASE WHEN NOT (sigla_indicador LIKE 'aba_em%' OR sigla_indicador LIKE 'tdi_em%' OR sigla_indicador = 'deficit_hab') 
                      THEN TRY_CAST(indicador AS DOUBLE) END DESC
-        ) as rank_br
+        ) as rank_br,
+        CASE WHEN UPPER(sg_uf) IN ('AL','BA','CE','MA','PB','PE','PI','RN','SE') THEN
+            DENSE_RANK() OVER (
+                PARTITION BY sigla_indicador, CAST(ano AS INT), COALESCE(CAST(mes_referencia AS VARCHAR), '')
+                ORDER BY 
+                    CASE WHEN UPPER(sg_uf) IN ('AL','BA','CE','MA','PB','PE','PI','RN','SE') THEN 1 ELSE 2 END,
+                    CASE WHEN (sigla_indicador LIKE 'aba_em%' OR sigla_indicador LIKE 'tdi_em%' OR sigla_indicador = 'deficit_hab') 
+                         THEN TRY_CAST(indicador AS DOUBLE) END ASC,
+                    CASE WHEN NOT (sigla_indicador LIKE 'aba_em%' OR sigla_indicador LIKE 'tdi_em%' OR sigla_indicador = 'deficit_hab') 
+                         THEN TRY_CAST(indicador AS DOUBLE) END DESC
+            )
+        ELSE NULL END as rank_ne
     FROM v_indicadores_ufs
     WHERE TRY_CAST(indicador AS DOUBLE) IS NOT NULL
 )
 SELECT 
     cod_uf, sg_uf, nm_uf, ano, 
     nm_indicador, sigla_indicador, grupo, tipo, polaridade,
-    valor, mes_referencia, rank_br
+    valor, mes_referencia, rank_br, rank_ne
 FROM ranking_calc
 WHERE UPPER(sg_uf) = ?
-ORDER BY ano DESC, nm_indicador ASC
+ORDER BY ano DESC, mes_referencia DESC, nm_indicador ASC
 `
 	rowsUF, errUF := DuckDB.Query(queryUF, uf)
 	var indicadoresUF []map[string]interface{}
@@ -189,8 +200,8 @@ ORDER BY ano DESC, nm_indicador ASC
 			var codUf, sgUf, nmUf, nmInd, siglaInd, grupo, tipo, polaridade, mesRef string
 			var ano int
 			var valor *float64
-			var rankBr *int
-			if err := rowsUF.Scan(&codUf, &sgUf, &nmUf, &ano, &nmInd, &siglaInd, &grupo, &tipo, &polaridade, &valor, &mesRef, &rankBr); err == nil {
+			var rankBr, rankNe *int
+			if err := rowsUF.Scan(&codUf, &sgUf, &nmUf, &ano, &nmInd, &siglaInd, &grupo, &tipo, &polaridade, &valor, &mesRef, &rankBr, &rankNe); err == nil {
 				item := map[string]interface{}{
 					"cod_uf":          codUf,
 					"sg_uf":           sgUf,
@@ -204,6 +215,7 @@ ORDER BY ano DESC, nm_indicador ASC
 					"mes_referencia":  mesRef,
 					"valor":           valor,
 					"rank_br":         rankBr,
+					"rank_ne":         rankNe,
 				}
 				indicadoresUF = append(indicadoresUF, item)
 			}
@@ -218,10 +230,10 @@ ORDER BY ano DESC, nm_indicador ASC
 			cod_regiao, sg_regiao, nm_regiao, CAST(ano AS INT) as ano, 
 			nm_indicador, sigla_indicador, grupo, tipo, 
 			TRY_CAST(indicador AS DOUBLE) as valor,
-			COALESCE(mes_referencia, '') as mes_referencia
+			COALESCE(CAST(mes_referencia AS VARCHAR), '') as mes_referencia
 		FROM v_indicadores_regioes
 		WHERE sg_regiao IN ('NE', 'BR')
-		ORDER BY ano DESC, sg_regiao ASC, nm_indicador ASC
+		ORDER BY ano DESC, mes_referencia DESC, sg_regiao ASC, nm_indicador ASC
 	`
 	rowsReg, errReg := DuckDB.Query(queryReg)
 	var benchmarksReg []map[string]interface{}
@@ -250,9 +262,9 @@ ORDER BY ano DESC, nm_indicador ASC
 	}
 
 	resp := gin.H{
-		"uf":                 uf,
-		"indicadores":        indicadoresUF,
-		"benchmarks_regiao":  benchmarksReg,
+		"uf":                uf,
+		"indicadores":       indicadoresUF,
+		"benchmarks_regiao": benchmarksReg,
 	}
 
 	cacheUFsMutex.Lock()
@@ -262,10 +274,11 @@ ORDER BY ano DESC, nm_indicador ASC
 	c.JSON(http.StatusOK, resp)
 }
 
-// GetUFsRanking retorna a comparação entre todas as 27 UFs para um determinado indicador e ano
+// GetUFsRanking retorna a comparação entre todas as 27 UFs para um determinado indicador, ano e mês (quando mensal)
 func GetUFsRanking(c *gin.Context) {
 	sigla := strings.TrimSpace(c.Query("sigla_indicador"))
 	anoStr := strings.TrimSpace(c.Query("ano"))
+	mesStr := strings.TrimSpace(c.Query("mes"))
 
 	if sigla == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "sigla_indicador é obrigatória"})
@@ -277,55 +290,72 @@ func GetUFsRanking(c *gin.Context) {
 		anoInt, _ = strconv.Atoi(anoStr)
 	}
 
-    orderDir := "DESC"
-if strings.HasPrefix(sigla, "aba_em") || strings.HasPrefix(sigla, "tdi_em") ||
-   sigla == "perdas_distribuicao_agua" || sigla == "custo_medio_agua" ||
-   sigla == "tarifa_media_agua" || sigla == "custo_medio_esgoto" ||
-   sigla == "tarifa_media_esgoto" {
-    orderDir = "ASC"
-}
-
-	var query string
-	var args []interface{}
-
-	if anoInt > 0 {
-		query = fmt.Sprintf(`
-			WITH ano_alvo AS (
-				SELECT COALESCE(
-					(SELECT CAST(ano AS INT) FROM v_indicadores_ufs WHERE sigla_indicador = ? AND CAST(ano AS INT) = ? AND TRY_CAST(indicador AS DOUBLE) IS NOT NULL LIMIT 1),
-					(SELECT MAX(CAST(ano AS INT)) FROM v_indicadores_ufs WHERE sigla_indicador = ? AND TRY_CAST(indicador AS DOUBLE) IS NOT NULL)
-				) AS ano_escolhido
-			)
-			SELECT 
-				u.sg_uf, u.nm_uf, CAST(u.ano AS INT) as ano, 
-				TRY_CAST(u.indicador AS DOUBLE) as valor,
-				u.sigla_indicador, u.nm_indicador, u.tipo
-			FROM v_indicadores_ufs u
-			JOIN ano_alvo a ON CAST(u.ano AS INT) = a.ano_escolhido
-			WHERE u.sigla_indicador = ? AND TRY_CAST(u.indicador AS DOUBLE) IS NOT NULL
-			ORDER BY TRY_CAST(u.indicador AS DOUBLE) %s
-		`, orderDir)
-		args = []interface{}{sigla, anoInt, sigla, sigla}
-	} else {
-		query = fmt.Sprintf(`
-			WITH max_ano AS (
-				SELECT MAX(CAST(ano AS INT)) as ano_recente 
-				FROM v_indicadores_ufs 
-				WHERE sigla_indicador = ? AND TRY_CAST(indicador AS DOUBLE) IS NOT NULL
-			)
-			SELECT 
-				u.sg_uf, u.nm_uf, CAST(u.ano AS INT) as ano, 
-				TRY_CAST(u.indicador AS DOUBLE) as valor,
-				u.sigla_indicador, u.nm_indicador, u.tipo
-			FROM v_indicadores_ufs u
-			JOIN max_ano m ON CAST(u.ano AS INT) = m.ano_recente
-			WHERE u.sigla_indicador = ? AND TRY_CAST(u.indicador AS DOUBLE) IS NOT NULL
-			ORDER BY TRY_CAST(u.indicador AS DOUBLE) %s
-		`, orderDir)
-		args = []interface{}{sigla, sigla}
+	var mesInt int
+	if mesStr != "" {
+		mesInt, _ = strconv.Atoi(mesStr)
 	}
 
-	rows, err := DuckDB.Query(query, args...)
+	orderDir := "DESC"
+	if strings.HasPrefix(sigla, "aba_em") || strings.HasPrefix(sigla, "tdi_em") ||
+		sigla == "perdas_distribuicao_agua" || sigla == "custo_medio_agua" ||
+		sigla == "tarifa_media_agua" || sigla == "custo_medio_esgoto" ||
+		sigla == "tarifa_media_esgoto" || sigla == "deficit_hab" {
+		orderDir = "ASC"
+	}
+
+	// Expressão SQL para extrair o número do mês (1..12) independente se mes_referencia vier como "3", "03", "2025-03" ou vazio
+	exprMesSQL := `COALESCE(
+		TRY_CAST(NULLIF(TRIM(CAST(mes_referencia AS VARCHAR)), '') AS INT),
+		TRY_CAST(SPLIT_PART(TRIM(CAST(mes_referencia AS VARCHAR)), '-', 2) AS INT),
+		0
+	)`
+
+	// Resolve o ano e o mês alvo:
+	// - Se anoInt e mesInt forem enviados e existirem, usa exatamente eles.
+	// - Caso contrário, pega o (ano, mês) mais recente disponível para o indicador.
+	queryPeriodo := fmt.Sprintf(`
+		WITH base AS (
+			SELECT 
+				CAST(ano AS INT) AS a,
+				%s AS m
+			FROM v_indicadores_ufs
+			WHERE sigla_indicador = ? AND TRY_CAST(indicador AS DOUBLE) IS NOT NULL
+		)
+		SELECT a, m
+		FROM base
+		ORDER BY 
+			CASE WHEN (? > 0 AND a = ? AND (? = 0 OR m = ?)) THEN 0 ELSE 1 END ASC,
+			a DESC,
+			m DESC
+		LIMIT 1
+	`, exprMesSQL)
+
+	var anoEscolhido, mesEscolhido int
+	errPer := DuckDB.QueryRow(queryPeriodo, sigla, anoInt, anoInt, mesInt, mesInt).Scan(&anoEscolhido, &mesEscolhido)
+	if errPer != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"sigla_indicador": sigla,
+			"ranking":         []map[string]interface{}{},
+			"benchmarks":      []map[string]interface{}{},
+		})
+		return
+	}
+
+	query := fmt.Sprintf(`
+		SELECT 
+			u.sg_uf, u.nm_uf, CAST(u.ano AS INT) as ano, 
+			COALESCE(CAST(u.mes_referencia AS VARCHAR), '') as mes_referencia,
+			TRY_CAST(u.indicador AS DOUBLE) as valor,
+			u.sigla_indicador, u.nm_indicador, u.tipo
+		FROM v_indicadores_ufs u
+		WHERE u.sigla_indicador = ?
+		  AND CAST(u.ano AS INT) = ?
+		  AND (%s) = ?
+		  AND TRY_CAST(u.indicador AS DOUBLE) IS NOT NULL
+		ORDER BY TRY_CAST(u.indicador AS DOUBLE) %s
+	`, strings.ReplaceAll(exprMesSQL, "mes_referencia", "u.mes_referencia"), orderDir)
+
+	rows, err := DuckDB.Query(query, sigla, anoEscolhido, mesEscolhido)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Erro ao consultar ranking: %v", err)})
 		return
@@ -335,15 +365,16 @@ if strings.HasPrefix(sigla, "aba_em") || strings.HasPrefix(sigla, "tdi_em") ||
 	var ranking []map[string]interface{}
 	pos := 1
 	for rows.Next() {
-		var sgUf, nmUf, siglaInd, nmInd, tipo string
+		var sgUf, nmUf, mesRef, siglaInd, nmInd, tipo string
 		var ano int
 		var valor *float64
-		if err := rows.Scan(&sgUf, &nmUf, &ano, &valor, &siglaInd, &nmInd, &tipo); err == nil {
+		if err := rows.Scan(&sgUf, &nmUf, &ano, &mesRef, &valor, &siglaInd, &nmInd, &tipo); err == nil {
 			ranking = append(ranking, map[string]interface{}{
 				"posicao":         pos,
 				"sg_uf":           sgUf,
 				"nm_uf":           nmUf,
 				"ano":             ano,
+				"mes_referencia":  mesRef,
 				"valor":           valor,
 				"sigla_indicador": siglaInd,
 				"nm_indicador":    nmInd,
@@ -353,22 +384,30 @@ if strings.HasPrefix(sigla, "aba_em") || strings.HasPrefix(sigla, "tdi_em") ||
 		}
 	}
 
-// Substitua a benchQuery em GetUFsRanking (ufs.go) por esta:
-	benchQuery := `
-		WITH ano_reg AS (
-			SELECT COALESCE(
-				(SELECT CAST(ano AS INT) FROM v_indicadores_regioes WHERE sigla_indicador = ? AND CAST(ano AS INT) = (SELECT MAX(CAST(ano AS INT)) FROM v_indicadores_ufs WHERE sigla_indicador = ? AND TRY_CAST(indicador AS DOUBLE) IS NOT NULL) AND TRY_CAST(indicador AS DOUBLE) IS NOT NULL LIMIT 1),
-				(SELECT MAX(CAST(ano AS INT)) FROM v_indicadores_regioes WHERE sigla_indicador = ? AND TRY_CAST(indicador AS DOUBLE) IS NOT NULL)
-			) AS ano_escolhido
+	// Benchmarks Regionais (NE e BR) filtrados pelo mesmo ano e mês escolhido
+	exprMesRegSQL := strings.ReplaceAll(exprMesSQL, "mes_referencia", "r.mes_referencia")
+	benchQuery := fmt.Sprintf(`
+		WITH periodo_reg AS (
+			SELECT CAST(r.ano AS INT) AS a, (%s) AS m
+			FROM v_indicadores_regioes r
+			WHERE r.sigla_indicador = ? 
+			  AND r.sg_regiao IN ('NE', 'BR')
+			  AND TRY_CAST(r.indicador AS DOUBLE) IS NOT NULL
+			ORDER BY 
+				CASE WHEN (CAST(r.ano AS INT) = ? AND (%s) = ?) THEN 0 ELSE 1 END ASC,
+				CAST(r.ano AS INT) DESC,
+				(%s) DESC
+			LIMIT 1
 		)
 		SELECT r.sg_regiao, r.nm_regiao, CAST(r.ano AS INT) as ano, TRY_CAST(r.indicador AS DOUBLE) as valor
 		FROM v_indicadores_regioes r
-		JOIN ano_reg a ON CAST(r.ano AS INT) = a.ano_escolhido
-		WHERE r.sigla_indicador = ? AND r.sg_regiao IN ('NE', 'BR') AND TRY_CAST(r.indicador AS DOUBLE) IS NOT NULL
-	`
-	benchArgs := []interface{}{sigla, sigla, sigla, sigla}
+		JOIN periodo_reg p ON CAST(r.ano AS INT) = p.a AND (%s) = p.m
+		WHERE r.sigla_indicador = ? 
+		  AND r.sg_regiao IN ('NE', 'BR') 
+		  AND TRY_CAST(r.indicador AS DOUBLE) IS NOT NULL
+	`, exprMesRegSQL, exprMesRegSQL, exprMesRegSQL, exprMesRegSQL)
 
-	rowsBench, errBench := DuckDB.Query(benchQuery, benchArgs...)
+	rowsBench, errBench := DuckDB.Query(benchQuery, sigla, anoEscolhido, mesEscolhido, sigla)
 	var benchmarks []map[string]interface{}
 	if errBench == nil {
 		defer rowsBench.Close()
@@ -389,6 +428,8 @@ if strings.HasPrefix(sigla, "aba_em") || strings.HasPrefix(sigla, "tdi_em") ||
 
 	c.JSON(http.StatusOK, gin.H{
 		"sigla_indicador": sigla,
+		"ano":             anoEscolhido,
+		"mes":             mesEscolhido,
 		"ranking":         ranking,
 		"benchmarks":      benchmarks,
 	})

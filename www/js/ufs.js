@@ -18,6 +18,72 @@ var dicionarioMetadadosUFs = {};
 // Lista oficial das UFs do Nordeste
 const UFS_NORDESTE = ["AL", "BA", "CE", "MA", "PB", "PE", "PI", "RN", "SE"];
 
+// Nomes curtos dos meses para formatação
+const MESES_CURTOS_UFS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+
+// ==========================================================================
+// HELPERS TEMPORAIS (SUPORTE A SÉRIES ANUAIS E MENSAIS)
+// ==========================================================================
+
+function extrairInfoTemporalSocio(row) {
+    let ano = 0;
+    let mes = 0;
+
+    // 1. Tenta extrair mês explícito de colunas comuns
+    const rawMes = row.mes ?? row.nr_mes ?? row.mes_referencia ?? row.periodo ?? null;
+    if (rawMes !== null && rawMes !== undefined && rawMes !== '') {
+        const mStr = String(rawMes).trim();
+        if (/^\d{4}-\d{1,2}/.test(mStr)) {
+            const parts = mStr.split('-');
+            ano = parseInt(parts[0], 10);
+            mes = parseInt(parts[1], 10);
+        } else {
+            mes = parseInt(mStr, 10) || 0;
+        }
+    }
+
+    // 2. Extrai ano (ou formato YYYY-MM / MM/YYYY embutido em ano/data)
+    if (!ano && row.ano !== undefined && row.ano !== null) {
+        const aStr = String(row.ano).trim();
+        if (/^\d{4}-\d{1,2}/.test(aStr)) {
+            const parts = aStr.split('-');
+            ano = parseInt(parts[0], 10);
+            if (!mes) mes = parseInt(parts[1], 10);
+        } else if (/^\d{1,2}\/\d{4}$/.test(aStr)) {
+            const parts = aStr.split('/');
+            if (!mes) mes = parseInt(parts[0], 10);
+            ano = parseInt(parts[1], 10);
+        } else {
+            ano = parseInt(aStr, 10) || 0;
+        }
+    }
+
+    // 3. Fallback caso venha em campo data/competencia
+    if ((!ano || !mes) && (row.data || row.competencia)) {
+        const dStr = String(row.data || row.competencia).trim();
+        if (/^\d{4}-\d{1,2}/.test(dStr)) {
+            const parts = dStr.split('-');
+            if (!ano) ano = parseInt(parts[0], 10);
+            if (!mes) mes = parseInt(parts[1], 10);
+        } else if (/^\d{1,2}\/\d{4}$/.test(dStr)) {
+            const parts = dStr.split('/');
+            if (!mes) mes = parseInt(parts[0], 10);
+            if (!ano) ano = parseInt(parts[1], 10);
+        }
+    }
+
+    const isMensal = mes >= 1 && mes <= 12;
+    const sortKey = ano * 100 + (isMensal ? mes : 0);
+    const label = isMensal
+        ? `${MESES_CURTOS_UFS[mes - 1]}/${String(ano).slice(-2)}`
+        : String(ano);
+    const labelCompleto = isMensal
+        ? `${MESES_CURTOS_UFS[mes - 1]}/${ano}`
+        : String(ano);
+
+    return { ano, mes: isMensal ? mes : 0, isMensal, sortKey, label, labelCompleto };
+}
+
 // Helper que garante a presença de Nordeste (NE) e Brasil (BR) em qualquer ranking
 function garantirBenchmarksRegionais(rankingArr, config) {
     if (!rankingArr || rankingArr.length === 0) return rankingArr;
@@ -160,6 +226,7 @@ window.abrirModalMetadadoUFs = function(siglaOrKey, tipoDado) {
         modal.show();
     }
 };
+
 // Retorna o Badge de Polaridade / Sinalização no padrão de Municípios
 function obterBadgePolaridadeUFs(siglaOrKey, tipoDado, config, polaridadeDb) {
     // 1. Prioridade absoluta: coluna polaridade do banco de dados ('positiva' ou 'negativa')
@@ -203,6 +270,7 @@ function obterBadgePolaridadeUFs(siglaOrKey, tipoDado, config, polaridadeDb) {
                 <i class="fas fa-circle-info"></i> Contextual
             </span>`;
 }
+
 // Inicialização Lazy do Módulo
 window.iniciarModuloUFs = async function() {
     if (window.moduloUFsIniciado) {
@@ -381,7 +449,6 @@ window.filtrarUFsLocal = function() {
     // Dados socioambientais da UF
     const baseSocio = dadosSocioAmbientaisUFs[uf] || [];
 
-    // Renderiza os 5 Eixos Estratégicos
     // Renderiza o Resumo Executivo das UFs (5 Eixos Estratégicos)
     try {
         renderizarResumoExecutivoUFs(uf, baseSocio);
@@ -390,7 +457,7 @@ window.filtrarUFsLocal = function() {
     }
 
     renderizarEixoConhecimento(baseSocio, uf);
-    renderizarEixoSeguranca(baseSocio, uf); // <-- passar baseSocio como 1º argumento
+    renderizarEixoSeguranca(baseSocio, uf);
     renderizarEixoSaude(baseSocio, uf);
     renderizarEixoSustentabilidade(baseSocio, uf);
     renderizarEixoGestaoFiscal(uf);
@@ -438,6 +505,7 @@ function formatarValorUFs(v, config) {
     }
     return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
+
 // Gerador de Cards de KPIs com Ranking, Sinalização, Modal de Metadados e Título em 2 Linhas
 function gerarHTMLCardUFs(titulo, valAtual, valAnt, varPct, config, siglaOrKey, tipoDado, rank, polaridadeDb) {
     let strAtual = formatarValorUFs(valAtual, config);
@@ -522,69 +590,74 @@ function gerarHTMLCardUFs(titulo, valAtual, valAnt, varPct, config, siglaOrKey, 
     `;
 }
 
-// Configurações Visuais dos Indicadores
 function obterConfigUFs(nomeOuSigla) {
-  
-  // Dentro de function obterConfigUFs(nomeOuSigla) { ... }
-const s = (nomeOuSigla || "").toLowerCase();
+    const s = (nomeOuSigla || "").toLowerCase();
 
-// Taxas de Segurança (por 100 mil hab) -> formatação decimal
-if (s === 'tx_cvp' || s === 'tx_rfcelular' || s === 'tx_feminicidio' || s === 'tx_mvi' || s.startsWith('taxa de')) {
-    let icone = "fas fa-person-falling-burst";
-    if (s.includes('feminicidio')) icone = "fas fa-person-dress";
-    if (s.includes('mvi') || s.includes('morte')) icone = "fas fa-skull-crossbones";
-    if (s.includes('cvp') || s.includes('patrimonio')) icone = "fas fa-shield-halved";
-    if (s.includes('celular')) icone = "fas fa-mobile-screen-button";
-    return { color: "#C0392B", icon: icone, isIndice: true, isLowerBetter: true };
-}
+    // Taxas de Segurança (por 100 mil hab) -> formatação decimal
+    if (s === 'tx_cvp' || s === 'tx_rfcelular' || s === 'tx_feminicidio' || s === 'tx_mvi' || s.startsWith('taxa de')) {
+        let icone = "fas fa-person-falling-burst";
+        if (s.includes('feminicidio')) icone = "fas fa-person-dress";
+        if (s.includes('mvi') || s.includes('morte')) icone = "fas fa-skull-crossbones";
+        if (s.includes('cvp') || s.includes('patrimonio')) icone = "fas fa-shield-halved";
+        if (s.includes('celular')) icone = "fas fa-mobile-screen-button";
+        return { color: "#C0392B", icon: icone, isIndice: true, isLowerBetter: true };
+    }
 
-      // Ocorrências e Contagens Absolutas de Segurança
-      if (s === 'feminicidio') return { color: "#9B59B6", icon: "fas fa-person-dress", isAbs: true, isLowerBetter: true };
-      if (s === 'mvi') return { color: "#B91C1C", icon: "fas fa-skull-crossbones", isAbs: true, isLowerBetter: true };
-      if (s === 'n_ab_cvp') return { color: "#D97706", icon: "fas fa-shield-halved", isAbs: true, isLowerBetter: true };
-      if (s === 'rf_celular') return { color: "#EA580C", icon: "fas fa-mobile-screen-button", isAbs: true, isLowerBetter: true };
-      if (s === 'pop_carceraria') return { color: "#475569", icon: "fas fa-building-shield", isAbs: true, isLowerBetter: true };
-      if (s === 'pop_socioeducanda') return { color: "#0284C7", icon: "fas fa-user-group", isAbs: true, isLowerBetter: true };
-      
-        // 1. Energia Solar e Eólica (kW)
-        if (s === 'qtd_energia_solar' || s.includes('energia solar')) {
-            return { color: "#F59E0B", icon: "fas fa-solar-panel", isPotencia: true, suffix: " kW" };
-        }
-        if (s === 'qtd_energia_eolica' || s.includes('energia eólica') || s.includes('energia eolica')) {
-            return { color: "#10B981", icon: "fas fa-wind", isPotencia: true, suffix: " kW" };
-        }
-        
-        // 2. Carga Bruta de Suape (Toneladas)
-          if (s === 'carga_bruta_suape' || s.includes('suape')) {
-              return { color: "#2563EB", icon: "fas fa-ship", isToneladas: true, suffix: " t" };
-          }
-          
-          // 3. Valor da Produção por Hectare (R$/ha)
-          if (s === 'valor_producao_hec_colhido' || s.includes('por hectare')) {
-              return { color: "#059669", icon: "fas fa-wheat-awn", isMoedaUnit: true, suffix: "/ha" };
-          }
-        
-        // Custos, Tarifas e Perdas (Menor é melhor)
-        if (s.includes('custo_medio') || s.includes('tarifa_media')) {
-            return { color: "#D97706", icon: "fas fa-file-invoice-dollar", isPerCapita: true, isLowerBetter: true };
-        }
-        if (s === 'perdas_distribuicao_agua') {
-            return { color: "#EF4444", icon: "fas fa-triangle-exclamation", isPct: true, isLowerBetter: true };
-        }
-        if (s === 'consumo_total_medio_agua') {
-            return { color: "#3B82F6", icon: "fas fa-glass-water", isIndice: true };
-        }
-        
-        // Atendimento de Água e Esgoto (Percentuais)
-        if (s.startsWith('abastecimento_') || s.startsWith('esgoto_tratado_')) {
-            let icon = s.includes('esgoto') ? "fas fa-faucet-drip" : "fas fa-droplet";
-            return { color: "#0284C7", icon: icon, isPct: true };
-        }
-        
-        // 5. Tarifas e Custos Médios de Água e Esgoto (R$)
-        if (s.includes('tarifa_media') || s.includes('custo_medio') || s.includes('receita direta média') || s.includes('despesa média de')) {
-            return { color: "#D97706", icon: "fas fa-file-invoice-dollar", isMoedaUnit: true, isLowerBetter: true };
-        }
+    // Ocorrências e Contagens Absolutas de Segurança
+    if (s === 'feminicidio') return { color: "#9B59B6", icon: "fas fa-person-dress", isAbs: true, isLowerBetter: true };
+    if (s === 'mvi') return { color: "#B91C1C", icon: "fas fa-skull-crossbones", isAbs: true, isLowerBetter: true };
+    if (s === 'n_ab_cvp') return { color: "#D97706", icon: "fas fa-shield-halved", isAbs: true, isLowerBetter: true };
+    if (s === 'rf_celular') return { color: "#EA580C", icon: "fas fa-mobile-screen-button", isAbs: true, isLowerBetter: true };
+    if (s === 'pop_carceraria') return { color: "#475569", icon: "fas fa-building-shield", isAbs: true, isLowerBetter: true };
+    if (s === 'pop_socioeducanda') return { color: "#0284C7", icon: "fas fa-user-group", isAbs: true, isLowerBetter: true };
+
+    // 1. Energia Solar e Eólica (kW)
+    if (s === 'qtd_energia_solar' || s.includes('energia solar')) {
+        return { color: "#F59E0B", icon: "fas fa-solar-panel", isPotencia: true, suffix: " kW" };
+    }
+    if (s === 'qtd_energia_eolica' || s.includes('energia eólica') || s.includes('energia eolica')) {
+        return { color: "#10B981", icon: "fas fa-wind", isPotencia: true, suffix: " kW" };
+    }
+
+    // 2. Carga Bruta de Suape (Toneladas) e Movimentação Aeroportuária (Passageiros)
+    if (s === 'carga_bruta_suape' || s.includes('suape')) {
+        return { color: "#2563EB", icon: "fas fa-ship", isToneladas: true, suffix: " t" };
+    }
+    if (s === 'movimentacao_aero' || s.includes('passageiros embarcados')) {
+        return { color: "#0284C7", icon: "fas fa-plane-departure", isAbs: true };
+    }
+
+    // Déficit Habitacional (Contagem absoluta - Menor é melhor)
+    if (s === 'deficit_hab' || s.includes('déficit habitacional') || s.includes('deficit habitacional')) {
+        return { color: "#D97706", icon: "fas fa-house-circle-exclamation", isAbs: true, isLowerBetter: true };
+    }
+
+    // 3. Valor da Produção por Hectare (R$/ha)
+    if (s === 'valor_producao_hec_colhido' || s.includes('por hectare')) {
+        return { color: "#059669", icon: "fas fa-wheat-awn", isMoedaUnit: true, suffix: "/ha" };
+    }
+
+    // Custos, Tarifas e Perdas (Menor é melhor)
+    if (s.includes('custo_medio') || s.includes('tarifa_media')) {
+        return { color: "#D97706", icon: "fas fa-file-invoice-dollar", isPerCapita: true, isLowerBetter: true };
+    }
+    if (s === 'perdas_distribuicao_agua') {
+        return { color: "#EF4444", icon: "fas fa-triangle-exclamation", isPct: true, isLowerBetter: true };
+    }
+    if (s === 'consumo_total_medio_agua') {
+        return { color: "#3B82F6", icon: "fas fa-glass-water", isIndice: true };
+    }
+
+    // Atendimento de Água e Esgoto (Percentuais)
+    if (s.startsWith('abastecimento_') || s.startsWith('esgoto_tratado_')) {
+        let icon = s.includes('esgoto') ? "fas fa-faucet-drip" : "fas fa-droplet";
+        return { color: "#0284C7", icon: icon, isPct: true };
+    }
+
+    // 5. Tarifas e Custos Médios de Água e Esgoto (R$)
+    if (s.includes('tarifa_media') || s.includes('custo_medio') || s.includes('receita direta média') || s.includes('despesa média de')) {
+        return { color: "#D97706", icon: "fas fa-file-invoice-dollar", isMoedaUnit: true, isLowerBetter: true };
+    }
 
     // Mercado de Trabalho & Demografia
     if (s.includes('desocupação') || s.includes('taxa_desocupacao')) {
@@ -600,7 +673,7 @@ if (s === 'tx_cvp' || s === 'tx_rfcelular' || s === 'tx_feminicidio' || s === 't
         return { color: "#64748B", icon: "fas fa-calendar-check", isAbs: true };
     }
 
-    // Economia & Produtividade
+    // Economia, Produtividade & Turismo
     if (s.includes('pib per capita') || s.includes('pib_per_capita')) {
         return { color: "#16A085", icon: "fas fa-wallet", isPerCapita: true };
     }
@@ -609,6 +682,10 @@ if (s === 'tx_cvp' || s === 'tx_rfcelular' || s === 'tx_feminicidio' || s === 't
     }
     if (s.includes('pib total') || s.includes('pib_total')) {
         return { color: "#2563EB", icon: "fas fa-chart-line" };
+    }
+    if (s === 'iatur_volume_idx' || s === 'iatur_receita_idx' || s.startsWith('iatur_')) {
+        const icone = s.includes('receita') ? "fas fa-sack-dollar" : "fas fa-suitcase-rolling";
+        return { color: "#0EA5E9", icon: icone, isIndice: true };
     }
 
     // Educação
@@ -645,10 +722,14 @@ if (s === 'tx_cvp' || s === 'tx_rfcelular' || s === 'tx_feminicidio' || s === 't
 
 function extrairSocio(baseSocio, sigla) {
     const rows = baseSocio.filter(d => (d.sigla_indicador === sigla || d.nm_indicador === sigla) && d.valor !== null && !isNaN(d.valor));
-    if (rows.length === 0) return { valAtual: 0, valAnt: 0, varPct: 0, ano: '-', rank: 0, polaridade: '' };
+    if (rows.length === 0) return { valAtual: 0, valAnt: 0, varPct: 0, ano: '-', mes: 0, rank: 0, polaridade: '' };
 
-    rows.sort((a, b) => Number(b.ano) - Number(a.ano));
+    // Ordenação temporal completa (considera ano e mês, se houver)
+    rows.sort((a, b) => extrairInfoTemporalSocio(b).sortKey - extrairInfoTemporalSocio(a).sortKey);
     const atual = rows[0];
+    const infoAtual = extrairInfoTemporalSocio(atual);
+
+    // Se for mensal, compara com o mês imediatamente anterior (ou mesmo mês do ano anterior se desejar)
     const anterior = rows[1];
 
     let valAtual = Number(atual.valor) || 0;
@@ -659,12 +740,14 @@ function extrairSocio(baseSocio, sigla) {
         valAtual, 
         valAnt, 
         varPct, 
-        ano: atual.ano, 
+        ano: infoAtual.labelCompleto, 
+        mes: infoAtual.mes,
         nome: atual.nm_indicador || sigla,
         rank: atual.rank_br || 0,
         polaridade: atual.polaridade ? String(atual.polaridade).trim().toLowerCase() : ''
     };
 }
+
 // Extrai o valor mais recente, o anterior e o ranking nacional de um indicador fiscal
 function extrairFiscal(uf, nomeInd) {
     const config = obterConfigUFs(nomeInd);
@@ -869,24 +952,24 @@ function renderizarEixoSaude(baseSocio, uf) {
     elGrid.innerHTML = html;
 }
 
-// Eixo 4: Desenvolvimento Sustentável (Com todos os novos indicadores e navegação por subdimensões)
 function renderizarEixoSustentabilidade(baseSocio, uf) {
     const listaItens = [];
 
     // Helper para extrair e montar card padronizado
-      const adicionarItem = (sigla, label, subdim) => {
-          const dados = extrairSocio(baseSocio, sigla);
-          const config = obterConfigUFs(sigla);
-          const cardHtml = gerarHTMLCardUFs(
-              label, dados.valAtual, dados.valAnt, dados.varPct, 
-              config, sigla, 'socio', dados.rank, dados.polaridade
-          );
-          listaItens.push({
-              siglaOrKey: sigla,
-              subdimensaoFallback: subdim,
-              cardHtml: cardHtml
-          });
-      };
+    const adicionarItem = (sigla, label, subdim) => {
+        const dados = extrairSocio(baseSocio, sigla);
+        const config = obterConfigUFs(sigla);
+        const cardHtml = gerarHTMLCardUFs(
+            label, dados.valAtual, dados.valAnt, dados.varPct, 
+            config, sigla, 'socio', dados.rank, dados.polaridade
+        );
+        listaItens.push({
+            siglaOrKey: sigla,
+            subdimensaoFallback: subdim,
+            cardHtml: cardHtml
+        });
+    };
+
     // 1. Transição Energética e Energia Renovável
     adicionarItem("qtd_energia_solar", "Capacidade em Operação - Energia Solar", "Transição Energética e Renováveis");
     adicionarItem("qtd_energia_eolica", "Capacidade em Operação - Energia Eólica", "Transição Energética e Renováveis");
@@ -920,13 +1003,17 @@ function renderizarEixoSustentabilidade(baseSocio, uf) {
     adicionarItem("pib_per_capita", "PIB per capita", "Atividade Econômica, Logística e Agro");
     adicionarItem("pib_por_pop_ocupada", "PIB por População Ocupada", "Atividade Econômica, Logística e Agro");
     adicionarItem("carga_bruta_suape", "Porto de Suape - Carga Bruta Total", "Atividade Econômica, Logística e Agro");
+    adicionarItem("movimentacao_aero", "Movimentação Aeroportuária (Passageiros)", "Atividade Econômica, Logística e Agro");
+    adicionarItem("iatur_volume_idx", "Índice de Volume das Atividades Turísticas (c/ Ajuste Sazonal)", "Atividade Econômica, Logística e Agro");
+    adicionarItem("iatur_receita_idx", "Índice de Receita das Atividades Turísticas (c/ Ajuste Sazonal)", "Atividade Econômica, Logística e Agro");
     adicionarItem("valor_producao_hec_colhido", "Valor da Produção por Hectare Colhido", "Atividade Econômica, Logística e Agro");
 
-    // 5. Dinâmica Demográfica e Mercado de Trabalho
+    // 5. Dinâmica Demográfica, Mercado de Trabalho e Habitação
     adicionarItem("taxa_desocupacao_media", "Taxa de Desocupação Média (%)", "Mercado de Trabalho e Demografia");
     adicionarItem("pop_ocupada_media", "População Ocupada (Média)", "Mercado de Trabalho e Demografia");
     adicionarItem("populacao_total", "População Total (hab.)", "Mercado de Trabalho e Demografia");
     adicionarItem("pia_media", "População em Idade Ativa (PIA)", "Mercado de Trabalho e Demografia");
+    adicionarItem("deficit_hab", "Déficit Habitacional (Domicílios)", "Habitação e Desenvolvimento Urbano");
 
     // 6. Áreas Protegidas e Unidades de Conservação (SNUC)
     const listaUCs = [
@@ -1049,7 +1136,7 @@ async function renderizarModalFiscal(indicador, uf) {
     if (rowsInd.length === 0) return;
 
     const recMaisRecente = rowsInd[0];
-    const anoAtual = Number(recMaisRecente.exercicio);
+    const anoMaisRecente = Number(recMaisRecente.exercicio);
     const bim = Number(recMaisRecente.periodo);
     const periodicidade = recMaisRecente.periodicidade;
 
@@ -1065,102 +1152,188 @@ async function renderizarModalFiscal(indicador, uf) {
         return (isPct || config.isPerCapita) ? v : v / 1e9;
     });
 
-    renderGraficoLinhaModal(anos, valores, indicador, uf, config);
+    const metadadosPontos = baseSerie.map(d => ({
+        ano: Number(d.exercicio),
+        mes: 0,
+        isMensal: false,
+        label: String(d.exercicio),
+        labelCompleto: `${bim}º ${periodicidade === 'Quadrimestral' ? 'Quadrimestre' : 'Bimestre'} de ${d.exercicio}`
+    }));
 
-    // 2. Ranking Nacional das 27 UFs para o último exercício e período disponível
-    const baseAnoUFs = dadosMasterFiscalUFs.filter(d => {
-        if (String(d.indicador).trim() !== indicador) return false;
-        if (parseInt(d.exercicio) !== anoAtual) return false;
-        if (d.periodicidade !== periodicidade) return false;
-        if (Number(d.periodo) !== bim) return false;
-        return true;
-    });
-    
-    // Dentro de renderizarModalFiscal (ufs.js):
-    const isLowerBetter = config.isLowerBetter || false;
-    const rankingArr = baseAnoUFs.map(d => {
-        let v = Number(d.valor) || 0;
-        v = aplicarIPCAUFs(v, anoAtual, isPct);
-        return {
-            uf: d.uf,
-            valor: (isPct || config.isPerCapita) ? v : v / 1e9
-        };
-    });
+    // Helper interno para atualizar o ranking fiscal para um ano específico
+    const atualizarRankingFiscalPorAno = (anoAlvo) => {
+        const baseAnoUFs = dadosMasterFiscalUFs.filter(d => {
+            if (String(d.indicador).trim() !== indicador) return false;
+            if (parseInt(d.exercicio) !== Number(anoAlvo)) return false;
+            if (d.periodicidade !== periodicidade) return false;
+            if (Number(d.periodo) !== bim) return false;
+            return true;
+        });
 
-    // Injeta Nordeste (NE) e Brasil (BR) nos indicadores fiscais
-    garantirBenchmarksRegionais(rankingArr, config);
+        const isLowerBetter = config.isLowerBetter || false;
+        const rankingArr = baseAnoUFs.map(d => {
+            let v = Number(d.valor) || 0;
+            v = aplicarIPCAUFs(v, anoAlvo, isPct);
+            return {
+                uf: d.uf,
+                valor: (isPct || config.isPerCapita) ? v : v / 1e9
+            };
+        });
 
-    rankingArr.sort((a, b) => isLowerBetter ? (a.valor - b.valor) : (b.valor - a.valor));
+        garantirBenchmarksRegionais(rankingArr, config);
+        rankingArr.sort((a, b) => isLowerBetter ? (a.valor - b.valor) : (b.valor - a.valor));
 
-    let descPeriodo = `${bim}º ${periodicidade === 'Quadrimestral' ? 'Quadrimestre' : 'Bimestre'} de ${anoAtual}`;
-    renderGraficoBarrasRanking(rankingArr, uf, indicador, config, descPeriodo);
-    renderStorytellingModal(indicador, uf, rankingArr, config, descPeriodo);
+        const descPeriodo = `${bim}º ${periodicidade === 'Quadrimestral' ? 'Quadrimestre' : 'Bimestre'} de ${anoAlvo}`;
+        renderGraficoBarrasRanking(rankingArr, uf, indicador, config, descPeriodo);
+        renderStorytellingModal(indicador, uf, rankingArr, config, descPeriodo, false);
+    };
+
+    // Renderiza o gráfico de linha com clique habilitado para trocar o ano do ranking
+    renderGraficoLinhaModal(
+        anos,
+        valores,
+        indicador,
+        uf,
+        config,
+        metadadosPontos,
+        function(pontoSelecionado) {
+            atualizarRankingFiscalPorAno(pontoSelecionado.ano);
+        }
+    );
+
+    // 2. Ranking Nacional inicial para o último exercício disponível
+    atualizarRankingFiscalPorAno(anoMaisRecente);
 }
 
-// Renderização do Modal para Dados Socioambientais
-async function renderizarModalSocio(sigla, uf) {
-    const config = obterConfigUFs(sigla);
+// Helper para buscar e renderizar o ranking de um período específico (ano + mes opcional) no modal socioambiental
+async function atualizarRankingSocioPorPeriodo(sigla, uf, nomeExibicao, config, anoAlvo, mesAlvo) {
     const basePath = window.basePath || '';
+    let rankingData = [];
+    let benchmarks = [];
 
-    // Busca ranking nacional na API Go (sem passar ano para vir o ano mais recente do indicador)
     try {
-        const res = await window.fetchSeguro(`${basePath}/api/ufs/ranking?sigla_indicador=${encodeURIComponent(sigla)}`);
-        let rankingData = [];
-        let benchmarks = [];
+        let url = `${basePath}/api/ufs/ranking?sigla_indicador=${encodeURIComponent(sigla)}`;
+        if (anoAlvo) url += `&ano=${encodeURIComponent(anoAlvo)}`;
+        if (mesAlvo && mesAlvo > 0) url += `&mes=${encodeURIComponent(mesAlvo)}`;
 
+        const res = await window.fetchSeguro(url);
         if (res.ok) {
             const json = await res.json();
             rankingData = json.ranking || [];
             benchmarks = json.benchmarks || [];
         }
-
-        // Série histórica completa da UF
-        const baseUF = dadosSocioAmbientaisUFs[uf] || [];
-        const serieUF = baseUF
-            .filter(d => d.sigla_indicador === sigla && d.valor !== null && !isNaN(d.valor))
-            .sort((a, b) => Number(a.ano) - Number(b.ano));
-
-        const anos = serieUF.map(d => String(d.ano));
-        const valores = serieUF.map(d => Number(d.valor));
-
-        const nomeExibicao = (rankingData.length > 0 && rankingData[0].nm_indicador) 
-            ? rankingData[0].nm_indicador 
-            : (serieUF.length > 0 ? serieUF[0].nm_indicador : sigla);
-
-        const anoRef = (rankingData.length > 0 && rankingData[0].ano) 
-            ? rankingData[0].ano 
-            : (serieUF.length > 0 ? serieUF[serieUF.length - 1].ano : '');
-
-        renderGraficoLinhaModal(anos, valores, nomeExibicao, uf, config);
-        
-        // Dentro de renderizarModalSocio (ufs.js):
-        const rankingArr = rankingData.map(r => ({
-            uf: r.sg_uf,
-            valor: Number(r.valor) || 0
-        }));
-
-        // Adiciona referências regionais (NE e BR) se vierem do banco
-        benchmarks.forEach(b => {
-            rankingArr.push({
-                uf: b.sg_regiao === 'NE' ? 'Nordeste (NE)' : 'Brasil (BR)',
-                valor: Number(b.valor) || 0,
-                isBenchmark: true
-            });
-        });
-
-        // Garante NE e BR mesmo se a view regional não tiver o indicador
-        garantirBenchmarksRegionais(rankingArr, config);
-
-        // Ordenação decrescente padrão (maior valor no topo)
-        rankingArr.sort((a, b) => b.valor - a.valor);
-
-
-        renderGraficoBarrasRanking(rankingArr, uf, nomeExibicao, config, anoRef);
-        renderStorytellingModal(nomeExibicao, uf, rankingArr, config, anoRef);
-
     } catch (e) {
-        console.error("Erro ao renderizar modal socioambiental:", e);
+        console.warn("[UFs] Erro ao buscar ranking por período:", e);
     }
+
+    // Fallback no cache local caso a API não filtre por mês ou não retorne dados
+    if (rankingData.length === 0) {
+        Object.keys(dadosSocioAmbientaisUFs).forEach(sgUf => {
+            const lista = dadosSocioAmbientaisUFs[sgUf] || [];
+            const encontrado = lista.find(d => {
+                if (d.sigla_indicador !== sigla || d.valor === null || isNaN(d.valor)) return false;
+                const info = extrairInfoTemporalSocio(d);
+                if (anoAlvo && info.ano !== Number(anoAlvo)) return false;
+                if (mesAlvo && mesAlvo > 0 && info.mes !== Number(mesAlvo)) return false;
+                return true;
+            });
+            if (encontrado) {
+                rankingData.push({ sg_uf: sgUf, valor: Number(encontrado.valor) });
+            }
+        });
+    }
+
+    const rankingArr = rankingData.map(r => ({
+        uf: r.sg_uf,
+        valor: Number(r.valor) || 0
+    }));
+
+    // Adiciona referências regionais (NE e BR) se vierem do banco
+    benchmarks.forEach(b => {
+        rankingArr.push({
+            uf: b.sg_regiao === 'NE' ? 'Nordeste (NE)' : 'Brasil (BR)',
+            valor: Number(b.valor) || 0,
+            isBenchmark: true
+        });
+    });
+
+    // Garante NE e BR mesmo se a view regional não tiver o indicador
+    garantirBenchmarksRegionais(rankingArr, config);
+
+    // Ordenação respeitando polaridade (menor no topo se isLowerBetter)
+    const isLowerBetter = config.isLowerBetter || false;
+    rankingArr.sort((a, b) => isLowerBetter ? (a.valor - b.valor) : (b.valor - a.valor));
+
+    const labelPeriodo = (mesAlvo && mesAlvo > 0)
+        ? `${MESES_CURTOS_UFS[mesAlvo - 1]}/${anoAlvo}`
+        : String(anoAlvo || '');
+
+    renderGraficoBarrasRanking(rankingArr, uf, nomeExibicao, config, labelPeriodo);
+    renderStorytellingModal(nomeExibicao, uf, rankingArr, config, labelPeriodo, mesAlvo > 0);
+}
+
+// Renderização do Modal para Dados Socioambientais
+async function renderizarModalSocio(sigla, uf) {
+    const config = obterConfigUFs(sigla);
+
+    // 1. Série histórica completa da UF com parse temporal (ano + mês)
+    const baseUF = dadosSocioAmbientaisUFs[uf] || [];
+    let serieUF = baseUF
+        .filter(d => d.sigla_indicador === sigla && d.valor !== null && !isNaN(d.valor))
+        .map(d => ({
+            raw: d,
+            valor: Number(d.valor),
+            tempo: extrairInfoTemporalSocio(d)
+        }))
+        .sort((a, b) => a.tempo.sortKey - b.tempo.sortKey);
+
+    if (serieUF.length === 0) return;
+
+    const isSerieMensal = serieUF.some(item => item.tempo.isMensal);
+
+    // Se a série for mensal (ex: iatur_volume_idx, iatur_receita_idx), recorta os últimos 10 anos
+    if (isSerieMensal) {
+        const maisRecente = serieUF[serieUF.length - 1].tempo;
+        const sortKeyCorte = (maisRecente.ano - 10) * 100 + maisRecente.mes;
+        serieUF = serieUF.filter(item => item.tempo.sortKey >= sortKeyCorte);
+    }
+
+    const labelsEixoX = serieUF.map(item => item.tempo.label);
+    const valores = serieUF.map(item => item.valor);
+    const metadadosPontos = serieUF.map(item => item.tempo);
+
+    const nomeExibicao = serieUF[serieUF.length - 1].raw.nm_indicador || sigla;
+    const ultimoPonto = metadadosPontos[metadadosPontos.length - 1];
+
+    // 2. Renderiza gráfico de linha com suporte a clique para atualizar o ranking
+    renderGraficoLinhaModal(
+        labelsEixoX,
+        valores,
+        nomeExibicao,
+        uf,
+        config,
+        metadadosPontos,
+        async function(pontoSelecionado) {
+            await atualizarRankingSocioPorPeriodo(
+                sigla,
+                uf,
+                nomeExibicao,
+                config,
+                pontoSelecionado.ano,
+                pontoSelecionado.mes
+            );
+        }
+    );
+
+    // 3. Carrega o ranking inicial usando o período mais recente como padrão
+    await atualizarRankingSocioPorPeriodo(
+        sigla,
+        uf,
+        nomeExibicao,
+        config,
+        ultimoPonto.ano,
+        ultimoPonto.mes
+    );
 }
 
 // Helper unificado de sufixo para os eixos dos gráficos
@@ -1175,39 +1348,82 @@ function obterSufixoGrafico(config) {
     return ' R$ bi';
 }
 
-// Gráfico de Linha Plurianual (ECharts)
-function renderGraficoLinhaModal(anos, valores, indicador, uf, config) {
+// Gráfico de Linha Plurianual / Mensal (ECharts) com clique interativo para todos os indicadores
+function renderGraficoLinhaModal(categorias, valores, indicador, uf, config, metadadosPontos = null, onClickPonto = null) {
     const dom = document.getElementById('modal_ufs_chart_serie');
     if (!dom) return;
 
     if (chartModalUFsSerie) chartModalUFsSerie.dispose();
     chartModalUFsSerie = echarts.init(dom);
 
-    if (anos.length === 0) {
+    if (categorias.length === 0) {
         chartModalUFsSerie.clear();
         return;
     }
 
     const suf = obterSufixoGrafico(config);
+    const isMensal = Array.isArray(metadadosPontos) && metadadosPontos.some(p => p.isMensal);
+    const podeClicar = typeof onClickPonto === 'function' && Array.isArray(metadadosPontos);
+
+    // Índice selecionado por padrão: o ponto mais recente
+    let idxSelecionado = categorias.length - 1;
+
+    const montarDadosSerie = (idxAtivo) => {
+        return valores.map((v, idx) => {
+            if (podeClicar && idx === idxAtivo) {
+                return {
+                    value: v,
+                    symbolSize: 12,
+                    itemStyle: {
+                        color: '#ff5a26',
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }
+                };
+            }
+            return v;
+        });
+    };
 
     chartModalUFsSerie.setOption({
         tooltip: {
             trigger: 'axis',
             formatter: function(params) {
                 const item = params[0];
+                const idx = item.dataIndex;
+                const tituloPeriodo = (metadadosPontos && metadadosPontos[idx])
+                    ? metadadosPontos[idx].labelCompleto
+                    : item.name;
                 const v = Number(item.value).toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 2});
-                return `<strong>${uf} (${item.name})</strong><br/>${indicador}: <strong>${v}${suf}</strong>`;
+                const dicaClique = podeClicar
+                    ? `<br/><span style="font-size:11px;color:#64748b;"><i class="fas fa-hand-pointer"></i> Clique para comparar as UFs neste ${isMensal ? 'mês' : 'ano'}</span>`
+                    : '';
+                return `<strong>${uf} (${tituloPeriodo})</strong><br/>${indicador}: <strong>${v}${suf}</strong>${dicaClique}`;
             }
         },
-        grid: { left: '3%', right: '4%', bottom: '8%', top: '15%', containLabel: true },
-        xAxis: { type: 'category', data: anos, boundaryGap: false },
-        yAxis: { type: 'value', axisLabel: { formatter: '{value}' + suf } },
+        grid: { left: '3%', right: '4%', bottom: isMensal ? '14%' : '8%', top: '15%', containLabel: true },
+        xAxis: {
+            type: 'category',
+            data: categorias,
+            boundaryGap: false,
+            axisLabel: {
+                interval: isMensal ? 'auto' : 0,
+                rotate: isMensal ? 30 : 0,
+                fontSize: 11
+            }
+        },
+        yAxis: {
+            type: 'value',
+            scale: isMensal,
+            axisLabel: { formatter: '{value}' + suf }
+        },
         series: [{
             name: indicador,
             type: 'line',
-            data: valores,
+            data: montarDadosSerie(idxSelecionado),
             smooth: true,
-            symbolSize: 8,
+            symbol: 'circle',
+            symbolSize: isMensal ? 6 : 8,
             lineStyle: { width: 3, color: config.color },
             itemStyle: { color: config.color },
             areaStyle: {
@@ -1218,10 +1434,68 @@ function renderGraficoLinhaModal(anos, valores, indicador, uf, config) {
             }
         }]
     });
+
+    // Evento de clique em qualquer ponto (mês ou ano) para atualizar o ranking comparativo
+    if (podeClicar) {
+        chartModalUFsSerie.off('click');
+        chartModalUFsSerie.on('click', function(params) {
+            const idx = params.dataIndex;
+            const ponto = metadadosPontos[idx];
+            if (!ponto) return;
+
+            idxSelecionado = idx;
+            chartModalUFsSerie.setOption({
+                series: [{
+                    data: montarDadosSerie(idxSelecionado)
+                }]
+            });
+
+            onClickPonto(ponto);
+        });
+    }
 }
 
+// Storytelling dinâmico abaixo dos gráficos do modal
+function renderStorytellingModal(indicador, uf, rankingArr, config, periodoLabel, isMensal = false) {
+    const box = document.getElementById('modal_ufs_kpi_storytelling');
+    if (!box) return;
+
+    // Filtra apenas as 27 UFs para calcular a posição exata no ranking estadual
+    const apenasUFs = rankingArr.filter(d => !d.isBenchmark);
+    const rankPos = apenasUFs.findIndex(d => d.uf === uf) + 1;
+    const totalUfs = apenasUFs.length;
+    const itemUF = apenasUFs.find(d => d.uf === uf);
+
+    const dicaInterativa = isMensal
+        ? `<div class="mt-1 text-muted small"><i class="fas fa-mouse-pointer text-primary me-1"></i> <em>Dica: clique em qualquer mês no gráfico da série histórica para atualizar o comparativo nacional.</em></div>`
+        : `<div class="mt-1 text-muted small"><i class="fas fa-mouse-pointer text-primary me-1"></i> <em>Dica: clique em qualquer ano no gráfico da série histórica para atualizar o comparativo nacional.</em></div>`;
+
+    if (!itemUF) {
+        box.innerHTML = `
+            <div>
+                Dados comparativos consolidados para o indicador <strong>${indicador}</strong> em <strong>${periodoLabel}</strong>.
+                ${dicaInterativa}
+            </div>
+        `;
+        return;
+    }
+
+    const valFmt = formatarValorUFs(itemUF.valor, config);
+    let textoRank = rankPos > 0 ? `ocupando a <strong>${rankPos}ª posição</strong> entre as ${totalUfs} Unidades da Federação` : '';
+
+    box.innerHTML = `
+        <div class="d-flex align-items-start gap-2">
+            <i class="fas fa-circle-info text-primary fs-5 mt-0.5"></i>
+            <div>
+                O estado de <strong>${uf}</strong> registrou <strong>${valFmt}</strong> para o indicador <strong>${indicador}</strong> (<strong>${periodoLabel}</strong>), ${textoRank}.
+                As barras em destaque (laranja) representam os parâmetros de referência do Nordeste e do Brasil.
+                ${dicaInterativa}
+            </div>
+        </div>
+    `;
+}
 // Gráfico de Barras Horizontais com Ranking Nacional
-function renderGraficoBarrasRanking(rankingArr, ufAlvo, indicador, config, ano) {
+function renderGraficoBarrasRanking(rankingArr, ufAlvo, indicador, config, periodoLabel) {
     const dom = document.getElementById('modal_ufs_chart_ranking');
     if (!dom) return;
 
@@ -1252,16 +1526,23 @@ function renderGraficoBarrasRanking(rankingArr, ufAlvo, indicador, config, ano) 
     const suf = obterSufixoGrafico(config);
 
     chartModalUFsRanking.setOption({
+        title: periodoLabel ? {
+            text: `Referência: ${periodoLabel}`,
+            right: '4%',
+            top: 0,
+            textStyle: { fontSize: 11, fontWeight: 'bold', color: '#475569' }
+        } : undefined,
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'shadow' },
             formatter: function(params) {
                 const item = params[0];
                 const v = Number(item.value).toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 2});
-                return `<strong>${item.name}</strong><br/>${indicador}: <strong>${v}${suf}</strong>`;
+                const perStr = periodoLabel ? ` (${periodoLabel})` : '';
+                return `<strong>${item.name}${perStr}</strong><br/>${indicador}: <strong>${v}${suf}</strong>`;
             }
         },
-        grid: { left: '3%', right: '8%', bottom: '5%', top: '5%', containLabel: true },
+        grid: { left: '3%', right: '8%', bottom: '5%', top: periodoLabel ? '10%' : '5%', containLabel: true },
         xAxis: { type: 'value', axisLabel: { formatter: '{value}' + suf } },
         yAxis: { type: 'category', data: categorias, axisLabel: { fontSize: 11, fontWeight: 'bold' } },
         series: [{
@@ -1272,35 +1553,7 @@ function renderGraficoBarrasRanking(rankingArr, ufAlvo, indicador, config, ano) 
     });
 }
 
-// Dentro de renderStorytellingModal (ufs.js):
-function renderStorytellingModal(indicador, uf, rankingArr, config, ano) {
-    const box = document.getElementById('modal_ufs_kpi_storytelling');
-    if (!box) return;
 
-    // Filtra apenas as 27 UFs para calcular a posição exata no ranking estadual
-    const apenasUFs = rankingArr.filter(d => !d.isBenchmark);
-    const rankPos = apenasUFs.findIndex(d => d.uf === uf) + 1;
-    const totalUfs = apenasUFs.length;
-    const itemUF = apenasUFs.find(d => d.uf === uf);
-
-    if (!itemUF) {
-        box.innerHTML = `Dados comparativos consolidados para o indicador <strong>${indicador}</strong> em <strong>${ano}</strong>.`;
-        return;
-    }
-
-    const valFmt = formatarValorUFs(itemUF.valor, config);
-    let textoRank = rankPos > 0 ? `ocupando a <strong>${rankPos}ª posição</strong> entre as ${totalUfs} Unidades da Federação` : '';
-
-    box.innerHTML = `
-        <div class="d-flex align-items-center gap-2">
-            <i class="fas fa-circle-info text-primary fs-5"></i>
-            <div>
-                O estado de <strong>${uf}</strong> registrou <strong>${valFmt}</strong> para o indicador <strong>${indicador}</strong> (${ano}), ${textoRank}.
-                As barras em destaque (laranja) representam os parâmetros de referência do Nordeste e do Brasil.
-            </div>
-        </div>
-    `;
-}
 // Redimensionamento de Gráficos no ciclo de vida das abas
 window.redimensionarGraficosUFs = function() {
     if (chartModalUFsSerie) chartModalUFsSerie.resize();
@@ -1555,12 +1808,6 @@ function renderizarResumoExecutivoUFs(uf, baseSocio) {
                         ${textoEixo5}
                     </div>
                 </div>
-            </div> 
-                
-                
-
-                
-
             </div>
         `;
 
@@ -1576,6 +1823,7 @@ window.scrollToSection = function(sectionId) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 };
+
 // =========================================================================
 // CONTROLE DE ROLAGEM: SUBIR AO TOPO (UFs)
 // =========================================================================
@@ -1614,7 +1862,6 @@ function checarScrollTopoUFs() {
 window.addEventListener('scroll', checarScrollTopoUFs, true);
 
 
-
 // =========================================================================
 // RENDERIZADOR HIERÁRQUICO AUTOMÁTICO DE KPIS (POR SUBDIMENSÃO)
 // =========================================================================
@@ -1633,17 +1880,20 @@ const ICONES_SUBDIMENSOES = {
     "Despesas Públicas": "fas fa-receipt text-indigo-600",
     "Gestão e Equilíbrio Fiscal": "fas fa-scale-balanced text-purple-600",
 
-    // Adicionar ao objeto ICONES_SUBDIMENSOES:
+    // Sustentabilidade & Economia
     "Atividade Econômica e Produtividade": "fas fa-chart-line text-blue-600",
+    "Atividade Econômica, Logística e Agro": "fas fa-chart-line text-blue-600",
     "Mercado de Trabalho e Dinâmica Demográfica": "fas fa-users-gear text-emerald-600",
+    "Mercado de Trabalho e Demografia": "fas fa-users-gear text-emerald-600",
+    "Habitação e Desenvolvimento Urbano": "fas fa-city text-amber-600",
     "Meio Ambiente e Unidades de Conservação": "fas fa-tree text-green-600",
+    "Unidades de Conservação e Áreas Protegidas": "fas fa-tree text-green-600",
     "Alocação Orçamentária e Infraestrutura Sustentável": "fas fa-hand-holding-dollar text-teal-600",
-        // No objeto ICONES_SUBDIMENSOES em ufs.js:
+    "Alocação Orçamentária e Infraestrutura": "fas fa-hand-holding-dollar text-teal-600",
     "Transição Energética e Renováveis": "fas fa-solar-panel text-amber-500",
     "Saneamento e Esgotamento Sanitário": "fas fa-faucet-drip text-cyan-600",
     "Abastecimento de Água e Eficiência Hídrica": "fas fa-droplet text-blue-500",
     "Logística e Agropecuária": "fas fa-ship text-indigo-600"
-
 };
 
 function renderizarGridComSubdimensoes(containerId, itensConfigurados) {
@@ -1720,5 +1970,3 @@ function renderizarGridComSubdimensoes(containerId, itensConfigurados) {
 
     elContainer.innerHTML = html;
 }
-
-

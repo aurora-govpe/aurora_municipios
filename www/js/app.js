@@ -7,6 +7,9 @@ window.onload = function() {
 window.iniciarApp = function() {
   console.log("[MASTER] Iniciando App Aurora...");
   document.body.classList.add('logado');
+  if (typeof window.carregarDadosLanding === 'function') {
+    window.carregarDadosLanding();
+  }
 };
 
 // ==========================================
@@ -233,7 +236,11 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
   }
 
   // 6. Inicialização de Ciclo de Vida e Resize
-  if (isAbaRegioes) {
+  if (isAbaInicio) {
+    if (typeof window.carregarDadosLanding === 'function') {
+      window.carregarDadosLanding();
+    }
+  } else if (isAbaRegioes) {
     if (!window.moduloRegioesIniciado) {
       window.moduloRegioesIniciado = true;
       if (typeof window.iniciarModuloRegioes === 'function') {
