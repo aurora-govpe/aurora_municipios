@@ -34,3 +34,10 @@ server.exe
 *.log
 repomix*.txt
 *.tmp
+
+# Claude Code (instrucoes locais e memoria)
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+memory/
+MEMORY.md

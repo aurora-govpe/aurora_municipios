@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: "Se usar este software, cite-o como abaixo."
+type: software
+title: "aurora_municipios: backend da plataforma Aurora Municípios"
+abstract: >-
+  Backend em Go da plataforma Aurora Municípios, com motor analítico DuckDB em
+  memória para consultas sobre arquivos Parquet, SQLite para cache, auditoria e
+  usuários, e frontend servido estaticamente pelo próprio servidor.
+authors:
+  - family-names: Leite
+    given-names: André
+    orcid: "https://orcid.org/0000-0002-4718-9766"
+  - family-names: Wasiliew
+    given-names: Marcos
+    orcid: "https://orcid.org/0009-0004-4694-3159"
+  - family-names: Vasconcelos
+    given-names: Hugo
+    orcid: "https://orcid.org/0000-0001-6249-0920"
+  - family-names: Amorim
+    given-names: Carlos
+    orcid: "https://orcid.org/0000-0001-6315-8305"
+  - family-names: Bezerra
+    given-names: Diogo
+    orcid: "https://orcid.org/0000-0002-1216-8674"
+  - family-names: Nascimento Barreto
+    given-names: Júlia
+    orcid: "https://orcid.org/0009-0004-2851-7770"
+  - family-names: Cunha Albuquerque
+    given-names: Cintia Maria da
+version: 0.1.1
+doi: 10.5281/zenodo.24279684
+date-released: "2026-11-16"
+repository-code: "https://github.com/aurora-govpe/aurora_municipios"
+keywords:
+  - municípios
+  - indicadores
+  - Brasil
+  - Go
+  - DuckDB
+  - Parquet

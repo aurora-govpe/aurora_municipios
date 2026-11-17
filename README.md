@@ -1,5 +1,10 @@
 # aurora_municipios
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24279684.svg)](https://doi.org/10.5281/zenodo.24279684)
+[![Release](https://img.shields.io/github/v/release/aurora-govpe/aurora_municipios)](https://github.com/aurora-govpe/aurora_municipios/releases/latest)
+[![Go](https://img.shields.io/github/go-mod/go-version/aurora-govpe/aurora_municipios)](go.mod)
+[![Citation](https://img.shields.io/badge/cite-CITATION.cff-blue)](CITATION.cff)
+
 Backend moderno de alta performance em **Go** para a plataforma **Aurora Municípios**, utilizando motor analítico **DuckDB** em memória (para consultas rápidas em Parquet) e **SQLite** (para cache, auditoria e usuários).
 
 ## 1. Arquitetura
@@ -59,3 +64,13 @@ aurora_municipios/
 ├── data/              # Junction para C:\dados\aurora (ignorado no Git)
 └── Dockerfile         # Multi-stage build otimizado para produção
 ```
+
+## 5. Como citar
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24279684.svg)](https://doi.org/10.5281/zenodo.24279684)
+
+> Leite, A., Wasiliew, M., Vasconcelos, H., Amorim, C., Bezerra, D., Nascimento Barreto, J., & Cunha Albuquerque, C. M. da. *aurora_municipios: backend da plataforma Aurora Municípios*. Zenodo. https://doi.org/10.5281/zenodo.24279684
+
+Os dados de citação estão em [`CITATION.cff`](CITATION.cff); no GitHub, use o
+botão "Cite this repository". O DOI acima aponta sempre para a versão mais
+recente arquivada no Zenodo; cada release tem também um DOI próprio.
