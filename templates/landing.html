@@ -25,7 +25,7 @@
                       <h1 class="text-3xl md:text-5xl font-black tracking-tight mb-3 text-white leading-tight">Aurora Desenvolvimento Regional</h1>
                       <p class="text-sm md:text-base text-white max-w-3xl leading-relaxed mb-0 font-medium">
                         A plataforma estratégica de inteligência de dados e apoio ao planejamento governamental do Estado de Pernambuco. 
-                        Monitore indicadores socioeconômicos, avalie a convergência inter e intra-regional e acesse o diagnóstico dos 184 municípios e 12 Regiões de Desenvolvimento.
+                        Monitore indicadores socioeconômicos, avalie a convergência inter e intra-regional e acesse o diagnóstico dos <span id="landing_total_municipios">184</span> municípios e <span id="landing_total_rds">12</span> Regiões de Desenvolvimento.
                       </p>
                     </div>
                     <div class="col-lg-3 d-none d-lg-flex justify-content-end">
@@ -77,12 +77,12 @@
                         </div>
                       </div>
                       <div>
-                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">9.058.931</span>
-                        <span class="text-xs font-bold text-slate-500 block">Habitantes Estimados (2026)</span>
+                        <span id="landing_populacao_val" class="text-3xl font-black text-slate-800 tracking-tight block mb-1">9.583.176</span>
+                        <span id="landing_populacao_sub" class="text-xs font-bold text-slate-500 block">Habitantes Estimados (2026)</span>
                       </div>
                       <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
-                        <span class="badge bg-blue-100 text-blue-800 rounded-pill text-[11px] font-bold px-2.5 py-1">7º no Brasil</span>
-                        <span class="text-xs text-slate-500 font-semibold">2º no Nordeste</span>
+                        <span id="landing_populacao_rank_br" class="badge bg-blue-100 text-blue-800 rounded-pill text-[11px] font-bold px-2.5 py-1">7º no Brasil</span>
+                        <span id="landing_populacao_rank_ne" class="text-xs text-slate-500 font-semibold">2º no Nordeste</span>
                       </div>
                     </div>
                     <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
@@ -93,12 +93,12 @@
                         </div>
                       </div>
                       <div>
-                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">R$ 254,8 Bi</span>
-                        <span class="text-xs font-bold text-slate-500 block">Soma das Economias Municipais</span>
+                        <span id="landing_pib_total_val" class="text-3xl font-black text-slate-800 tracking-tight block mb-1">R$ 270,5 Bi</span>
+                        <span id="landing_pib_total_sub" class="text-xs font-bold text-slate-500 block">Soma das Economias Municipais (2023)</span>
                       </div>
                       <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
-                        <span class="badge bg-emerald-100 text-emerald-800 rounded-pill text-[11px] font-bold px-2.5 py-1">2º Maior do NE</span>
-                        <span class="text-xs text-slate-500 font-semibold">Indústria, Agro &amp; Serv.</span>
+                        <span id="landing_pib_total_rank_ne" class="badge bg-emerald-100 text-emerald-800 rounded-pill text-[11px] font-bold px-2.5 py-1">2º Maior do NE</span>
+                        <span id="landing_pib_total_desc" class="text-xs text-slate-500 font-semibold">Indústria, Agro &amp; Serv.</span>
                       </div>
                     </div>
                     <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
@@ -109,12 +109,12 @@
                         </div>
                       </div>
                       <div>
-                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">R$ 27.910</span>
-                        <span class="text-xs font-bold text-slate-500 block">Renda Econômica Média Anual</span>
+                        <span id="landing_pib_per_capita_val" class="text-3xl font-black text-slate-800 tracking-tight block mb-1">R$ 22.824</span>
+                        <span id="landing_pib_per_capita_sub" class="text-xs font-bold text-slate-500 block">Renda Econômica Média Anual (2021)</span>
                       </div>
                       <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
-                        <span class="badge bg-amber-100 text-amber-800 rounded-pill text-[11px] font-bold px-2.5 py-1">Média Estadual</span>
-                        <span class="text-xs text-slate-500 font-semibold">Por Habitante</span>
+                        <span id="landing_pib_per_capita_badge" class="badge bg-amber-100 text-amber-800 rounded-pill text-[11px] font-bold px-2.5 py-1">2º no Nordeste</span>
+                        <span id="landing_pib_per_capita_desc" class="text-xs text-slate-500 font-semibold">Por Habitante</span>
                       </div>
                     </div>
                     <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
@@ -125,12 +125,12 @@
                         </div>
                       </div>
                       <div>
-                        <span class="text-3xl font-black text-slate-800 tracking-tight block mb-1">98.067 km²</span>
-                        <span class="text-xs font-bold text-slate-500 block">Extensão Territorial de PE</span>
+                        <span id="landing_area_territorial_val" class="text-3xl font-black text-slate-800 tracking-tight block mb-1">98.040 km²</span>
+                        <span id="landing_area_territorial_sub" class="text-xs font-bold text-slate-500 block">Extensão Territorial de PE</span>
                       </div>
                       <div class="mt-4 pt-3 border-t border-slate-100 d-flex align-items-center justify-content-between">
-                        <span class="badge bg-purple-100 text-purple-800 rounded-pill text-[11px] font-bold px-2.5 py-1">12 Regiões (RDs)</span>
-                        <span class="text-xs text-slate-500 font-semibold">184 Muns + Noronha</span>
+                        <span id="landing_area_territorial_badge" class="badge bg-purple-100 text-purple-800 rounded-pill text-[11px] font-bold px-2.5 py-1"><span id="landing_total_rds_badge">12</span> Regiões (RDs)</span>
+                        <span id="landing_area_territorial_desc" class="text-xs text-slate-500 font-semibold"><span id="landing_total_muns_badge">184</span> Muns + Noronha</span>
                       </div>
                     </div>
                   </div>
