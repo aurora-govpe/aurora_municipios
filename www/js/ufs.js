@@ -311,7 +311,7 @@ window.iniciarModuloUFs = async function() {
         // 1. Carrega dados fiscais
         let resFiscal = await window.fetchSeguro(`${basePath}/api/ufs/fiscal`);
         if (!resFiscal.ok) {
-            resFiscal = await window.fetchSeguro(`${basePath}/data/base_painel.json`);
+            resFiscal = await window.fetchSeguro(`${basePath}/data/json/base_painel.json`);
         }
 
         if (resFiscal.ok) {
@@ -506,7 +506,7 @@ function formatarValorUFs(v, config) {
     return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
-// Gerador de Cards de KPIs com Ranking, Sinalização, Modal de Metadados e Título em 2 Linhas
+// Gerador de Cards de KPIs com Ranking, Sinalização, Modal de Metadados, Logo CLP e Título em 2 Linhas
 function gerarHTMLCardUFs(titulo, valAtual, valAnt, varPct, config, siglaOrKey, tipoDado, rank, polaridadeDb) {
     let strAtual = formatarValorUFs(valAtual, config);
     let strAnt = formatarValorUFs(valAnt, config);
@@ -531,6 +531,16 @@ function gerarHTMLCardUFs(titulo, valAtual, valAnt, varPct, config, siglaOrKey, 
         : '';
 
     let badgePolaridadeHtml = obterBadgePolaridadeUFs(siglaOrKey, tipoDado, config, polaridadeDb);
+
+    // Verifica nos metadados se o indicador pertence ao CLP ("Sim")
+    const meta = buscarMetadadoUFs(siglaOrKey) || {};
+    const isClp = normKeyUFs(meta.clp) === 'sim';
+    
+    // Define o caminho da logo (ajuste o diretório caso o SVG não esteja em images/)
+    const logoClpHtml = isClp 
+        ? `<img src="images/logo_clp_ranking.png" alt="Indicador CLP" title="Indicador do Ranking de Competitividade dos Estados (CLP)" style="height: 32px; width: auto; max-width: 75px; object-fit: contain;">` 
+        : '';
+
     return `
     <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2" style="page-break-inside: avoid;">
         <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background-color: #fafbfc; transition: transform 0.2s;">
@@ -572,15 +582,17 @@ function gerarHTMLCardUFs(titulo, valAtual, valAnt, varPct, config, siglaOrKey, 
                 
                 <hr class="my-2" style="opacity: 0.08; border-top: 1.5px solid #000;">
                 
-                <!-- Linha 2: Período Anterior e Variação -->
-                <div class="row pt-1">
-                    <div class="col-6 pe-1">
+                <!-- Linha 2: Período Anterior + Variação (à esquerda) e Logo CLP (à direita) -->
+                <div class="d-flex justify-content-between align-items-end pt-1 gap-2">
+                    <div style="min-width: 0; flex: 1;">
                         <span class="d-block text-muted text-truncate" style="font-size: 0.68rem; font-weight: 600;">Período Anterior</span>
-                        <span class="fw-bold text-secondary text-truncate d-block" style="font-size: 0.82rem;">${strAnt}</span>
+                        <div class="d-flex align-items-baseline gap-2 flex-wrap">
+                            <span class="fw-bold text-secondary" style="font-size: 0.82rem;">${strAnt}</span>
+                            <span class="fw-bold" style="font-size: 0.76rem; color: ${corVar};" title="Variação em relação ao período anterior">${strVar}</span>
+                        </div>
                     </div>
-                    <div class="col-6 ps-1 text-end">
-                        <span class="d-block text-muted text-truncate" style="font-size: 0.68rem; font-weight: 600;">Variação</span>
-                        <span class="fw-bold text-truncate d-block" style="font-size: 0.82rem; color: ${corVar};">${strVar}</span>
+                    <div class="flex-shrink-0 d-flex align-items-center">
+                        ${logoClpHtml}
                     </div>
                 </div>
 
@@ -589,7 +601,6 @@ function gerarHTMLCardUFs(titulo, valAtual, valAnt, varPct, config, siglaOrKey, 
     </div>
     `;
 }
-
 function obterConfigUFs(nomeOuSigla) {
     const s = (nomeOuSigla || "").toLowerCase();
 
