@@ -351,6 +351,64 @@ func PostFichaData(c *gin.Context) {
 		WHERE ibge6_clean = ?
 	`, ibge6)
 
+	// 7b. Dinâmica das Empresas (SEPLAG)
+	dfEmpresasResumo, _ := QueryToMaps(DuckDB, `
+		SELECT * EXCLUDE (ibge6_clean) FROM v_empresas_resumo
+		WHERE ibge6_clean = ?
+	`, ibge6)
+
+	dfEmpresasSaldo, _ := QueryToMaps(DuckDB, `
+		SELECT ano_mes, aberturas, fechamentos, saldo, ano 
+		FROM v_empresas_saldo_mensal_muni
+		WHERE ibge6_clean = ?
+		ORDER BY ano_mes ASC
+	`, ibge6)
+
+	dfEmpresasSetor, _ := QueryToMaps(DuckDB, `
+		SELECT 
+			grande_setor,
+			CAST(ROUND(SUM(total_ativas)) AS BIGINT) as total_ativas,
+			CAST(ROUND(SUM(total_mei_ativas)) AS BIGINT) as total_mei_ativas,
+			CAST(ROUND(SUM(capital_social_total), 2) AS DOUBLE) as capital_social_total,
+			CAST(ROUND(SUM(total_inativas)) AS BIGINT) as total_inativas
+		FROM v_empresas_cnae_setor
+		WHERE ibge6_clean = ?
+		GROUP BY grande_setor
+		ORDER BY total_ativas DESC
+	`, ibge6)
+
+	dfEmpresasFaixaEtaria, _ := QueryToMaps(DuckDB, `
+		SELECT 
+			faixa_etaria,
+			CAST(ROUND(SUM(qtd_ativas)) AS BIGINT) as qtd_ativas,
+			CAST(ROUND(SUM(qtd_inativas)) AS BIGINT) as qtd_inativas
+		FROM v_empresas_faixa_etaria
+		WHERE ibge6_clean = ?
+		GROUP BY faixa_etaria
+		ORDER BY faixa_etaria ASC
+	`, ibge6)
+
+	dfEmpresasBairros := make([]map[string]string, 0)
+	if ibge6 == "261160" {
+		dfEmpresasBairros, _ = QueryToMaps(DuckDB, `
+			SELECT bairro_norm, total_ativas, total_mei, taxa_meizacao, idade_media, capital_social_total
+			FROM v_empresas_bairros_recife
+			ORDER BY total_ativas DESC
+			LIMIT 30
+		`)
+	}
+
+	dfEmpresasEstadual, _ := QueryToMaps(DuckDB, `
+		SELECT 
+			CAST(SUM(total_ativas) AS BIGINT) as total_ativas_pe,
+			CAST(SUM(total_mei) AS BIGINT) as total_mei_pe,
+			ROUND(AVG(empresas_por_mil_hab), 1) as densidade_media_pe,
+			ROUND(SUM(total_mei)*100.0/NULLIF(SUM(total_ativas),0), 1) as taxa_meizacao_pe,
+			CAST(SUM(saldo_12m) AS BIGINT) as saldo_12m_pe,
+			ROUND(AVG(idade_media_ativas), 1) as idade_media_pe
+		FROM v_empresas_resumo
+	`)
+
 	// 8. Diagnóstico de Desenvolvimento Regional
 	var diagMun interface{} = nil
 	if DiagnosticoRegional != nil {
@@ -386,6 +444,12 @@ func PostFichaData(c *gin.Context) {
 		"pcp":               dfPcpMun,
 		"pcp_rd":            dfPcpRD,
 		"vocacoes":          dfVocMun,
+		"empresas_resumo":       dfEmpresasResumo,
+		"empresas_saldo_mensal": dfEmpresasSaldo,
+		"empresas_setor":        dfEmpresasSetor,
+		"empresas_faixa_etaria": dfEmpresasFaixaEtaria,
+		"empresas_bairros":      dfEmpresasBairros,
+		"empresas_pe_resumo":    dfEmpresasEstadual,
 		"geojson":           geoJSONMun,
 		"geojson_rd":        geoJSONRD,
 		"geojson_pe":        GeoJSONPE,
@@ -667,6 +731,26 @@ func GetMapaIndicador(c *gin.Context) {
 		"area_km2":         {"COALESCE(d.area_km2, 0)", "Área Territorial (km²)", "absoluto", "neutra"},
 	}
 
+	// Mapa de colunas de dinâmica empresarial em v_empresas_resumo
+	empresasCols := map[string]struct {
+		col        string
+		nome       string
+		tipo       string
+		polaridade string
+	}{
+		"emp_empresas_por_mil_hab":   {"COALESCE(e.empresas_por_mil_hab, 0)", "Densidade Empresarial (Empresas / 1.000 hab.)", "taxa", "positiva"},
+		"emp_taxa_meizacao":          {"COALESCE(e.taxa_meizacao, 0)", "Taxa de MEIzação (%)", "percentual", "neutra"},
+		"emp_saldo_12m":              {"COALESCE(e.saldo_12m, 0)", "Saldo de Empresas nos Últimos 12 Meses", "absoluto", "positiva"},
+		"emp_total_ativas":           {"COALESCE(e.total_ativas, 0)", "Total de Estabelecimentos Ativos", "absoluto", "positiva"},
+		"emp_total_mei":              {"COALESCE(e.total_mei, 0)", "Total de MEIs Ativos", "absoluto", "positiva"},
+		"emp_aberturas_12m":          {"COALESCE(e.aberturas_12m, 0)", "Novas Empresas Abertas (12 Meses)", "absoluto", "positiva"},
+		"emp_fechamentos_12m":        {"COALESCE(e.fechamentos_12m, 0)", "Empresas Fechadas (12 Meses)", "absoluto", "negativa"},
+		"emp_idade_media_ativas":     {"COALESCE(e.idade_media_ativas, 0)", "Idade Média do Parque Empresarial (Anos)", "taxa", "positiva"},
+		"emp_tempo_medio_inativas":   {"COALESCE(e.tempo_medio_vida_inativas, 0)", "Tempo Médio de Sobrevivência (Anos)", "taxa", "positiva"},
+		"emp_capital_social_total":   {"COALESCE(e.capital_social_total, 0)", "Capital Social Total (R$)", "moeda", "positiva"},
+		"emp_capital_social_mediano": {"COALESCE(e.capital_social_mediano, 0)", "Capital Social Mediano (R$)", "moeda", "positiva"},
+	}
+
 	type MunRaw struct {
 		Ibge6      string
 		Municipio  string
@@ -703,6 +787,45 @@ func GetMapaIndicador(c *gin.Context) {
 		rows, err := DuckDB.Query(query)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao consultar demografia", "details": err.Error()})
+			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var ibge6, mun, rd, valStr string
+			if err := rows.Scan(&ibge6, &mun, &rd, &valStr); err == nil {
+				rawList = append(rawList, MunRaw{
+					Ibge6:      ibge6,
+					Municipio:  mun,
+					RD:         rd,
+					ValStr:     valStr,
+					Ano:        anoFinal,
+					NmInd:      nmIndicadorFinal,
+					Tipo:       tipoFinal,
+					Polaridade: polaridadeFinal,
+				})
+			}
+		}
+	} else if infoEmp, isEmp := empresasCols[siglaLower]; isEmp {
+		nmIndicadorFinal = infoEmp.nome
+		tipoFinal = infoEmp.tipo
+		polaridadeFinal = infoEmp.polaridade
+		anoFinal = 2024
+
+		query := fmt.Sprintf(`
+			SELECT 
+				d.ibge6_clean,
+				d.municipio,
+				d.regiao_de_desenvolvimento,
+				COALESCE(CAST(%s AS VARCHAR), '0') AS val_str
+			FROM v_demografia d
+			LEFT JOIN v_empresas_resumo e ON d.ibge6_clean = e.ibge6_clean
+			ORDER BY d.municipio ASC
+		`, infoEmp.col)
+
+		rows, err := DuckDB.Query(query)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao consultar empresas", "details": err.Error()})
 			return
 		}
 		defer rows.Close()
