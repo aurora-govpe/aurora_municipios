@@ -122,6 +122,13 @@ func InitData() error {
 		{"v_fluxos", "data/parquet/regic_pe_fluxos.parquet", ""},
 		{"v_indicadores_ufs", "data/parquet/df_indicadores_ufs.parquet", ""},
 		{"v_indicadores_regioes", "data/parquet/df_indicadores_regioes.parquet", ""},
+		{"v_empresas_resumo", "data/parquet/df_empresas_resumo_municipal.parquet", "SUBSTR(CAST(cod_ibge AS VARCHAR), 1, 6)"},
+		{"v_empresas_saldo_mensal_muni", "data/parquet/df_empresas_saldo_mensal_muni.parquet", "SUBSTR(CAST(cod_ibge AS VARCHAR), 1, 6)"},
+		{"v_empresas_saldo_mensal_pe", "data/parquet/df_empresas_saldo_mensal_pe.parquet", ""},
+		{"v_empresas_saldo_mensal_porte", "data/parquet/df_empresas_saldo_mensal_porte.parquet", ""},
+		{"v_empresas_faixa_etaria", "data/parquet/df_empresas_faixa_etaria.parquet", "SUBSTR(CAST(cod_ibge AS VARCHAR), 1, 6)"},
+		{"v_empresas_cnae_setor", "data/parquet/df_empresas_cnae_setor.parquet", "SUBSTR(CAST(cod_ibge AS VARCHAR), 1, 6)"},
+		{"v_empresas_bairros_recife", "data/parquet/df_empresas_bairros_recife.parquet", ""},
 	}
 
 	for _, t := range tables {
@@ -143,7 +150,7 @@ func InitData() error {
 	}
 
 	// Criar índices em RAM para aceleração das buscas por ibge6 e UFs
-	indexedTables := []string{"v_indicadores", "v_demografia", "v_iniciativas", "v_emendas", "v_fiscais", "v_pcp", "v_vocacoes"}
+	indexedTables := []string{"v_indicadores", "v_demografia", "v_iniciativas", "v_emendas", "v_fiscais", "v_pcp", "v_vocacoes", "v_empresas_resumo", "v_empresas_saldo_mensal_muni", "v_empresas_cnae_setor", "v_empresas_faixa_etaria"}
 	for _, it := range indexedTables {
 		idxQuery := fmt.Sprintf("CREATE INDEX IF NOT EXISTS idx_%s_ibge ON %s (ibge6_clean)", it, it)
 		if _, err := DuckDB.Exec(idxQuery); err != nil {
@@ -163,21 +170,26 @@ func InitData() error {
 
 	// Pré-computar GeoJSON completo de Pernambuco (todos os municípios) para a Dimensão 0
 	log.Println("⚡ Pré-computando GeoJSON estadual completo...")
-	rows, err := DuckDB.Query("SELECT geojson_feature FROM v_demografia WHERE geojson_feature IS NOT NULL AND geojson_feature != ''")
-	if err == nil {
-		defer rows.Close()
-		var features []string
-		for rows.Next() {
-			var feat string
-			if err := rows.Scan(&feat); err == nil && feat != "" {
-				features = append(features, feat)
-			}
-		}
-		fcStr := fmt.Sprintf(`{"type":"FeatureCollection","features":[%s]}`, strings.Join(features, ","))
-		GeoJSONPE = json.RawMessage(fcStr)
-		log.Printf("✅ GeoJSON estadual pré-computado com %d features.", len(features))
+	if empGeo, errGeo := readFileFromPaths("data/geojson/empresas_municipios_pe.geojson", "C:/dados/aurora/geojson/empresas_municipios_pe.geojson"); errGeo == nil && len(empGeo) > 0 {
+		GeoJSONPE = json.RawMessage(empGeo)
+		log.Printf("✅ GeoJSON estadual carregado a partir de empresas_municipios_pe.geojson (%d bytes).", len(empGeo))
 	} else {
-		log.Printf("⚠️ Erro ao pré-computar GeoJSON PE: %v", err)
+		rows, err := DuckDB.Query("SELECT geojson_feature FROM v_demografia WHERE geojson_feature IS NOT NULL AND geojson_feature != ''")
+		if err == nil {
+			defer rows.Close()
+			var features []string
+			for rows.Next() {
+				var feat string
+				if err := rows.Scan(&feat); err == nil && feat != "" {
+					features = append(features, feat)
+				}
+			}
+			fcStr := fmt.Sprintf(`{"type":"FeatureCollection","features":[%s]}`, strings.Join(features, ","))
+			GeoJSONPE = json.RawMessage(fcStr)
+			log.Printf("✅ GeoJSON estadual pré-computado com %d features.", len(features))
+		} else {
+			log.Printf("⚠️ Erro ao pré-computar GeoJSON PE: %v", err)
+		}
 	}
 
 	// Pré-carregar GeoJSON da Rede REGIC expandida (399 municípios)

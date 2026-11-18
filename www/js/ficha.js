@@ -483,6 +483,20 @@ window.CATALOGO_MAPA_MULTIDIMENSIONAL = {
                     { sigla: "exp_alta_tec", nome: "Exportações de Alta-Tech (US$ FOB)", tipo: "moeda", pol: "positiva" },
                     { sigla: "pct_exp_alta_tec", nome: "Exportações de Alta-Tech (%)", tipo: "percentual", pol: "positiva" }
                 ]
+            },
+            "dinamica_empresarial": {
+                nome: "Dinâmica das Empresas (SEPLAG)",
+                indicadores: [
+                    { sigla: "emp_empresas_por_mil_hab", nome: "Densidade Empresarial (Empresas / 1.000 hab.)", tipo: "taxa", pol: "positiva" },
+                    { sigla: "emp_taxa_meizacao", nome: "Taxa de MEIzação (%)", tipo: "percentual", pol: "neutra" },
+                    { sigla: "emp_saldo_12m", nome: "Saldo de Empresas nos Últimos 12 Meses", tipo: "absoluto", pol: "positiva" },
+                    { sigla: "emp_total_ativas", nome: "Total de Estabelecimentos Ativos", tipo: "absoluto", pol: "positiva" },
+                    { sigla: "emp_total_mei", nome: "Total de MEIs Ativos", tipo: "absoluto", pol: "positiva" },
+                    { sigla: "emp_aberturas_12m", nome: "Novas Empresas Abertas (12 Meses)", tipo: "absoluto", pol: "positiva" },
+                    { sigla: "emp_fechamentos_12m", nome: "Empresas Fechadas (12 Meses)", tipo: "absoluto", pol: "negativa" },
+                    { sigla: "emp_idade_media_ativas", nome: "Idade Média do Parque Empresarial (Anos)", tipo: "taxa", pol: "positiva" },
+                    { sigla: "emp_capital_social_total", nome: "Capital Social Total (R$)", tipo: "moeda", pol: "positiva" }
+                ]
             }
         }
     },
@@ -1901,7 +1915,13 @@ window.carregarDadosFicha = async function (munParam) {
             json.pcp, 
             json.vocacoes,
             json.diagnostico,
-            json.fontes_referencia
+            json.fontes_referencia,
+            json.empresas_resumo,
+            json.empresas_saldo_mensal,
+            json.empresas_setor,
+            json.empresas_faixa_etaria,
+            json.empresas_bairros,
+            json.empresas_pe_resumo
         );
     } catch (e) {
         console.error("[Ficha] Erro ao buscar dados:", e);
@@ -1913,7 +1933,7 @@ window.carregarDadosFicha = async function (munParam) {
 /* ==========================================================================
    5. RENDERIZADOR PRINCIPAL (FICHA MUNICIPAL)
    ========================================================================== */
-function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, fiscais, pcp, vocacoes, diagApi, fontesApi) {
+function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, fiscais, pcp, vocacoes, diagApi, fontesApi, empresasResumo, empresasSaldo, empresasSetor, empresasFaixa, empresasBairros, empresasPe) {
     // Garante sincronização imediata do seletor e do label do botão na navbar
     window.sincronizarBotaoFiltroMunicipio(nomeMun);
 
@@ -2240,6 +2260,7 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
     try { renderizarIndicadoresConectividade(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresConectividade:", e); }
     try { renderizarIndicadoresInovacao(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresInovacao:", e); }
     try { renderizarIndicadoresComercio(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresComercio:", e); }
+    try { renderizarDinamicaEmpresas(empresasResumo, empresasSaldo, empresasSetor, empresasFaixa, empresasBairros, empresasPe, nomeMun); } catch(e) { console.error("[Ficha] Erro em renderizarDinamicaEmpresas:", e); }
     
     window.dadosFiscaisMun = fiscais || [];
     try { renderizarDadosFiscais(fiscais || [], ind || [], demo || {}); } catch(e) { console.error("[Ficha] Erro em renderizarDadosFiscais:", e); }
@@ -4463,6 +4484,382 @@ function renderizarEmendasFicha(dados) {
         }
     }
 }
+
+/* ==========================================================================
+   NOVO: DINÂMICA DAS EMPRESAS (SEPLAG - 1,93 MILHÃO DE REGISTROS)
+   ========================================================================== */
+let chartEmpresasSaldoMensal = null;
+let chartEmpresasSetorPorte = null;
+let chartEmpresasRecifeBairros = null;
+let modoGraficoEmpresasAtivo = 'setor';
+let cacheDadosEmpresasFicha = {
+    resumo: null,
+    saldo: [],
+    setor: [],
+    faixa: [],
+    bairros: [],
+    peResumo: null,
+    nomeMun: ''
+};
+
+window.alternarGraficoEmpresas = function(modo) {
+    modoGraficoEmpresasAtivo = modo;
+    $('#btn_toggle_emp_setor').toggleClass('btn-primary active', modo === 'setor').toggleClass('btn-outline-primary', modo !== 'setor');
+    $('#btn_toggle_emp_porte').toggleClass('btn-primary active', modo === 'porte').toggleClass('btn-outline-primary', modo !== 'porte');
+    renderizarGraficoSetorPorte(cacheDadosEmpresasFicha.setor, cacheDadosEmpresasFicha.resumo);
+};
+
+function renderizarDinamicaEmpresas(resumo, saldo, setor, faixa, bairros, peResumo, nomeMun) {
+    cacheDadosEmpresasFicha = {
+        resumo: (resumo && resumo[0]) || resumo || {},
+        saldo: saldo || [],
+        setor: setor || [],
+        faixa: faixa || [],
+        bairros: bairros || [],
+        peResumo: (peResumo && peResumo[0]) || peResumo || {},
+        nomeMun: nomeMun || ''
+    };
+
+    const r = cacheDadosEmpresasFicha.resumo;
+    const pe = cacheDadosEmpresasFicha.peResumo;
+
+    // 1. KPIs
+    const totalAtivas = parseFloat(r.total_ativas) || 0;
+    const totalMei = parseFloat(r.total_mei) || 0;
+    const densidade = parseFloat(r.empresas_por_mil_hab) || 0;
+    const taxaMei = parseFloat(r.taxa_meizacao) || (totalAtivas > 0 ? (totalMei / totalAtivas) * 100 : 0);
+    const idadeMedia = parseFloat(r.idade_media_ativas) || 0;
+    const saldo12m = parseFloat(r.saldo_12m) || 0;
+    const aberturas12m = parseFloat(r.aberturas_12m) || 0;
+    const fechamentos12m = parseFloat(r.fechamentos_12m) || 0;
+    const densidadePe = parseFloat(pe.densidade_media_pe) || 64.2;
+
+    // Card 1
+    $('#ficha_kpi_emp_total_ativas').text(totalAtivas > 0 ? totalAtivas.toLocaleString('pt-BR') : '-');
+    $('#ficha_kpi_emp_densidade').text(densidade > 0 ? densidade.toFixed(1) + ' / 1k hab.' : '-');
+    $('#ficha_kpi_emp_densidade_pe').text(densidadePe.toFixed(1) + ' / 1k hab.');
+
+    // Card 2
+    $('#ficha_kpi_emp_taxa_meizacao').text(taxaMei > 0 ? taxaMei.toFixed(1) + '%' : '-');
+    $('#ficha_kpi_emp_total_mei').text(totalMei > 0 ? totalMei.toLocaleString('pt-BR') + ' MEIs' : '-');
+    $('#ficha_kpi_emp_idade_media').text(idadeMedia > 0 ? idadeMedia.toFixed(1) + ' anos' : '-');
+
+    // Card 3
+    const sinalSaldo = saldo12m > 0 ? '+' : '';
+    $('#ficha_kpi_emp_saldo_12m').text(saldo12m !== 0 ? (sinalSaldo + saldo12m.toLocaleString('pt-BR')) : '0');
+    
+    const $badgeTend = $('#ficha_badge_emp_saldo_tendencia');
+    if (saldo12m > 0) {
+        $badgeTend.attr('class', 'badge rounded-pill px-2.5 py-1 text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300')
+                  .html('<i class="fas fa-arrow-trend-up me-1"></i>Expansão (+)');
+    } else if (saldo12m < 0) {
+        $badgeTend.attr('class', 'badge rounded-pill px-2.5 py-1 text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300')
+                  .html('<i class="fas fa-arrow-trend-down me-1"></i>Contração (-)');
+    } else {
+        $badgeTend.attr('class', 'badge rounded-pill px-2.5 py-1 text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300')
+                  .html('<i class="fas fa-minus me-1"></i>Neutro');
+    }
+
+    $('#ficha_kpi_emp_aberturas_12m').text(aberturas12m > 0 ? aberturas12m.toLocaleString('pt-BR') + ' empresas' : '-');
+    $('#ficha_kpi_emp_fechamentos_12m').text(fechamentos12m > 0 ? fechamentos12m.toLocaleString('pt-BR') + ' baixas' : '-');
+
+    // 2. Gráfico 1: Aberturas vs Fechamentos e Saldo Mensal
+    renderizarGraficoSaldoMensal(cacheDadosEmpresasFicha.saldo);
+
+    // 3. Gráfico 2: Composição Setorial e Porte
+    renderizarGraficoSetorPorte(cacheDadosEmpresasFicha.setor, cacheDadosEmpresasFicha.resumo);
+
+    // 4. Se for Recife, drill-down de bairros
+    const isRecife = String(nomeMun).toLowerCase().trim() === 'recife';
+    if (isRecife && cacheDadosEmpresasFicha.bairros && cacheDadosEmpresasFicha.bairros.length > 0) {
+        $('#ficha_box_empresas_recife').removeClass('d-none');
+        renderizarGraficoBairrosRecife(cacheDadosEmpresasFicha.bairros);
+    } else {
+        $('#ficha_box_empresas_recife').addClass('d-none');
+    }
+}
+
+function renderizarGraficoSaldoMensal(saldoArr) {
+    const dom = document.getElementById('ficha_chart_empresas_saldo_mensal');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    if (chartEmpresasSaldoMensal) {
+        chartEmpresasSaldoMensal.dispose();
+    }
+    chartEmpresasSaldoMensal = echarts.init(dom);
+
+    if (!saldoArr || !saldoArr.length) {
+        chartEmpresasSaldoMensal.setOption({
+            title: { text: 'Sem histórico mensal de empresas para este município', left: 'center', top: 'center', textStyle: { color: '#94a3b8', fontSize: 12 } }
+        });
+        return;
+    }
+
+    const meses = saldoArr.map(d => d.ano_mes);
+    const aberturas = saldoArr.map(d => parseInt(d.aberturas) || 0);
+    const fechamentos = saldoArr.map(d => parseInt(d.fechamentos) || 0);
+    const saldos = saldoArr.map(d => parseInt(d.saldo) || 0);
+
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'cross', crossStyle: { color: '#999' } },
+            confine: true,
+            formatter: function(params) {
+                let out = `<div class="font-bold text-xs mb-1 text-slate-800">${params[0].name}</div>`;
+                params.forEach(p => {
+                    out += `<div class="d-flex justify-content-between gap-3 text-xs">
+                        <span style="color:${p.color}; font-weight:bold;">${p.seriesName}:</span>
+                        <strong>${(p.value >= 0 && p.seriesName === 'Saldo Líquido' ? '+' : '') + p.value.toLocaleString('pt-BR')}</strong>
+                    </div>`;
+                });
+                return out;
+            }
+        },
+        legend: {
+            data: ['Aberturas', 'Fechamentos', 'Saldo Líquido'],
+            top: 0,
+            textStyle: { fontSize: 11, fontWeight: 'bold', color: '#475569' }
+        },
+        grid: {
+            top: 45,
+            left: '3%',
+            right: '4%',
+            bottom: 50,
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            data: meses,
+            axisPointer: { type: 'shadow' },
+            axisLabel: {
+                fontSize: 10,
+                color: '#64748b',
+                formatter: function(val) {
+                    return val ? val.substring(2) : '';
+                }
+            }
+        },
+        yAxis: [
+            {
+                type: 'value',
+                name: 'Volume',
+                splitLine: { lineStyle: { type: 'dashed', stroke: '#f1f5f9' } },
+                axisLabel: { fontSize: 10, color: '#64748b' }
+            },
+            {
+                type: 'value',
+                name: 'Saldo Líquido',
+                splitLine: { show: false },
+                axisLabel: { fontSize: 10, color: '#ff5a26' }
+            }
+        ],
+        dataZoom: [
+            { type: 'inside', start: 60, end: 100 },
+            { type: 'slider', bottom: 5, height: 20, start: 60, end: 100, borderColor: '#e2e8f0' }
+        ],
+        series: [
+            {
+                name: 'Aberturas',
+                type: 'bar',
+                data: aberturas,
+                itemStyle: { color: '#10b981', borderRadius: [3, 3, 0, 0] }
+            },
+            {
+                name: 'Fechamentos',
+                type: 'bar',
+                data: fechamentos,
+                itemStyle: { color: '#f43f5e', borderRadius: [3, 3, 0, 0] }
+            },
+            {
+                name: 'Saldo Líquido',
+                type: 'line',
+                yAxisIndex: 1,
+                data: saldos,
+                smooth: true,
+                symbol: 'circle',
+                symbolSize: 5,
+                lineStyle: { width: 3, color: '#ff5a26' },
+                itemStyle: { color: '#ff5a26' }
+            }
+        ]
+    };
+
+    chartEmpresasSaldoMensal.setOption(option);
+}
+
+function renderizarGraficoSetorPorte(setorArr, resumoObj) {
+    const dom = document.getElementById('ficha_chart_empresas_setor_porte');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    if (chartEmpresasSetorPorte) {
+        chartEmpresasSetorPorte.dispose();
+    }
+    chartEmpresasSetorPorte = echarts.init(dom);
+
+    if (modoGraficoEmpresasAtivo === 'porte') {
+        const totalMei = parseInt(resumoObj.total_mei) || 0;
+        const totalMe = parseInt(resumoObj.total_me) || 0;
+        const totalEpp = parseInt(resumoObj.total_epp) || 0;
+        const totalOutros = parseInt(resumoObj.total_outros_portes) || 0;
+
+        const dataPorte = [
+            { value: totalMei, name: 'MEI (Individual)', itemStyle: { color: '#f59e0b' } },
+            { value: totalMe, name: 'Microempresa (ME)', itemStyle: { color: '#3b82f6' } },
+            { value: totalEpp, name: 'Pequeno Porte (EPP)', itemStyle: { color: '#10b981' } },
+            { value: totalOutros, name: 'Demais Portes', itemStyle: { color: '#8b5cf6' } }
+        ].filter(d => d.value > 0);
+
+        const option = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: <strong>{c}</strong> ({d}%)'
+            },
+            legend: {
+                bottom: 5,
+                left: 'center',
+                textStyle: { fontSize: 10, fontWeight: 'bold' }
+            },
+            series: [
+                {
+                    name: 'Porte Empresarial',
+                    type: 'pie',
+                    radius: ['45%', '72%'],
+                    center: ['50%', '45%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+                    label: { show: false, position: 'center' },
+                    emphasis: {
+                        label: { show: true, fontSize: 13, fontWeight: 'bold' }
+                    },
+                    data: dataPorte
+                }
+            ]
+        };
+        chartEmpresasSetorPorte.setOption(option);
+    } else {
+        const topSetores = (setorArr || [])
+            .map(s => ({
+                setor: s.grande_setor || 'Outros',
+                ativas: parseInt(s.total_ativas) || 0,
+                mei: parseInt(s.total_mei_ativas) || 0
+            }))
+            .filter(s => s.ativas > 0)
+            .sort((a, b) => a.ativas - b.ativas);
+
+        if (!topSetores.length) {
+            chartEmpresasSetorPorte.setOption({
+                title: { text: 'Sem dados setoriais disponíveis', left: 'center', top: 'center', textStyle: { color: '#94a3b8', fontSize: 12 } }
+            });
+            return;
+        }
+
+        const nomesSetores = topSetores.map(s => s.setor);
+        const valsAtivas = topSetores.map(s => s.ativas);
+        const valsMei = topSetores.map(s => s.mei);
+
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                confine: true,
+                formatter: function(params) {
+                    let out = `<div class="font-bold text-xs mb-1">${params[0].name}</div>`;
+                    params.forEach(p => {
+                        out += `<div class="d-flex justify-content-between gap-3 text-xs"><span style="color:${p.color}; font-weight:bold;">${p.seriesName}:</span> <strong>${p.value.toLocaleString('pt-BR')}</strong></div>`;
+                    });
+                    return out;
+                }
+            },
+            legend: {
+                data: ['Total Ativas', 'Desses: MEI'],
+                bottom: 0,
+                textStyle: { fontSize: 10, fontWeight: 'bold' }
+            },
+            grid: {
+                top: 15,
+                left: '3%',
+                right: '12%',
+                bottom: 35,
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value',
+                splitLine: { lineStyle: { stroke: '#f1f5f9' } },
+                axisLabel: { fontSize: 10 }
+            },
+            yAxis: {
+                type: 'category',
+                data: nomesSetores,
+                axisLabel: {
+                    fontSize: 10,
+                    width: 110,
+                    overflow: 'truncate',
+                    fontWeight: 'bold',
+                    color: '#334155'
+                }
+            },
+            series: [
+                {
+                    name: 'Total Ativas',
+                    type: 'bar',
+                    data: valsAtivas,
+                    itemStyle: { color: '#3b82f6', borderRadius: [0, 4, 4, 0] },
+                    label: { show: true, position: 'right', fontSize: 10, fontWeight: 'bold', formatter: '{c}' }
+                },
+                {
+                    name: 'Desses: MEI',
+                    type: 'bar',
+                    data: valsMei,
+                    itemStyle: { color: '#f59e0b', borderRadius: [0, 4, 4, 0] }
+                }
+            ]
+        };
+        chartEmpresasSetorPorte.setOption(option);
+    }
+}
+
+function renderizarGraficoBairrosRecife(bairrosArr) {
+    const dom = document.getElementById('ficha_chart_empresas_recife_bairros');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    if (chartEmpresasRecifeBairros) chartEmpresasRecifeBairros.dispose();
+    chartEmpresasRecifeBairros = echarts.init(dom);
+
+    const top10 = (bairrosArr || []).slice(0, 10).reverse();
+    const nomes = top10.map(b => b.bairro_norm);
+    const ativas = top10.map(b => parseInt(b.total_ativas) || 0);
+
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
+            formatter: (params) => {
+                const b = top10[params[0].dataIndex];
+                return `<div class="font-bold text-xs">${b.bairro_norm}</div>
+                        <div class="text-xs">Ativas: <strong>${(parseInt(b.total_ativas)||0).toLocaleString('pt-BR')}</strong></div>
+                        <div class="text-xs">MEIs: <strong>${(parseInt(b.total_mei)||0).toLocaleString('pt-BR')}</strong></div>
+                        <div class="text-xs">Taxa MEI: <strong>${parseFloat(b.taxa_meizacao||0).toFixed(1)}%</strong></div>`;
+            }
+        },
+        grid: { top: 10, left: '3%', right: '10%', bottom: '5%', containLabel: true },
+        xAxis: { type: 'value', splitLine: { lineStyle: { stroke: '#f1f5f9' } }, axisLabel: { fontSize: 10 } },
+        yAxis: { type: 'category', data: nomes, axisLabel: { fontSize: 10, fontWeight: 'bold' } },
+        series: [{
+            type: 'bar',
+            data: ativas,
+            itemStyle: { color: '#ff5a26', borderRadius: [0, 4, 4, 0] },
+            label: { show: true, position: 'right', fontSize: 10, fontWeight: 'bold', formatter: '{c}' }
+        }]
+    };
+    chartEmpresasRecifeBairros.setOption(option);
+}
+
+window.addEventListener('resize', () => {
+    if (chartEmpresasSaldoMensal && typeof chartEmpresasSaldoMensal.resize === 'function') chartEmpresasSaldoMensal.resize();
+    if (chartEmpresasSetorPorte && typeof chartEmpresasSetorPorte.resize === 'function') chartEmpresasSetorPorte.resize();
+    if (chartEmpresasRecifeBairros && typeof chartEmpresasRecifeBairros.resize === 'function') chartEmpresasRecifeBairros.resize();
+});
 
 /* ==========================================================================
    7. METADADOS (MODAL E TABELA)
@@ -9909,6 +10306,24 @@ function extrairMetricasComparacao(nomeMun, rawData) {
     const qlInfocom = extrairInd('ql_infocom_serv', 0);
     const estabInfocom = extrairInd('estab_infocom', 0);
 
+    // 6. Dinâmica das Empresas (SEPLAG)
+    const empRes = (rawData.empresas_resumo && rawData.empresas_resumo[0]) || rawData.empresas_resumo || {};
+    const empAtivas = parseFloat(empRes.total_ativas) || 0;
+    const empMei = parseFloat(empRes.total_mei) || 0;
+    const empMe = parseFloat(empRes.total_me) || 0;
+    const empEpp = parseFloat(empRes.total_epp) || 0;
+    const empDensidade = parseFloat(empRes.empresas_por_mil_hab) || (pop > 0 ? (empAtivas / pop) * 1000 : 0);
+    const empTaxaMei = parseFloat(empRes.taxa_meizacao) || (empAtivas > 0 ? (empMei / empAtivas) * 100 : 0);
+    const empSaldo12m = parseFloat(empRes.saldo_12m) || 0;
+    const empAberturas12m = parseFloat(empRes.aberturas_12m) || 0;
+    const empFechamentos12m = parseFloat(empRes.fechamentos_12m) || 0;
+    const empIdadeMedia = parseFloat(empRes.idade_media_ativas) || 0;
+    const empTempoSobrevivencia = parseFloat(empRes.tempo_medio_vida_inativas) || 0;
+    const empCapitalTotal = parseFloat(empRes.capital_social_total) || 0;
+    const empCapitalMediano = parseFloat(empRes.capital_social_mediano) || 0;
+    const empSaldoMensal = rawData.empresas_saldo_mensal || [];
+    const empSetor = rawData.empresas_setor || [];
+
     return {
         nome: nomeMun,
         rd,
@@ -9944,7 +10359,22 @@ function extrairMetricasComparacao(nomeMun, rawData) {
         popQuilombola,
         popIndigena,
         prefeitoCompleto,
-        gini
+        gini,
+        empAtivas,
+        empMei,
+        empMe,
+        empEpp,
+        empDensidade,
+        empTaxaMei,
+        empSaldo12m,
+        empAberturas12m,
+        empFechamentos12m,
+        empIdadeMedia,
+        empTempoSobrevivencia,
+        empCapitalTotal,
+        empCapitalMediano,
+        empSaldoMensal,
+        empSetor
     };
 }
 
@@ -9993,6 +10423,9 @@ function renderizarPainelComparativo(m1Nome, d1Raw, m2Nome, d2Raw, m3Nome, d3Raw
 
     // 5. Gráfico de Pirulito (Lollipop) Fiscal
     renderizarLollipopFiscal(m1, m2, m3);
+
+    // 5b. Dinâmica das Empresas Comparativo
+    renderizarEmpresasComparativo(m1, m2, m3);
 
     // 6. Matriz de Confronto Direto por Dimensões
     renderizarTabelaConfronto(m1, m2, m3);
@@ -10414,6 +10847,301 @@ function renderizarVabComparativo(m1, m2, m3) {
     chart.setOption(option);
 }
 
+function renderizarEmpresasComparativo(m1, m2, m3) {
+    const lista = [m1, m2, m3].filter(Boolean);
+    const cores = ['#2563eb', '#059669', '#7c3aed'];
+
+    // 1. Cards de Confronto de KPIs
+    const $containerKpis = $('#comp_container_kpis_empresas');
+    if ($containerKpis.length) {
+        $containerKpis.empty();
+
+        const buildMunRow = (nome, valFmt, subFmt, idx) => {
+            const cor = cores[idx % cores.length];
+            return `
+                <div class="d-flex justify-content-between align-items-center py-1 border-b border-slate-100 last:border-0 text-xs">
+                    <span class="font-bold d-flex align-items-center gap-1.5" style="color: ${cor};">
+                        <span class="w-2 h-2 rounded-circle" style="background-color: ${cor};"></span>
+                        ${nome}
+                    </span>
+                    <div class="text-end">
+                        <strong class="text-slate-800">${valFmt}</strong>
+                        ${subFmt ? `<span class="text-[10px] text-slate-500 block">${subFmt}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        };
+
+        // Card 1: Empresas Ativas e Densidade
+        let rowsCard1 = '';
+        lista.forEach((m, idx) => {
+            rowsCard1 += buildMunRow(
+                m.nome, 
+                m.empAtivas.toLocaleString('pt-BR') + ' ativas', 
+                m.empDensidade.toFixed(1) + ' / 1k hab.', 
+                idx
+            );
+        });
+
+        // Card 2: MEIzação e Idade Média
+        let rowsCard2 = '';
+        lista.forEach((m, idx) => {
+            rowsCard2 += buildMunRow(
+                m.nome, 
+                m.empTaxaMei.toFixed(1) + '% MEIs', 
+                m.empIdadeMedia > 0 ? (m.empIdadeMedia.toFixed(1) + ' anos idade média') : 'Idade n.d.', 
+                idx
+            );
+        });
+
+        // Card 3: Saldo Líquido 12m & Tendência
+        let rowsCard3 = '';
+        lista.forEach((m, idx) => {
+            const sinal = m.empSaldo12m > 0 ? '+' : '';
+            const tendBadge = m.empSaldo12m > 0 
+                ? '<span class="text-emerald-700 font-bold">▲ Expansão</span>' 
+                : (m.empSaldo12m < 0 ? '<span class="text-rose-700 font-bold">▼ Queda</span>' : '<span class="text-slate-500">Estável</span>');
+            rowsCard3 += buildMunRow(
+                m.nome, 
+                sinal + m.empSaldo12m.toLocaleString('pt-BR'), 
+                tendBadge, 
+                idx
+            );
+        });
+
+        $containerKpis.append(`
+            <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-2xs">
+                <div class="d-flex align-items-center gap-1.5 mb-2 pb-1.5 border-b border-slate-100">
+                    <i class="fas fa-building text-blue-600 text-xs"></i>
+                    <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Parque Empresarial &amp; Densidade</span>
+                </div>
+                ${rowsCard1}
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-2xs">
+                <div class="d-flex align-items-center gap-1.5 mb-2 pb-1.5 border-b border-slate-100">
+                    <i class="fas fa-id-badge text-amber-600 text-xs"></i>
+                    <span class="text-xs font-black text-slate-700 uppercase tracking-wider">MEIzação &amp; Maturidade</span>
+                </div>
+                ${rowsCard2}
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-2xs">
+                <div class="d-flex align-items-center gap-1.5 mb-2 pb-1.5 border-b border-slate-100">
+                    <i class="fas fa-arrow-trend-up text-emerald-600 text-xs"></i>
+                    <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Saldo Líquido 12m &amp; Ritmo</span>
+                </div>
+                ${rowsCard3}
+            </div>
+        `);
+    }
+
+    // 2. Gráfico de Linhas: Evolução do Saldo Líquido Mensal
+    renderizarLinhasSaldoComparativo(lista);
+
+    // 3. Gráfico de Barras: Composição por Grande Setor
+    renderizarSetoresComparativo(lista);
+}
+
+function renderizarLinhasSaldoComparativo(lista) {
+    const dom = document.getElementById('comp_chart_empresas_saldo_linhas');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    window.chartsComparacao = window.chartsComparacao || {};
+    if (window.chartsComparacao.empSaldo) {
+        window.chartsComparacao.empSaldo.dispose();
+    }
+    const chart = echarts.init(dom);
+    window.chartsComparacao.empSaldo = chart;
+
+    const cores = ['#2563eb', '#059669', '#7c3aed'];
+
+    // Coletar todos os meses a partir de 2020
+    const mesesSet = new Set();
+    lista.forEach(m => {
+        (m.empSaldoMensal || []).forEach(d => {
+            if (d.ano >= 2020 && d.ano_mes) mesesSet.add(d.ano_mes);
+        });
+    });
+    const meses = Array.from(mesesSet).sort();
+
+    if (!meses.length) {
+        chart.setOption({
+            title: { text: 'Sem histórico mensal disponível', left: 'center', top: 'center', textStyle: { color: '#94a3b8', fontSize: 12 } }
+        });
+        return;
+    }
+
+    const series = lista.map((m, idx) => {
+        const mapaSaldo = {};
+        (m.empSaldoMensal || []).forEach(d => {
+            mapaSaldo[d.ano_mes] = parseInt(d.saldo) || 0;
+        });
+        const dataVals = meses.map(mes => mapaSaldo[mes] !== undefined ? mapaSaldo[mes] : null);
+
+        return {
+            name: m.nome,
+            type: 'line',
+            smooth: true,
+            showSymbol: false,
+            symbolSize: 4,
+            itemStyle: { color: cores[idx % cores.length] },
+            lineStyle: { width: 2.5 },
+            data: dataVals
+        };
+    });
+
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            confine: true,
+            formatter: function(params) {
+                let out = `<div class="font-bold text-xs mb-1">${params[0].name} (Saldo Líquido)</div>`;
+                params.forEach(p => {
+                    const sinal = p.value > 0 ? '+' : '';
+                    out += `<div class="d-flex justify-content-between gap-3 text-xs">
+                        <span style="color:${p.color}; font-weight:bold;">${p.seriesName}:</span>
+                        <strong>${p.value !== null ? (sinal + p.value.toLocaleString('pt-BR')) : '-'}</strong>
+                    </div>`;
+                });
+                return out;
+            }
+        },
+        legend: {
+            top: 0,
+            textStyle: { fontSize: 11, fontWeight: 'bold' }
+        },
+        grid: {
+            top: 35,
+            left: '3%',
+            right: '4%',
+            bottom: 40,
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            data: meses,
+            axisLabel: {
+                fontSize: 10,
+                color: '#64748b',
+                formatter: (val) => val ? val.substring(2) : ''
+            }
+        },
+        yAxis: {
+            type: 'value',
+            splitLine: { lineStyle: { stroke: '#f1f5f9' } },
+            axisLabel: { fontSize: 10, color: '#64748b' }
+        },
+        dataZoom: [
+            { type: 'inside', start: 40, end: 100 },
+            { type: 'slider', bottom: 5, height: 18, start: 40, end: 100, borderColor: '#e2e8f0' }
+        ],
+        series: series
+    };
+
+    chart.setOption(option);
+}
+
+function renderizarSetoresComparativo(lista) {
+    const dom = document.getElementById('comp_chart_empresas_setor_barras');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    window.chartsComparacao = window.chartsComparacao || {};
+    if (window.chartsComparacao.empSetor) {
+        window.chartsComparacao.empSetor.dispose();
+    }
+    const chart = echarts.init(dom);
+    window.chartsComparacao.empSetor = chart;
+
+    const cores = ['#2563eb', '#059669', '#7c3aed'];
+
+    // Obter todos os setores presentes
+    const setoresSet = new Set();
+    lista.forEach(m => {
+        (m.empSetor || []).forEach(s => {
+            if (s.grande_setor) setoresSet.add(s.grande_setor);
+        });
+    });
+    const setores = Array.from(setoresSet);
+
+    // Ordenar os setores pelo total somado
+    setores.sort((a, b) => {
+        const sumA = lista.reduce((acc, m) => {
+            const item = (m.empSetor || []).find(s => s.grande_setor === a);
+            return acc + (item ? (parseInt(item.total_ativas) || 0) : 0);
+        }, 0);
+        const sumB = lista.reduce((acc, m) => {
+            const item = (m.empSetor || []).find(s => s.grande_setor === b);
+            return acc + (item ? (parseInt(item.total_ativas) || 0) : 0);
+        }, 0);
+        return sumB - sumA;
+    });
+
+    const topSetores = setores.slice(0, 7);
+
+    const series = lista.map((m, idx) => {
+        const mapa = {};
+        (m.empSetor || []).forEach(s => {
+            mapa[s.grande_setor] = parseInt(s.total_ativas) || 0;
+        });
+        const vals = topSetores.map(s => mapa[s] || 0);
+
+        return {
+            name: m.nome,
+            type: 'bar',
+            itemStyle: { color: cores[idx % cores.length], borderRadius: [3, 3, 0, 0] },
+            data: vals
+        };
+    });
+
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
+            confine: true,
+            formatter: function(params) {
+                let out = `<div class="font-bold text-xs mb-1">${params[0].name} (Empresas Ativas)</div>`;
+                params.forEach(p => {
+                    out += `<div class="d-flex justify-content-between gap-3 text-xs">
+                        <span style="color:${p.color}; font-weight:bold;">${p.seriesName}:</span>
+                        <strong>${p.value.toLocaleString('pt-BR')}</strong>
+                    </div>`;
+                });
+                return out;
+            }
+        },
+        legend: {
+            top: 0,
+            textStyle: { fontSize: 11, fontWeight: 'bold' }
+        },
+        grid: {
+            top: 35,
+            left: '3%',
+            right: '4%',
+            bottom: 45,
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            data: topSetores,
+            axisLabel: {
+                fontSize: 10,
+                fontWeight: 'bold',
+                color: '#334155',
+                interval: 0,
+                width: 75,
+                overflow: 'truncate'
+            }
+        },
+        yAxis: {
+            type: 'value',
+            splitLine: { lineStyle: { stroke: '#f1f5f9' } },
+            axisLabel: { fontSize: 10, color: '#64748b' }
+        },
+        series: series
+    };
+
+    chart.setOption(option);
+}
+
 function renderizarTabelaConfronto(m1, m2, m3) {
     const $tbody = $('#comp_tbody_confronto');
     if (!$tbody.length) return;
@@ -10468,7 +11196,18 @@ const fmtMoeda = (val) => {
         { dim: 'Inovação', nome: 'Cobertura por Fibra Óptica (%)', u1: m1.fibraPct.toFixed(1) + '%', u2: m2.fibraPct.toFixed(1) + '%', u3: temM3 ? m3.fibraPct.toFixed(1) + '%' : '-', v1: m1.fibraPct, v2: m2.fibraPct, v3: temM3 ? m3.fibraPct : -1 },
         { dim: 'Inovação', nome: 'Participação InfoCom no VAB Serv. (%)', u1: m1.pctVabInfocom.toFixed(2) + '%', u2: m2.pctVabInfocom.toFixed(2) + '%', u3: temM3 ? m3.pctVabInfocom.toFixed(2) + '%' : '-', v1: m1.pctVabInfocom, v2: m2.pctVabInfocom, v3: temM3 ? m3.pctVabInfocom : -1 },
         { dim: 'Inovação', nome: 'Quociente Locacional InfoCom (QL)', u1: m1.qlInfocom.toFixed(2), u2: m2.qlInfocom.toFixed(2), u3: temM3 ? m3.qlInfocom.toFixed(2) : '-', v1: m1.qlInfocom, v2: m2.qlInfocom, v3: temM3 ? m3.qlInfocom : -1 },
-        { dim: 'Inovação', nome: 'Empresas / Estabelecimentos TI', u1: m1.estabInfocom.toLocaleString('pt-BR'), u2: m2.estabInfocom.toLocaleString('pt-BR'), u3: temM3 ? m3.estabInfocom.toLocaleString('pt-BR') : '-', v1: m1.estabInfocom, v2: m2.estabInfocom, v3: temM3 ? m3.estabInfocom : -1 }
+        { dim: 'Inovação', nome: 'Empresas / Estabelecimentos TI', u1: m1.estabInfocom.toLocaleString('pt-BR'), u2: m2.estabInfocom.toLocaleString('pt-BR'), u3: temM3 ? m3.estabInfocom.toLocaleString('pt-BR') : '-', v1: m1.estabInfocom, v2: m2.estabInfocom, v3: temM3 ? m3.estabInfocom : -1 },
+
+        // 6. DINÂMICA DAS EMPRESAS (SEPLAG)
+        { dim: 'Dinâmica das Empresas', nome: 'Total de Estabelecimentos Ativos', u1: m1.empAtivas.toLocaleString('pt-BR'), u2: m2.empAtivas.toLocaleString('pt-BR'), u3: temM3 ? m3.empAtivas.toLocaleString('pt-BR') : '-', v1: m1.empAtivas, v2: m2.empAtivas, v3: temM3 ? m3.empAtivas : -1 },
+        { dim: 'Dinâmica das Empresas', nome: 'Densidade Empresarial (Empresas / 1k hab.)', u1: m1.empDensidade.toFixed(1), u2: m2.empDensidade.toFixed(1), u3: temM3 ? m3.empDensidade.toFixed(1) : '-', v1: m1.empDensidade, v2: m2.empDensidade, v3: temM3 ? m3.empDensidade : -1 },
+        { dim: 'Dinâmica das Empresas', nome: 'Total de MEIs Ativos', u1: m1.empMei.toLocaleString('pt-BR'), u2: m2.empMei.toLocaleString('pt-BR'), u3: temM3 ? m3.empMei.toLocaleString('pt-BR') : '-', v1: m1.empMei, v2: m2.empMei, v3: temM3 ? m3.empMei : -1 },
+        { dim: 'Dinâmica das Empresas', nome: 'Taxa de MEIzação (%)', u1: m1.empTaxaMei.toFixed(1) + '%', u2: m2.empTaxaMei.toFixed(1) + '%', u3: temM3 ? m3.empTaxaMei.toFixed(1) + '%' : '-', v1: m1.empTaxaMei, v2: m2.empTaxaMei, v3: temM3 ? m3.empTaxaMei : -1 },
+        { dim: 'Dinâmica das Empresas', nome: 'Saldo Líquido Empresarial (12 Meses)', u1: (m1.empSaldo12m >= 0 ? '+' : '') + m1.empSaldo12m.toLocaleString('pt-BR'), u2: (m2.empSaldo12m >= 0 ? '+' : '') + m2.empSaldo12m.toLocaleString('pt-BR'), u3: temM3 ? (m3.empSaldo12m >= 0 ? '+' : '') + m3.empSaldo12m.toLocaleString('pt-BR') : '-', v1: m1.empSaldo12m, v2: m2.empSaldo12m, v3: temM3 ? m3.empSaldo12m : -999999 },
+        { dim: 'Dinâmica das Empresas', nome: 'Novas Empresas Abertas (12 Meses)', u1: m1.empAberturas12m.toLocaleString('pt-BR'), u2: m2.empAberturas12m.toLocaleString('pt-BR'), u3: temM3 ? m3.empAberturas12m.toLocaleString('pt-BR') : '-', v1: m1.empAberturas12m, v2: m2.empAberturas12m, v3: temM3 ? m3.empAberturas12m : -1 },
+        { dim: 'Dinâmica das Empresas', nome: 'Empresas Fechadas (12 Meses)', u1: m1.empFechamentos12m.toLocaleString('pt-BR'), u2: m2.empFechamentos12m.toLocaleString('pt-BR'), u3: temM3 ? m3.empFechamentos12m.toLocaleString('pt-BR') : '-', v1: m1.empFechamentos12m, v2: m2.empFechamentos12m, v3: temM3 ? m3.empFechamentos12m : -1, lowerIsBetter: true },
+        { dim: 'Dinâmica das Empresas', nome: 'Idade Média do Parque (Anos)', u1: m1.empIdadeMedia.toFixed(1) + ' anos', u2: m2.empIdadeMedia.toFixed(1) + ' anos', u3: temM3 ? m3.empIdadeMedia.toFixed(1) + ' anos' : '-', v1: m1.empIdadeMedia, v2: m2.empIdadeMedia, v3: temM3 ? m3.empIdadeMedia : -1 },
+        { dim: 'Dinâmica das Empresas', nome: 'Capital Social Total Acumulado', u1: fmtMoeda(m1.empCapitalTotal), u2: fmtMoeda(m2.empCapitalTotal), u3: temM3 ? fmtMoeda(m3.empCapitalTotal) : '-', v1: m1.empCapitalTotal, v2: m2.empCapitalTotal, v3: temM3 ? m3.empCapitalTotal : -1 }
     ];
 
     let ultDim = '';
@@ -10481,7 +11220,8 @@ const fmtMoeda = (val) => {
                 'Economia': '#10B981',
                 'Social': '#F59E0B',
                 'Fiscal': '#8B5CF6',
-                'Inovação': '#06B6D4'
+                'Inovação': '#06B6D4',
+                'Dinâmica das Empresas': '#D97706'
             };
             const cor = coresDim[row.dim] || '#64748B';
             $tbody.append(`
