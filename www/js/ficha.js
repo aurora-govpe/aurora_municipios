@@ -2265,7 +2265,8 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
     window.dadosFiscaisMun = fiscais || [];
     try { renderizarDadosFiscais(fiscais || [], ind || [], demo || {}); } catch(e) { console.error("[Ficha] Erro em renderizarDadosFiscais:", e); }
 
-    try { renderizarTransferenciasRenda(iniciativas || [], pcp || []); } catch(e) { console.error("[Ficha] Erro em renderizarTransferenciasRenda:", e); }
+   // try { renderizarTransferenciasRenda(iniciativas || [], pcp || []); } catch(e) { console.error("[Ficha] Erro em renderizarTransferenciasRenda:", e); }
+   try { renderizarTransferenciasRenda(iniciativas || [], pcp || [], nomeMun, demo); } catch(e) { console.error("[Ficha] Erro em renderizarTransferenciasRenda:", e); }
     try { renderizarIniciativasFicha(iniciativas || [], demo || {}); } catch(e) { console.error("[Ficha] Erro em renderizarIniciativasFicha:", e); }
     try { renderizarEmendasFicha(emendas || []); } catch(e) { console.error("[Ficha] Erro em renderizarEmendasFicha:", e); }
     try {
@@ -3115,23 +3116,99 @@ function renderizarMapaSaneamentoRD() {
     });
 }
 
-/* --- 6.4 TRANSFERÊNCIAS DE RENDA --- */
-function renderizarTransferenciasRenda(iniciativas, pcp) {
+window.cacheDfPcpJson = null;
+
+async function carregarBasePcpJson() {
+    // 1. Reaproveita cache se já foi carregado anteriormente
+    if (Array.isArray(window.cacheDfPcpJson) && window.cacheDfPcpJson.length > 0) {
+        return window.cacheDfPcpJson;
+    }
+    if (window.cacheResumoCozinhas && Array.isArray(window.cacheResumoCozinhas.pcp) && window.cacheResumoCozinhas.pcp.length > 0) {
+        window.cacheDfPcpJson = window.cacheResumoCozinhas.pcp;
+        return window.cacheDfPcpJson;
+    }
+
+    const base = window.basePath || '';
+
+    // 2. Busca direto da rota do Go que já serve o df_pcp (sem risco de 404)
+    try {
+        const resResumo = await fetch(`${base}/municipios/resumo/cozinhas`.replace(/\/+/g, '/'));
+        if (resResumo && resResumo.ok) {
+            const jsonResumo = await resResumo.json();
+            if (jsonResumo && Array.isArray(jsonResumo.pcp) && jsonResumo.pcp.length > 0) {
+                window.cacheResumoCozinhas = jsonResumo;
+                window.cacheDfPcpJson = jsonResumo.pcp;
+                return window.cacheDfPcpJson;
+            }
+        }
+    } catch (e) {
+        console.warn("[Ficha] Falha ao buscar pcp via /municipios/resumo/cozinhas:", e);
+    }
+
+    // 3. Fallback caso você também libere o arquivo estático no Go
+    const caminhos = [
+        `${base}/data/df_pcp.json`.replace(/\/+/g, '/'),
+        `${base}/data/json/df_pcp.json`.replace(/\/+/g, '/')
+    ];
+
+    for (const url of caminhos) {
+        try {
+            const res = await fetch(url);
+            if (res && res.ok) {
+                const dados = await res.json();
+                window.cacheDfPcpJson = Array.isArray(dados) ? dados : [];
+                return window.cacheDfPcpJson;
+            }
+        } catch (e) {}
+    }
+
+    return [];
+}
+
+async function renderizarTransferenciasRenda(iniciativas, pcpFallback, nomeMun, demo) {
     let maesQtd = 0, maesVal = 0;
-    iniciativas.forEach(d => {
+    (iniciativas || []).forEach(d => {
         if (d.iniciativa_estrategica && String(d.iniciativa_estrategica).trim().toUpperCase() === "MÃES DE PERNAMBUCO") {
             maesQtd += (Number(d.indicador) || 0);
             maesVal += (Number(d.valor_total) || 0);
         }
     });
 
+    // Busca na base /data/json/df_pcp.json (com fallback para pcpFallback caso necessário)
+    const basePcp = await carregarBasePcpJson();
+    const listaPcp = basePcp.length > 0 ? basePcp : (pcpFallback || []);
+
+    const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const extrairVal = (obj, key) => (obj && obj[key] !== undefined) ? (Array.isArray(obj[key]) ? obj[key][0] : obj[key]) : '';
+
+    const alvoNome = norm(nomeMun || $('#ficha_f_municipio').val());
+    const rawIbge = String(extrairVal(demo, 'ibge7') || extrairVal(demo, 'cod_ibge') || extrairVal(demo, 'ibge6') || '').trim();
+    const alvoIbge7 = rawIbge.length >= 7 ? rawIbge.substring(0, 7) : '';
+    const alvoIbge6 = rawIbge.length >= 6 ? rawIbge.substring(0, 6) : '';
+
     let pcpQtd = 0, pcpVal = 0;
-    pcp.forEach(p => {
-        pcpQtd += Number(p.numero_de_beneficiarios) || 0;
-        pcpVal += Number(p.valor_investido_no_municipio) || 0;
+    listaPcp.forEach(p => {
+        const pIbge7 = p.ibge7 ? String(p.ibge7).trim() : '';
+        const pCodIbge = p.cod_ibge ? String(p.cod_ibge).trim() : '';
+        const pMun = norm(p.municipio);
+
+        const matchIbge = (alvoIbge7 && (pIbge7 === alvoIbge7 || pCodIbge === alvoIbge7)) ||
+                          (alvoIbge6 && (pCodIbge === alvoIbge6 || pIbge7.startsWith(alvoIbge6)));
+        const matchNome = alvoNome && pMun && pMun === alvoNome;
+
+        if (matchIbge || matchNome) {
+            pcpQtd += Number(p.numero_de_beneficiarios) || 0;
+            pcpVal += Number(p.valor_investido_no_municipio) || 0;
+        }
     });
 
-    const formataBi = (v) => (v === 0) ? "R$ 0" : ((v >= 1e9) ? "R$ " + (v / 1e9).toFixed(2).replace('.', ',') + " Bi" : ((v >= 1e6) ? "R$ " + (v / 1e6).toFixed(2).replace('.', ',') + " Mi" : "R$ " + v.toLocaleString('pt-BR', { maximumFractionDigits: 0 })));
+    const formataBi = (v) => (v === 0)
+        ? "R$ 0"
+        : ((v >= 1e9)
+            ? "R$ " + (v / 1e9).toFixed(2).replace('.', ',') + " Bi"
+            : ((v >= 1e6)
+                ? "R$ " + (v / 1e6).toFixed(2).replace('.', ',') + " Mi"
+                : "R$ " + v.toLocaleString('pt-BR', { maximumFractionDigits: 0 })));
 
     // Atualiza os Valores
     $('#ficha_kpi_maes_qtd').text(maesQtd > 0 ? maesQtd.toLocaleString('pt-BR') : "-");
@@ -3141,14 +3218,10 @@ function renderizarTransferenciasRenda(iniciativas, pcp) {
 
     // LÓGICA DE METADADOS E POLARIDADE
     const configurarMetadados = (elemBase, sigla, sufixo) => {
-        // 1. Adiciona a estrutura 2x2 do rodapé
         $(`#ficha_ano_${elemBase}`).html(window.montarRodapeKPI(sufixo, '2024', null, sigla));
-
-        // 2. Adiciona botões de Informação (i) e Série Histórica (->) no cabeçalho do KPI
         window.configurarBotoesKPI(elemBase, sigla, sufixo, 'programa');
     };
 
-    // Aciona a configuração para as 4 siglas (certifique-se que estas siglas batem com o metadado)
     configurarMetadados('maes_qtd', 'maes_qtd', 'Mulheres Atendidas');
     configurarMetadados('maes_val', 'maes_val', 'Investimento');
     configurarMetadados('pcp_qtd', 'pcp_qtd', 'Pessoas Atendidas');

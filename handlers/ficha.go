@@ -22,9 +22,16 @@ var (
 	cacheFichaMetaMutex sync.RWMutex
 	cacheFichaMetaMap   map[string]map[string]interface{}
 	cacheFichaMetaList  []map[string]interface{}
+
+	cachePcpMutex     sync.RWMutex
+	cachePcpPorIbge   map[string][]map[string]string
+	cachePcpCarregado bool
 )
 
-var CaminhoMetadadosMunJSON = filepath.Join("data", "json", "metadados_indicadores_mun.json")
+var (
+	CaminhoMetadadosMunJSON = filepath.Join("data", "json", "metadados_indicadores_mun.json")
+	CaminhoPcpJSON          = filepath.Join("data", "json", "df_pcp.json")
+)
 
 // InvalidarCacheFichaMetadados limpa o cache em RAM caso o ETL atualize o JSON
 func InvalidarCacheFichaMetadados() {
@@ -32,6 +39,138 @@ func InvalidarCacheFichaMetadados() {
 	defer cacheFichaMetaMutex.Unlock()
 	cacheFichaMetaMap = nil
 	cacheFichaMetaList = nil
+}
+
+// InvalidarCachePcpJSON limpa o cache em RAM caso o ETL atualize o df_pcp.json
+func InvalidarCachePcpJSON() {
+	cachePcpMutex.Lock()
+	defer cachePcpMutex.Unlock()
+	cachePcpPorIbge = nil
+	cachePcpCarregado = false
+}
+
+// normalizarRegistroPcp converte um objeto JSON genérico em map[string]string (compatível com QueryToMaps)
+func normalizarRegistroPcp(rawObj map[string]interface{}) (string, map[string]string) {
+	ibge6 := ""
+	if v, ok := rawObj["ibge6_clean"]; ok && v != nil {
+		ibge6 = strings.TrimSpace(fmt.Sprintf("%v", v))
+	} else if v, ok := rawObj["ibge6"]; ok && v != nil {
+		ibge6 = strings.TrimSpace(fmt.Sprintf("%v", v))
+	}
+	if len(ibge6) > 6 {
+		ibge6 = ibge6[:6]
+	}
+
+	rowStr := make(map[string]string, len(rawObj))
+	for k, v := range rawObj {
+		if k == "ibge6_clean" {
+			continue // Replica o comportamento de SELECT * EXCLUDE (ibge6_clean)
+		}
+		if v == nil {
+			rowStr[k] = ""
+			continue
+		}
+		switch val := v.(type) {
+		case string:
+			rowStr[k] = val
+		case float64:
+			if math.Mod(val, 1.0) == 0 {
+				rowStr[k] = fmt.Sprintf("%.0f", val)
+			} else {
+				rowStr[k] = strconv.FormatFloat(val, 'f', -1, 64)
+			}
+		default:
+			rowStr[k] = fmt.Sprintf("%v", val)
+		}
+	}
+	return ibge6, rowStr
+}
+
+// carregarPcpJSON lê df_pcp.json para a RAM indexado por ibge6_clean
+func carregarPcpJSON() (map[string][]map[string]string, error) {
+	cachePcpMutex.RLock()
+	if cachePcpCarregado && cachePcpPorIbge != nil {
+		dados := cachePcpPorIbge
+		cachePcpMutex.RUnlock()
+		return dados, nil
+	}
+	cachePcpMutex.RUnlock()
+
+	caminhos := []string{
+		CaminhoPcpJSON,
+		filepath.Join("data", "df_pcp.json"),
+		filepath.Join("etl", "data", "json", "df_pcp.json"),
+		filepath.Join("..", "data", "json", "df_pcp.json"),
+	}
+
+	var raw []byte
+	var err error
+	for _, p := range caminhos {
+		raw, err = os.ReadFile(p)
+		if err == nil && len(raw) > 0 {
+			break
+		}
+	}
+	if err != nil || len(raw) == 0 {
+		return nil, fmt.Errorf("arquivo df_pcp.json não encontrado")
+	}
+
+	indexado := make(map[string][]map[string]string)
+
+	// Formato 1: Array de registros [{"ibge6_clean": "261160", ...}, ...]
+	var lista []map[string]interface{}
+	if errList := json.Unmarshal(raw, &lista); errList == nil {
+		for _, item := range lista {
+			ibge6, rowStr := normalizarRegistroPcp(item)
+			if ibge6 != "" {
+				indexado[ibge6] = append(indexado[ibge6], rowStr)
+			}
+		}
+	} else {
+		// Formato 2: Mapa indexado por ibge6 {"261160": [{...}, ...]}
+		var mapa map[string][]map[string]interface{}
+		if errMap := json.Unmarshal(raw, &mapa); errMap != nil {
+			return nil, fmt.Errorf("erro ao decodificar df_pcp.json: %w", errMap)
+		}
+		for k, itens := range mapa {
+			ibgeKey := strings.TrimSpace(k)
+			if len(ibgeKey) > 6 {
+				ibgeKey = ibgeKey[:6]
+			}
+			for _, item := range itens {
+				ibge6, rowStr := normalizarRegistroPcp(item)
+				if ibge6 == "" {
+					ibge6 = ibgeKey
+				}
+				if ibge6 != "" {
+					indexado[ibge6] = append(indexado[ibge6], rowStr)
+				}
+			}
+		}
+	}
+
+	cachePcpMutex.Lock()
+	cachePcpPorIbge = indexado
+	cachePcpCarregado = true
+	cachePcpMutex.Unlock()
+
+	return indexado, nil
+}
+
+// obterPcpPorIbge6 retorna os registros de PCP para uma ou mais chaves ibge6_clean
+func obterPcpPorIbge6(ibges ...string) []map[string]string {
+	resultado := make([]map[string]string, 0)
+	dados, err := carregarPcpJSON()
+	if err != nil {
+		log.Printf("[PCP] Aviso ao ler df_pcp.json: %v", err)
+		return resultado
+	}
+	for _, ibge := range ibges {
+		if regs, ok := dados[ibge]; ok {
+			resultado = append(resultado, regs...)
+		}
+	}
+	return resultado
 }
 
 // carregarMetadadosMunJSON lê o arquivo metadados_indicadores_mun.json para a RAM (mapa e lista deduplicada)
@@ -173,6 +312,7 @@ func GetFichaMetadados(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"indicadores_dicionario": metaList})
 }
+
 // PostFichaData retorna os dados completos da ficha municipal de um município
 func PostFichaData(c *gin.Context) {
 	var req FichaDataRequest
@@ -330,19 +470,12 @@ func PostFichaData(c *gin.Context) {
 		WHERE f.ibge6_clean = ?
 	`, ibge6)
 
-	// 6. Chapéu de Palha (PCP)
-	dfPcpMun, _ := QueryToMaps(DuckDB, `
-		SELECT * EXCLUDE (ibge6_clean) FROM v_pcp
-		WHERE ibge6_clean = ?
-	`, ibge6)
+	// 6. Chapéu de Palha (PCP) — leitura direta de df_pcp.json em RAM
+	dfPcpMun := obterPcpPorIbge6(ibge6)
 
 	dfPcpRD := make([]map[string]string, 0)
 	if len(munsRDIbge6) > 0 {
-		queryPcpRD := fmt.Sprintf(`
-			SELECT * EXCLUDE (ibge6_clean) FROM v_pcp
-			WHERE ibge6_clean IN (%s)
-		`, makePlaceholders(len(munsRDIbge6)))
-		dfPcpRD, _ = QueryToMaps(DuckDB, queryPcpRD, makeArgs(munsRDIbge6)...)
+		dfPcpRD = obterPcpPorIbge6(munsRDIbge6...)
 	}
 
 	// 7. Vocações Municipais
@@ -417,9 +550,9 @@ func PostFichaData(c *gin.Context) {
 		}
 	}
 
-	// 9. Data de Atualização via arquivo RDS / Parquet
+	// 9. Data de Atualização via arquivo JSON / RDS / Parquet
 	txtAtualizacao := "Atualizado em: -"
-	for _, pPath := range []string{"data/df_pcp.rds", "data/parquet/df_pcp.parquet", "data/parquet/df_indicadores.parquet"} {
+	for _, pPath := range []string{CaminhoPcpJSON, "data/df_pcp.json", "data/df_pcp.rds", "data/parquet/df_pcp.parquet", "data/parquet/df_indicadores.parquet"} {
 		if info, err := os.Stat(pPath); err == nil {
 			loc, errLoc := time.LoadLocation("America/Recife")
 			tMod := info.ModTime()
@@ -432,29 +565,29 @@ func PostFichaData(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data_atualizacao":  txtAtualizacao,
-		"demografia":        demoMap,
-		"indicadores":       dfInd,
-		"indicadores_rd":    dfIndRD,
-		"demografia_rd":     dfDemoRD,
-		"iniciativas":       dfIni,
-		"iniciativas_rd":    dfIniRD,
-		"emendas":           dfEme,
-		"fiscais":           dfFisc,
-		"pcp":               dfPcpMun,
-		"pcp_rd":            dfPcpRD,
-		"vocacoes":          dfVocMun,
+		"data_atualizacao":      txtAtualizacao,
+		"demografia":            demoMap,
+		"indicadores":           dfInd,
+		"indicadores_rd":        dfIndRD,
+		"demografia_rd":         dfDemoRD,
+		"iniciativas":           dfIni,
+		"iniciativas_rd":        dfIniRD,
+		"emendas":               dfEme,
+		"fiscais":               dfFisc,
+		"pcp":                   dfPcpMun,
+		"pcp_rd":                dfPcpRD,
+		"vocacoes":              dfVocMun,
 		"empresas_resumo":       dfEmpresasResumo,
 		"empresas_saldo_mensal": dfEmpresasSaldo,
 		"empresas_setor":        dfEmpresasSetor,
 		"empresas_faixa_etaria": dfEmpresasFaixaEtaria,
 		"empresas_bairros":      dfEmpresasBairros,
 		"empresas_pe_resumo":    dfEmpresasEstadual,
-		"geojson":           geoJSONMun,
-		"geojson_rd":        geoJSONRD,
-		"geojson_pe":        GeoJSONPE,
-		"diagnostico":       diagMun,
-		"fontes_referencia": FontesReferencia,
+		"geojson":               geoJSONMun,
+		"geojson_rd":            geoJSONRD,
+		"geojson_pe":            GeoJSONPE,
+		"diagnostico":           diagMun,
+		"fontes_referencia":     FontesReferencia,
 	})
 }
 
@@ -955,34 +1088,49 @@ func GetMapaIndicador(c *gin.Context) {
 		polaridadeFinal = "positiva"
 		anoFinal = 2024
 
+		pcpIndexado, errJSON := carregarPcpJSON()
+		if errJSON != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao ler df_pcp.json", "details": errJSON.Error()})
+			return
+		}
+
+		// Soma total de beneficiários por ibge6_clean em memória
+		somaPorMun := make(map[string]int64, len(pcpIndexado))
+		for ibge, registros := range pcpIndexado {
+			var total int64
+			for _, r := range registros {
+				if v, ok := ParseFloatBR(r["numero_de_beneficiarios"]); ok {
+					total += int64(math.Round(v))
+				}
+			}
+			somaPorMun[ibge] = total
+		}
+
 		query := `
 			SELECT 
-				d.ibge6_clean,
-				d.municipio,
-				d.regiao_de_desenvolvimento,
-				COALESCE(CAST(SUM(TRY_CAST(p.numero_de_beneficiarios AS BIGINT)) AS VARCHAR), '0') as val_str,
-				2024 as ano
-			FROM v_demografia d
-			LEFT JOIN v_pcp p ON d.ibge6_clean = p.ibge6_clean
-			GROUP BY d.ibge6_clean, d.municipio, d.regiao_de_desenvolvimento
-			ORDER BY d.municipio ASC
+				ibge6_clean,
+				municipio,
+				regiao_de_desenvolvimento
+			FROM v_demografia
+			ORDER BY municipio ASC
 		`
 		rows, err := DuckDB.Query(query)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao consultar beneficiários Chapéu de Palha", "details": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao consultar municípios para Chapéu de Palha", "details": err.Error()})
 			return
 		}
 		defer rows.Close()
+
 		for rows.Next() {
-			var ibge6, mun, rd, valStr string
-			var ano int
-			if err := rows.Scan(&ibge6, &mun, &rd, &valStr, &ano); err == nil {
+			var ibge6, mun, rd string
+			if err := rows.Scan(&ibge6, &mun, &rd); err == nil {
+				valStr := strconv.FormatInt(somaPorMun[ibge6], 10)
 				rawList = append(rawList, MunRaw{
 					Ibge6:      ibge6,
 					Municipio:  mun,
 					RD:         rd,
 					ValStr:     valStr,
-					Ano:        ano,
+					Ano:        2024,
 					NmInd:      nmIndicadorFinal,
 					Tipo:       tipoFinal,
 					Polaridade: polaridadeFinal,
@@ -1488,4 +1636,3 @@ func GetMapaIndicador(c *gin.Context) {
 var (
 	GetMunicipiosMapaIndicador = GetMapaIndicador
 )
-
