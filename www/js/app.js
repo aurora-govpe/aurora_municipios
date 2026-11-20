@@ -225,6 +225,17 @@ window.mudarAbaAurora = function(nomeAba, elemento) {
     }
   }
 
+  const topbarMunBadge = document.getElementById('topbar_mun_badge');
+  if (topbarMunBadge) {
+    if (isAbaMunicipios) {
+      topbarMunBadge.classList.remove('d-none');
+      topbarMunBadge.classList.add('d-flex');
+    } else {
+      topbarMunBadge.classList.remove('d-flex');
+      topbarMunBadge.classList.add('d-none');
+    }
+  }
+
   if (controlesUFs) {
     if (isAbaUFs) {
       controlesUFs.classList.remove('d-none');

@@ -303,6 +303,24 @@ window.rolarParaSecaoFicha = function(secaoId) {
     }
 };
 
+window.rolarParaInicioFicha = function() {
+    try {
+        const contentArea = document.querySelector('.aurora-content-area');
+        if (contentArea) {
+            contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        const abaFicha = document.getElementById('aba_ficha');
+        if (abaFicha) {
+            abaFicha.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (document.documentElement) document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+        if (document.body) document.body.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch(e) {
+        console.warn("[Ficha] Erro ao rolar para o início:", e);
+    }
+};
+
 /* ==========================================================================
    NOVO: CATÁLOGO MULTIDIMENSIONAL (DIMENSÕES -> SUBDIMENSÕES -> INDICADORES)
    ========================================================================== */
@@ -1867,6 +1885,11 @@ window.sincronizarBotaoFiltroMunicipio = function(nomeMun) {
     }
     $('#controles_ficha_municipal .bootstrap-select .filter-option-inner-inner').text(nomeMun);
     $('#controles_ficha_municipal .bootstrap-select button.dropdown-toggle').attr('title', nomeMun);
+
+    // Sincroniza também no badge fixo da barra de atalhos e no topbar global
+    $('#ficha_sticky_nome_municipio').text(nomeMun);
+    $('#topbar_nome_municipio').text(nomeMun);
+    $('#topbar_mun_badge').removeClass('d-none').addClass('d-flex');
 };
 
 window.carregarDadosFicha = async function (munParam) {
@@ -1955,10 +1978,14 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
     if (elCapaNome) elCapaNome.innerText = nomeMun;
 
     $('#topbar_nome_municipio').text(nomeMun);
-    $('#topbar_mun_badge').removeClass('d-none').show();
+    $('#topbar_mun_badge').removeClass('d-none').addClass('d-flex');
 
     const rdNome = extrairValor(demo, 'regiao_de_desenvolvimento', extrairValor(demo, 'Região de Desenvolvimento', '-'));
     $('#ficha_rd_subtitle').text(rdNome);
+
+    // Atualiza nome e RD no badge fixo da barra de atalhos
+    $('#ficha_sticky_nome_municipio').text(nomeMun);
+    $('#ficha_sticky_rd_municipio').text(rdNome);
 
     // Atualiza município e RD em tela para o Mapa Multidimensional
     if (typeof window.atualizarMunicipioEmTelaMulti === 'function') {

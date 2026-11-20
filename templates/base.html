@@ -82,7 +82,7 @@
           </div>
 
           <!-- LINHA 2: BOTÕES DE NAVEGAÇÃO (Preservados integralmente) -->
-          <div class="d-flex align-items-center px-4 py-2 bg-white w-100 overflow-x-auto d-print-none">
+          <div class="d-flex align-items-center justify-content-between px-4 py-2 bg-white w-100 overflow-x-auto d-print-none gap-2">
             <div class="d-flex align-items-center gap-2 aurora-topbar-tabs flex-nowrap">
               <button class="btn btn-sm btn-primary rounded-3 px-3.5 py-2 font-bold text-xs shadow-sm aurora-default-tab d-inline-flex align-items-center gap-1.5" onclick="mudarAbaAurora('Início', this)">
                 <i class="fas fa-house"></i>
@@ -112,6 +112,13 @@
                 <i class="fas fa-users"></i>
                 Sobre
               </button>
+            </div>
+            
+            <!-- Badge fixo do Município Ativo no Topbar Global -->
+            <div id="topbar_mun_badge" class="d-none align-items-center gap-1.5 bg-orange-50/90 border border-orange-200 px-3 py-1 rounded-pill text-xs flex-shrink-0 shadow-2xs cursor-pointer select-none" onclick="window.mudarAbaAurora('Municípios', null); window.rolarParaInicioFicha();" title="Município em análise (clique para ir ao início da Ficha)">
+              <i class="fas fa-location-dot text-[#ff5a26]"></i>
+              <span class="text-[10px] uppercase font-bold text-slate-500 d-none d-sm-inline">Município:</span>
+              <strong id="topbar_nome_municipio" class="font-black text-uppercase text-orange-950">RECIFE</strong>
             </div>
           </div>
 
