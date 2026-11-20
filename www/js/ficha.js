@@ -497,6 +497,13 @@ window.CATALOGO_MAPA_MULTIDIMENSIONAL = {
                     { sigla: "emp_idade_media_ativas", nome: "Idade Média do Parque Empresarial (Anos)", tipo: "taxa", pol: "positiva" },
                     { sigla: "emp_capital_social_total", nome: "Capital Social Total (R$)", tipo: "moeda", pol: "positiva" }
                 ]
+            },
+            "agricultura_estiagem": {
+                nome: "Agricultura & Estiagem (IBGE PAM)",
+                indicadores: [
+                    { sigla: "agri_valor_producao", nome: "Valor da Produção Agrícola (R$ mil)", tipo: "moeda", pol: "positiva" },
+                    { sigla: "agri_area_colhida", nome: "Área Agrícola Colhida (ha)", tipo: "absoluto", pol: "positiva" }
+                ]
             }
         }
     },
@@ -1921,7 +1928,9 @@ window.carregarDadosFicha = async function (munParam) {
             json.empresas_setor,
             json.empresas_faixa_etaria,
             json.empresas_bairros,
-            json.empresas_pe_resumo
+            json.empresas_pe_resumo,
+            json.agricultura_pam,
+            json.agricultura_lspa
         );
     } catch (e) {
         console.error("[Ficha] Erro ao buscar dados:", e);
@@ -1933,7 +1942,7 @@ window.carregarDadosFicha = async function (munParam) {
 /* ==========================================================================
    5. RENDERIZADOR PRINCIPAL (FICHA MUNICIPAL)
    ========================================================================== */
-function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, fiscais, pcp, vocacoes, diagApi, fontesApi, empresasResumo, empresasSaldo, empresasSetor, empresasFaixa, empresasBairros, empresasPe) {
+function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, fiscais, pcp, vocacoes, diagApi, fontesApi, empresasResumo, empresasSaldo, empresasSetor, empresasFaixa, empresasBairros, empresasPe, agriPam, agriLspa) {
     // Garante sincronização imediata do seletor e do label do botão na navbar
     window.sincronizarBotaoFiltroMunicipio(nomeMun);
 
@@ -2261,6 +2270,7 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
     try { renderizarIndicadoresInovacao(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresInovacao:", e); }
     try { renderizarIndicadoresComercio(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresComercio:", e); }
     try { renderizarDinamicaEmpresas(empresasResumo, empresasSaldo, empresasSetor, empresasFaixa, empresasBairros, empresasPe, nomeMun); } catch(e) { console.error("[Ficha] Erro em renderizarDinamicaEmpresas:", e); }
+    try { renderizarAgriculturaEstiagem(agriPam, agriLspa, nomeMun, demo); } catch(e) { console.error("[Ficha] Erro em renderizarAgriculturaEstiagem:", e); }
     
     window.dadosFiscaisMun = fiscais || [];
     try { renderizarDadosFiscais(fiscais || [], ind || [], demo || {}); } catch(e) { console.error("[Ficha] Erro em renderizarDadosFiscais:", e); }
@@ -4932,7 +4942,344 @@ window.addEventListener('resize', () => {
     if (chartEmpresasSaldoMensal && typeof chartEmpresasSaldoMensal.resize === 'function') chartEmpresasSaldoMensal.resize();
     if (chartEmpresasSetorPorte && typeof chartEmpresasSetorPorte.resize === 'function') chartEmpresasSetorPorte.resize();
     if (chartEmpresasRecifeBairros && typeof chartEmpresasRecifeBairros.resize === 'function') chartEmpresasRecifeBairros.resize();
+    if (chartAgriLspaMensal && typeof chartAgriLspaMensal.resize === 'function') chartAgriLspaMensal.resize();
+    if (chartAgriPamHistorico && typeof chartAgriPamHistorico.resize === 'function') chartAgriPamHistorico.resize();
 });
+
+/* ==========================================================================
+   6b. AGRICULTURA & ESTIAGEM (PAM E LSPA - IBGE)
+   ========================================================================== */
+let chartAgriLspaMensal = null;
+let chartAgriPamHistorico = null;
+let modoGraficoLspaAtivo = 'total';
+let cacheDadosAgriFicha = {
+    pam: [],
+    lspa: [],
+    nomeMun: ''
+};
+
+window.alternarGraficoLspa = function(modo) {
+    modoGraficoLspaAtivo = modo;
+    $('#btn_toggle_lspa_total').toggleClass('btn-primary active', modo === 'total').toggleClass('btn-outline-primary', modo !== 'total');
+    $('#btn_toggle_lspa_cereais').toggleClass('btn-primary active', modo === 'cereais').toggleClass('btn-outline-primary', modo !== 'cereais');
+    renderizarGraficoLspaMensal(cacheDadosAgriFicha.lspa);
+};
+
+function renderizarAgriculturaEstiagem(pamArr, lspaArr, nomeMun, demo) {
+    cacheDadosAgriFicha = {
+        pam: pamArr || [],
+        lspa: lspaArr || [],
+        nomeMun: nomeMun || ''
+    };
+
+    const pamDados = (pamArr || []).map(p => ({
+        ano: parseInt(p.ano) || 0,
+        valor_producao: parseFloat(p.valor_da_producao) || 0,
+        area_colhida: parseFloat(p.area_colhida) || 0,
+        qtd_produzida: parseFloat(p.quantidade_produzida) || 0
+    })).sort((a, b) => a.ano - b.ano);
+
+    // 1. CARDS KPI
+    // KPI 1: Valor da Produção Agrícola
+    const pamRecente = pamDados.length ? pamDados[pamDados.length - 1] : null;
+    const anoRecente = pamRecente ? pamRecente.ano : 2025;
+    $('#ficha_kpi_agri_ano_valor').text(`PAM ${anoRecente}`);
+    $('#ficha_kpi_agri_ano_area').text(`PAM ${anoRecente}`);
+
+    const fmtMoedaKpi = (valMil) => {
+        const valReais = (Number(valMil) || 0) * 1000;
+        if (valReais === 0) return 'R$ 0';
+        if (valReais >= 1e9) {
+            return `R$ ${(valReais / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Bi`;
+        }
+        if (valReais >= 1e6) {
+            return `R$ ${(valReais / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Mi`;
+        }
+        return `R$ ${valReais.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
+    };
+
+    if (pamRecente && pamRecente.valor_producao > 0) {
+        $('#ficha_kpi_agri_valor_producao').text(fmtMoedaKpi(pamRecente.valor_producao));
+    } else {
+        $('#ficha_kpi_agri_valor_producao').text('R$ 0');
+    }
+
+    // Busca ranking estadual via mapa se disponível
+    const cacheMapaValor = window.cacheMapaIndicador && window.cacheMapaIndicador['agri_valor_producao'];
+    if (cacheMapaValor && cacheMapaValor.municipios && cacheMapaValor.municipios[nomeMun]) {
+        const itemM = cacheMapaValor.municipios[nomeMun];
+        $('#ficha_kpi_agri_rank_pe').html(`Ranking PE: <strong>${itemM.rank_pe}º</strong> (${itemM.total_pe} muns)`);
+        $('#ficha_kpi_agri_rank_rd').html(`Na RD: <strong>${itemM.rank_rd}º</strong> (${itemM.total_rd})`);
+    } else {
+        $('#ficha_kpi_agri_rank_pe').text('Produção Municipal');
+        $('#ficha_kpi_agri_rank_rd').text('Agropecuária');
+    }
+
+    // KPI 2: Área Agrícola Colhida
+    if (pamRecente && pamRecente.area_colhida > 0) {
+        $('#ficha_kpi_agri_area_colhida').text(pamRecente.area_colhida.toLocaleString('pt-BR'));
+        
+        // Variação em relação ao primeiro ano da série
+        if (pamDados.length > 1 && pamDados[0].area_colhida > 0) {
+            const diffArea = pamRecente.area_colhida - pamDados[0].area_colhida;
+            const pctVar = (diffArea / pamDados[0].area_colhida) * 100;
+            const sinal = pctVar >= 0 ? '+' : '';
+            const corClass = pctVar >= 0 ? 'text-emerald-600' : 'text-rose-600';
+            $('#ficha_kpi_agri_area_var').html(`Var. 5 anos: <strong class="${corClass}">${sinal}${pctVar.toFixed(1)}%</strong>`);
+        } else {
+            $('#ficha_kpi_agri_area_var').text('Série Histórica (PAM)');
+        }
+    } else {
+        $('#ficha_kpi_agri_area_colhida').text('0');
+        $('#ficha_kpi_agri_area_var').text('Sem lavouras registradas');
+    }
+
+    // KPI 3: Monitor de Estiagem / Quebra de Safra (LSPA)
+    const lspaTotal = (lspaArr || []).filter(l => l.produto === 'Total' && l.area_plantada !== null && l.area_plantada !== undefined && l.area_plantada !== '');
+    if (lspaTotal.length) {
+        const lspaUltimo = lspaTotal[lspaTotal.length - 1];
+        const taxaPerda = parseFloat(lspaUltimo.taxa_perda_pct) || 0;
+        const areaPerdida = parseFloat(lspaUltimo.area_perdida_ha) || 0;
+        const mesAnoStr = lspaUltimo.mes_ano || 'Recente';
+
+        $('#ficha_kpi_agri_mes_lspa').text(mesAnoStr);
+        $('#ficha_kpi_agri_taxa_perda').text(`${taxaPerda.toFixed(1)}%`);
+        $('#ficha_kpi_agri_area_perdida_pe').html(`Perda em PE: <strong>${Math.round(areaPerdida).toLocaleString('pt-BR')} ha</strong>`);
+
+        const $statusEstiagem = $('#ficha_kpi_agri_status_estiagem');
+        if (taxaPerda > 30) {
+            $statusEstiagem.text('Estiagem Severa').removeClass('bg-emerald-50 text-emerald-700 bg-amber-50 text-amber-700').addClass('bg-rose-50 text-rose-700 border-rose-200');
+        } else if (taxaPerda > 15) {
+            $statusEstiagem.text('Quebra Moderada').removeClass('bg-emerald-50 text-emerald-700 bg-rose-50 text-rose-700').addClass('bg-amber-50 text-amber-700 border-amber-200');
+        } else {
+            $statusEstiagem.text('Safra Normal').removeClass('bg-rose-50 text-rose-700 bg-amber-50 text-amber-700').addClass('bg-emerald-50 text-emerald-700 border-emerald-200');
+        }
+    } else {
+        $('#ficha_kpi_agri_taxa_perda').text('-');
+        $('#ficha_kpi_agri_area_perdida_pe').text('Sem registros recentes');
+    }
+
+    // 2. RENDERIZAÇÃO DOS GRÁFICOS
+    renderizarGraficoLspaMensal(lspaArr);
+    renderizarGraficoPamHistorico(pamDados);
+}
+
+function renderizarGraficoLspaMensal(lspaArr) {
+    const dom = document.getElementById('ficha_chart_agri_lspa_mensal');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    if (chartAgriLspaMensal) {
+        chartAgriLspaMensal.dispose();
+    }
+    chartAgriLspaMensal = echarts.init(dom);
+
+    const prodAlvo = modoGraficoLspaAtivo === 'cereais' ? '1 Cereais, leguminosas e oleaginosas' : 'Total';
+    const dadosProd = (lspaArr || [])
+        .filter(l => l.produto === prodAlvo && l.area_plantada !== null && l.area_plantada !== undefined && l.area_plantada !== '')
+        .sort((a, b) => String(a.cod_periodo).localeCompare(String(b.cod_periodo)));
+
+    if (!dadosProd.length) {
+        chartAgriLspaMensal.setOption({
+            title: { text: 'Sem dados do LSPA disponíveis para o período', left: 'center', top: 'center', textStyle: { color: '#94a3b8', fontSize: 12 } }
+        });
+        return;
+    }
+
+    const meses = dadosProd.map(d => {
+        const p = String(d.cod_periodo);
+        if (p.length === 6) {
+            return `${p.substring(4, 6)}/${p.substring(0, 4)}`;
+        }
+        return d.mes_ano || p;
+    });
+
+    const areaColhida = dadosProd.map(d => parseFloat(d.area_colhida) || 0);
+    const areaPerdida = dadosProd.map(d => parseFloat(d.area_perdida_ha) || 0);
+    const taxaPerda = dadosProd.map(d => parseFloat(d.taxa_perda_pct) || 0);
+
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'cross', crossStyle: { color: '#999' } },
+            formatter: (params) => {
+                const idx = params[0].dataIndex;
+                const d = dadosProd[idx];
+                return `
+                    <div class="font-bold text-xs mb-1">${d.mes_ano || meses[idx]} (${prodAlvo})</div>
+                    <div class="text-xs text-emerald-600">Área Colhida: <strong>${Math.round(areaColhida[idx]).toLocaleString('pt-BR')} ha</strong></div>
+                    <div class="text-xs text-rose-500">Área Perdida: <strong>${Math.round(areaPerdida[idx]).toLocaleString('pt-BR')} ha</strong></div>
+                    <div class="text-xs text-slate-700">Área Plantada: <strong>${Math.round(parseFloat(d.area_plantada)||0).toLocaleString('pt-BR')} ha</strong></div>
+                    <div class="text-xs font-bold text-amber-600 mt-1">Taxa de Quebra: ${taxaPerda[idx].toFixed(1)}%</div>
+                `;
+            }
+        },
+        legend: {
+            data: ['Área Colhida (ha)', 'Área Perdida / Estiagem (ha)', 'Taxa de Quebra (%)'],
+            top: 5,
+            textStyle: { fontSize: 11, fontWeight: 'bold' }
+        },
+        grid: {
+            top: 45,
+            left: '3%',
+            right: '4%',
+            bottom: 60,
+            containLabel: true
+        },
+        dataZoom: [
+            { type: 'inside', start: Math.max(0, 100 - (18 / meses.length) * 100), end: 100 },
+            { type: 'slider', bottom: 10, height: 20, handleSize: '75%' }
+        ],
+        xAxis: {
+            type: 'category',
+            data: meses,
+            axisLabel: { fontSize: 10, rotate: 30, color: '#64748b' }
+        },
+        yAxis: [
+            {
+                type: 'value',
+                name: 'Hectares (ha)',
+                nameTextStyle: { fontSize: 10, color: '#64748b' },
+                splitLine: { lineStyle: { stroke: '#f1f5f9' } },
+                axisLabel: {
+                    fontSize: 10,
+                    formatter: (v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v
+                }
+            },
+            {
+                type: 'value',
+                name: 'Quebra (%)',
+                nameTextStyle: { fontSize: 10, color: '#ea580c' },
+                min: 0,
+                max: 100,
+                splitLine: { show: false },
+                axisLabel: { fontSize: 10, formatter: '{value}%', color: '#ea580c' }
+            }
+        ],
+        series: [
+            {
+                name: 'Área Colhida (ha)',
+                type: 'bar',
+                stack: 'area',
+                itemStyle: { color: '#10b981' },
+                data: areaColhida
+            },
+            {
+                name: 'Área Perdida / Estiagem (ha)',
+                type: 'bar',
+                stack: 'area',
+                itemStyle: { color: '#f87171' },
+                data: areaPerdida
+            },
+            {
+                name: 'Taxa de Quebra (%)',
+                type: 'line',
+                yAxisIndex: 1,
+                itemStyle: { color: '#ea580c' },
+                lineStyle: { width: 3 },
+                symbol: 'circle',
+                symbolSize: 6,
+                data: taxaPerda
+            }
+        ]
+    };
+
+    chartAgriLspaMensal.setOption(option);
+}
+
+function renderizarGraficoPamHistorico(pamDados) {
+    const dom = document.getElementById('ficha_chart_agri_pam_historico');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    if (chartAgriPamHistorico) {
+        chartAgriPamHistorico.dispose();
+    }
+    chartAgriPamHistorico = echarts.init(dom);
+
+    if (!pamDados || !pamDados.length) {
+        chartAgriPamHistorico.setOption({
+            title: { text: 'Sem histórico do PAM para este município', left: 'center', top: 'center', textStyle: { color: '#94a3b8', fontSize: 12 } }
+        });
+        return;
+    }
+
+    const anos = pamDados.map(p => String(p.ano));
+    const valoresProdMil = pamDados.map(p => (p.valor_producao || 0));
+    const areasColhidas = pamDados.map(p => (p.area_colhida || 0));
+
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'cross' },
+            formatter: (params) => {
+                const idx = params[0].dataIndex;
+                const vMil = valoresProdMil[idx];
+                const a = areasColhidas[idx];
+                const vReais = vMil * 1000;
+                let vStr = `R$ ${vReais.toLocaleString('pt-BR')}`;
+                if (vReais >= 1e6) vStr = `R$ ${(vReais/1e6).toFixed(2)} Mi`;
+                return `
+                    <div class="font-bold text-xs mb-1">Ano: ${anos[idx]}</div>
+                    <div class="text-xs text-emerald-600">Valor da Produção: <strong>${vStr}</strong></div>
+                    <div class="text-xs text-blue-600">Área Colhida: <strong>${a.toLocaleString('pt-BR')} ha</strong></div>
+                `;
+            }
+        },
+        legend: {
+            data: ['Valor da Produção (R$ mil)', 'Área Colhida (ha)'],
+            top: 0,
+            textStyle: { fontSize: 10, fontWeight: 'bold' }
+        },
+        grid: {
+            top: 35,
+            left: '3%',
+            right: '4%',
+            bottom: '8%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            data: anos,
+            axisLabel: { fontSize: 11, fontWeight: 'bold' }
+        },
+        yAxis: [
+            {
+                type: 'value',
+                name: 'R$ mil',
+                splitLine: { lineStyle: { stroke: '#f1f5f9' } },
+                axisLabel: {
+                    fontSize: 10,
+                    formatter: (v) => v >= 1000 ? `${(v/1000).toFixed(0)}M` : v
+                }
+            },
+            {
+                type: 'value',
+                name: 'ha',
+                splitLine: { show: false },
+                axisLabel: { fontSize: 10 }
+            }
+        ],
+        series: [
+            {
+                name: 'Valor da Produção (R$ mil)',
+                type: 'bar',
+                itemStyle: { color: '#059669', borderRadius: [4, 4, 0, 0] },
+                data: valoresProdMil
+            },
+            {
+                name: 'Área Colhida (ha)',
+                type: 'line',
+                yAxisIndex: 1,
+                itemStyle: { color: '#2563eb' },
+                lineStyle: { width: 3 },
+                symbol: 'diamond',
+                symbolSize: 8,
+                data: areasColhidas
+            }
+        ]
+    };
+
+    chartAgriPamHistorico.setOption(option);
+}
 
 /* ==========================================================================
    7. METADADOS (MODAL E TABELA)
@@ -10129,7 +10476,10 @@ window.chartsComparacao = {
     radar: null,
     lollipopGeral: null,
     lollipopFiscal: null,
-    vab: null
+    vab: null,
+    empSaldo: null,
+    empSetor: null,
+    agriBarras: null
 };
 
 window.trocarSubabaMunicipios = function(subaba) {
@@ -10397,6 +10747,17 @@ function extrairMetricasComparacao(nomeMun, rawData) {
     const empSaldoMensal = rawData.empresas_saldo_mensal || [];
     const empSetor = rawData.empresas_setor || [];
 
+    // 7. Agricultura (PAM IBGE)
+    const pamDados = rawData.agricultura_pam || [];
+    let agriValorProducao = 0;
+    let agriAreaColhida = 0;
+    if (pamDados.length > 0) {
+        const pamOrdenado = [...pamDados].sort((a, b) => (parseInt(b.ano) || 0) - (parseInt(a.ano) || 0));
+        const maisRecente = pamOrdenado[0];
+        agriValorProducao = parseFloat(maisRecente.valor_da_producao) || 0;
+        agriAreaColhida = parseFloat(maisRecente.area_colhida) || 0;
+    }
+
     return {
         nome: nomeMun,
         rd,
@@ -10447,7 +10808,10 @@ function extrairMetricasComparacao(nomeMun, rawData) {
         empCapitalTotal,
         empCapitalMediano,
         empSaldoMensal,
-        empSetor
+        empSetor,
+        agriValorProducao,
+        agriAreaColhida,
+        agriPamDados: pamDados
     };
 }
 
@@ -10499,6 +10863,9 @@ function renderizarPainelComparativo(m1Nome, d1Raw, m2Nome, d2Raw, m3Nome, d3Raw
 
     // 5b. Dinâmica das Empresas Comparativo
     renderizarEmpresasComparativo(m1, m2, m3);
+
+    // 5c. Agricultura Comparativo (PAM IBGE)
+    renderizarAgriculturaComparativo(m1, m2, m3);
 
     // 6. Matriz de Confronto Direto por Dimensões
     renderizarTabelaConfronto(m1, m2, m3);
@@ -11215,6 +11582,154 @@ function renderizarSetoresComparativo(lista) {
     chart.setOption(option);
 }
 
+function renderizarAgriculturaComparativo(m1, m2, m3) {
+    const lista = [m1, m2, m3].filter(Boolean);
+    const cores = ['#2563eb', '#059669', '#7c3aed'];
+
+    // 1. Cards de Confronto de KPIs
+    const $containerKpis = $('#comp_container_kpis_agricultura');
+    if ($containerKpis.length) {
+        $containerKpis.empty();
+
+        const buildMunRow = (nome, valFmt, subFmt, idx) => {
+            const cor = cores[idx % cores.length];
+            return `
+                <div class="d-flex justify-content-between align-items-center py-1 border-b border-slate-100 last:border-0 text-xs">
+                    <span class="font-bold d-flex align-items-center gap-1.5" style="color: ${cor};">
+                        <span class="w-2 h-2 rounded-circle" style="background-color: ${cor};"></span>
+                        ${nome}
+                    </span>
+                    <div class="text-end">
+                        <strong class="text-slate-800">${valFmt}</strong>
+                        ${subFmt ? `<span class="text-[10px] text-slate-500 block">${subFmt}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        };
+
+        // Card 1: Valor da Produção Agrícola (PAM 2025)
+        let rowsCard1 = '';
+        lista.forEach((m, idx) => {
+            const val = m.agriValorProducao * 1000;
+            const valFmt = val >= 1e6 ? `R$ ${(val / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Mi` : `R$ ${val.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
+            rowsCard1 += buildMunRow(
+                m.nome,
+                valFmt,
+                'Safra 2025 (IBGE/PAM)',
+                idx
+            );
+        });
+
+        // Card 2: Área Colhida (PAM 2025)
+        let rowsCard2 = '';
+        lista.forEach((m, idx) => {
+            rowsCard2 += buildMunRow(
+                m.nome,
+                m.agriAreaColhida.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' ha',
+                'Área total colhida',
+                idx
+            );
+        });
+
+        $containerKpis.append(`
+            <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-2xs">
+                <div class="d-flex align-items-center gap-1.5 mb-2 pb-1.5 border-b border-slate-100">
+                    <i class="fas fa-wheat-awn text-emerald-600 text-xs"></i>
+                    <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Valor da Produção Agrícola (2025)</span>
+                </div>
+                ${rowsCard1}
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-2xs">
+                <div class="d-flex align-items-center gap-1.5 mb-2 pb-1.5 border-b border-slate-100">
+                    <i class="fas fa-vector-square text-amber-600 text-xs"></i>
+                    <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Área Colhida (2025)</span>
+                </div>
+                ${rowsCard2}
+            </div>
+        `);
+    }
+
+    // 2. Gráfico de Barras: Evolução do Valor da Produção (2021-2025)
+    const dom = document.getElementById('comp_chart_agricultura_barras');
+    if (!dom || typeof echarts === 'undefined') return;
+
+    window.chartsComparacao = window.chartsComparacao || {};
+    if (window.chartsComparacao.agriBarras) {
+        window.chartsComparacao.agriBarras.dispose();
+    }
+    const chart = echarts.init(dom);
+    window.chartsComparacao.agriBarras = chart;
+
+    const anos = ['2021', '2022', '2023', '2024', '2025'];
+
+    const series = lista.map((m, idx) => {
+        const mapaAno = {};
+        (m.agriPamDados || []).forEach(d => {
+            mapaAno[String(d.ano)] = (parseFloat(d.valor_da_producao) || 0) * 1000;
+        });
+        const dataVals = anos.map(ano => mapaAno[ano] !== undefined ? mapaAno[ano] : 0);
+
+        return {
+            name: m.nome,
+            type: 'bar',
+            itemStyle: { color: cores[idx % cores.length], borderRadius: [4, 4, 0, 0] },
+            data: dataVals
+        };
+    });
+
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
+            confine: true,
+            formatter: function(params) {
+                let out = `<div class="font-bold text-xs mb-1">Safra ${params[0].name} (Valor da Produção)</div>`;
+                params.forEach(p => {
+                    const v = p.value || 0;
+                    const valFmt = v >= 1e6 ? `R$ ${(v / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Mi` : `R$ ${v.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
+                    out += `<div class="d-flex justify-content-between gap-3 text-xs">
+                        <span style="color:${p.color}; font-weight:bold;">${p.seriesName}:</span>
+                        <strong>${valFmt}</strong>
+                    </div>`;
+                });
+                return out;
+            }
+        },
+        legend: {
+            top: 0,
+            textStyle: { fontSize: 11, fontWeight: 'bold' }
+        },
+        grid: {
+            top: 35,
+            left: '3%',
+            right: '4%',
+            bottom: 30,
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            data: anos,
+            axisLabel: { fontSize: 11, fontWeight: 'bold', color: '#1e293b' }
+        },
+        yAxis: {
+            type: 'value',
+            splitLine: { lineStyle: { stroke: '#f1f5f9' } },
+            axisLabel: {
+                fontSize: 10,
+                color: '#64748b',
+                formatter: function(val) {
+                    if (val >= 1e6) return 'R$ ' + (val / 1e6).toFixed(0) + 'M';
+                    if (val >= 1e3) return 'R$ ' + (val / 1e3).toFixed(0) + 'k';
+                    return val;
+                }
+            }
+        },
+        series: series
+    };
+
+    chart.setOption(option);
+}
+
 function renderizarTabelaConfronto(m1, m2, m3) {
     const $tbody = $('#comp_tbody_confronto');
     if (!$tbody.length) return;
@@ -11280,7 +11795,11 @@ const fmtMoeda = (val) => {
         { dim: 'Dinâmica das Empresas', nome: 'Novas Empresas Abertas (12 Meses)', u1: m1.empAberturas12m.toLocaleString('pt-BR'), u2: m2.empAberturas12m.toLocaleString('pt-BR'), u3: temM3 ? m3.empAberturas12m.toLocaleString('pt-BR') : '-', v1: m1.empAberturas12m, v2: m2.empAberturas12m, v3: temM3 ? m3.empAberturas12m : -1 },
         { dim: 'Dinâmica das Empresas', nome: 'Empresas Fechadas (12 Meses)', u1: m1.empFechamentos12m.toLocaleString('pt-BR'), u2: m2.empFechamentos12m.toLocaleString('pt-BR'), u3: temM3 ? m3.empFechamentos12m.toLocaleString('pt-BR') : '-', v1: m1.empFechamentos12m, v2: m2.empFechamentos12m, v3: temM3 ? m3.empFechamentos12m : -1, lowerIsBetter: true },
         { dim: 'Dinâmica das Empresas', nome: 'Idade Média do Parque (Anos)', u1: m1.empIdadeMedia.toFixed(1) + ' anos', u2: m2.empIdadeMedia.toFixed(1) + ' anos', u3: temM3 ? m3.empIdadeMedia.toFixed(1) + ' anos' : '-', v1: m1.empIdadeMedia, v2: m2.empIdadeMedia, v3: temM3 ? m3.empIdadeMedia : -1 },
-        { dim: 'Dinâmica das Empresas', nome: 'Capital Social Total Acumulado', u1: fmtMoeda(m1.empCapitalTotal), u2: fmtMoeda(m2.empCapitalTotal), u3: temM3 ? fmtMoeda(m3.empCapitalTotal) : '-', v1: m1.empCapitalTotal, v2: m2.empCapitalTotal, v3: temM3 ? m3.empCapitalTotal : -1 }
+        { dim: 'Dinâmica das Empresas', nome: 'Capital Social Total Acumulado', u1: fmtMoeda(m1.empCapitalTotal), u2: fmtMoeda(m2.empCapitalTotal), u3: temM3 ? fmtMoeda(m3.empCapitalTotal) : '-', v1: m1.empCapitalTotal, v2: m2.empCapitalTotal, v3: temM3 ? m3.empCapitalTotal : -1 },
+
+        // 7. AGRICULTURA & ESTIAGEM (IBGE: PAM)
+        { dim: 'Agricultura & Estiagem', nome: 'Valor da Produção Agrícola (2025)', u1: fmtMoeda(m1.agriValorProducao * 1000), u2: fmtMoeda(m2.agriValorProducao * 1000), u3: temM3 ? fmtMoeda(m3.agriValorProducao * 1000) : '-', v1: m1.agriValorProducao, v2: m2.agriValorProducao, v3: temM3 ? m3.agriValorProducao : -1 },
+        { dim: 'Agricultura & Estiagem', nome: 'Área Agrícola Colhida (2025)', u1: m1.agriAreaColhida.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' ha', u2: m2.agriAreaColhida.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' ha', u3: temM3 ? m3.agriAreaColhida.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' ha' : '-', v1: m1.agriAreaColhida, v2: m2.agriAreaColhida, v3: temM3 ? m3.agriAreaColhida : -1 }
     ];
 
     let ultDim = '';
@@ -11294,7 +11813,8 @@ const fmtMoeda = (val) => {
                 'Social': '#F59E0B',
                 'Fiscal': '#8B5CF6',
                 'Inovação': '#06B6D4',
-                'Dinâmica das Empresas': '#D97706'
+                'Dinâmica das Empresas': '#D97706',
+                'Agricultura & Estiagem': '#059669'
             };
             const cor = coresDim[row.dim] || '#64748B';
             $tbody.append(`
@@ -15362,6 +15882,11 @@ window.addEventListener('resize', () => {
     // ...
     if (dataTableHabitacao && typeof dataTableHabitacao.columns.adjust === 'function') dataTableHabitacao.columns.adjust();
     if (dataTableRegularizacao && typeof dataTableRegularizacao.columns.adjust === 'function') dataTableRegularizacao.columns.adjust();
+    if (window.chartsComparacao) {
+        Object.values(window.chartsComparacao).forEach(c => {
+            if (c && typeof c.resize === 'function') c.resize();
+        });
+    }
 });
 
 

@@ -542,6 +542,34 @@ func PostFichaData(c *gin.Context) {
 		FROM v_empresas_resumo
 	`)
 
+	// 7c. Agricultura e Estiagem (IBGE: PAM e LSPA)
+	dfAgriculturaPam, _ := QueryToMaps(DuckDB, `
+		SELECT 
+			ano,
+			valor_da_producao,
+			area_colhida,
+			quantidade_produzida
+		FROM v_agricultura_pam
+		WHERE ibge6_clean = ?
+		ORDER BY ano ASC
+	`, ibge6)
+
+	dfAgriculturaLspa, _ := QueryToMaps(DuckDB, `
+		SELECT 
+			cod_periodo,
+			mes_ano,
+			ano,
+			mes_num,
+			produto,
+			area_plantada,
+			area_colhida,
+			area_perdida_ha,
+			taxa_perda_pct
+		FROM v_agricultura_lspa
+		WHERE area_plantada IS NOT NULL
+		ORDER BY cod_periodo ASC, produto ASC
+	`)
+
 	// 8. Diagnóstico de Desenvolvimento Regional
 	var diagMun interface{} = nil
 	if DiagnosticoRegional != nil {
@@ -583,6 +611,8 @@ func PostFichaData(c *gin.Context) {
 		"empresas_faixa_etaria": dfEmpresasFaixaEtaria,
 		"empresas_bairros":      dfEmpresasBairros,
 		"empresas_pe_resumo":    dfEmpresasEstadual,
+		"agricultura_pam":       dfAgriculturaPam,
+		"agricultura_lspa":      dfAgriculturaLspa,
 		"geojson":               geoJSONMun,
 		"geojson_rd":            geoJSONRD,
 		"geojson_pe":            GeoJSONPE,
@@ -884,6 +914,17 @@ func GetMapaIndicador(c *gin.Context) {
 		"emp_capital_social_mediano": {"COALESCE(e.capital_social_mediano, 0)", "Capital Social Mediano (R$)", "moeda", "positiva"},
 	}
 
+	// Mapa de colunas agrícolas em v_agricultura_pam (ano mais recente = 2025)
+	agriculturaCols := map[string]struct {
+		col        string
+		nome       string
+		tipo       string
+		polaridade string
+	}{
+		"agri_valor_producao": {"COALESCE(p.valor_da_producao, 0)", "Valor da Produção Agrícola (R$ mil)", "moeda", "positiva"},
+		"agri_area_colhida":   {"COALESCE(p.area_colhida, 0)", "Área Agrícola Colhida (ha)", "absoluto", "positiva"},
+	}
+
 	type MunRaw struct {
 		Ibge6      string
 		Municipio  string
@@ -959,6 +1000,49 @@ func GetMapaIndicador(c *gin.Context) {
 		rows, err := DuckDB.Query(query)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao consultar empresas", "details": err.Error()})
+			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var ibge6, mun, rd, valStr string
+			if err := rows.Scan(&ibge6, &mun, &rd, &valStr); err == nil {
+				rawList = append(rawList, MunRaw{
+					Ibge6:      ibge6,
+					Municipio:  mun,
+					RD:         rd,
+					ValStr:     valStr,
+					Ano:        anoFinal,
+					NmInd:      nmIndicadorFinal,
+					Tipo:       tipoFinal,
+					Polaridade: polaridadeFinal,
+				})
+			}
+		}
+	} else if infoAgri, isAgri := agriculturaCols[siglaLower]; isAgri {
+		nmIndicadorFinal = infoAgri.nome
+		tipoFinal = infoAgri.tipo
+		polaridadeFinal = infoAgri.polaridade
+		anoFinal = 2025
+
+		query := fmt.Sprintf(`
+			SELECT 
+				d.ibge6_clean,
+				d.municipio,
+				d.regiao_de_desenvolvimento,
+				COALESCE(CAST(%s AS VARCHAR), '0') AS val_str
+			FROM v_demografia d
+			LEFT JOIN (
+				SELECT ibge6_clean, valor_da_producao, area_colhida
+				FROM v_agricultura_pam
+				WHERE ano = 2025
+			) p ON d.ibge6_clean = p.ibge6_clean
+			ORDER BY d.municipio ASC
+		`, infoAgri.col)
+
+		rows, err := DuckDB.Query(query)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao consultar agricultura PAM", "details": err.Error()})
 			return
 		}
 		defer rows.Close()

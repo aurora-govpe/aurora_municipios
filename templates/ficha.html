@@ -98,6 +98,10 @@
                           <i class="fas fa-building text-amber-600 me-1"></i>
                           Dinâmica das Empresas
                         </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_agricultura_estiagem&#39;)">
+                          <i class="fas fa-wheat-awn text-emerald-600 me-1"></i>
+                          Agricultura &amp; Estiagem
+                        </button>
                         <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_fiscal&#39;)">
                           <i class="fas fa-building-columns text-violet-600 me-1"></i>
                           Fiscal (CAPAG)
@@ -1342,6 +1346,130 @@
                       <div id="ficha_chart_empresas_recife_bairros" style="width: 100%; height: 280px;"></div>
                     </div>
 
+                    <!-- ========================================================= -->
+                    <!-- SEÇÃO: AGRICULTURA & ESTIAGEM (PAM & LSPA - IBGE)        -->
+                    <!-- ========================================================= -->
+                    <div id="sec_agricultura_estiagem" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8">
+                      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                        <div class="d-flex align-items-center gap-2">
+                          <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Agricultura &amp; Estiagem</h2>
+                          <span class="badge bg-emerald-100 text-emerald-900 border border-emerald-200 px-3 py-1.5 rounded-pill text-xs font-bold">
+                            <i class="fas fa-wheat-awn me-1 text-emerald-600"></i>
+                            IBGE: PAM &amp; LSPA
+                          </span>
+                        </div>
+                        <span class="text-xs text-slate-500 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-pill shadow-2xs">
+                          <i class="fas fa-cloud-sun text-amber-500 me-1"></i> Safra &amp; Quebra Climática
+                        </span>
+                      </div>
+                      <p class="text-sm font-bold text-slate-500 mb-0">Produção agrícola municipal histórica (PAM) e monitoramento mensal de quebra de safra por estiagem em Pernambuco (LSPA)</p>
+                    </div>
+
+                    <!-- 3 Cards KPI de Agricultura & Estiagem -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+                      <!-- Card 1: Valor da Produção Agrícola -->
+                      <div class="kpi-modern-card bg-white rounded-3xl p-4 border border-slate-200 shadow-sm transition-all hover:shadow-md" style="border-left: 5px solid #10b981 !important;">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Valor da Produção Agrícola</span>
+                          <div class="d-flex align-items-center gap-1">
+                            <button type="button" class="btn btn-xs btn-light bg-slate-100 border border-slate-200 text-slate-600 rounded-circle p-1 hover:bg-slate-200" onclick="window.abrirModalMetadado('agri_valor_producao')" title="Metadados">
+                              <i class="fas fa-info" style="font-size: 10px;"></i>
+                            </button>
+                            <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold" id="ficha_kpi_agri_ano_valor">PAM 2025</span>
+                          </div>
+                        </div>
+                        <div class="d-flex align-items-baseline gap-2 mb-2">
+                          <span class="text-3xl font-black text-slate-800 tracking-tight" id="ficha_kpi_agri_valor_producao">-</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between text-xs pt-2 border-t border-slate-100">
+                          <span class="text-slate-500 font-semibold" id="ficha_kpi_agri_rank_pe">Ranking PE: -</span>
+                          <span class="text-slate-500 font-semibold" id="ficha_kpi_agri_rank_rd">Na RD: -</span>
+                        </div>
+                      </div>
+
+                      <!-- Card 2: Área Colhida Municipal -->
+                      <div class="kpi-modern-card bg-white rounded-3xl p-4 border border-slate-200 shadow-sm transition-all hover:shadow-md" style="border-left: 5px solid #059669 !important;">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Área Agrícola Colhida</span>
+                          <div class="d-flex align-items-center gap-1">
+                            <button type="button" class="btn btn-xs btn-light bg-slate-100 border border-slate-200 text-slate-600 rounded-circle p-1 hover:bg-slate-200" onclick="window.abrirModalMetadado('agri_area_colhida')" title="Metadados">
+                              <i class="fas fa-info" style="font-size: 10px;"></i>
+                            </button>
+                            <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold" id="ficha_kpi_agri_ano_area">PAM 2025</span>
+                          </div>
+                        </div>
+                        <div class="d-flex align-items-baseline gap-2 mb-2">
+                          <span class="text-3xl font-black text-slate-800 tracking-tight" id="ficha_kpi_agri_area_colhida">-</span>
+                          <span class="text-xs font-bold text-slate-400">hectares</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between text-xs pt-2 border-t border-slate-100">
+                          <span class="text-slate-500 font-semibold" id="ficha_kpi_agri_area_var">Variação 5 anos: -</span>
+                          <span class="badge bg-slate-100 text-slate-700 border border-slate-200 text-[10px]" id="ficha_kpi_agri_area_share_pe">% de PE: -</span>
+                        </div>
+                      </div>
+
+                      <!-- Card 3: Monitor de Quebra de Safra Estadual (LSPA) -->
+                      <div class="kpi-modern-card bg-white rounded-3xl p-4 border border-slate-200 shadow-sm transition-all hover:shadow-md" style="border-left: 5px solid #ea580c !important;">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Perda de Safra em PE (LSPA)</span>
+                          <div class="d-flex align-items-center gap-1">
+                            <button type="button" class="btn btn-xs btn-light bg-slate-100 border border-slate-200 text-slate-600 rounded-circle p-1 hover:bg-slate-200" onclick="window.abrirModalMetadado('agri_taxa_perda_safra')" title="Metadados">
+                              <i class="fas fa-info" style="font-size: 10px;"></i>
+                            </button>
+                            <span class="badge bg-orange-100 text-orange-800 border border-orange-200 text-[10px] font-bold" id="ficha_kpi_agri_mes_lspa">Recente</span>
+                          </div>
+                        </div>
+                        <div class="d-flex align-items-baseline gap-2 mb-2">
+                          <span class="text-3xl font-black text-rose-600 tracking-tight" id="ficha_kpi_agri_taxa_perda">-</span>
+                          <span class="text-xs font-bold text-slate-500">área frustrada</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between text-xs pt-2 border-t border-slate-100">
+                          <span class="text-slate-600 font-semibold" id="ficha_kpi_agri_area_perdida_pe">Área perdida: -</span>
+                          <span class="badge bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold" id="ficha_kpi_agri_status_estiagem">Monitoramento</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Gráficos de Agricultura & Estiagem -->
+                    <div class="row g-4 mb-4">
+                      <!-- Gráfico 1: Monitoramento Mensal LSPA da Estiagem Agrícola em PE -->
+                      <div class="col-lg-7">
+                        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100">
+                          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                            <div>
+                              <h5 class="font-black text-slate-800 text-sm uppercase tracking-tight mb-0">
+                                <i class="fas fa-chart-line text-emerald-600 me-2"></i>
+                                Monitoramento da Estiagem: Safra &amp; Quebra em PE (LSPA)
+                              </h5>
+                              <span class="text-[11px] text-slate-500 font-medium">Área plantada, área colhida (barras) e taxa de quebra de safra (linha vermelha)</span>
+                            </div>
+                            <div class="btn-group btn-group-sm" role="group">
+                              <button id="btn_toggle_lspa_total" type="button" class="btn btn-xs btn-primary active text-[10px] px-2.5 py-1 font-bold" onclick="window.alternarGraficoLspa('total')">Total Lavouras</button>
+                              <button id="btn_toggle_lspa_cereais" type="button" class="btn btn-xs btn-outline-primary text-[10px] px-2.5 py-1 font-bold" onclick="window.alternarGraficoLspa('cereais')">Cereais / Grãos</button>
+                            </div>
+                          </div>
+                          <div id="ficha_chart_agri_lspa_mensal" style="width: 100%; height: 350px;"></div>
+                        </div>
+                      </div>
+
+                      <!-- Gráfico 2: Evolução Histórica Municipal (PAM) -->
+                      <div class="col-lg-5">
+                        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 h-100 d-flex flex-column">
+                          <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div>
+                              <h5 class="font-black text-slate-800 text-sm uppercase tracking-tight mb-0">
+                                <i class="fas fa-chart-simple text-emerald-600 me-2"></i>
+                                Evolução Agrícola Municipal (PAM)
+                              </h5>
+                              <span class="text-[11px] text-slate-500 font-medium">Valor da produção (R$) e área colhida (ha) no município</span>
+                            </div>
+                            <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-pill px-2.5 py-1">2021-2025</span>
+                          </div>
+                          <div id="ficha_chart_agri_pam_historico" style="width: 100%; height: 350px;" class="flex-grow-1"></div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div id="sec_fiscal" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8">
                       <div class="d-flex align-items-center gap-2 mb-1">
                         <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Fiscal</h2>
@@ -1749,6 +1877,35 @@
                           <div id="comp_chart_empresas_setor_barras" style="width: 100%; height: 320px;"></div>
                         </div>
                       </div>
+                    </div>
+                  </div>
+
+                  <!-- COMPARATIVO: AGRICULTURA & PRODUÇÃO MUNICIPAL (PAM / IBGE) -->
+                  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-b border-slate-100 flex-wrap gap-2">
+                      <div>
+                        <div class="d-flex align-items-center gap-2 mb-0.5">
+                          <span class="badge bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-bold rounded-pill px-2.5 py-0.5">IBGE PAM</span>
+                          <h5 class="font-black text-slate-800 text-base uppercase tracking-tight mb-0">
+                            <i class="fas fa-wheat-awn text-emerald-600 me-1.5"></i>
+                            Confronto Direto: Agricultura &amp; Produção Municipal
+                          </h5>
+                        </div>
+                        <span class="text-xs text-slate-500 font-medium">Comparação da produção agrícola recente, área colhida e histórico de produtividade (PAM)</span>
+                      </div>
+                      <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-pill px-3 py-1">Produção Agropecuária</span>
+                    </div>
+
+                    <!-- Cards de Confronto de KPIs Agrícolas -->
+                    <div id="comp_container_kpis_agricultura" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4"></div>
+
+                    <!-- Gráfico Comparativo de Agricultura -->
+                    <div class="p-3 rounded-2xl bg-slate-50/70 border border-slate-200">
+                      <h6 class="text-xs font-black text-slate-700 uppercase tracking-tight mb-2">
+                        <i class="fas fa-chart-column text-emerald-600 me-1"></i>
+                        Evolução Histórica do Valor da Produção Agrícola (2021-2025)
+                      </h6>
+                      <div id="comp_chart_agricultura_barras" style="width: 100%; height: 320px;"></div>
                     </div>
                   </div>
 
