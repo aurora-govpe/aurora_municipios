@@ -131,6 +131,11 @@ func InitData() error {
 		{"v_empresas_bairros_recife", "data/parquet/df_empresas_bairros_recife.parquet", ""},
 		{"v_agricultura_pam", "data/parquet/pam_municipios_pe_historico.parquet", "SUBSTR(CAST(cod_ibge AS VARCHAR), 1, 6)"},
 		{"v_agricultura_lspa", "data/parquet/lspa_pernambuco_serie_mensal.parquet", ""},
+		{"v_pam_agricultura", "data/parquet/pam_agricultura.parquet", "SUBSTR(CAST(ibge6 AS VARCHAR), 1, 6)"},
+		{"v_ppm_pecuaria", "data/parquet/ppm_pecuaria.parquet", "SUBSTR(CAST(ibge6 AS VARCHAR), 1, 6)"},
+		{"v_ppm_aquicultura", "data/parquet/ppm_aquicultura.parquet", "SUBSTR(CAST(ibge6 AS VARCHAR), 1, 6)"},
+		{"v_credito_rural", "data/parquet/credito_rural_sicor.parquet", "SUBSTR(CAST(ibge6 AS VARCHAR), 1, 6)"},
+		{"v_pim_industrial", "data/parquet/pim_producao_industrial.parquet", ""},
 	}
 
 	for _, t := range tables {
@@ -152,7 +157,7 @@ func InitData() error {
 	}
 
 	// Criar índices em RAM para aceleração das buscas por ibge6 e UFs
-	indexedTables := []string{"v_indicadores", "v_demografia", "v_iniciativas", "v_emendas", "v_fiscais", "v_pcp", "v_vocacoes", "v_empresas_resumo", "v_empresas_saldo_mensal_muni", "v_empresas_cnae_setor", "v_empresas_faixa_etaria", "v_agricultura_pam"}
+	indexedTables := []string{"v_indicadores", "v_demografia", "v_iniciativas", "v_emendas", "v_fiscais", "v_pcp", "v_vocacoes", "v_empresas_resumo", "v_empresas_saldo_mensal_muni", "v_empresas_cnae_setor", "v_empresas_faixa_etaria", "v_agricultura_pam", "v_pam_agricultura", "v_ppm_pecuaria", "v_ppm_aquicultura", "v_credito_rural"}
 	for _, it := range indexedTables {
 		idxQuery := fmt.Sprintf("CREATE INDEX IF NOT EXISTS idx_%s_ibge ON %s (ibge6_clean)", it, it)
 		if _, err := DuckDB.Exec(idxQuery); err != nil {

@@ -554,6 +554,73 @@ func PostFichaData(c *gin.Context) {
 		ORDER BY ano ASC
 	`, ibge6)
 
+	dfPamAgri, _ := QueryToMaps(DuckDB, `
+		SELECT 
+			ano,
+			area_plantada_ha,
+			area_colhida_ha,
+			quantidade_produzida,
+			valor_producao_reais,
+			rendimento_economico_ha
+		FROM v_pam_agricultura
+		WHERE ibge6_clean = ?
+		ORDER BY ano ASC
+	`, ibge6)
+
+	dfPpmPecuaria, _ := QueryToMaps(DuckDB, `
+		SELECT 
+			ano,
+			categoria_agro,
+			item,
+			unidade_medida,
+			quantidade,
+			valor_reais
+		FROM v_ppm_pecuaria
+		WHERE ibge6_clean = ?
+		ORDER BY ano DESC, categoria_agro ASC, item ASC
+	`, ibge6)
+
+	dfPpmAqui, _ := QueryToMaps(DuckDB, `
+		SELECT 
+			ano,
+			produto_aquicultura,
+			quantidade_produzida,
+			valor_producao_reais,
+			preco_medio_kg
+		FROM v_ppm_aquicultura
+		WHERE ibge6_clean = ?
+		ORDER BY ano DESC, produto_aquicultura ASC
+	`, ibge6)
+
+	dfCreditoRural, _ := QueryToMaps(DuckDB, `
+		SELECT 
+			ano,
+			valor_total_financiado,
+			qtd_operacoes
+		FROM v_credito_rural
+		WHERE ibge6_clean = ?
+		ORDER BY ano ASC
+	`, ibge6)
+
+	dfPimIndustrial, _ := QueryToMaps(DuckDB, `
+		SELECT 
+			ano,
+			mes_num,
+			mes_codigo,
+			mes,
+			data_referencia,
+			localidade_tipo,
+			uf,
+			var_interanual_pct,
+			var_acumulada_ano_pct,
+			var_acumulada_12m_pct,
+			var_margem_sazonal_pct,
+			indice_sem_ajuste_2022,
+			indice_com_ajuste_2022
+		FROM v_pim_industrial
+		ORDER BY data_referencia ASC, localidade_tipo ASC
+	`)
+
 	dfAgriculturaLspa, _ := QueryToMaps(DuckDB, `
 		SELECT 
 			cod_periodo,
@@ -613,6 +680,11 @@ func PostFichaData(c *gin.Context) {
 		"empresas_pe_resumo":    dfEmpresasEstadual,
 		"agricultura_pam":       dfAgriculturaPam,
 		"agricultura_lspa":      dfAgriculturaLspa,
+		"pam_agricultura":       dfPamAgri,
+		"ppm_pecuaria":          dfPpmPecuaria,
+		"ppm_aquicultura":       dfPpmAqui,
+		"credito_rural":         dfCreditoRural,
+		"pim_industrial":        dfPimIndustrial,
 		"geojson":               geoJSONMun,
 		"geojson_rd":            geoJSONRD,
 		"geojson_pe":            GeoJSONPE,
