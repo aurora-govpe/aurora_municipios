@@ -2298,16 +2298,17 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
     try { renderizarIndicadoresSociais(demo, ind); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresSociais:", e); }
     const vocAgro = (vocacoes || []).filter(v => { const d = parseInt(v.cnae_divisao); return d === 1 || d === 2 || d === 3; });
     const vocInd = (vocacoes || []).filter(v => { const d = parseInt(v.cnae_divisao); return d >= 5 && d <= 39; });
-    const vocEcon = (vocacoes || []).filter(v => { const d = parseInt(v.cnae_divisao); return isNaN(d) || (d !== 1 && d !== 2 && d !== 3 && (d < 5 || d > 39)); });
+    const vocServ = (vocacoes || []).filter(v => { const d = parseInt(v.cnae_divisao); return isNaN(d) || (d !== 1 && d !== 2 && d !== 3 && (d < 5 || d > 39)); });
 
-    try { renderizarVocacoes(vocEcon); } catch(e) { console.error("[Ficha] Erro em renderizarVocacoes:", e); }
+    try { renderizarVocacoes(vocServ); } catch(e) { console.error("[Ficha] Erro em renderizarVocacoes:", e); }
     try { renderizarIndicadoresTrabalho(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresTrabalho:", e); }
     try { renderizarIndicadoresConectividade(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresConectividade:", e); }
     try { renderizarIndicadoresInovacao(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresInovacao:", e); }
     try { renderizarIndicadoresComercio(ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndicadoresComercio:", e); }
-    try { renderizarDinamicaEmpresas(empresasResumo, empresasSaldo, empresasSetor, empresasFaixa, empresasBairros, empresasPe, nomeMun); } catch(e) { console.error("[Ficha] Erro em renderizarDinamicaEmpresas:", e); }
-    try { renderizarAgropecuariaCompleta(agriPam, agriLspa, pamAgri, ppmPecuaria, ppmAqui, creditoRural, vocAgro, ind, nomeMun, demo); } catch(e) { console.error("[Ficha] Erro em renderizarAgropecuariaCompleta:", e); }
+    try { renderizarServicos(vocServ, ind, demo); } catch(e) { console.error("[Ficha] Erro em renderizarServicos:", e); }
     try { renderizarIndustriaCompleta(pimIndustrial, vocInd, ind, nomeMun, demo); } catch(e) { console.error("[Ficha] Erro em renderizarIndustriaCompleta:", e); }
+    try { renderizarAgropecuariaCompleta(agriPam, agriLspa, pamAgri, ppmPecuaria, ppmAqui, creditoRural, vocAgro, ind, nomeMun, demo); } catch(e) { console.error("[Ficha] Erro em renderizarAgropecuariaCompleta:", e); }
+    try { renderizarDinamicaEmpresas(empresasResumo, empresasSaldo, empresasSetor, empresasFaixa, empresasBairros, empresasPe, nomeMun); } catch(e) { console.error("[Ficha] Erro em renderizarDinamicaEmpresas:", e); }
     
     window.dadosFiscaisMun = fiscais || [];
     try { renderizarDadosFiscais(fiscais || [], ind || [], demo || {}); } catch(e) { console.error("[Ficha] Erro em renderizarDadosFiscais:", e); }
@@ -3935,24 +3936,114 @@ function renderizarVocacoes(vocacoes) {
     });
 }
 
+// Helper universal para grids setoriais de KPIs de Mercado de Trabalho
+function renderizarGridKpisTrabalho(containerId, listaSiglas, ind, corSetor, iconeSetor) {
+    const $container = $(`#${containerId}`).empty();
+    if (!$container.length) return;
+
+    listaSiglas.forEach(sigla => {
+        const itens = (ind || []).filter(i => String(i.sigla_indicador || '').trim().toLowerCase() === sigla.toLowerCase());
+        if (!itens.length) return;
+        itens.sort((a, b) => (b.ano || 0) - (a.ano || 0));
+        const item = itens[0];
+        const siglaLow = sigla.toLowerCase();
+        const tipoNorm = item.tipo ? String(item.tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+        let val = parseFloat(String(item.indicador).replace(',', '.')), textoValor = "-";
+
+        if (!isNaN(val)) {
+            if (tipoNorm === 'percentual' || String(item.nm_indicador).includes('%') || siglaLow.startsWith('pct_')) {
+                textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + "%";
+            } else if (tipoNorm === 'moeda' || siglaLow.includes('sal_') || String(item.nm_indicador).toLowerCase().includes('salarial')) {
+                textoValor = 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else if (tipoNorm === 'absoluto' || siglaLow.includes('estab_') || siglaLow.includes('emp_')) {
+                textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+            } else {
+                textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+            }
+        } else {
+            textoValor = item.indicador || "-";
+        }
+
+        const meta = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === siglaLow);
+        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${sigla}')" title="Ver Metadados"></i>` : '';
+
+        let unidadeTexto = '';
+        if (siglaLow.includes('sal_') || String(item.nm_indicador).toLowerCase().includes('salarial')) unidadeTexto = 'R$';
+        else if (siglaLow.startsWith('pct_') || tipoNorm === 'percentual') unidadeTexto = '%';
+        else if (siglaLow.includes('estab_') || siglaLow.includes('emp_')) unidadeTexto = 'Vínculos';
+
+        $container.append(`
+            <div class="kpi-modern-card" style="border-left-color: ${corSetor};">
+              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
+              <div class="kpi-modern-body"><i class="fas ${iconeSetor} kpi-modern-icon" style="color: ${corSetor};"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${textoValor}</span></div>
+              <div class="kpi-modern-footer">${window.montarRodapeKPI(unidadeTexto, item.ano, item.rank_pe, sigla)}</div>
+            </div>
+        `);
+    });
+}
+
+function renderizarServicos(vocServ, ind, demo) {
+    // 1. Vocações Especializadas de Serviços e Comércio
+    renderizarCardsCnaeSetor('ficha_container_vocacoes_servicos', vocServ, ind, 'servicos');
+
+    // 2. Mercado de Trabalho em Serviços (5 KPIs)
+    renderizarGridKpisTrabalho(
+        'ficha_container_kpis_servicos',
+        ['estab_serv', 'emp_serv', 'sal_avg_serv', 'pct_estab_serv', 'pct_emp_serv'],
+        ind,
+        '#2563eb',
+        'fa-store'
+    );
+
+    // 3. InfoCom em relação a Serviços
+    const $containerInfocom = $('#ficha_container_kpis_infocom_serv').empty();
+    const siglasInfocom = ['pct_estab_infocom_serv', 'pct_emp_infocom_serv', 'estab_infocom', 'emp_infocom'];
+    siglasInfocom.forEach(sigla => {
+        const itens = (ind || []).filter(i => String(i.sigla_indicador || '').trim().toLowerCase() === sigla.toLowerCase());
+        if (!itens.length) return;
+        itens.sort((a, b) => (b.ano || 0) - (a.ano || 0));
+        const item = itens[0];
+        const siglaLow = sigla.toLowerCase();
+        let val = parseFloat(String(item.indicador).replace(',', '.')), textoValor = "-";
+        if (!isNaN(val)) {
+            if (siglaLow.startsWith('pct_')) {
+                textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + "%";
+            } else {
+                textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+            }
+        } else {
+            textoValor = item.indicador || "-";
+        }
+        const meta = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === siglaLow);
+        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-cyan-600 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${sigla}')" title="Ver Metadados"></i>` : '';
+        const unidadeTexto = siglaLow.startsWith('pct_') ? '%' : 'Vínculos';
+
+        $containerInfocom.append(`
+            <div class="kpi-modern-card" style="border-left-color: #0891b2;">
+              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
+              <div class="kpi-modern-body"><i class="fas fa-network-wired kpi-modern-icon" style="color: #0891b2;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${textoValor}</span></div>
+              <div class="kpi-modern-footer">${window.montarRodapeKPI(unidadeTexto, item.ano, item.rank_pe, sigla)}</div>
+            </div>
+        `);
+    });
+}
+
 function renderizarIndicadoresTrabalho(ind, demo) {
     const $containerKpis =$('#ficha_container_kpis_trabalho');
     const $containerBtns =$('#ficha_btns_metrica_trabalho');
     $containerKpis.empty();$containerBtns.empty();
 
-    // Ordem canônica desejada para exibição organizada dos cards (Agro e Indústria movidos para suas seções exclusivas)
+    // Ordem canônica desejada para exibição organizada dos cards gerais de Trabalho
     const ordemDesejada = [
-        'estab_total', 'emp_total', 'sal_avg', 'sal_med',
-        'estab_serv', 'emp_serv', 'sal_avg_serv', 'pct_estab_serv', 'pct_emp_serv'
+        'estab_total', 'emp_total', 'sal_avg', 'sal_med'
     ];
 
     const normText = (str) => String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-    // Filtra exclusivamente o grupo "mercado de trabalho" em Economia, excluindo agro e indústria
+    // Filtra exclusivamente o grupo "mercado de trabalho" em Economia Geral, excluindo agro, indústria e serviços
     let itensTrabalho = (ind || []).filter(i => {
-        if (normText(i.grupo) !== 'mercado de trabalho') return false;
         const s = String(i.sigla_indicador || '').toLowerCase();
-        return !s.includes('agro') && !s.includes('ind');
+        return ordemDesejada.includes(s) || (normText(i.grupo) === 'mercado de trabalho' && !s.includes('agro') && !s.includes('ind') && !s.includes('serv'));
     });
 
     if (!itensTrabalho.length) {
@@ -3963,7 +4054,7 @@ function renderizarIndicadoresTrabalho(ind, demo) {
         $('#ficha_map_trabalho_container').closest('.bg-white').show();
     }
 
-    // Ordenação lógica (Geral -> Agro -> Indústria -> Serviços)
+    // Ordenação lógica
     itensTrabalho.sort((a, b) => {
         let posA = ordemDesejada.indexOf(String(a.sigla_indicador).toLowerCase());
         let posB = ordemDesejada.indexOf(String(b.sigla_indicador).toLowerCase());
@@ -3981,9 +4072,9 @@ function renderizarIndicadoresTrabalho(ind, demo) {
         if (!isNaN(val)) {
             if (tipoNorm === 'percentual' || String(item.nm_indicador).includes('%')) {
                 textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + "%";
-            } else if (tipoNorm === 'moeda' || String(item.nm_indicador).toLowerCase().includes('salarial')) {
+            } else if (tipoNorm === 'moeda' || String(item.nm_indicador).toLowerCase().includes('salarial') || sigla.toLowerCase().includes('sal_')) {
                 textoValor = 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            } else if (tipoNorm === 'absoluto') {
+            } else if (tipoNorm === 'absoluto' || sigla.toLowerCase().includes('estab_') || sigla.toLowerCase().includes('emp_')) {
                 textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
             } else {
                 textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
@@ -3992,15 +4083,9 @@ function renderizarIndicadoresTrabalho(ind, demo) {
             textoValor = item.indicador;
         }
 
-        // Escolha do ícone e cor por setor
-        let iconeSetor = 'fa-user-tie';
-        let corSetor = '#059669'; // Verde padrão
+        const iconeSetor = 'fa-briefcase';
+        const corSetor = '#0C2856';
         const siglaLow = sigla.toLowerCase();
-
-        if (siglaLow.includes('agro')) { iconeSetor = 'fa-tractor'; corSetor = '#1ABC9C'; }
-        else if (siglaLow.includes('ind')) { iconeSetor = 'fa-industry'; corSetor = '#34495E'; }
-        else if (siglaLow.includes('serv')) { iconeSetor = 'fa-store'; corSetor = '#2980B9'; }
-        else if (siglaLow.includes('total') || siglaLow === 'sal_avg' || siglaLow === 'sal_med') { iconeSetor = 'fa-briefcase'; corSetor = '#0C2856'; }
 
         const rankBadge = item.rank_pe ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank_pe}º em PE</span>` : '';
         const meta = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
@@ -5009,13 +5094,26 @@ window.alternarGraficoLspa = function(modo) {
     renderizarGraficoLspaMensal(cacheDadosAgriFicha.lspa);
 };
 
-// Helper universal de renderização de cartões setoriais de CNAE (Agropecuária / Indústria)
+// Helper universal de renderização de cartões setoriais de CNAE (Agropecuária / Indústria / Serviços)
 function renderizarCardsCnaeSetor(containerId, listaVocacoes, indLista, tipo) {
     const $container = $(`#${containerId}`).empty();
     const isAgro = tipo === 'agro';
-    const corTema = isAgro ? '#10b981' : '#4f46e5';
-    const badgePadrao = isAgro ? 'Atividade Agropecuária' : 'Atividade Industrial';
-    const iconePadrao = isAgro ? 'fa-seedling' : 'fa-gear';
+    const isInd = tipo === 'ind';
+    const isServ = tipo === 'servicos';
+
+    let corTema = '#2563eb';
+    let badgePadrao = 'Atividade de Serviços';
+    let iconePadrao = 'fa-store';
+
+    if (isAgro) {
+        corTema = '#059669';
+        badgePadrao = 'Atividade Agropecuária';
+        iconePadrao = 'fa-seedling';
+    } else if (isInd) {
+        corTema = '#4f46e5';
+        badgePadrao = 'Atividade Industrial';
+        iconePadrao = 'fa-industry';
+    }
 
     const parseNum = (val) => {
         if (val === undefined || val === null || val === '-' || val === '') return null;
@@ -5064,12 +5162,14 @@ function renderizarCardsCnaeSetor(containerId, listaVocacoes, indLista, tipo) {
                 }
             }
 
+            const cnaeBadge = v.cnae_divisao ? `<span class="text-xs text-slate-400 font-bold">CNAE ${v.cnae_divisao}</span>` : '';
+
             $container.append(`
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:shadow-md transition-all flex flex-col justify-between" style="border-top: 4px solid ${corTema};">
                     <div class="mb-3">
                         <div class="mb-1.5 d-flex justify-content-between align-items-center">
                             <span class="badge rounded-pill px-2.5 py-1 text-xs font-bold uppercase tracking-wider" style="background-color: ${corTema}; color: #fff;">${tag}</span>
-                            <span class="text-xs text-slate-400 font-bold">CNAE ${v.cnae_divisao || ''}</span>
+                            ${cnaeBadge}
                         </div>
                         ${badgeSobedesce ? `<div class="mb-2">${badgeSobedesce}</div>` : ''}
                         <h6 class="font-black text-slate-800 text-sm leading-tight mb-0" title="${titulo}">${titulo}</h6>
@@ -5096,63 +5196,13 @@ function renderizarCardsCnaeSetor(containerId, listaVocacoes, indLista, tipo) {
             `);
         });
     } else {
-        // Fallback enriquecido: busca indicadores agregados de mercado de trabalho (indLista) para o setor
-        const prefixo = isAgro ? 'agro' : 'ind';
-        const indSetor = (indLista || []).filter(i => {
-            const s = String(i.sigla_indicador || '').toLowerCase();
-            return s.includes(prefixo);
-        });
-
-        if (indSetor.length > 0) {
-            let estabVal = '-', empVal = '-', salVal = '-', pctEmpVal = '-';
-            indSetor.forEach(i => {
-                const s = String(i.sigla_indicador || '').toLowerCase();
-                const v = parseFloat(String(i.indicador).replace(',', '.'));
-                if (!isNaN(v)) {
-                    if (s.includes('estab_')) estabVal = Math.round(v).toLocaleString('pt-BR');
-                    if (s.includes('emp_') && !s.includes('pct_')) empVal = Math.round(v).toLocaleString('pt-BR');
-                    if (s.includes('sal_avg_')) salVal = 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                    if (s.includes('pct_emp_')) pctEmpVal = v.toFixed(1) + '%';
-                }
-            });
-
-            $container.append(`
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 col-span-full" style="border-left: 4px solid ${corTema};">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="w-8 h-8 rounded-xl d-flex align-items-center justify-content-center text-white font-bold" style="background-color: ${corTema};">
-                                <i class="fas ${iconePadrao}"></i>
-                            </div>
-                            <div>
-                                <h6 class="font-black text-slate-800 text-sm mb-0">Estrutura Formal do Setor ${isAgro ? 'Agropecuário' : 'Industrial'}</h6>
-                                <span class="text-xs text-slate-400">Dados consolidados do mercado de trabalho formal municipal • MTE / RAIS</span>
-                            </div>
-                        </div>
-                        <span class="badge bg-slate-100 text-slate-700 text-xs font-bold rounded-pill px-3 py-1">Participação: ${pctEmpVal} dos empregos</span>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                        <div class="bg-slate-50 p-2.5 rounded-xl">
-                            <span class="text-slate-400 font-bold uppercase block text-[0.65rem]">Estabelecimentos Ativos</span>
-                            <strong class="text-slate-800 text-base font-black">${estabVal}</strong>
-                        </div>
-                        <div class="bg-slate-50 p-2.5 rounded-xl">
-                            <span class="text-slate-400 font-bold uppercase block text-[0.65rem]">Empregos com Carteira</span>
-                            <strong class="text-slate-800 text-base font-black">${empVal}</strong>
-                        </div>
-                        <div class="bg-slate-50 p-2.5 rounded-xl">
-                            <span class="text-slate-400 font-bold uppercase block text-[0.65rem]">Média Salarial</span>
-                            <strong class="text-slate-800 text-base font-black">${salVal}</strong>
-                        </div>
-                        <div class="bg-slate-50 p-2.5 rounded-xl">
-                            <span class="text-slate-400 font-bold uppercase block text-[0.65rem]">Peso no Emprego Local</span>
-                            <strong class="text-slate-800 text-base font-black">${pctEmpVal}</strong>
-                        </div>
-                    </div>
-                </div>
-            `);
-        } else {
-            $container.html(`<div class="col-12 text-slate-400 text-xs italic p-3 bg-slate-50 rounded-2xl border border-slate-100">Sem registros formais relevantes para este setor no município.</div>`);
-        }
+        const nomeSetor = isAgro ? 'agropecuário' : (isInd ? 'industrial' : 'de serviços');
+        $container.html(`
+            <div class="col-span-full bg-slate-50/80 border border-slate-200 rounded-2xl p-3.5 text-xs text-slate-500 italic d-flex align-items-center gap-2">
+                <i class="fas fa-info-circle text-slate-400 text-sm"></i>
+                <span>Nenhuma divisão do setor ${nomeSetor} entre as principais vocações com aceleração trienal destacada no município (consulte os indicadores de mercado formal e de produção abaixo).</span>
+            </div>
+        `);
     }
 }
 
@@ -5172,6 +5222,19 @@ function renderizarAgropecuariaCompleta(pamArr, lspaArr, pamAgri, ppmPecuaria, p
         renderizarCardsCnaeSetor('ficha_container_cnae_agro', vocAgro, ind, 'agro');
     } catch(e) {
         console.error("[Ficha] Erro ao renderizar CNAE Agro:", e);
+    }
+
+    // 1b. Renderiza o bloco de KPIs de Mercado de Trabalho na Agropecuária
+    try {
+        renderizarGridKpisTrabalho(
+            'ficha_container_kpis_agro',
+            ['estab_agro', 'emp_agro', 'sal_avg_agro', 'pct_estab_agro', 'pct_emp_agro'],
+            ind,
+            '#059669',
+            'fa-tractor'
+        );
+    } catch(e) {
+        console.error("[Ficha] Erro ao renderizar KPIs Agro:", e);
     }
 
     // 2. Processa dados da Produção Agrícola (PAM)
@@ -5433,7 +5496,20 @@ function renderizarIndustriaCompleta(pimArr, vocInd, ind, nomeMun, demo) {
         console.error("[Ficha] Erro ao renderizar CNAE Indústria:", e);
     }
 
-    // 2. Processa os dados da PIM-PF (IBGE)
+    // 2. Renderiza o bloco de KPIs de Mercado de Trabalho na Indústria (5 KPIs)
+    try {
+        renderizarGridKpisTrabalho(
+            'ficha_container_kpis_industria',
+            ['estab_ind', 'emp_ind', 'sal_avg_ind', 'pct_estab_ind', 'pct_emp_ind'],
+            ind,
+            '#4f46e5',
+            'fa-industry'
+        );
+    } catch(e) {
+        console.error("[Ficha] Erro ao renderizar KPIs Indústria:", e);
+    }
+
+    // 3. Processa a referência estadual da PIM-PF (IBGE)
     const pimDados = (pimArr || []).map(p => ({
         ano: parseInt(p.ano) || 0,
         mes_num: parseInt(p.mes_num) || 0,
@@ -5463,52 +5539,23 @@ function renderizarIndustriaCompleta(pimArr, vocInd, ind, nomeMun, demo) {
             return `${sinal}${val.toFixed(1)}%`;
         };
 
-        const corPctClass = (val) => {
-            if (val === null || val === undefined || isNaN(val)) return 'text-slate-700';
-            return val >= 0 ? 'text-emerald-600' : 'text-rose-600';
-        };
-
-        // KPI 1: Índice da Produção Física
         const indVal = peRecente.indice_com_ajuste || peRecente.indice_sem_ajuste;
         $('#ficha_kpi_pim_indice_pe').text(indVal ? indVal.toFixed(1) : '-');
-        $('#ficha_kpi_pim_mes_ref').text(peRecente.mes || `${peRecente.mes_num}/${peRecente.ano}`);
+        $('#ficha_kpi_pim_mes_ref').text(`Mês Ref: ${peRecente.mes || `${peRecente.mes_num}/${peRecente.ano}`}`);
+        $('#ficha_kpi_pim_var_interanual_pe').text(`Var. Interanual: ${fmtPct(peRecente.var_interanual)}`);
+        $('#ficha_kpi_pim_var_ano_pe').text(fmtPct(peRecente.var_acumulada_ano));
+        $('#ficha_kpi_pim_var_12m_pe').text(fmtPct(peRecente.var_acumulada_12m));
+
         const indBrVal = brRecente ? (brRecente.indice_com_ajuste || brRecente.indice_sem_ajuste) : null;
         $('#ficha_kpi_pim_indice_br').text(indBrVal ? `Brasil: ${indBrVal.toFixed(1)}` : 'Brasil: -');
-
-        // KPI 2: Variação Interanual
-        const varInterPE = peRecente.var_interanual;
-        const varInterBR = brRecente ? brRecente.var_interanual : null;
-        $('#ficha_kpi_pim_var_interanual_pe').text(fmtPct(varInterPE)).removeClass('text-emerald-600 text-rose-600').addClass(corPctClass(varInterPE));
-        $('#ficha_kpi_pim_var_interanual_br').text(`Brasil: ${fmtPct(varInterBR)}`);
-
-        // KPI 3: Variação Acumulada no Ano
-        const varAnoPE = peRecente.var_acumulada_ano;
-        const varAnoBR = brRecente ? brRecente.var_acumulada_ano : null;
-        $('#ficha_kpi_pim_var_ano_pe').text(fmtPct(varAnoPE)).removeClass('text-emerald-600 text-rose-600').addClass(corPctClass(varAnoPE));
-        $('#ficha_kpi_pim_var_ano_br').text(`Brasil: ${fmtPct(varAnoBR)}`);
-
-        // KPI 4: Variação Acumulada 12 Meses & Margem
-        const var12mPE = peRecente.var_acumulada_12m;
-        const var12mBR = brRecente ? brRecente.var_acumulada_12m : null;
-        const varMargemPE = peRecente.var_margem;
-        $('#ficha_kpi_pim_var_12m_pe').text(fmtPct(var12mPE)).removeClass('text-emerald-600 text-rose-600').addClass(corPctClass(var12mPE));
-        $('#ficha_kpi_pim_margem_pe').text(varMargemPE !== null ? `Margem m/m: ${fmtPct(varMargemPE)}` : 'Margem m/m: -');
-        $('#ficha_kpi_pim_var_12m_br').text(`Brasil: ${fmtPct(var12mBR)}`);
     } else {
         $('#ficha_kpi_pim_indice_pe').text('-');
-        $('#ficha_kpi_pim_mes_ref').text('IBGE / PIM-PF');
-        $('#ficha_kpi_pim_indice_br').text('Brasil: -');
-        $('#ficha_kpi_pim_var_interanual_pe').text('-');
-        $('#ficha_kpi_pim_var_interanual_br').text('Brasil: -');
+        $('#ficha_kpi_pim_mes_ref').text('Mês Ref: -');
+        $('#ficha_kpi_pim_var_interanual_pe').text('Var. Interanual: -');
         $('#ficha_kpi_pim_var_ano_pe').text('-');
-        $('#ficha_kpi_pim_var_ano_br').text('Brasil: -');
         $('#ficha_kpi_pim_var_12m_pe').text('-');
-        $('#ficha_kpi_pim_margem_pe').text('Margem: -');
-        $('#ficha_kpi_pim_var_12m_br').text('Brasil: -');
+        $('#ficha_kpi_pim_indice_br').text('Brasil: -');
     }
-
-    // 3. Renderiza o Gráfico de Produção Industrial
-    renderizarGraficoPimIndustrial(pimDados);
 }
 
 function renderizarGraficoPimIndustrial(pimDados) {

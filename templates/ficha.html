@@ -43,11 +43,11 @@
                   </div>
                 </div>
                 <div id="subaba_ficha_municipal">
-                  <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md py-2 px-3 mb-4 rounded-2xl border border-slate-200/80 shadow-xs d-print-none">
+                  <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md py-2 px-3 mb-4 rounded-2xl border border-slate-200/80 shadow-xs d-print-none" style="position: sticky; top: 0; z-index: 1020;">
                     <div class="d-flex align-items-center justify-content-between gap-2">
                       <!-- Nome e RD do Município Fixados na Barra de Navegação -->
                       <div class="d-flex align-items-center gap-1.5 flex-shrink-0 pe-2 border-r border-slate-200">
-                        <div class="d-flex align-items-center gap-1.5 px-3 py-1 bg-slate-900 text-white rounded-pill text-xs font-black shadow-2xs cursor-pointer hover:bg-slate-800 transition-all select-none" onclick="window.rolarParaInicioFicha()" title="Município em análise (clique para voltar ao início)">
+                        <div class="d-flex align-items-center gap-1.5 px-3 py-1 bg-slate-900 text-white rounded-pill text-xs font-black shadow-2xs cursor-pointer hover:bg-slate-800 transition-all select-none" onclick="window.rolarParaInicioFicha(); return false;" title="Município em análise (clique para voltar ao início)">
                           <i class="fas fa-location-dot text-[#ff5a26]"></i>
                           <span id="ficha_sticky_nome_municipio" class="text-uppercase tracking-tight font-black text-white">MUNICÍPIO</span>
                           <span id="ficha_sticky_rd_municipio" class="badge bg-slate-700 text-orange-200 text-[10px] font-bold rounded-pill px-2 py-0.5 ms-1 d-none d-md-inline-block">-</span>
@@ -103,17 +103,21 @@
                           <i class="fas fa-briefcase text-amber-600 me-1"></i>
                           Economia &amp; Trabalho
                         </button>
-                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_dinamica_empresas&#39;)">
-                          <i class="fas fa-building text-amber-600 me-1"></i>
-                          Dinâmica das Empresas
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_servicos&#39;)">
+                          <i class="fas fa-store text-blue-600 me-1"></i>
+                          Serviços
+                        </button>
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_industria&#39;)">
+                          <i class="fas fa-industry text-indigo-600 me-1"></i>
+                          Indústria
                         </button>
                         <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_agricultura_estiagem&#39;)">
                           <i class="fas fa-wheat-awn text-emerald-600 me-1"></i>
                           Agropecuária
                         </button>
-                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_industria&#39;)">
-                          <i class="fas fa-industry text-indigo-600 me-1"></i>
-                          Indústria
+                        <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_dinamica_empresas&#39;)">
+                          <i class="fas fa-building text-amber-600 me-1"></i>
+                          Dinâmica das Empresas
                         </button>
                         <button class="btn btn-xs rounded-pill px-3 py-1 font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all" onclick="window.rolarParaSecaoFicha(&#39;sec_fiscal&#39;)">
                           <i class="fas fa-building-columns text-violet-600 me-1"></i>
@@ -128,7 +132,7 @@
                           Emendas
                         </button>
                       </div>
-                      <button class="btn btn-xs btn-outline-secondary rounded-pill px-2.5 py-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex-shrink-0 d-flex align-items-center gap-1 shadow-2xs transition-all" onclick="window.rolarParaInicioFicha()" title="Voltar ao início da página">
+                      <button class="btn btn-xs btn-outline-secondary rounded-pill px-2.5 py-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex-shrink-0 d-flex align-items-center gap-1 shadow-2xs transition-all" onclick="window.rolarParaInicioFicha(); return false;" title="Voltar ao início da página">
                         <i class="fas fa-arrow-up text-[#ff5a26]"></i>
                         <span class="d-none d-sm-inline text-[11px]">Início</span>
                       </button>
@@ -1151,8 +1155,8 @@
                     </div>
                     <div id="sec_indicadores_economicos" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8 d-flex justify-content-between align-items-center flex-wrap gap-2">
                       <div>
-                        <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Indicadores Econômicos</h2>
-                        <p class="text-sm font-bold text-slate-500 mb-0">Vocações, Mercado de Trabalho, Inovação e Comércio Exterior • Fonte: RAIS / Ministério do Trabalho e Emprego</p>
+                        <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Indicadores Econômicos &amp; Trabalho</h2>
+                        <p class="text-sm font-bold text-slate-500 mb-0">Mercado de Trabalho Geral, Conectividade, Economia da Inovação e Comércio Exterior • Fonte: RAIS / MTE</p>
                       </div>
                       <span class="badge bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-pill px-3 py-1">
                         <i class="fas fa-database me-1 text-slate-500"></i>
@@ -1160,20 +1164,62 @@
                       </span>
                     </div>
                     <div class="subsecao-print-break">
-                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-4">Vocações Econômicas Locais</h5>
-                      <div id="ficha_container_vocacoes" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5"></div>
-                    </div>
-                    <div class="subsecao-print-break">
-                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-6">Mercado de Trabalho e Estrutura Ocupacional</h5>
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-4">Mercado de Trabalho Formal Geral</h5>
                       <div id="ficha_container_kpis_trabalho" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
                     </div>
                     <div class="subsecao-print-break">
-                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-8">Conectividade</h5>
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-6">Conectividade</h5>
                       <div id="ficha_container_kpis_conectividade" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
                     </div>
                     <div class="subsecao-print-break">
-                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-4">Trabalho, Tecnologia e Inovação</h5>
-                      <div class="bg-slate-50/80 rounded-2xl border border-cyan-100 p-4 mb-4">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-6">Trabalho, Tecnologia e Inovação</h5>
+                      <div id="ficha_container_kpis_inovacao" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
+                    </div>
+                    <div class="subsecao-print-break">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-6">Comércio Exterior e Tecnologia</h5>
+                      <div id="ficha_container_kpis_comercio" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SEÇÃO: SERVIÇOS & COMÉRCIO                               -->
+                    <!-- ========================================================= -->
+                    <div id="sec_servicos" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8">
+                      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                        <div class="d-flex align-items-center gap-2">
+                          <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Serviços &amp; Comércio</h2>
+                          <span class="badge bg-blue-100 text-blue-900 border border-blue-200 px-3 py-1.5 rounded-pill text-xs font-bold">
+                            <i class="fas fa-store me-1 text-blue-600"></i>
+                            RAIS / MTE • Setor Terciário &amp; InfoCom
+                          </span>
+                        </div>
+                        <span class="text-xs text-slate-500 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-pill shadow-2xs">
+                          <i class="fas fa-network-wired text-blue-600 me-1"></i> Vocações, Mercado Terciário &amp; TI
+                        </span>
+                      </div>
+                      <p class="text-sm font-bold text-slate-500 mb-0">Vocações especializadas do comércio e serviços, mercado formal de trabalho terciário e peso das atividades de informação e comunicação (InfoCom)</p>
+                    </div>
+
+                    <!-- Bloco 1: Vocações Econômicas de Serviços e Comércio -->
+                    <div class="subsecao-print-break mb-4">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="font-black text-slate-700 uppercase tracking-tight mb-0 text-sm d-flex align-items-center gap-1.5">
+                          <i class="fas fa-chart-line text-blue-600"></i>
+                          Vocações Econômicas de Serviços e Comércio
+                        </h5>
+                        <span class="badge bg-slate-100 text-slate-600 text-[10px] font-bold">Fonte: RAIS / MTE</span>
+                      </div>
+                      <div id="ficha_container_vocacoes_servicos" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"></div>
+                    </div>
+
+                    <!-- Bloco 2: Mercado de Trabalho em Serviços -->
+                    <div class="subsecao-print-break mb-4">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base">Mercado de Trabalho em Serviços</h5>
+                      <div id="ficha_container_kpis_servicos" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-4"></div>
+                    </div>
+
+                    <!-- Bloco 3: InfoCom em relação a Serviços -->
+                    <div class="subsecao-print-break mb-5">
+                      <div class="bg-slate-50/80 rounded-2xl border border-cyan-100 p-4">
                         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                           <div>
                             <h6 class="font-black text-slate-800 uppercase tracking-tight mb-0.5 text-sm">
@@ -1185,11 +1231,6 @@
                         </div>
                         <div id="ficha_container_kpis_infocom_serv" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
                       </div>
-                      <div id="ficha_container_kpis_inovacao" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
-                    </div>
-                    <div class="subsecao-print-break">
-                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base mt-8">Comércio Exterior e Tecnologia</h5>
-                      <div id="ficha_container_kpis_comercio" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5"></div>
                     </div>
 
                     <!-- SEÇÃO: DINÂMICA DAS EMPRESAS (SEPLAG) -->
@@ -1379,19 +1420,28 @@
                       <p class="text-sm font-bold text-slate-500 mb-0">Produção agrícola (PAM), rebanhos e origem animal (PPM), aquicultura, financiamentos rurais (SICOR), mercado formal de trabalho rural e monitoramento da estiagem (LSPA)</p>
                     </div>
 
-                    <!-- Bloco 1: Emprego e Estabelecimentos Rurais (CNAE 01, 02 e 03) -->
+                    <!-- Bloco 1: Vocações e Estrutura Agropecuária (CNAE 01, 02 e 03) -->
                     <div class="subsecao-print-break mb-4">
                       <div class="d-flex justify-content-between align-items-center mb-2">
                         <h5 class="font-black text-slate-700 uppercase tracking-tight mb-0 text-sm d-flex align-items-center gap-1.5">
                           <i class="fas fa-tractor text-emerald-600"></i>
-                          Mercado de Trabalho Formal &amp; Estrutura Agropecuária (CNAE)
+                          Vocações e Segmentos Agropecuários Locais (CNAE)
                         </h5>
                         <span class="badge bg-slate-100 text-slate-600 text-[10px] font-bold">Fonte: RAIS / MTE</span>
                       </div>
-                      <div id="ficha_container_cnae_agro" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3"></div>
+                      <div id="ficha_container_cnae_agro" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"></div>
                     </div>
 
-                    <!-- Bloco 2: 5 Cards KPI de Agropecuária, Pecuária, Aquicultura e Crédito -->
+                    <!-- Bloco 2: Mercado de Trabalho Formal no Meio Rural & Agropecuária -->
+                    <div class="subsecao-print-break mb-4">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base">Mercado de Trabalho na Agropecuária</h5>
+                      <div id="ficha_container_kpis_agro" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-4"></div>
+                    </div>
+
+                    <!-- Bloco 3: 5 Cards KPI de Agropecuária, Pecuária, Aquicultura e Crédito -->
+                    <div class="subsecao-print-break mb-2">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base">Produção Agropecuária, Pecuária, Aquicultura &amp; Financiamentos</h5>
+                    </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
                       <!-- Card 1: Valor da Produção Agrícola -->
                       <div class="kpi-modern-card bg-white rounded-3xl p-3 border border-slate-200 shadow-sm transition-all hover:shadow-md" style="border-left: 5px solid #10b981 !important;">
@@ -1561,121 +1611,81 @@
                           <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-0">Indústria &amp; Produção Industrial</h2>
                           <span class="badge bg-indigo-100 text-indigo-900 border border-indigo-200 px-3 py-1.5 rounded-pill text-xs font-bold">
                             <i class="fas fa-industry me-1 text-indigo-600"></i>
-                            IBGE (PIM-PF Nova Série 2022) • MTE (RAIS)
+                            MTE (RAIS) • IBGE (PIM-PF Nova Série 2022)
                           </span>
                         </div>
                         <span class="text-xs text-slate-500 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-pill shadow-2xs">
-                          <i class="fas fa-gear text-indigo-600 me-1"></i> Produção Física Estadual e Mercado de Trabalho Local
+                          <i class="fas fa-gear text-indigo-600 me-1"></i> Produção Fabril &amp; Mercado de Trabalho
                         </span>
                       </div>
-                      <p class="text-sm font-bold text-slate-500 mb-0">Estrutura produtiva fabril, emprego formal em ramos industriais (CNAEs 05 a 39) e índice mensal da produção física industrial de Pernambuco em comparação com o Brasil</p>
+                      <p class="text-sm font-bold text-slate-500 mb-0">Estrutura produtiva fabril, emprego formal em ramos industriais (CNAEs 05 a 39) e referência estadual da produção física industrial</p>
                     </div>
 
-                    <!-- Bloco 1: Emprego e Estabelecimentos Industriais (CNAE 05 a 39) -->
+                    <!-- Bloco 1: Vocações e Segmentos Industriais Locais (CNAE 05 a 39) -->
                     <div class="subsecao-print-break mb-4">
                       <div class="d-flex justify-content-between align-items-center mb-2">
                         <h5 class="font-black text-slate-700 uppercase tracking-tight mb-0 text-sm d-flex align-items-center gap-1.5">
                           <i class="fas fa-industry text-indigo-600"></i>
-                          Mercado de Trabalho Formal &amp; Segmentos Industriais Locais (CNAE)
+                          Vocações e Segmentos Industriais Locais (CNAE 05 a 39)
                         </h5>
                         <span class="badge bg-slate-100 text-slate-600 text-[10px] font-bold">Fonte: RAIS / MTE</span>
                       </div>
-                      <div id="ficha_container_cnae_industria" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3"></div>
+                      <div id="ficha_container_cnae_industria" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"></div>
                     </div>
 
-                    <!-- Bloco 2: 4 Cards KPI de Produção Industrial (PIM-PF) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                      <!-- Card 1: Índice da Produção Física -->
-                      <div class="kpi-modern-card bg-white rounded-3xl p-4 border border-slate-200 shadow-sm transition-all hover:shadow-md" style="border-left: 5px solid #4f46e5 !important;">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                          <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Índice da Produção Física (PE)</span>
-                          <button type="button" class="btn btn-xs btn-light bg-slate-100 border border-slate-200 text-slate-600 rounded-circle p-1 hover:bg-slate-200" onclick="window.abrirModalMetadado('pim_indice_com_ajuste')" title="Metadados">
-                            <i class="fas fa-info" style="font-size: 10px;"></i>
-                          </button>
-                        </div>
-                        <div class="d-flex align-items-baseline gap-2 mb-2">
-                          <span class="text-3xl font-black text-slate-800 tracking-tight" id="ficha_kpi_pim_indice_pe">-</span>
-                          <span class="text-xs font-bold text-slate-400">base 2022=100</span>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between text-xs pt-2 border-t border-slate-100">
-                          <span class="text-slate-500 font-semibold" id="ficha_kpi_pim_mes_ref">Mês Ref.</span>
-                          <span class="text-indigo-700 font-bold" id="ficha_kpi_pim_indice_br">Brasil: -</span>
-                        </div>
-                      </div>
-
-                      <!-- Card 2: Variação Interanual (mês vs mesmo mês ano anterior) -->
-                      <div class="kpi-modern-card bg-white rounded-3xl p-4 border border-slate-200 shadow-sm transition-all hover:shadow-md" style="border-left: 5px solid #6366f1 !important;">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                          <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Variação Interanual (%)</span>
-                          <button type="button" class="btn btn-xs btn-light bg-slate-100 border border-slate-200 text-slate-600 rounded-circle p-1 hover:bg-slate-200" onclick="window.abrirModalMetadado('pim_var_interanual')" title="Metadados">
-                            <i class="fas fa-info" style="font-size: 10px;"></i>
-                          </button>
-                        </div>
-                        <div class="d-flex align-items-baseline gap-2 mb-2">
-                          <span class="text-3xl font-black tracking-tight" id="ficha_kpi_pim_var_interanual_pe">-</span>
-                          <span class="text-xs font-bold text-slate-400">mês/ano ant.</span>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between text-xs pt-2 border-t border-slate-100">
-                          <span class="text-slate-500 font-semibold">Pernambuco</span>
-                          <span class="font-bold text-slate-600" id="ficha_kpi_pim_var_interanual_br">Brasil: -</span>
-                        </div>
-                      </div>
-
-                      <!-- Card 3: Variação Acumulada no Ano -->
-                      <div class="kpi-modern-card bg-white rounded-3xl p-4 border border-slate-200 shadow-sm transition-all hover:shadow-md" style="border-left: 5px solid #818cf8 !important;">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                          <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Acumulado no Ano (%)</span>
-                          <button type="button" class="btn btn-xs btn-light bg-slate-100 border border-slate-200 text-slate-600 rounded-circle p-1 hover:bg-slate-200" onclick="window.abrirModalMetadado('pim_var_acumulada_ano')" title="Metadados">
-                            <i class="fas fa-info" style="font-size: 10px;"></i>
-                          </button>
-                        </div>
-                        <div class="d-flex align-items-baseline gap-2 mb-2">
-                          <span class="text-3xl font-black tracking-tight" id="ficha_kpi_pim_var_ano_pe">-</span>
-                          <span class="text-xs font-bold text-slate-400">ano corrente</span>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between text-xs pt-2 border-t border-slate-100">
-                          <span class="text-slate-500 font-semibold">Crescimento PE</span>
-                          <span class="font-bold text-slate-600" id="ficha_kpi_pim_var_ano_br">Brasil: -</span>
-                        </div>
-                      </div>
-
-                      <!-- Card 4: Variação Acumulada em 12 Meses -->
-                      <div class="kpi-modern-card bg-white rounded-3xl p-4 border border-slate-200 shadow-sm transition-all hover:shadow-md" style="border-left: 5px solid #a5b4fc !important;">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                          <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Acumulado 12 Meses (%)</span>
-                          <button type="button" class="btn btn-xs btn-light bg-slate-100 border border-slate-200 text-slate-600 rounded-circle p-1 hover:bg-slate-200" onclick="window.abrirModalMetadado('pim_var_12m')" title="Metadados">
-                            <i class="fas fa-info" style="font-size: 10px;"></i>
-                          </button>
-                        </div>
-                        <div class="d-flex align-items-baseline gap-2 mb-2">
-                          <span class="text-3xl font-black tracking-tight" id="ficha_kpi_pim_var_12m_pe">-</span>
-                          <span class="text-xs font-bold text-slate-400">últimos 12m</span>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between text-xs pt-2 border-t border-slate-100">
-                          <span class="text-slate-500 font-semibold" id="ficha_kpi_pim_margem_pe">Margem m/m: -</span>
-                          <span class="font-bold text-slate-600" id="ficha_kpi_pim_var_12m_br">Brasil: -</span>
-                        </div>
-                      </div>
+                    <!-- Bloco 2: Mercado de Trabalho na Indústria -->
+                    <div class="subsecao-print-break mb-4">
+                      <h5 class="font-black text-slate-700 uppercase tracking-tight mb-3 text-base">Mercado de Trabalho na Indústria</h5>
+                      <div id="ficha_container_kpis_industria" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-4"></div>
                     </div>
 
-                    <!-- Bloco 3: Gráfico Séries Temporais da Indústria (PE vs Brasil - 36 meses) -->
-                    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 mb-5">
-                      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-                        <div>
-                          <h5 class="font-black text-slate-800 text-sm uppercase tracking-tight mb-0">
-                            <i class="fas fa-chart-line text-indigo-600 me-2"></i>
-                            Trajetória da Produção Industrial: Pernambuco vs. Brasil (Últimos 36 Meses)
-                          </h5>
-                          <span class="text-[11px] text-slate-500 font-medium">Comparativo mensal da produção física segundo a Pesquisa Industrial Mensal (PIM-PF Nova Série 2022)</span>
+                    <!-- Bloco 3: Referência Estadual da Produção Física Industrial (PIM-PF) -->
+                    <div class="subsecao-print-break mb-5">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="font-black text-slate-700 uppercase tracking-tight mb-0 text-sm d-flex align-items-center gap-1.5">
+                          <i class="fas fa-chart-line text-indigo-600"></i>
+                          Referência Estadual: Produção Física Industrial (PIM-PF)
+                        </h5>
+                        <span class="badge bg-slate-100 text-slate-600 text-[10px] font-bold">Fonte: IBGE / PIM-PF</span>
+                      </div>
+                      <div class="row g-3">
+                        <div class="col-md-6 col-lg-5">
+                          <div class="kpi-modern-card bg-white rounded-3xl p-3.5 border border-slate-200 shadow-sm" style="border-left: 5px solid #4f46e5 !important;">
+                            <div class="d-flex justify-content-between align-items-start mb-1.5">
+                              <span class="text-[11px] font-black text-slate-500 uppercase tracking-wider">Produção Física Estadual (PE)</span>
+                              <button type="button" class="btn btn-xs btn-light bg-slate-100 border border-slate-200 text-slate-600 rounded-circle p-1 hover:bg-slate-200" onclick="window.abrirModalMetadado('pim_indice_com_ajuste')" title="Metadados">
+                                <i class="fas fa-info" style="font-size: 9px;"></i>
+                              </button>
+                            </div>
+                            <div class="d-flex align-items-baseline gap-2 mb-1">
+                              <span class="text-3xl font-black text-indigo-700 tracking-tight" id="ficha_kpi_pim_indice_pe">-</span>
+                              <span class="text-[11px] font-bold text-slate-400">índice físico (base 2022=100)</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between text-[11px] pt-2 border-t border-slate-100">
+                              <span class="text-slate-600 font-semibold" id="ficha_kpi_pim_mes_ref">Mês Ref.</span>
+                              <span class="font-bold text-indigo-700" id="ficha_kpi_pim_var_interanual_pe">Var. Interanual: -</span>
+                            </div>
+                          </div>
                         </div>
-                        <div class="btn-group btn-group-sm" role="group">
-                          <button id="btn_toggle_pim_indice" type="button" class="btn btn-xs btn-primary active text-[10px] px-2.5 py-1 font-bold" onclick="window.alternarGraficoPim('indice')">Índice com Ajuste (2022=100)</button>
-                          <button id="btn_toggle_pim_interanual" type="button" class="btn btn-xs btn-outline-primary text-[10px] px-2.5 py-1 font-bold" onclick="window.alternarGraficoPim('interanual')">Variação Interanual (%)</button>
-                          <button id="btn_toggle_pim_ano" type="button" class="btn btn-xs btn-outline-primary text-[10px] px-2.5 py-1 font-bold" onclick="window.alternarGraficoPim('ano')">Acumulado no Ano (%)</button>
-                          <button id="btn_toggle_pim_12m" type="button" class="btn btn-xs btn-outline-primary text-[10px] px-2.5 py-1 font-bold" onclick="window.alternarGraficoPim('12m')">Acumulado 12M (%)</button>
+                        <div class="col-md-6 col-lg-7">
+                          <div class="bg-indigo-50/60 rounded-3xl p-3.5 border border-indigo-100 h-100 d-flex flex-column justify-content-between text-xs text-indigo-950">
+                            <div>
+                              <div class="d-flex align-items-center gap-1.5 font-black text-indigo-900 uppercase tracking-wider mb-1">
+                                <i class="fas fa-info-circle text-indigo-600"></i>
+                                Contexto Macroeconômico Industrial de Pernambuco
+                              </div>
+                              <p class="mb-2 text-indigo-900 leading-relaxed">
+                                A Pesquisa Industrial Mensal (PIM-PF) é uma pesquisa amostral realizada pelo IBGE em âmbito estadual. Os dados refletem o ritmo da atividade fabril do Estado de Pernambuco, servindo de termômetro conjuntural para os setores industriais municipais.
+                              </p>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between pt-2 border-t border-indigo-200/60 text-[11px]">
+                              <span class="text-indigo-800">Acumulado no Ano: <strong id="ficha_kpi_pim_var_ano_pe">-</strong></span>
+                              <span class="text-indigo-800">Acumulado 12 Meses: <strong id="ficha_kpi_pim_var_12m_pe">-</strong></span>
+                              <span class="text-indigo-700" id="ficha_kpi_pim_indice_br">Brasil: -</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div id="ficha_chart_pim_industrial" style="width: 100%; height: 350px;"></div>
                     </div>
 
                     <div id="sec_fiscal" class="border-b-2 border-slate-200 pb-2 mb-4 mt-8">
