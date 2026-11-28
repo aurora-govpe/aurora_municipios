@@ -83,6 +83,358 @@ function configurarStickyNavbarMetrics() {
     // Revertido a pedido: métricas de pop e pib não poluem mais a navbar
 }
 
+/* ==========================================================================
+   ADAPTADOR DE SÉRIE HISTÓRICA E ESTÉTICA AURORA PARA KPIS DA FICHA
+   ========================================================================== */
+window.extrairSerieIndicadorMun = function (listaIndicadores, siglaOrKey, demoObj = null) {
+    const normStr = (s) => String(s || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const sAlvo = normStr(siglaOrKey);
+
+    // Mapeamento canônico de IDs do DOM / Aliases para as siglas reais da base geral (indicadores)
+    const mapaAliases = {
+        'mvi_abs': 'mvi',
+        'mvi_taxa': 'tx_mvi',
+        'cvp_abs': 'cvp',
+        'cvp_taxa': 'tx_cvp',
+        'vuln_cofin': 'cofinanciamento',
+        'ini_cofin_val': 'cofinanciamento',
+        'hab_aguas_val': 'investimento_agua',
+        'ini_aguas_val': 'investimento_agua',
+        'hab_aguas_qtd': 'obras_agua',
+        'ini_aguas_qtd': 'obras_agua',
+        'ini_estradas_qtd': 'estradas'
+    };
+
+    const siglaReal = mapaAliases[sAlvo] || sAlvo;
+    const candidatosSigla = [...new Set([siglaReal, sAlvo])];
+
+    const meta = (typeof window.buscarMetadadoMun === 'function')
+        ? (window.buscarMetadadoMun(siglaReal) || window.buscarMetadadoMun(siglaOrKey) || {})
+        : {};
+    const tipoNorm = normStr(meta.tipo || meta.natureza || '');
+
+    // 1. PRIORIDADE MÁXIMA: Busca na base de dados geral (window.dadosBrutosFicha)
+    const fonteGeral = (Array.isArray(listaIndicadores) && listaIndicadores.length > 0)
+        ? listaIndicadores
+        : (window.dadosBrutosFicha || dadosBrutosFicha || []);
+
+    const itens = fonteGeral.filter(i => {
+        const sItem = normStr(i.sigla_indicador);
+        const nmItem = normStr(i.nm_indicador);
+        const matchSigla = candidatosSigla.includes(sItem);
+        const matchNomeMeta = meta.nm_indicador && nmItem === normStr(meta.nm_indicador);
+        return (matchSigla || matchNomeMeta) &&
+               i.indicador !== null &&
+               i.indicador !== undefined &&
+               String(i.indicador).trim() !== '' &&
+               String(i.indicador).trim() !== '-';
+    });
+
+    if (itens.length > 0) {
+        itens.sort((a, b) => {
+            const anoDiff = (parseInt(b.ano, 10) || 0) - (parseInt(a.ano, 10) || 0);
+            if (anoDiff !== 0) return anoDiff;
+            return (parseInt(b.mes_referencia, 10) || 0) - (parseInt(a.mes_referencia, 10) || 0);
+        });
+
+        const atual = itens[0];
+        const ant = itens.length > 1 ? itens[1] : null;
+
+        const valAtual = parseFloat(String(atual.indicador).replace(',', '.'));
+        const valAnt = ant ? parseFloat(String(ant.indicador).replace(',', '.')) : null;
+
+        let varPct = 0;
+        if (!isNaN(valAtual) && valAnt !== null && !isNaN(valAnt) && valAnt !== 0) {
+            varPct = ((valAtual - valAnt) / Math.abs(valAnt)) * 100;
+        }
+
+        const fmtMesAno = (it) => {
+            if (!it) return '-';
+            const m = String(it.mes_referencia || '').trim();
+            const ano = String(it.ano || '').trim();
+            if (!m || m === '-' || m === '0') return ano || '-';
+            if (ano && m.includes(ano)) return m;
+            if (/^\d{4}-\d{2}/.test(m)) {
+                const [y, mm] = m.split('-');
+                return `${mm}/${y}`;
+            }
+            return ano ? `${m}/${ano}` : m;
+        };
+
+        const fmtValor = (v, rawStr) => {
+            if (isNaN(v)) return rawStr || '-';
+            if (typeof window.formatarValorKPIMun === 'function') {
+                return window.formatarValorKPIMun(v, atual.tipo || tipoNorm, siglaReal);
+            }
+            return v.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+        };
+
+        return {
+            existe: true,
+            siglaReal: atual.sigla_indicador || siglaReal,
+            nome: meta.nm_indicador || atual.nm_indicador || siglaOrKey,
+            tipo: atual.tipo || tipoNorm,
+            polaridade: meta.polaridade || '',
+            valAtual: isNaN(valAtual) ? null : valAtual,
+            valAnt: (valAnt !== null && !isNaN(valAnt)) ? valAnt : null,
+            strAtual: String(atual.indicador),
+            strAtualFmt: fmtValor(valAtual, String(atual.indicador)),
+            strAntFmt: ant ? fmtValor(valAnt, String(ant.indicador)) : '-',
+            varPct: varPct,
+            anoAtual: fmtMesAno(atual),
+            anoAnt: fmtMesAno(ant),
+            rank: atual.rank_pe || null
+        };
+    }
+
+    // 2. FALLBACK: Dados cadastrais de demografia (apenas se não houver na base geral)
+    if (demoObj) {
+        const rawDemo = demoObj[siglaReal] !== undefined ? (Array.isArray(demoObj[siglaReal]) ? demoObj[siglaReal][0] : demoObj[siglaReal]) : null;
+        if (rawDemo !== null && rawDemo !== undefined && String(rawDemo).trim() !== '' && String(rawDemo).trim() !== 'n.d.') {
+            const vNum = parseFloat(String(rawDemo).replace(',', '.'));
+            const strFmt = !isNaN(vNum) && typeof window.formatarValorKPIMun === 'function'
+                ? window.formatarValorKPIMun(vNum, tipoNorm, siglaReal)
+                : String(rawDemo);
+            return {
+                existe: true,
+                siglaReal: siglaReal,
+                nome: meta.nm_indicador || siglaOrKey,
+                tipo: tipoNorm,
+                polaridade: meta.polaridade || '',
+                valAtual: isNaN(vNum) ? null : vNum,
+                valAnt: null,
+                strAtual: String(rawDemo),
+                strAtualFmt: strFmt,
+                strAntFmt: '-',
+                varPct: 0,
+                anoAtual: '2026',
+                anoAnt: '-',
+                rank: null
+            };
+        }
+    }
+
+    return {
+        existe: false,
+        siglaReal: siglaReal,
+        nome: meta.nm_indicador || siglaOrKey,
+        tipo: tipoNorm,
+        polaridade: meta.polaridade || '',
+        valAtual: null,
+        valAnt: null,
+        strAtual: '-',
+        strAtualFmt: '-',
+        strAntFmt: '-',
+        varPct: 0,
+        anoAtual: '-',
+        anoAnt: '-',
+        rank: null
+    };
+};
+
+window.injetarIndicadorExternoNasBasesFicha = function (sigla, nomeIndicador, tipo, unidade, serieHistoricaMun, listaMunicipiosRD, opcoesMeta = {}) {
+    if (!sigla) return;
+    const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const sNorm = norm(sigla);
+    const nomeFmt = window.formatarTitleCaseKPI ? window.formatarTitleCaseKPI(nomeIndicador) : nomeIndicador;
+    const munAtual = window.municipioAtualFicha || $('#ficha_f_municipio').val() || '';
+
+    // 0. Garante metadado registrado para o Resumo Executivo do Modal
+    window.dadosMetadadosMapa = window.dadosMetadadosMapa || {};
+    window.dadosMetadados = window.dadosMetadados || [];
+    const metaObj = {
+        cd_indicador: sigla,
+        nm_indicador: nomeFmt,
+        nm_fantasia: nomeFmt,
+        natureza: tipo,
+        unidade: unidade,
+        polaridade: opcoesMeta.polaridade || 'positiva',
+        fonte: opcoesMeta.fonte || 'Governo de Pernambuco / Bases Setoriais',
+        subdimensao: opcoesMeta.subdimensao || 'Programas & Políticas Públicas',
+        referencia_analise: {
+            interpretacao: opcoesMeta.interpretacao || `Acompanhamento municipal de ${nomeFmt} (${unidade}).`,
+            impacto_planejamento: opcoesMeta.impacto || 'Subsidia a focalização territorial e o monitoramento de políticas públicas estaduais.',
+            direcao_desejavel: 'Quanto maior, maior o alcance do programa no território.'
+        }
+    };
+    window.dadosMetadadosMapa[sigla] = metaObj;
+    window.dadosMetadadosMapa[sNorm] = metaObj;
+    if (!window.dadosMetadados.some(m => norm(m.cd_indicador) === sNorm)) {
+        window.dadosMetadados.push(metaObj);
+    }
+
+    // 1. Injeta série histórica do município em window.dadosBrutosFicha
+    window.dadosBrutosFicha = (window.dadosBrutosFicha || []).filter(
+        i => norm(i.sigla_indicador) !== sNorm
+    );
+
+    if (Array.isArray(serieHistoricaMun) && serieHistoricaMun.length > 0) {
+        serieHistoricaMun.forEach(pt => {
+            window.dadosBrutosFicha.push({
+                municipio: munAtual,
+                nm_municipio: munAtual,
+                sigla_indicador: sigla,
+                nm_indicador: nomeFmt,
+                tipo: tipo,
+                unidade: unidade,
+                ano: Number(pt.ano) || 2024,
+                mes_referencia: pt.mes || '',
+                indicador: pt.valor,
+                rank_pe: pt.rank_pe || null
+            });
+        });
+    }
+    dadosBrutosFicha = window.dadosBrutosFicha;
+
+    // 2. Injeta valores de TODOS os municípios da RD em cacheSociaisRD.indicadoresRD
+    cacheSociaisRD = cacheSociaisRD || { indicadoresRD: [], demografiaRD: [] };
+    window.cacheSociaisRD = cacheSociaisRD;
+
+    // Mapa auxiliar nome -> ibge6/nome oficial da RD
+    const mapaDemoRD = {};
+    (cacheSociaisRD.demografiaRD || []).forEach(d => {
+        const k = norm(d.municipio);
+        if (k) {
+            const ibgeRaw = String(d.ibge6 || d.cod_ibge || d.ibge7 || '').trim();
+            mapaDemoRD[k] = {
+                municipio: d.municipio,
+                ibge6: ibgeRaw.length >= 6 ? ibgeRaw.substring(0, 6) : ''
+            };
+        }
+    });
+
+    if (Array.isArray(listaMunicipiosRD) && listaMunicipiosRD.length > 0) {
+        cacheSociaisRD.indicadoresRD = (cacheSociaisRD.indicadoresRD || []).filter(
+            i => norm(i.sigla_indicador) !== sNorm
+        );
+
+        const inseridos = new Set();
+        listaMunicipiosRD.forEach(m => {
+            const k = norm(m.municipio);
+            if (!k || inseridos.has(k)) return;
+            inseridos.add(k);
+
+            const infoRD = mapaDemoRD[k] || {};
+            const nomeOficial = infoRD.municipio || m.municipio;
+            const ibge6 = m.ibge6 || infoRD.ibge6 || '';
+
+            cacheSociaisRD.indicadoresRD.push({
+                municipio: nomeOficial,
+                nm_municipio: nomeOficial,
+                ibge6: ibge6,
+                cod_ibge: ibge6,
+                sigla_indicador: sigla,
+                nm_indicador: nomeFmt,
+                tipo: tipo,
+                ano: Number(m.ano) || 2024,
+                indicador: m.valor,
+                rank_pe: m.rank_pe || null
+            });
+        });
+
+        // Garante que municípios da RD sem registro na fonte externa entrem com 0 no gráfico comparativo
+        Object.keys(mapaDemoRD).forEach(k => {
+            if (!inseridos.has(k)) {
+                const infoRD = mapaDemoRD[k];
+                cacheSociaisRD.indicadoresRD.push({
+                    municipio: infoRD.municipio,
+                    nm_municipio: infoRD.municipio,
+                    ibge6: infoRD.ibge6,
+                    cod_ibge: infoRD.ibge6,
+                    sigla_indicador: sigla,
+                    nm_indicador: nomeFmt,
+                    tipo: tipo,
+                    ano: 2024,
+                    indicador: 0,
+                    rank_pe: null
+                });
+            }
+        });
+    }
+};
+
+window.formatarTitleCaseKPI = function (texto) {
+    if (!texto) return '';
+    const minusculas = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'em', 'na', 'no', 'nas', 'nos', 'por', 'para', 'com', 'a', 'o', 'as', 'os', 'à', 'ao']);
+    const siglas = new Set(['PIB', 'VAB', 'IDHM', 'IDEB', 'IDEPE', 'TDI', 'PIA', 'MVI', 'CVP', 'RFV', 'VCM', 'ATT', 'DCNT', 'IVCAD', 'NC', 'DPI', 'DCA', 'TQA', 'DR', 'CH', 'QL', 'TI', 'RAIS', 'MTE', 'IBGE', 'PAM', 'PPM', 'LSPA', 'SICOR', 'PIM-PF', 'CAPAG', 'STN', 'PE', 'BR', 'UH', 'REURB', 'SAS', 'SRHS', 'COMPESA', 'DER', 'LOA', 'RCL', 'DTP', 'MEI', 'EPP', 'IBC', 'SCM', 'SMP', 'FOB', 'US$', 'R$']);
+
+    return String(texto)
+        .trim()
+        .split(/\s+/)
+        .map((palavra, idx) => {
+            const limpa = palavra.replace(/[().,:;/-]/g, '').toUpperCase();
+            if (siglas.has(limpa)) return palavra.toUpperCase();
+            const lower = palavra.toLowerCase();
+            if (idx > 0 && minusculas.has(lower)) return lower;
+            return lower.charAt(0).toUpperCase() + lower.slice(1);
+        })
+        .join(' ');
+};
+
+window.configurarBotoesKPI = function (elemBase, sigla, tituloCustom = null, tipoDado = 'socio', extraHtml = '') {
+    // Normaliza o título original do DOM antes da estética Aurora clonar o header
+    const cardEl = document.getElementById(`ficha_kpi_${elemBase}`)?.closest('.kpi-modern-card');
+    const headerDom = cardEl ? cardEl.querySelector('.kpi-modern-header') : null;
+    if (headerDom) {
+        headerDom.classList.remove('text-uppercase');
+        headerDom.style.textTransform = 'none';
+        const txtOrig = tituloCustom || headerDom.textContent.trim();
+        if (txtOrig && txtOrig !== '-') {
+            headerDom.textContent = window.formatarTitleCaseKPI(txtOrig);
+        }
+    }
+
+    const listaFonte = window.dadosBrutosFicha || dadosBrutosFicha || [];
+    const serie = window.extrairSerieIndicadorMun(listaFonte, sigla || elemBase);
+
+    if (tituloCustom) serie.nome = tituloCustom;
+    if (serie.nome) serie.nome = window.formatarTitleCaseKPI(serie.nome);
+
+    if (!serie.existe) {
+        const domVal = document.getElementById(`ficha_kpi_${elemBase}`);
+        if (domVal) {
+            const txtAtualDom = domVal.textContent.trim();
+            if (txtAtualDom && txtAtualDom !== '-') {
+                serie.existe = true;
+                serie.strAtual = txtAtualDom;
+                serie.strAtualFmt = txtAtualDom;
+            }
+        }
+    } else if (elemBase.includes('_taxa') || elemBase.startsWith('vab_')) {
+        const domVal = document.getElementById(`ficha_kpi_${elemBase}`);
+        if (domVal && domVal.textContent.trim() !== '-') {
+            serie.strAtualFmt = domVal.textContent.trim();
+        }
+    }
+
+    const siglaParaModal = serie.siglaReal || sigla || elemBase;
+
+    if (typeof window.aplicarEsteticaUFsNoCardStatico === 'function') {
+        window.aplicarEsteticaUFsNoCardStatico(elemBase, siglaParaModal, serie, {}, tipoDado, extraHtml);
+    }
+};
+// Injeta ajustes de CSS para que os grids originais da Ficha acomodem perfeitamente o .kpi-card-aurora
+(function injetarCompatibilidadeGridAurora() {
+    if (document.getElementById('estilo-compat-aurora-ficha')) return;
+    const style = document.createElement('style');
+    style.id = 'estilo-compat-aurora-ficha';
+    style.textContent = `
+        #aba_ficha .kpi-card-aurora {
+            min-height: 158px;
+            border-left-width: 1px !important;
+        }
+        #aba_ficha .kpi-card-aurora .card-body {
+            padding: 0.9rem !important;
+        }
+        /* Garante alinhamento perfeito quando o card Aurora está dentro de .kpi-modern-grid */
+        .kpi-modern-grid > .kpi-card-aurora {
+            width: 100%;
+            margin: 0 !important;
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
 // Cores oficiais do CAPAG (conforme Modelo Objeto 1)
 const CAPAG_CORES = {
     'A': '#92D050',
@@ -176,150 +528,210 @@ function iniciarDraggableNav() {
     return;
 }
 
-function obterTextoPolaridade(sigla) {
-    if (!sigla || !window.dadosMetadados) return '<span class="text-slate-400 font-medium">-</span>';
-    
-    const normKey = (str) => String(str || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const siglaNorm = normKey(sigla);
-
-    const meta = window.dadosMetadados.find(m => 
-        normKey(m.cd_indicador) === siglaNorm || normKey(m.nm_indicador) === siglaNorm
-    );
-    
-    if (!meta || !meta.referencia_analise) return '<span class="text-slate-400 font-medium">-</span>';
-    
-    const dirRaw = String(
-        meta.referencia_analise.direcao_desejavel || 
-        meta.direcao_desejavel || ''
-    ).trim();
-
-    const dir = dirRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-    if (!dir || dir === '-' || dir === 'n/a') return '<span class="text-slate-400 font-medium">-</span>';
-
-    // 1. Contextual / Estrutural / Acompanhamento
-    if (dir.includes('acompanhamento') || dir.includes('vocacao') || dir.includes('estabilidade') || dir.includes('faixa') || dir.includes('manter') || dir.includes('informativo') || dir.includes('contextual') || dir.includes('neutro')) {
-        return `<span class="kpi-txt-pol kpi-pol-neutra" title="Indicador Estrutural / Contextual: ${dirRaw}"><i class="fas fa-circle-info me-1"></i>Contextual</span>`;
-    } 
-    // 2. Maior melhor (Aumento)
-    else if (dir.includes('aumento') || dir.includes('maior') || dir.includes('crescimento')) {
-        return `<span class="kpi-txt-pol kpi-pol-alta" title="Direção desejável: Quanto maior, melhor"><i class="fas fa-arrow-trend-up me-1"></i>Maior melhor</span>`;
-    } 
-    // 3. Menor melhor (Redução)
-    else if (dir.includes('reducao') || dir.includes('menor') || dir.includes('queda')) {
-        return `<span class="kpi-txt-pol kpi-pol-baixa" title="Direção desejável: Quanto menor, melhor"><i class="fas fa-arrow-trend-down me-1"></i>Menor melhor</span>`;
-    }
-
-    return `<span class="kpi-txt-pol kpi-pol-neutra" title="Indicador Contextual: ${dirRaw}"><i class="fas fa-circle-info me-1"></i>Contextual</span>`;
-}
-
-window.obterBadgePolaridade = obterTextoPolaridade;
-window.obterTextoPolaridade = obterTextoPolaridade;
-
-window.getRankTexto = function(rank) {
-    if (!rank || rank === '-' || rank === 'n/a' || isNaN(Number(rank))) {
-        return '<span class="text-slate-400 font-medium">-</span>';
-    }
-    return `<span class="kpi-txt-rank" title="Posição relativa em Pernambuco">${rank}º em PE</span>`;
-};
-
-window.getRankBadge = window.getRankTexto;
-
-window.montarRodapeKPI = function(grandeza, refAno, rank, siglaPolaridade) {
-    const grandezaLimpa = (grandeza && grandeza !== '-' && grandeza !== 'n.d.') ? String(grandeza).trim() : '';
-    const grandezaHtml = grandezaLimpa 
-        ? `<span class="kpi-txt-grandeza truncate" title="${grandezaLimpa}">${grandezaLimpa}</span>` 
-        : '<span class="text-slate-400 font-medium">-</span>';
-
-    const refAnoLimpo = (refAno && refAno !== '-' && refAno !== 'n.d.') ? String(refAno).trim() : '';
-    const refHtml = refAnoLimpo 
-        ? `<span class="kpi-txt-ref">REF: ${refAnoLimpo}</span>` 
-        : '<span class="text-slate-400 font-medium">-</span>';
-
-    const rankHtml = window.getRankTexto(rank);
-    const polHtml = window.obterTextoPolaridade(siglaPolaridade);
-
-    return `
-        <div class="kpi-footer-grid">
-            <div class="kpi-footer-cell-left">
-                ${grandezaHtml}
-            </div>
-            <div class="kpi-footer-cell-right">
-                ${refHtml}
-            </div>
-            <div class="kpi-footer-cell-left">
-                ${rankHtml}
-            </div>
-            <div class="kpi-footer-cell-right">
-                ${polHtml}
-            </div>
-        </div>
-    `;
-};
-
-/* ==========================================================================
-   3. CONTROLES DE INTERFACE E ALTERNÂNCIA DE MÉTRICAS (MAPAS)
-   ========================================================================== */
-
-/* ==========================================================================
-   NOVO: NAVEGAÇÃO POR ATALHOS DA FICHA MUNICIPAL
-   ========================================================================== */
-window.rolarParaSecaoFicha = function(secaoId) {
+window.rolarParaSecaoFicha = function (secaoId) {
     try {
-        const el = document.getElementById(secaoId);
+        // Mapa de segurança para IDs legados ou alternativos
+        const mapaIds = {
+            'subsecao_cadunico': 'sec_vulnerabilidade_social'
+        };
+        const idReal = mapaIds[secaoId] || secaoId;
+        const el = document.getElementById(idReal);
+
         if (!el) {
-            console.warn("[Atalhos] Seção não encontrada:", secaoId);
+            console.warn("[Atalhos] Seção não encontrada:", idReal);
             return;
         }
 
-        // Se o bloco detalhado estiver oculto e o alvo estiver dentro dele, exibe-o
+        // Garante que o bloco de seções detalhadas esteja visível
         const $detalhadas = $('#ficha_bloco_secoes_detalhadas');
-        if ($detalhadas.length && ($detalhadas.is(':hidden') || $detalhadas.hasClass('d-none')) && $(el).closest('#ficha_bloco_secoes_detalhadas').length) {
+        if ($detalhadas.length && ($detalhadas.is(':hidden') || $detalhadas.hasClass('d-none'))) {
             $detalhadas.removeClass('d-none').show();
-            $('#btn_toggle_secoes_detalhadas').text('Ocultar Seções Detalhadas');
         }
 
-        // Suporte robusto para scroll em containers internos (como .aurora-content-area) e no window
+        // Identifica o container que possui scroll ativo
         const contentArea = document.querySelector('.aurora-content-area');
-        if (contentArea) {
+        const abaFicha = document.getElementById('aba_ficha');
+
+        const scrollContainer = (contentArea && contentArea.scrollHeight > contentArea.clientHeight)
+            ? contentArea
+            : ((abaFicha && abaFicha.scrollHeight > abaFicha.clientHeight) ? abaFicha : null);
+
+        if (scrollContainer) {
             const elRect = el.getBoundingClientRect();
-            const parentRect = contentArea.getBoundingClientRect();
-            const targetScrollTop = contentArea.scrollTop + (elRect.top - parentRect.top) - 75;
-            contentArea.scrollTo({ top: Math.max(0, targetScrollTop), behavior: 'smooth' });
+            const parentRect = scrollContainer.getBoundingClientRect();
+            const targetScrollTop = scrollContainer.scrollTop + (elRect.top - parentRect.top) - 72;
+            scrollContainer.scrollTo({ top: Math.max(0, targetScrollTop), behavior: 'smooth' });
         } else {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            setTimeout(() => {
-                window.scrollBy({ top: -75, behavior: 'smooth' });
-            }, 50);
+            const yOffset = -72;
+            const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
         }
 
-        // Destaque visual suave temporário
-        $(el).addClass('ring-2 ring-orange-400 ring-offset-2 transition-all');
+        // Destaque visual suave na seção de destino
+        $(el).addClass('ring-2 ring-orange-400 ring-offset-2 rounded-lg transition-all');
         setTimeout(() => {
-            $(el).removeClass('ring-2 ring-orange-400 ring-offset-2');
-        }, 1800);
-    } catch(e) {
+            $(el).removeClass('ring-2 ring-orange-400 ring-offset-2 rounded-lg');
+        }, 1600);
+    } catch (e) {
         console.error("[Atalhos] Erro ao rolar para seção:", e);
     }
 };
 
-window.rolarParaInicioFicha = function() {
+window.rolarParaInicioFicha = function () {
     try {
         const contentArea = document.querySelector('.aurora-content-area');
-        if (contentArea) {
-            contentArea.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+
         const abaFicha = document.getElementById('aba_ficha');
-        if (abaFicha) {
-            abaFicha.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        if (abaFicha) abaFicha.scrollTo({ top: 0, behavior: 'smooth' });
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
         if (document.documentElement) document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
         if (document.body) document.body.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch(e) {
+    } catch (e) {
         console.warn("[Ficha] Erro ao rolar para o início:", e);
     }
 };
+
+// Controla aparição do botão laranja flutuante ao lado do chatbot
+(function inicializarBotaoTopoFlutuante() {
+    const atualizarVisibilidadeBtnTopo = () => {
+        let btn = document.getElementById('btn_voltar_topo_aurora');
+        if (!btn) return;
+
+        // Move para o body caso ainda esteja dentro de um container com transform/overflow
+        if (btn.parentElement !== document.body) {
+            document.body.appendChild(btn);
+        }
+
+        const abaFicha = document.getElementById('aba_ficha');
+        const abaVisivel = !abaFicha || (!abaFicha.classList.contains('d-none') && abaFicha.offsetParent !== null);
+
+        const contentArea = document.querySelector('.aurora-content-area');
+        const scrollAtual = Math.max(
+            window.scrollY || 0,
+            document.documentElement ? document.documentElement.scrollTop : 0,
+            contentArea ? contentArea.scrollTop : 0,
+            abaFicha ? abaFicha.scrollTop : 0
+        );
+
+        if (abaVisivel && scrollAtual > 260) {
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
+            btn.style.transform = 'translateY(0)';
+        } else {
+            btn.style.opacity = '0';
+            btn.style.pointerEvents = 'none';
+            btn.style.transform = 'translateY(12px)';
+        }
+    };
+
+    window.addEventListener('scroll', atualizarVisibilidadeBtnTopo, { passive: true });
+    document.addEventListener('scroll', atualizarVisibilidadeBtnTopo, { passive: true, capture: true });
+    document.addEventListener('DOMContentLoaded', atualizarVisibilidadeBtnTopo);
+    setTimeout(atualizarVisibilidadeBtnTopo, 500);
+})();
+
+/* ==========================================================================
+   BOTÃO FLUTUANTE LARANJA DE VOLTAR AO TOPO (AO LADO DO CHATBOT)
+   ========================================================================== */
+(function configurarBotaoTopoAurora() {
+    function criarOuObterBotaoTopo() {
+        // Remove instâncias antigas presas dentro de tab-panes
+        document.querySelectorAll('#btn_voltar_topo_aurora').forEach((el, idx) => {
+            if (idx > 0 || el.parentElement !== document.body) {
+                el.remove();
+            }
+        });
+
+        let btn = document.getElementById('btn_voltar_topo_aurora');
+        if (!btn) {
+            btn = document.createElement('button');
+            btn.id = 'btn_voltar_topo_aurora';
+            btn.type = 'button';
+            btn.title = 'Voltar ao topo';
+            btn.setAttribute('aria-label', 'Voltar ao topo');
+            btn.className = 'd-print-none shadow-lg border-0 d-flex align-items-center justify-content-center';
+            btn.innerHTML = '<i class="fas fa-arrow-up" style="font-size: 1.15rem;"></i>';
+            btn.onclick = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.rolarParaInicioFicha();
+            };
+            document.body.appendChild(btn);
+        }
+
+        // Aplica posicionamento fixo ao lado do ícone do chatbot (canto inferior direito)
+        Object.assign(btn.style, {
+            position: 'fixed',
+            bottom: '24px',
+            right: '92px',
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #ff5a26 0%, #e04312 100%)',
+            color: '#ffffff',
+            zIndex: '9999',
+            cursor: 'pointer',
+            boxShadow: '0 6px 18px rgba(255, 90, 38, 0.42)',
+            transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)'
+        });
+
+        // Garante remoção de qualquer botão "Início" remanescente na barra de atalhos
+        const barraAtalhos = document.getElementById('ficha_atalhos_nav');
+        if (barraAtalhos && barraAtalhos.parentElement) {
+            barraAtalhos.parentElement.querySelectorAll('button').forEach(b => {
+                if (b.textContent.trim() === 'Início') b.remove();
+            });
+        }
+
+        return btn;
+    }
+
+    function verificarScrollEVisibilidade() {
+        const btn = criarOuObterBotaoTopo();
+        const abaFicha = document.getElementById('aba_ficha');
+
+        // Verifica se a aba Municípios está visível na tela
+        const isAbaAtiva = !abaFicha || (
+            abaFicha.classList.contains('active') ||
+            abaFicha.offsetParent !== null ||
+            window.getComputedStyle(abaFicha).display !== 'none'
+        );
+
+        // Verifica o scroll máximo entre window e qualquer container interno rolável
+        let maxScroll = Math.max(
+            window.scrollY || 0,
+            document.documentElement ? document.documentElement.scrollTop : 0,
+            document.body ? document.body.scrollTop : 0
+        );
+
+        document.querySelectorAll('.aurora-content-area, #aba_ficha, main, .tab-content').forEach(el => {
+            if (el.scrollTop > maxScroll) maxScroll = el.scrollTop;
+        });
+
+        if (isAbaAtiva && maxScroll > 200) {
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
+            btn.style.transform = 'translateY(0) scale(1)';
+        } else {
+            btn.style.opacity = '0';
+            btn.style.pointerEvents = 'none';
+            btn.style.transform = 'translateY(14px) scale(0.92)';
+        }
+    }
+
+    // Escuta scroll em captura (pega scroll tanto do window quanto de divs internas)
+    window.addEventListener('scroll', verificarScrollEVisibilidade, { passive: true });
+    document.addEventListener('scroll', verificarScrollEVisibilidade, { passive: true, capture: true });
+    document.addEventListener('click', () => setTimeout(verificarScrollEVisibilidade, 120), { passive: true });
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', verificarScrollEVisibilidade);
+    } else {
+        verificarScrollEVisibilidade();
+    }
+})();
 
 /* ==========================================================================
    NOVO: CATÁLOGO MULTIDIMENSIONAL (DIMENSÕES -> SUBDIMENSÕES -> INDICADORES)
@@ -1750,7 +2162,7 @@ window.dadosMetadadosMapa = window.dadosMetadadosMapa || {};
     }
 
     try {
-        const resDiag = await window.fetchSeguro(`${window.basePath || ''}/data/diagnostico_desenvolvimento_regional.json`.replace(/\/+/g, '/'));
+        const resDiag = await window.fetchSeguro(`${window.basePath || ''}/data/json/diagnostico_desenvolvimento_regional.json`.replace(/\/+/g, '/'));
         if (resDiag && resDiag.ok) {
             const jDiag = await resDiag.json();
             window.fontesReferenciaRegional = jDiag.metadados?.fontes_referencia || {};
@@ -1922,6 +2334,9 @@ window.carregarDadosFicha = async function (munParam) {
         }
 
         dadosBrutosFicha = json.indicadores || [];
+        window.dadosBrutosFicha = dadosBrutosFicha;
+        window.municipioAtualFicha = municipio;
+        
         if (json.geojson_pe && !geoJSONEstadualPE) {
             geoJSONEstadualPE = typeof json.geojson_pe === 'string' ? JSON.parse(json.geojson_pe) : json.geojson_pe;
         }
@@ -1933,6 +2348,8 @@ window.carregarDadosFicha = async function (munParam) {
             pcpRD: json.pcp_rd || [],
             nomeMun: municipio
         };
+        
+        window.cacheSociaisRD = cacheSociaisRD;
 
         renderizarFicha(
             municipio, 
@@ -1977,10 +2394,35 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
     const extrairValor = (obj, key, fallback) => (obj && obj[key] && obj[key][0] !== undefined) ? obj[key][0] : fallback;
     const getRankBadge = (rank) => window.getRankTexto(rank);
 
-    // --- 5.1 TÍTULOS E CABEÇALHO ---
-    document.getElementById('ficha_nome_municipio').innerText = nomeMun;
     const elCapaNome = document.getElementById('capa_nome_municipio');
-    if (elCapaNome) elCapaNome.innerText = nomeMun;
+if (elCapaNome) elCapaNome.innerText = nomeMun;
+
+// Adiciona a atualização do título principal ao lado da bandeira
+$('#ficha_nome_municipio').text(nomeMun);
+    
+        // Bandeira do Município (sigla: bandeira_municipio)
+    const itemBandeira = (ind || []).find(i => String(i.sigla_indicador || '').toLowerCase().trim() === 'bandeira_municipio');
+    let urlBandeira = (itemBandeira && itemBandeira.indicador && itemBandeira.indicador !== '-' && itemBandeira.indicador !== 'n.d.' && itemBandeira.indicador !== 'NA')
+        ? String(itemBandeira.indicador).trim()
+        : String(extrairValor(demo, 'bandeira_municipio', '') || '').trim();
+
+    if (urlBandeira && urlBandeira !== '-' && urlBandeira !== 'n.d.' && urlBandeira !== 'NA') {
+        if (!/^https?:\/\//i.test(urlBandeira) && !urlBandeira.startsWith('data:')) {
+            const base = window.basePath || '';
+            urlBandeira = `${base}/${urlBandeira.replace(/^\/+/, '')}`.replace(/\/+/g, '/');
+        }
+        $('#ficha_bandeira_municipio, #capa_bandeira_municipio')
+            .attr('src', urlBandeira)
+            .attr('alt', `Bandeira de ${nomeMun}`)
+            .removeClass('d-none');
+    } else {
+        $('#ficha_bandeira_municipio, #capa_bandeira_municipio')
+            .addClass('d-none')
+            .attr('src', '');
+    }
+
+    $('#topbar_nome_municipio').text(nomeMun);
+    $('#topbar_mun_badge').removeClass('d-none').addClass('d-flex');
 
     $('#topbar_nome_municipio').text(nomeMun);
     $('#topbar_mun_badge').removeClass('d-none').addClass('d-flex');
@@ -2149,7 +2591,7 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
         window.configurarBotoesKPI(elemBase, sigla, meta ? meta.nm_indicador : null, 'socio');
     };
 
-    const aplicarKPIVab = () => {
+const aplicarKPIVab = () => {
         const getVal = (sigla) => {
             const itens = (ind || []).filter(i => String(i.sigla_indicador).trim().toLowerCase() === sigla.toLowerCase());
             if (!itens.length) return null;
@@ -2172,40 +2614,35 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
         };
 
         const renderVab = (item, val, elemBase, sigla) => {
-            if (!item || totalVab === 0) {
-                $(`#ficha_kpi_${elemBase}`).text("-");
-                $(`#ficha_ano_${elemBase}`).html(`% do VAB &bull; <span style="opacity: 0.6;">Sem dados</span>`);
-                $(`#ficha_ql_box_${elemBase}`).html(`<div class="d-flex justify-content-between align-items-center w-100"><span class="text-slate-400" style="font-size: 0.72rem;">QL Setorial:</span> <span class="text-slate-400" style="font-size: 0.75rem;">-</span></div>`);
-                return;
-            }
-            const pct = (val / totalVab) * 100;
-            $(`#ficha_kpi_${elemBase}`).text(pct.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%");
-            $(`#ficha_ano_${elemBase}`).html(window.montarRodapeKPI("% do VAB", item.ano, item.rank_pe, sigla));
+            let extraQlHtml = '';
+            const pct = totalVab > 0 ? (val / totalVab) * 100 : 0;
+            const pctFmt = (item && totalVab > 0)
+                ? pct.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%"
+                : "-";
 
-            // Cálculo e renderização do Quociente Locacional (QL)
+            $(`#ficha_kpi_${elemBase}`).text(pctFmt);
+
             const refMedia = qlMediaPE[sigla.toLowerCase()] || 0;
-            if (refMedia > 0) {
+            if (item && totalVab > 0 && refMedia > 0) {
                 const qlVal = pct / refMedia;
                 const isEspec = qlVal >= 1.0;
                 const badgeHtml = isEspec
-                    ? `<span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-pill font-bold px-1.5 py-0.5" style="font-size: 0.65rem;" title="QL ≥ 1.0: Especialização relativa acima da média de Pernambuco">Espec.</span>`
-                    : `<span class="badge bg-slate-100 text-slate-500 border border-slate-200 rounded-pill font-medium px-1.5 py-0.5" style="font-size: 0.65rem;" title="QL < 1.0: Sem especialização relativa">&lt; 1</span>`;
+                    ? `<span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-pill font-bold px-1.5 py-0.5" style="font-size: 0.62rem;" title="QL ≥ 1.0: Especialização relativa acima da média de Pernambuco">Espec.</span>`
+                    : `<span class="badge bg-slate-100 text-slate-500 border border-slate-200 rounded-pill font-medium px-1.5 py-0.5" style="font-size: 0.62rem;" title="QL < 1.0: Sem especialização relativa">&lt; 1</span>`;
 
-                $(`#ficha_ql_box_${elemBase}`).html(`
-                    <div class="d-flex align-items-center justify-content-between w-100">
-                        <span class="text-slate-500 fw-semibold" style="font-size: 0.72rem;" title="Quociente Locacional: razão entre a participação do setor no município e a média de Pernambuco">QL Setorial:</span>
+                extraQlHtml = `
+                    <div class="d-flex align-items-center justify-content-between w-100 px-2 py-1 mt-1 rounded bg-slate-50 border border-slate-100">
+                        <span class="text-slate-500 fw-semibold" style="font-size: 0.68rem;">QL Setorial:</span>
                         <div class="d-flex align-items-center gap-1">
-                            <strong class="text-slate-800" style="font-size: 0.78rem;">${qlVal.toFixed(2)}</strong>
+                            <strong class="text-slate-800" style="font-size: 0.72rem;">${qlVal.toFixed(2)}</strong>
                             ${badgeHtml}
                         </div>
                     </div>
-                `);
-            } else {
-                $(`#ficha_ql_box_${elemBase}`).html(`<div class="d-flex justify-content-between align-items-center w-100"><span class="text-slate-400" style="font-size: 0.72rem;">QL Setorial:</span> <span class="text-slate-400" style="font-size: 0.75rem;">-</span></div>`);
+                `;
             }
 
-            const metaVab = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
-            window.configurarBotoesKPI(elemBase, sigla, metaVab ? metaVab.nm_indicador : null, 'socio');
+            const metaVab = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
+            window.configurarBotoesKPI(elemBase, sigla, metaVab ? metaVab.nm_indicador : null, 'socio', extraQlHtml);
         };
 
         renderVab(itemAgro, valAgro, "vab_agro", "vab_agro");
@@ -2213,7 +2650,6 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
         renderVab(itemServ, valServ, "vab_serv", "vab_serv");
         renderVab(itemAdm, valAdm, "vab_adm", "vab_adm");
 
-        // Atualizar barra segmentada de 100% do VAB Setorial
         if (totalVab > 0) {
             const pAgro = (valAgro / totalVab) * 100;
             const pInd = (valInd / totalVab) * 100;
@@ -2225,7 +2661,6 @@ function renderizarFicha(nomeMun, demo, ind, geojsonStr, iniciativas, emendas, f
             $('#vab_bar_adm').css('width', `${pAdm}%`).attr('title', `Administração Pública: ${pAdm.toFixed(1)}%`);
         }
     };
-
     aplicarKPI("pibpc", "pibpc", "R$");
     aplicarKPI("pib_pct", "pib_pct", "%");
     aplicarKPI("pib_1000", "pib_1000", "R$ 1.000");
@@ -2568,16 +3003,18 @@ function renderizarIndicadoresSociais(demo, ind) {
     const mviData = obterIndicador('mvi'), cvpData = obterIndicador('cvp'), txMviData = obterIndicador('tx_mvi'), txCvpData = obterIndicador('tx_cvp');
     const mviTaxa = pop2025 > 0 ? (mviData.val / pop2025) * 100000 : 0;
     const cvpTaxa = pop2025 > 0 ? (cvpData.val / pop2025) * 100000 : 0;
-    const refMviFmt = (mviData.mes && mviData.mes !== '-') ? `${mviData.mes}/${mviData.ano}` : mviData.ano;
 
     $('#ficha_kpi_mvi_abs').text(mviData.val.toLocaleString('pt-BR'));
-    $('#ficha_ano_mvi_abs').html(window.montarRodapeKPI('Casos', refMviFmt, mviData.rank, 'mvi'));
+    window.configurarBotoesKPI('mvi_abs', 'mvi', 'Mortes Violentas Intencionais (Absoluto)', 'socio');
+
     $('#ficha_kpi_mvi_taxa').text(mviTaxa.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
-    $('#ficha_ano_mvi_taxa').html(window.montarRodapeKPI('/ 100k hab.', refMviFmt, txMviData.rank || mviData.rank, 'tx_mvi'));
+    window.configurarBotoesKPI('mvi_taxa', 'tx_mvi', 'Taxa de MVI (por 100 mil hab.)', 'socio');
+
     $('#ficha_kpi_cvp_abs').text(cvpData.val.toLocaleString('pt-BR'));
-    $('#ficha_ano_cvp_abs').html(window.montarRodapeKPI('Ocorrências', refMviFmt, cvpData.rank, 'cvp'));
+    window.configurarBotoesKPI('cvp_abs', 'cvp', 'Crimes Violentos contra o Patrimônio (Abs.)', 'socio');
+
     $('#ficha_kpi_cvp_taxa').text(cvpTaxa.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
-    $('#ficha_ano_cvp_taxa').html(window.montarRodapeKPI('/ 100k hab.', refMviFmt, txCvpData.rank || cvpData.rank, 'tx_cvp'));
+    window.configurarBotoesKPI('cvp_taxa', 'tx_cvp', 'Taxa de CVP (por 100 mil hab.)', 'socio');
 
     // Formatador Universal
     const aplicarKPI_Universal = (sigla, elemBase, sufixo) => {
@@ -3195,7 +3632,6 @@ async function carregarBasePcpJson() {
 
     // 3. Fallback caso você também libere o arquivo estático no Go
     const caminhos = [
-        `${base}/data/df_pcp.json`.replace(/\/+/g, '/'),
         `${base}/data/json/df_pcp.json`.replace(/\/+/g, '/')
     ];
 
@@ -3214,18 +3650,6 @@ async function carregarBasePcpJson() {
 }
 
 async function renderizarTransferenciasRenda(iniciativas, pcpFallback, nomeMun, demo) {
-    let maesQtd = 0, maesVal = 0;
-    (iniciativas || []).forEach(d => {
-        if (d.iniciativa_estrategica && String(d.iniciativa_estrategica).trim().toUpperCase() === "MÃES DE PERNAMBUCO") {
-            maesQtd += (Number(d.indicador) || 0);
-            maesVal += (Number(d.valor_total) || 0);
-        }
-    });
-
-    // Busca na base /data/json/df_pcp.json (com fallback para pcpFallback caso necessário)
-    const basePcp = await carregarBasePcpJson();
-    const listaPcp = basePcp.length > 0 ? basePcp : (pcpFallback || []);
-
     const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     const extrairVal = (obj, key) => (obj && obj[key] !== undefined) ? (Array.isArray(obj[key]) ? obj[key][0] : obj[key]) : '';
 
@@ -3234,21 +3658,8 @@ async function renderizarTransferenciasRenda(iniciativas, pcpFallback, nomeMun, 
     const alvoIbge7 = rawIbge.length >= 7 ? rawIbge.substring(0, 7) : '';
     const alvoIbge6 = rawIbge.length >= 6 ? rawIbge.substring(0, 6) : '';
 
-    let pcpQtd = 0, pcpVal = 0;
-    listaPcp.forEach(p => {
-        const pIbge7 = p.ibge7 ? String(p.ibge7).trim() : '';
-        const pCodIbge = p.cod_ibge ? String(p.cod_ibge).trim() : '';
-        const pMun = norm(p.municipio);
-
-        const matchIbge = (alvoIbge7 && (pIbge7 === alvoIbge7 || pCodIbge === alvoIbge7)) ||
-                          (alvoIbge6 && (pCodIbge === alvoIbge6 || pIbge7.startsWith(alvoIbge6)));
-        const matchNome = alvoNome && pMun && pMun === alvoNome;
-
-        if (matchIbge || matchNome) {
-            pcpQtd += Number(p.numero_de_beneficiarios) || 0;
-            pcpVal += Number(p.valor_investido_no_municipio) || 0;
-        }
-    });
+    const munsRDSet = new Set((cacheSociaisRD.demografiaRD || []).map(d => norm(d.municipio)));
+    if (alvoNome) munsRDSet.add(alvoNome);
 
     const formataBi = (v) => (v === 0)
         ? "R$ 0"
@@ -3258,27 +3669,196 @@ async function renderizarTransferenciasRenda(iniciativas, pcpFallback, nomeMun, 
                 ? "R$ " + (v / 1e6).toFixed(2).replace('.', ',') + " Mi"
                 : "R$ " + v.toLocaleString('pt-BR', { maximumFractionDigits: 0 })));
 
-    // Atualiza os Valores
-    $('#ficha_kpi_maes_qtd').text(maesQtd > 0 ? maesQtd.toLocaleString('pt-BR') : "-");
-    $('#ficha_kpi_maes_val').text(maesVal > 0 ? formataBi(maesVal) : "-");
-    $('#ficha_kpi_pcp_qtd').text(pcpQtd > 0 ? pcpQtd.toLocaleString('pt-BR') : "-");
-    $('#ficha_kpi_pcp_val').text(pcpVal > 0 ? formataBi(pcpVal) : "-");
+    const baseGeral = window.dadosBrutosFicha || [];
 
-    // LÓGICA DE METADADOS E POLARIDADE
-    const configurarMetadados = (elemBase, sigla, sufixo) => {
-        $(`#ficha_ano_${elemBase}`).html(window.montarRodapeKPI(sufixo, '2024', null, sigla));
-        window.configurarBotoesKPI(elemBase, sigla, sufixo, 'programa');
+    // 1. PRIORIDADE MÁXIMA: Verifica na base principal (siglas oficiais)
+    let serieMaesQtd = window.extrairSerieIndicadorMun(baseGeral, 'total_maes_pe', demo);
+    let serieMaesVal = window.extrairSerieIndicadorMun(baseGeral, 'investimento_maes_pe', demo);
+    let seriePcpQtd  = window.extrairSerieIndicadorMun(baseGeral, 'total_chapeu_palha', demo);
+    let seriePcpVal  = window.extrairSerieIndicadorMun(baseGeral, 'investimento_chapeu', demo);
+
+    // 2. FALLBACK MÃES DE PERNAMBUCO (somente se não vier na base principal)
+    if (!serieMaesQtd.existe || !serieMaesVal.existe) {
+        const maesPorAno = {};
+        (iniciativas || []).forEach(d => {
+            if (d.iniciativa_estrategica && norm(d.iniciativa_estrategica).includes("maes de pernambuco")) {
+                const ano = parseInt(d.ano || d.exercicio || (d.data_de_inicio ? String(d.data_de_inicio).substring(0, 4) : 2024), 10) || 2024;
+                if (!maesPorAno[ano]) maesPorAno[ano] = { qtd: 0, val: 0 };
+                maesPorAno[ano].qtd += (Number(d.indicador) || 0);
+                maesPorAno[ano].val += (Number(d.valor_total) || 0);
+            }
+        });
+
+        const maesRDMap = {};
+        (cacheSociaisRD.iniciativasRD || []).forEach(d => {
+            if (d.iniciativa_estrategica && norm(d.iniciativa_estrategica).includes("maes de pernambuco")) {
+                const m = String(d.municipio || '').trim();
+                if (!m) return;
+                if (!maesRDMap[m]) maesRDMap[m] = { municipio: m, qtd: 0, val: 0 };
+                maesRDMap[m].qtd += (Number(d.indicador) || 0);
+                maesRDMap[m].val += (Number(d.valor_total) || 0);
+            }
+        });
+
+        let anosMaes = Object.keys(maesPorAno).map(Number).sort((a, b) => a - b);
+
+        if (anosMaes.length === 0 || Object.keys(maesRDMap).length <= 1) {
+            if (!window.cacheResumoCozinhas) {
+                try {
+                    const resCoz = await fetch(`${window.basePath || ''}/municipios/resumo/cozinhas`.replace(/\/+/g, '/'));
+                    if (resCoz && resCoz.ok) window.cacheResumoCozinhas = await resCoz.json();
+                } catch (e) {}
+            }
+            if (window.cacheResumoCozinhas && Array.isArray(window.cacheResumoCozinhas.maes)) {
+                if (anosMaes.length === 0) {
+                    const mMun = window.cacheResumoCozinhas.maes.find(m => norm(m.municipio) === alvoNome);
+                    if (mMun) {
+                        maesPorAno[2024] = {
+                            qtd: Number(mMun.qtd_beneficiarias_total) || 0,
+                            val: Number(mMun.valor_total) || 0
+                        };
+                        anosMaes = [2024];
+                    }
+                }
+                if (Object.keys(maesRDMap).length <= 1) {
+                    window.cacheResumoCozinhas.maes
+                        .filter(m => munsRDSet.size === 0 || munsRDSet.has(norm(m.municipio)))
+                        .forEach(r => {
+                            const mNome = String(r.municipio || '').trim();
+                            if (mNome) {
+                                maesRDMap[mNome] = {
+                                    municipio: mNome,
+                                    qtd: Number(r.qtd_beneficiarias_total) || 0,
+                                    val: Number(r.valor_total) || 0
+                                };
+                            }
+                        });
+                }
+            }
+        }
+
+        if (anosMaes.length > 0) {
+            const anoRefMaes = anosMaes[anosMaes.length - 1];
+            if (!serieMaesQtd.existe) {
+                window.injetarIndicadorExternoNasBasesFicha(
+                    'total_maes_pe',
+                    'Mães de Pernambuco (Beneficiárias)',
+                    'absoluto',
+                    'Mulheres Atendidas',
+                    anosMaes.map(a => ({ ano: a, valor: maesPorAno[a].qtd })),
+                    Object.values(maesRDMap).map(r => ({ municipio: r.municipio, valor: r.qtd, ano: anoRefMaes })),
+                    { fonte: 'SAS / Governo de Pernambuco', interpretacao: 'Total de mulheres em situação de vulnerabilidade beneficiadas pelo programa Mães de Pernambuco no município.' }
+                );
+                serieMaesQtd = window.extrairSerieIndicadorMun(window.dadosBrutosFicha, 'total_maes_pe', demo);
+            }
+            if (!serieMaesVal.existe) {
+                window.injetarIndicadorExternoNasBasesFicha(
+                    'investimento_maes_pe',
+                    'Mães de Pernambuco (Investimento)',
+                    'moeda',
+                    'R$',
+                    anosMaes.map(a => ({ ano: a, valor: maesPorAno[a].val })),
+                    Object.values(maesRDMap).map(r => ({ municipio: r.municipio, valor: r.val, ano: anoRefMaes })),
+                    { fonte: 'SAS / Governo de Pernambuco', interpretacao: 'Montante total repassado às beneficiárias do programa Mães de Pernambuco no município.' }
+                );
+                serieMaesVal = window.extrairSerieIndicadorMun(window.dadosBrutosFicha, 'investimento_maes_pe', demo);
+            }
+        }
+    }
+
+    // 3. FALLBACK CHAPÉU DE PALHA (somente se não vier na base principal)
+    if (!seriePcpQtd.existe || !seriePcpVal.existe) {
+        const basePcp = await carregarBasePcpJson();
+        const listaPcp = basePcp.length > 0 ? basePcp : (pcpFallback || []);
+
+        const pcpPorAno = {};
+        const pcpRDMap = {};
+
+        listaPcp.forEach(p => {
+            const pIbge7 = p.ibge7 ? String(p.ibge7).trim() : '';
+            const pCodIbge = p.cod_ibge ? String(p.cod_ibge).trim() : '';
+            const pMunNorm = norm(p.municipio);
+            const ano = parseInt(p.ano || p.exercicio || p.ano_referencia || 2024, 10) || 2024;
+            const qtd = Number(p.numero_de_beneficiarios) || 0;
+            const val = Number(p.valor_investido_no_municipio) || 0;
+
+            const matchIbge = (alvoIbge7 && (pIbge7 === alvoIbge7 || pCodIbge === alvoIbge7)) ||
+                              (alvoIbge6 && (pCodIbge === alvoIbge6 || pIbge7.startsWith(alvoIbge6)));
+            const matchNome = alvoNome && pMunNorm && pMunNorm === alvoNome;
+
+            if (matchIbge || matchNome) {
+                if (!pcpPorAno[ano]) pcpPorAno[ano] = { qtd: 0, val: 0 };
+                pcpPorAno[ano].qtd += qtd;
+                pcpPorAno[ano].val += val;
+            }
+
+            if (p.municipio && (munsRDSet.size === 0 || munsRDSet.has(pMunNorm))) {
+                const mNome = String(p.municipio).trim();
+                if (!pcpRDMap[mNome]) pcpRDMap[mNome] = { municipio: mNome, qtd: 0, val: 0 };
+                pcpRDMap[mNome].qtd += qtd;
+                pcpRDMap[mNome].val += val;
+            }
+        });
+
+        const anosPcp = Object.keys(pcpPorAno).map(Number).sort((a, b) => a - b);
+        if (anosPcp.length > 0) {
+            const anoRefPcp = anosPcp[anosPcp.length - 1];
+            if (!seriePcpQtd.existe) {
+                window.injetarIndicadorExternoNasBasesFicha(
+                    'total_chapeu_palha',
+                    'Chapéu de Palha (Beneficiários)',
+                    'absoluto',
+                    'Pessoas Atendidas',
+                    anosPcp.map(a => ({ ano: a, valor: pcpPorAno[a].qtd })),
+                    Object.values(pcpRDMap).map(r => ({ municipio: r.municipio, valor: r.qtd, ano: anoRefPcp })),
+                    { fonte: 'SEPLAG / Governo de Pernambuco', interpretacao: 'Total de trabalhadores rurais e pescadores artesanais beneficiados pelo Programa Chapéu de Palha no município.' }
+                );
+                seriePcpQtd = window.extrairSerieIndicadorMun(window.dadosBrutosFicha, 'total_chapeu_palha', demo);
+            }
+            if (!seriePcpVal.existe) {
+                window.injetarIndicadorExternoNasBasesFicha(
+                    'investimento_chapeu',
+                    'Chapéu de Palha (Investimento)',
+                    'moeda',
+                    'R$',
+                    anosPcp.map(a => ({ ano: a, valor: pcpPorAno[a].val })),
+                    Object.values(pcpRDMap).map(r => ({ municipio: r.municipio, valor: r.val, ano: anoRefPcp })),
+                    { fonte: 'SEPLAG / Governo de Pernambuco', interpretacao: 'Valor total investido pelo Programa Chapéu de Palha no município.' }
+                );
+                seriePcpVal = window.extrairSerieIndicadorMun(window.dadosBrutosFicha, 'investimento_chapeu', demo);
+            }
+        }
+    }
+
+    // 4. Formata moeda e renderiza os 4 cards apontando para as siglas oficiais
+    if (serieMaesVal.existe && serieMaesVal.valAtual !== null) serieMaesVal.strAtualFmt = formataBi(serieMaesVal.valAtual);
+    if (seriePcpVal.existe && seriePcpVal.valAtual !== null) seriePcpVal.strAtualFmt = formataBi(seriePcpVal.valAtual);
+
+    const renderCardTransf = (elemBase, sigla, titulo, serieObj) => {
+        const el = document.getElementById(`ficha_kpi_${elemBase}`);
+        if (!el) return;
+        const tituloFmt = window.formatarTitleCaseKPI(titulo);
+        serieObj.nome = tituloFmt;
+        el.textContent = serieObj.existe ? serieObj.strAtualFmt : '-';
+
+        const cardEl = el.closest('.kpi-modern-card');
+        const headerDom = cardEl ? cardEl.querySelector('.kpi-modern-header') : null;
+        if (headerDom) {
+            headerDom.classList.remove('text-uppercase');
+            headerDom.style.textTransform = 'none';
+            headerDom.textContent = tituloFmt;
+        }
+
+        if (typeof window.aplicarEsteticaUFsNoCardStatico === 'function') {
+            window.aplicarEsteticaUFsNoCardStatico(elemBase, sigla, serieObj, {}, 'socio');
+        }
     };
 
-    configurarMetadados('maes_qtd', 'maes_qtd', 'Mulheres Atendidas');
-    configurarMetadados('maes_val', 'maes_val', 'Investimento');
-    configurarMetadados('pcp_qtd', 'pcp_qtd', 'Pessoas Atendidas');
-    configurarMetadados('pcp_val', 'pcp_val', 'Investimento');
+    renderCardTransf('total_maes_pe', 'total_maes_pe', 'Mães de Pernambuco (Beneficiárias)', serieMaesQtd);
+    renderCardTransf('investimento_maes_pe', 'investimento_maes_pe', 'Mães de Pernambuco (Investimento)', serieMaesVal);
+    renderCardTransf('total_chapeu_palha', 'total_chapeu_palha', 'Chapéu de Palha (Beneficiários)', seriePcpQtd);
+    renderCardTransf('investimento_chapeu', 'investimento_chapeu', 'Chapéu de Palha (Investimento)', seriePcpVal);
 }
-
-/* --- 6.5 INDICADORES ECONÔMICOS (INOVAÇÃO, COMÉRCIO EXTERIOR, CONECTIVIDADE) --- */
-
-// INOVAÇÃO
 function renderizarIndicadoresInovacao(ind, demo) {
     const $containerInfocomServ = $('#ficha_container_kpis_infocom_serv');
     const $containerKpis = $('#ficha_container_kpis_inovacao');
@@ -3289,7 +3869,6 @@ function renderizarIndicadoresInovacao(ind, demo) {
 
     const normText = (str) => String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-    // Filtra indicadores do grupo economia da inovação ou correlatos (exclui comex que fica em Comércio Exterior)
     const itensInovacao = (ind || []).filter(i => {
         const g = normText(i.grupo);
         const s = String(i.sigla_indicador || '').toLowerCase().trim();
@@ -3315,38 +3894,33 @@ function renderizarIndicadoresInovacao(ind, demo) {
     const valEstabInfocom = estabInfocomItem ? parseFloat(String(estabInfocomItem.indicador).replace(',', '.')) : NaN;
     const valEmpInfocom = empInfocomItem ? parseFloat(String(empInfocomItem.indicador).replace(',', '.')) : NaN;
 
-    // 1. Destaque: 4 Indicadores de Participação de InfoCom em relação a Serviços
     const configInfocomServ = [
         {
             sigla: 'pct_vab_infocom_serv',
             titulo: '% InfoCom em Serviços (VAB / Massa Salarial)',
-            icone: 'fa-chart-pie',
+            icone: 'fas fa-chart-pie',
             cor: '#2563EB',
-            isPercent: true,
             subExtra: 'Proxy VAB (Massa Salarial RAIS)'
         },
         {
             sigla: 'pct_estab_infocom_serv',
             titulo: '% InfoCom em Serviços (Estabelecimentos)',
-            icone: 'fa-building',
+            icone: 'fas fa-building',
             cor: '#0284C7',
-            isPercent: true,
             subExtra: !isNaN(valEstabInfocom) ? `${valEstabInfocom.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} estab. InfoCom` : ''
         },
         {
             sigla: 'pct_emp_infocom_serv',
             titulo: '% InfoCom em Serviços (Empregados)',
-            icone: 'fa-users-cog',
+            icone: 'fas fa-users-cog',
             cor: '#0D9488',
-            isPercent: true,
             subExtra: !isNaN(valEmpInfocom) ? `${valEmpInfocom.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} vínculos InfoCom` : ''
         },
         {
             sigla: 'ql_infocom_serv',
             titulo: 'QL InfoCom em relação a Serviços',
-            icone: 'fa-project-diagram',
+            icone: 'fas fa-project-diagram',
             cor: '#4F46E5',
-            isPercent: false,
             isQL: true
         }
     ];
@@ -3355,42 +3929,24 @@ function renderizarIndicadoresInovacao(ind, demo) {
     const siglasAuxiliaresOcultas = ['estab_infocom', 'emp_infocom'];
 
     configInfocomServ.forEach(cfg => {
-        const item = getLatestItem(cfg.sigla);
-        if (!item) return;
-
-        const val = parseFloat(String(item.indicador).replace(',', '.'));
-        let valFmt = '-';
-        if (!isNaN(val)) {
-            valFmt = cfg.isPercent
-                ? val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%'
-                : val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        const rankBadge = item.rank_pe ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank_pe}º em PE</span>` : '';
-        const meta = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === cfg.sigla);
-        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-400 hover:text-blue-600 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${cfg.sigla}')" title="Ver Metadados"></i>` : '';
+        const serie = window.extrairSerieIndicadorMun(ind, cfg.sigla);
+        if (!serie.existe) return;
 
         let extraBadge = '';
-        if (cfg.isQL && !isNaN(val)) {
-            extraBadge = val >= 1
-                ? `<span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200 ms-1" style="font-size:0.62rem;">Especializado (≥1)</span>`
-                : `<span class="badge bg-slate-50 text-slate-500 border border-slate-200 ms-1" style="font-size:0.62rem;">Não Espec. (&lt;1)</span>`;
+        if (cfg.isQL && serie.valAtual !== null) {
+            extraBadge = serie.valAtual >= 1
+                ? `<div class="mt-1"><span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200" style="font-size:0.62rem;">Especializado (≥1)</span></div>`
+                : `<div class="mt-1"><span class="badge bg-slate-50 text-slate-500 border border-slate-200" style="font-size:0.62rem;">Não Espec. (&lt;1)</span></div>`;
         } else if (cfg.subExtra) {
-            extraBadge = `<div class="text-[10px] text-slate-500 font-semibold mt-0.5 normal-case"><i class="fas fa-angle-right text-blue-500 me-1"></i>${cfg.subExtra}</div>`;
+            extraBadge = `<div class="text-[10px] text-slate-500 font-semibold mt-1"><i class="fas fa-angle-right text-blue-500 me-1"></i>${cfg.subExtra}</div>`;
         }
 
-        $containerInfocomServ.append(`
-            <div class="kpi-modern-card bg-white shadow-xs" style="border-left: 4px solid ${cfg.cor};">
-              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: #1E293B; font-weight: 800;" title="${item.nm_indicador}">${cfg.titulo}${iconInfo}</div>
-              <div class="kpi-modern-body"><i class="fas ${cfg.icone} kpi-modern-icon" style="color: ${cfg.cor};"></i><span class="kpi-modern-number" id="ficha_kpi_${cfg.sigla}">${valFmt}</span></div>
-              <div class="kpi-modern-footer">${window.montarRodapeKPI(cfg.isPercent ? '%' : (cfg.isQL ? 'QL' : ''), item.ano, item.rank_pe, cfg.sigla)}${extraBadge}</div>
-            </div>
-        `);
+        $containerInfocomServ.append(
+            window.gerarHTMLCardMunicipio(cfg.titulo, serie, { color: cfg.cor, icon: cfg.icone }, cfg.sigla, 'socio', false, extraBadge)
+        );
     });
 
-    // 2. Demais indicadores de Economia da Inovação + Botões do Mapa
     const todasSiglasUnicas = [...new Set(itensInovacao.map(i => i.sigla_indicador))].filter(s => !siglasAuxiliaresOcultas.includes(String(s).toLowerCase()));
-    // Ordena para que os 4 indicadores de InfoCom/Serviços fiquem primeiro nos botões do mapa
     const siglasOrdenadas = [
         ...siglasInfocomServ.filter(s => todasSiglasUnicas.includes(s)),
         ...todasSiglasUnicas.filter(s => !siglasInfocomServ.includes(s))
@@ -3402,45 +3958,20 @@ function renderizarIndicadoresInovacao(ind, demo) {
         const item = itensInovacao.filter(i => i.sigla_indicador === sigla).sort((a, b) => b.ano - a.ano)[0];
         if (!item) return;
 
-        // Adiciona botão no seletor do mapa regional para todos os indicadores (incluindo os 4 de InfoCom/Serviços)
         $containerBtns.append(`<button type="button" class="btn ${sigla === metricaInovacaoAtiva ? 'btn-primary active' : 'btn-outline-primary'} font-bold text-xs px-2" data-metrica="${sigla}" onclick="window.alternarMetricaInovacao('${sigla}')">${item.nm_indicador}</button>`);
 
-        // Se já foi renderizado no bloco superior de InfoCom/Serviços, não duplica no grid inferior
         if (siglasInfocomServ.includes(sigla)) return;
 
-        const tipoNorm = item.tipo ? String(item.tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
-        let val = parseFloat(String(item.indicador).replace(',', '.')), valFmt = item.indicador;
-
-        if (!isNaN(val)) {
-            if (tipoNorm === 'moeda' || String(item.nm_indicador).toLowerCase().includes('salarial')) {
-                valFmt = 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            } else if (tipoNorm === 'percentual' || String(item.nm_indicador).includes('%')) {
-                valFmt = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%';
-            } else if (tipoNorm === 'absoluto') {
-                valFmt = val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
-            } else {
-                valFmt = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
-            }
-        }
-
-        const rankBadge = item.rank_pe ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank_pe}º em PE</span>` : '';
-        const meta = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
-        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${sigla}')" title="Ver Metadados"></i>` : '';
-
-        $containerKpis.append(`
-            <div class="kpi-modern-card" style="border-left-color: #00B7FF;">
-              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
-              <div class="kpi-modern-body"><i class="fas fa-laptop-code kpi-modern-icon" style="color: #00B7FF;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${valFmt}</span></div>
-              <div class="kpi-modern-footer">${window.montarRodapeKPI(tipoNorm === 'moeda' ? 'R$' : (tipoNorm === 'percentual' ? '%' : (tipoNorm === 'absoluto' ? 'Vínculos' : '')), item.ano, item.rank_pe, sigla)}</div>
-            </div>
-        `);
+        const serie = window.extrairSerieIndicadorMun(ind, sigla);
+        $containerKpis.append(
+            window.gerarHTMLCardMunicipio(item.nm_indicador, serie, { color: '#0EA5E9', icon: 'fas fa-laptop-code' }, sigla, 'socio', false)
+        );
     });
 
     const rdNome = demo?.regiao_de_desenvolvimento || demo?.['Região de Desenvolvimento'] || '-';
     $('#ficha_inovacao_rd_titulo').text(`Municípios da RD ${rdNome}`);
     renderizarMapaInovacaoRD();
 }
-
 function renderizarMapaInovacaoRD() {
     const mapDom = document.getElementById('ficha_map_inovacao_container');
     if (!mapDom || !cacheSociaisRD.geojsonRD || !metricaInovacaoAtiva) return;
@@ -3526,10 +4057,9 @@ function renderizarMapaInovacaoRD() {
     });
 }
 
-// COMÉRCIO EXTERIOR
 function renderizarIndicadoresComercio(ind, demo) {
-    const $containerKpis =$('#ficha_container_kpis_comercio'), $containerBtns =$('#ficha_btns_metrica_comercio');
-    $containerKpis.empty();$containerBtns.empty();
+    const $containerKpis = $('#ficha_container_kpis_comercio'), $containerBtns = $('#ficha_btns_metrica_comercio');
+    $containerKpis.empty(); $containerBtns.empty();
 
     const itensComercio = (ind || []).filter(i => {
         const g = String(i.grupo || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -3549,36 +4079,19 @@ function renderizarIndicadoresComercio(ind, demo) {
 
     siglasUnicas.forEach((sigla) => {
         const item = itensComercio.filter(i => i.sigla_indicador === sigla).sort((a, b) => b.ano - a.ano)[0];
-        const tipoRaw = item.tipo ? String(item.tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : '';
-        const siglaLow = String(item.sigla_indicador || '').toLowerCase();
-        const nomeLow = String(item.nm_indicador || '').toLowerCase();
-        let val = parseFloat(String(item.indicador).replace(',', '.')), valFmt = item.indicador;
+        const serie = window.extrairSerieIndicadorMun(ind, sigla);
 
-        if (!isNaN(val)) {
-            if (tipoRaw === 'moeda' || nomeLow.includes('exporta') || nomeLow.includes('importa') || siglaLow.includes('valor')) {
-                valFmt = 'US$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-            } else if (tipoRaw === 'percentual') {
-                valFmt = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%';
-            } else if (tipoRaw === 'indice') {
-                valFmt = val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
-            } else {
-                valFmt = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
-            }
+        // Formatação em Dólar (US$) específica de Comex quando não for percentual
+        if (serie.valAtual !== null && !String(serie.tipo).toLowerCase().includes('percent')) {
+            serie.strAtualFmt = 'US$ ' + serie.valAtual.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        }
+        if (serie.valAnt !== null && !String(serie.tipo).toLowerCase().includes('percent')) {
+            serie.strAntFmt = 'US$ ' + serie.valAnt.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
         }
 
-        const rankBadge = item.rank_pe ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank_pe}º em PE</span>` : '';
-        
-        // Ícone de Metadado / Modal
-        const meta = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
-        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${sigla}')" title="Ver Metadados"></i>` : '';
-
-        $containerKpis.append(`
-            <div class="kpi-modern-card" style="border-left-color: #E67E22;">
-              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
-              <div class="kpi-modern-body"><i class="fas fa-globe kpi-modern-icon" style="color: #E67E22;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${valFmt}</span></div>
-              <div class="kpi-modern-footer">${window.montarRodapeKPI(tipoRaw === 'moeda' || nomeLow.includes('exporta') || nomeLow.includes('importa') || siglaLow.includes('valor') ? 'US$' : (tipoRaw === 'percentual' ? '%' : ''), item.ano, item.rank_pe, sigla)}</div>
-            </div>
-        `);
+        $containerKpis.append(
+            window.gerarHTMLCardMunicipio(item.nm_indicador, serie, { color: '#2563EB', icon: 'fas fa-ship' }, sigla, 'socio', false)
+        );
 
         $containerBtns.append(`<button type="button" class="btn ${sigla === metricaComercioAtiva ? 'btn-primary active' : 'btn-outline-primary'} font-bold text-xs px-2" data-metrica="${sigla}" onclick="window.alternarMetricaComercio('${sigla}')">${item.nm_indicador}</button>`);
     });
@@ -3673,59 +4186,53 @@ function renderizarMapaComercioRD() {
     });
 }
 
-// CONECTIVIDADE
 function renderizarIndicadoresConectividade(ind, demo) {
-    const $containerKpis =$('#ficha_container_kpis_conectividade'), $containerBtns =$('#ficha_btns_metrica_conectividade');
-    $containerKpis.empty();$containerBtns.empty();
+    const $containerKpis = $('#ficha_container_kpis_conectividade');
+    const $containerBtns = $('#ficha_btns_metrica_conectividade');
+    if (!$containerKpis.length) return;
+    $containerKpis.empty();
+    if ($containerBtns.length) $containerBtns.empty();
 
-    const itensConect = (ind || []).filter(i => String(i.grupo || '').toLowerCase().trim() === 'conectividade');
+    const normText = (str) => String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    const siglasConectConhecidas = ['ibc_anatel', 'cob_pop_4g5g', 'cob_fibra', 'dens_scm', 'dens_smp', 'adens_estacoes'];
+    const baseGeral = (Array.isArray(ind) && ind.length > 0) ? ind : (window.dadosBrutosFicha || []);
+
+    const itensConect = baseGeral.filter(i => {
+        const g = normText(i.grupo);
+        const s = normText(i.sigla_indicador);
+        return g.includes('conectividade') || g.includes('telecom') || siglasConectConhecidas.includes(s);
+    });
 
     if (!itensConect.length) {
         $containerKpis.html('<div class="col-12 text-slate-400 text-xs italic">Sem indicadores de Conectividade registrados.</div>');
-        $('#ficha_map_conectividade_container').closest('.bg-white').hide();
         return;
-    } else {
-        $('#ficha_map_conectividade_container').closest('.bg-white').show();
     }
 
     const siglasUnicas = [...new Set(itensConect.map(i => i.sigla_indicador))];
     if (!metricaConectividadeAtiva && siglasUnicas.length > 0) metricaConectividadeAtiva = siglasUnicas[0];
 
     siglasUnicas.forEach((sigla) => {
-        const item = itensConect.filter(i => i.sigla_indicador === sigla).sort((a, b) => b.ano - a.ano)[0];
-        const tipoNorm = item.tipo ? String(item.tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
-        let val = parseFloat(String(item.indicador).replace(',', '.')), textoValor = "-";
+        const item = itensConect
+            .filter(i => normText(i.sigla_indicador) === normText(sigla))
+            .sort((a, b) => (parseInt(b.ano, 10) || 0) - (parseInt(a.ano, 10) || 0))[0];
+        if (!item) return;
 
-        if (!isNaN(val)) {
-            if (tipoNorm === 'percentual') textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 3 }) + "%";
-            else if (tipoNorm === 'moeda') textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            else if (tipoNorm === 'absoluto') textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
-            else if (tipoNorm === 'indice') textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
-            else textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
-        } else {
-            textoValor = item.indicador;
+        // Extrai a série histórica completa a partir da base geral
+        const serie = window.extrairSerieIndicadorMun(baseGeral, sigla, demo);
+        $containerKpis.append(
+            window.gerarHTMLCardMunicipio(item.nm_indicador, serie, { color: '#3F51B5', icon: 'fas fa-wifi' }, sigla, 'socio', false)
+        );
+
+        if ($containerBtns.length) {
+            $containerBtns.append(`<button type="button" class="btn ${sigla === metricaConectividadeAtiva ? 'btn-primary active' : 'btn-outline-primary'} font-bold text-xs px-2" data-metrica="${sigla}" onclick="window.alternarMetricaConectividade('${sigla}')">${item.nm_indicador}</button>`);
         }
-
-        const rankBadge = item.rank_pe ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank_pe}º em PE</span>` : '';
-        
-        // Ícone de Metadado / Modal
-        const meta = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
-        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${sigla}')" title="Ver Metadados"></i>` : '';
-
-        $containerKpis.append(`
-            <div class="kpi-modern-card" style="border-left-color: #3F51B5;">
-              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
-              <div class="kpi-modern-body"><i class="fas fa-wifi kpi-modern-icon" style="color: #3F51B5;"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${textoValor}</span></div>
-              <div class="kpi-modern-footer">${window.montarRodapeKPI(tipoNorm === 'percentual' ? '%' : (tipoNorm === 'absoluto' ? 'Acessos' : ''), item.ano, item.rank_pe, sigla)}</div>
-            </div>
-        `);
-
-        $containerBtns.append(`<button type="button" class="btn ${sigla === metricaConectividadeAtiva ? 'btn-primary active' : 'btn-outline-primary'} font-bold text-xs px-2" data-metrica="${sigla}" onclick="window.alternarMetricaConectividade('${sigla}')">${item.nm_indicador}</button>`);
     });
 
     const rdNome = demo?.regiao_de_desenvolvimento || demo?.['Região de Desenvolvimento'] || '-';
     $('#ficha_conectividade_rd_titulo').text(`Municípios da RD ${rdNome}`);
-    renderizarMapaConectividadeRD();
+    if (document.getElementById('ficha_map_conectividade_container')) {
+        renderizarMapaConectividadeRD();
+    }
 }
 
 function renderizarMapaConectividadeRD() {
@@ -3936,52 +4443,24 @@ function renderizarVocacoes(vocacoes) {
     });
 }
 
-// Helper universal para grids setoriais de KPIs de Mercado de Trabalho
 function renderizarGridKpisTrabalho(containerId, listaSiglas, ind, corSetor, iconeSetor) {
     const $container = $(`#${containerId}`).empty();
     if (!$container.length) return;
+
+    const iconeFa = iconeSetor.startsWith('fa ') || iconeSetor.startsWith('fas ') ? iconeSetor : `fas ${iconeSetor}`;
 
     listaSiglas.forEach(sigla => {
         const itens = (ind || []).filter(i => String(i.sigla_indicador || '').trim().toLowerCase() === sigla.toLowerCase());
         if (!itens.length) return;
         itens.sort((a, b) => (b.ano || 0) - (a.ano || 0));
         const item = itens[0];
-        const siglaLow = sigla.toLowerCase();
-        const tipoNorm = item.tipo ? String(item.tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
-        let val = parseFloat(String(item.indicador).replace(',', '.')), textoValor = "-";
 
-        if (!isNaN(val)) {
-            if (tipoNorm === 'percentual' || String(item.nm_indicador).includes('%') || siglaLow.startsWith('pct_')) {
-                textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + "%";
-            } else if (tipoNorm === 'moeda' || siglaLow.includes('sal_') || String(item.nm_indicador).toLowerCase().includes('salarial')) {
-                textoValor = 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            } else if (tipoNorm === 'absoluto' || siglaLow.includes('estab_') || siglaLow.includes('emp_')) {
-                textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
-            } else {
-                textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
-            }
-        } else {
-            textoValor = item.indicador || "-";
-        }
-
-        const meta = (window.dadosMetadados || []).find(m => String(m.cd_indicador || '').trim().toLowerCase() === siglaLow);
-        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${sigla}')" title="Ver Metadados"></i>` : '';
-
-        let unidadeTexto = '';
-        if (siglaLow.includes('sal_') || String(item.nm_indicador).toLowerCase().includes('salarial')) unidadeTexto = 'R$';
-        else if (siglaLow.startsWith('pct_') || tipoNorm === 'percentual') unidadeTexto = '%';
-        else if (siglaLow.includes('estab_') || siglaLow.includes('emp_')) unidadeTexto = 'Vínculos';
-
-        $container.append(`
-            <div class="kpi-modern-card" style="border-left-color: ${corSetor};">
-              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
-              <div class="kpi-modern-body"><i class="fas ${iconeSetor} kpi-modern-icon" style="color: ${corSetor};"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${textoValor}</span></div>
-              <div class="kpi-modern-footer">${window.montarRodapeKPI(unidadeTexto, item.ano, item.rank_pe, sigla)}</div>
-            </div>
-        `);
+        const serie = window.extrairSerieIndicadorMun(ind, sigla);
+        $container.append(
+            window.gerarHTMLCardMunicipio(item.nm_indicador, serie, { color: corSetor, icon: iconeFa }, sigla, 'socio', false)
+        );
     });
 }
-
 function renderizarServicos(vocServ, ind, demo) {
     // 1. Vocações Especializadas de Serviços e Comércio
     renderizarCardsCnaeSetor('ficha_container_vocacoes_servicos', vocServ, ind, 'servicos');
@@ -4029,18 +4508,13 @@ function renderizarServicos(vocServ, ind, demo) {
 }
 
 function renderizarIndicadoresTrabalho(ind, demo) {
-    const $containerKpis =$('#ficha_container_kpis_trabalho');
-    const $containerBtns =$('#ficha_btns_metrica_trabalho');
-    $containerKpis.empty();$containerBtns.empty();
+    const $containerKpis = $('#ficha_container_kpis_trabalho');
+    const $containerBtns = $('#ficha_btns_metrica_trabalho');
+    $containerKpis.empty(); $containerBtns.empty();
 
-    // Ordem canônica desejada para exibição organizada dos cards gerais de Trabalho
-    const ordemDesejada = [
-        'estab_total', 'emp_total', 'sal_avg', 'sal_med'
-    ];
-
+    const ordemDesejada = ['estab_total', 'emp_total', 'sal_avg', 'sal_med'];
     const normText = (str) => String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-    // Filtra exclusivamente o grupo "mercado de trabalho" em Economia Geral, excluindo agro, indústria e serviços
     let itensTrabalho = (ind || []).filter(i => {
         const s = String(i.sigla_indicador || '').toLowerCase();
         return ordemDesejada.includes(s) || (normText(i.grupo) === 'mercado de trabalho' && !s.includes('agro') && !s.includes('ind') && !s.includes('serv'));
@@ -4054,7 +4528,6 @@ function renderizarIndicadoresTrabalho(ind, demo) {
         $('#ficha_map_trabalho_container').closest('.bg-white').show();
     }
 
-    // Ordenação lógica
     itensTrabalho.sort((a, b) => {
         let posA = ordemDesejada.indexOf(String(a.sigla_indicador).toLowerCase());
         let posB = ordemDesejada.indexOf(String(b.sigla_indicador).toLowerCase());
@@ -4066,38 +4539,11 @@ function renderizarIndicadoresTrabalho(ind, demo) {
 
     siglasUnicas.forEach((sigla) => {
         const item = itensTrabalho.filter(i => i.sigla_indicador === sigla).sort((a, b) => b.ano - a.ano)[0];
-        const tipoNorm = item.tipo ? String(item.tipo).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
-        let val = parseFloat(String(item.indicador).replace(',', '.')), textoValor = "-";
+        const serie = window.extrairSerieIndicadorMun(ind, sigla);
 
-        if (!isNaN(val)) {
-            if (tipoNorm === 'percentual' || String(item.nm_indicador).includes('%')) {
-                textoValor = val.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + "%";
-            } else if (tipoNorm === 'moeda' || String(item.nm_indicador).toLowerCase().includes('salarial') || sigla.toLowerCase().includes('sal_')) {
-                textoValor = 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            } else if (tipoNorm === 'absoluto' || sigla.toLowerCase().includes('estab_') || sigla.toLowerCase().includes('emp_')) {
-                textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
-            } else {
-                textoValor = val.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
-            }
-        } else {
-            textoValor = item.indicador;
-        }
-
-        const iconeSetor = 'fa-briefcase';
-        const corSetor = '#0C2856';
-        const siglaLow = sigla.toLowerCase();
-
-        const rankBadge = item.rank_pe ? `<span class="badge bg-slate-100 text-slate-700 border ms-1" style="font-size:0.65rem; padding: 2px 6px;">${item.rank_pe}º em PE</span>` : '';
-        const meta = window.dadosMetadados.find(m => String(m.cd_indicador || '').trim().toLowerCase() === String(sigla || '').trim().toLowerCase());
-        const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="window.abrirModalMetadado('${sigla}')" title="Ver Metadados"></i>` : '';
-
-        $containerKpis.append(`
-            <div class="kpi-modern-card" style="border-left-color: ${corSetor};">
-              <div class="kpi-modern-header text-uppercase leading-tight mb-1" style="font-size: 0.72rem; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.nm_indicador}">${item.nm_indicador}${iconInfo}</div>
-              <div class="kpi-modern-body"><i class="fas ${iconeSetor} kpi-modern-icon" style="color: ${corSetor};"></i><span class="kpi-modern-number" id="ficha_kpi_${sigla}">${textoValor}</span></div>
-              <div class="kpi-modern-footer">${window.montarRodapeKPI(siglaLow.includes('sal') ? 'R$' : (tipoNorm === 'percentual' ? '%' : (tipoNorm === 'absoluto' || siglaLow.includes('emp_') ? 'Vínculos' : '')), item.ano, item.rank_pe, sigla)}</div>
-            </div>
-        `);
+        $containerKpis.append(
+            window.gerarHTMLCardMunicipio(item.nm_indicador, serie, { color: '#0C2856', icon: 'fas fa-briefcase' }, sigla, 'socio', false)
+        );
 
         $containerBtns.append(`<button type="button" class="btn ${sigla === metricaTrabalhoAtiva ? 'btn-primary active' : 'btn-outline-primary'} font-bold text-xs px-2" data-metrica="${sigla}" onclick="window.alternarMetricaTrabalho('${sigla}')">${item.nm_indicador}</button>`);
     });
@@ -4106,7 +4552,6 @@ function renderizarIndicadoresTrabalho(ind, demo) {
     $('#ficha_trabalho_rd_titulo').text(`Municípios da RD ${rdNome}`);
     renderizarMapaTrabalhoRD();
 }
-
 /* --- 6.6 DADOS FISCAIS --- */
 function renderizarDadosFiscais(fiscais, ind, demo) {
     const itemCapag = (ind || []).filter(i => {
@@ -4259,74 +4704,77 @@ function renderizarDadosFiscais(fiscais, ind, demo) {
             return (posA === -1 ? 99 : posA) - (posB === -1 ? 99 : posB);
         });
 
-        lista.forEach((item, idx) => {
+lista.forEach((item, idx) => {
             const corBarra = coresFiscais[idx % coresFiscais.length];
             const isPercent = item.indicador.includes('%') || item.indicador.includes('DTP') || item.indicador.includes('Vinculação') || item.indicador.includes('Relativo');
-            let valFmt = "-";
 
-            if (!isNaN(item.valor)) {
+            const fmtValFiscal = (v) => {
+                if (v === null || v === undefined || isNaN(v)) return '-';
                 if (isPercent) {
-                    valFmt = item.valor.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + "%";
-                } else {
-                    const absVal = Math.abs(item.valor);
-                    if (absVal >= 1e9) {
-                        valFmt = "R$ " + (item.valor / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bi";
-                    } else if (absVal >= 1e6) {
-                        valFmt = "R$ " + (item.valor / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Mi";
-                    } else {
-                        valFmt = "R$ " + item.valor.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
-                    }
+                    return v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + "%";
                 }
-            }
+                const absVal = Math.abs(v);
+                if (absVal >= 1e9) return "R$ " + (v / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bi";
+                if (absVal >= 1e6) return "R$ " + (v / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Mi";
+                return "R$ " + v.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+            };
 
-            // BUSCA METADADOS E POLARIDADE DO INDICADOR FISCAL
+            // Busca o valor do ano anterior na base fiscal para calcular a variação no card Aurora
+            const anoAnteriorAlvo = Number(item.ex) - 1;
+            const regsAnoAnt = (fiscais || []).filter(f =>
+                parseFloat(f.exercicio) === anoAnteriorAlvo &&
+                normText(f.indicador) === normText(item.indicador)
+            ).sort((a, b) => (parseFloat(b.mes_referencia) || 0) - (parseFloat(a.mes_referencia) || 0));
+
+            const valAntNum = regsAnoAnt.length ? parseFloat(regsAnoAnt[0].valor) : null;
+            const varPctFiscal = (!isNaN(item.valor) && valAntNum !== null && !isNaN(valAntNum) && valAntNum !== 0)
+                ? ((item.valor - valAntNum) / Math.abs(valAntNum)) * 100
+                : 0;
+
             const normKey = (str) => String(str || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const itemNorm = normKey(item.indicador);
 
-            const meta = window.dadosMetadados.find(m => 
+            const meta = (window.dadosMetadados || []).find(m =>
                 normKey(m.cd_indicador) === itemNorm || normKey(m.nm_indicador) === itemNorm
             );
-
             const cdMeta = meta ? (meta.cd_indicador || meta.nm_indicador) : item.indicador;
-            const iconInfo = meta ? ` <i class="fas fa-info-circle icon-metadado text-slate-300 hover:text-blue-500 cursor-pointer ms-1 transition-colors" onclick="event.stopPropagation(); window.abrirModalMetadado('${cdMeta}')" title="Ver Metadados"></i>` : '';
-            const badgePolaridade = meta ? obterBadgePolaridade(cdMeta) : '';
 
             let nomeIndicadorExib = item.indicador;
             const nIndNorm = normText(nomeIndicadorExib);
 
-            // a) Trocar "Despesas Correntes" por "Custeio – Outras Despesas Correntes"
             if (nIndNorm.includes('DESPESAS CORRENTES') && !nIndNorm.includes('PESSOAL')) {
                 nomeIndicadorExib = 'Custeio – Outras Despesas Correntes';
             }
-
-            // b) Trocar DTC / RCL ou DTP / RCL por "Pessoal"
             if (nIndNorm === 'DTP/RCL' || nIndNorm === 'DTC/RCL' || nIndNorm.includes('DTP') || nIndNorm.includes('DTC') || (nIndNorm.includes('PESSOAL') && nIndNorm.includes('RCL'))) {
                 nomeIndicadorExib = 'Pessoal';
             }
-            const cdMetaEscaped = String(cdMeta || '').replace(/'/g, "\\'");
-            const nomeExibEscaped = String(nomeIndicadorExib || '').replace(/'/g, "\\'");
 
-            $container.append(`
-                <div class="kpi-modern-card" style="border-left-color: ${corBarra};">
-                  <div class="kpi-modern-header d-flex justify-content-between align-items-start gap-1.5" style="white-space: normal; line-height: 1.25; min-height: 2.5rem; word-break: break-word;" title="${nomeIndicadorExib}">
-                    <span class="kpi-header-title" title="${nomeIndicadorExib}">${nomeIndicadorExib}</span>
-                    <div class="kpi-actions-container d-flex gap-1 align-items-center flex-shrink-0 d-print-none">
-                      <button type="button" class="btn btn-light bg-white border border-slate-200 shadow-2xs d-flex justify-content-center align-items-center" 
-                              onclick="event.stopPropagation(); window.abrirModalMetadado('${cdMetaEscaped}')" 
-                              style="width: 24px; height: 24px; border-radius: 6px; padding: 0; min-width: 24px;" title="Ver Metadados e Informações">
-                        <i class="fas fa-info text-slate-400" style="font-size: 0.65rem;"></i>
-                      </button>
-                      <button type="button" class="btn btn-light bg-white border border-slate-200 shadow-2xs d-flex justify-content-center align-items-center" 
-                              onclick="event.stopPropagation(); window.abrirModalSerieHistoricaMun('${cdMetaEscaped}', '${nomeExibEscaped}', 'fiscal')" 
-                              style="width: 24px; height: 24px; border-radius: 6px; padding: 0; min-width: 24px;" title="Ver Série Histórica e Comparativo">
-                        <i class="fas fa-arrow-right" style="color: #0C2856; font-size: 0.65rem;"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="kpi-modern-body"><i class="fas ${iconesFiscais[chaveGrp]} kpi-modern-icon" style="color: ${corBarra};"></i><span class="kpi-modern-number" style="font-size: 1.4rem;">${valFmt}</span></div>
-                  <div class="kpi-modern-footer">${window.montarRodapeKPI(valFmt.includes('%') ? '%' : (valFmt.includes('R$') ? 'R$' : ''), item.ex || '-', item.rank, cdMeta)}</div>
-                </div>
-            `);
+            const serieFiscal = {
+                existe: true,
+                nome: nomeIndicadorExib,
+                tipo: isPercent ? 'percentual' : 'moeda',
+                polaridade: meta?.polaridade || '',
+                valAtual: isNaN(item.valor) ? null : item.valor,
+                valAnt: (valAntNum !== null && !isNaN(valAntNum)) ? valAntNum : null,
+                strAtual: fmtValFiscal(item.valor),
+                strAtualFmt: fmtValFiscal(item.valor),
+                strAntFmt: fmtValFiscal(valAntNum),
+                varPct: varPctFiscal,
+                anoAtual: item.ex || '-',
+                anoAnt: valAntNum !== null ? String(anoAnteriorAlvo) : '-',
+                rank: item.rank || null
+            };
+
+            $container.append(
+                window.gerarHTMLCardMunicipio(
+                    nomeIndicadorExib,
+                    serieFiscal,
+                    { color: corBarra, icon: `fas ${iconesFiscais[chaveGrp]}` },
+                    cdMeta,
+                    'fiscal',
+                    false
+                )
+            );
         });
     });
 }
@@ -5217,10 +5665,17 @@ function renderizarAgropecuariaCompleta(pamArr, lspaArr, pamAgri, ppmPecuaria, p
         nomeMun: nomeMun || ''
     };
 
+    const normMun = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const munAtualNorm = normMun(nomeMun);
+    const munsRDLista = (cacheSociaisRD.demografiaRD || []).map(d => ({
+        municipio: d.municipio,
+        ibge6: String(d.ibge6 || d.cod_ibge || '').substring(0, 6)
+    }));
+
     // 1. Renderiza o bloco de CNAE da Agropecuária
     try {
         renderizarCardsCnaeSetor('ficha_container_cnae_agro', vocAgro, ind, 'agro');
-    } catch(e) {
+    } catch (e) {
         console.error("[Ficha] Erro ao renderizar CNAE Agro:", e);
     }
 
@@ -5233,23 +5688,9 @@ function renderizarAgropecuariaCompleta(pamArr, lspaArr, pamAgri, ppmPecuaria, p
             '#059669',
             'fa-tractor'
         );
-    } catch(e) {
+    } catch (e) {
         console.error("[Ficha] Erro ao renderizar KPIs Agro:", e);
     }
-
-    // 2. Processa dados da Produção Agrícola (PAM)
-    const pamDados = ((pamAgri && pamAgri.length) ? pamAgri : (pamArr || [])).map(p => ({
-        ano: parseInt(p.ano) || 0,
-        valor_producao: parseFloat(p.valor_producao_reais || p.valor_da_producao) || 0,
-        area_colhida: parseFloat(p.area_colhida_ha || p.area_colhida) || 0,
-        area_plantada: parseFloat(p.area_plantada_ha || p.area_plantada) || 0,
-        rendimento_ha: parseFloat(p.rendimento_economico_ha) || 0,
-        qtd_produzida: parseFloat(p.quantidade_produzida) || 0
-    })).sort((a, b) => a.ano - b.ano);
-
-    const pamRecente = pamDados.length ? pamDados[pamDados.length - 1] : null;
-    const anoPam = pamRecente ? pamRecente.ano : 2024;
-    $('#ficha_kpi_agri_ano_valor').text(`PAM ${anoPam}`);
 
     const fmtMoeda = (valReais) => {
         if (!valReais || valReais <= 0) return 'R$ 0';
@@ -5259,6 +5700,48 @@ function renderizarAgropecuariaCompleta(pamArr, lspaArr, pamAgri, ppmPecuaria, p
         return `R$ ${valReais.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
     };
 
+    // 2. Processa dados da Produção Agrícola (PAM)
+    const pamDados = ((pamAgri && pamAgri.length) ? pamAgri : (pamArr || [])).map(p => ({
+        ano: parseInt(p.ano, 10) || 0,
+        valor_producao: parseFloat(p.valor_producao_reais || p.valor_da_producao) || 0,
+        area_colhida: parseFloat(p.area_colhida_ha || p.area_colhida) || 0,
+        area_plantada: parseFloat(p.area_plantada_ha || p.area_plantada) || 0,
+        rendimento_ha: parseFloat(p.rendimento_economico_ha) || 0,
+        qtd_produzida: parseFloat(p.quantidade_produzida) || 0,
+        rank_pe: p.rank_pe || null
+    })).sort((a, b) => a.ano - b.ano);
+
+    const pamRecente = pamDados.length ? pamDados[pamDados.length - 1] : null;
+    const anoPam = pamRecente && pamRecente.ano ? pamRecente.ano : 2024;
+    $('#ficha_kpi_agri_ano_valor').text(`PAM ${anoPam}`);
+
+    let serieAgriProd = window.extrairSerieIndicadorMun(window.dadosBrutosFicha, 'agri_valor_producao', demo);
+    if (!serieAgriProd.existe && pamDados.length > 0) {
+        window.injetarIndicadorExternoNasBasesFicha(
+            'agri_valor_producao',
+            'Valor da Produção Agrícola (PAM)',
+            'moeda',
+            'R$',
+            pamDados.map(p => ({
+                ano: p.ano,
+                valor: p.valor_producao,
+                rank_pe: p.rank_pe || null
+            })),
+            munsRDLista.map(m => ({
+                municipio: m.municipio,
+                ibge6: m.ibge6,
+                ano: anoPam,
+                valor: (normMun(m.municipio) === munAtualNorm && pamRecente) ? pamRecente.valor_producao : 0,
+                rank_pe: (normMun(m.municipio) === munAtualNorm && pamRecente) ? (pamRecente.rank_pe || null) : null
+            })),
+            {
+                fonte: 'IBGE - Produção Agrícola Municipal (PAM)',
+                subdimensao: 'Agropecuária & Meio Rural',
+                interpretacao: 'Valor bruto total da produção das lavouras temporárias e permanentes do município.'
+            }
+        );
+    }
+
     if (pamRecente && pamRecente.valor_producao > 0) {
         $('#ficha_kpi_agri_valor_producao').text(fmtMoeda(pamRecente.valor_producao));
         const rendCalc = pamRecente.rendimento_ha > 0 ? pamRecente.rendimento_ha : (pamRecente.area_colhida > 0 ? (pamRecente.valor_producao / pamRecente.area_colhida) : 0);
@@ -5267,19 +5750,34 @@ function renderizarAgropecuariaCompleta(pamArr, lspaArr, pamAgri, ppmPecuaria, p
         $('#ficha_kpi_agri_valor_producao').text('R$ 0');
         $('#ficha_kpi_agri_rendimento').text('R$/ha: -');
     }
+    window.configurarBotoesKPI('agri_valor_producao', 'agri_valor_producao', 'Valor da Produção Agrícola', 'socio');
 
     // 3. Processa dados de Pecuária (PPM)
     const pecArr = ppmPecuaria || [];
     let totalCabecas = 0;
     let maiorRebanho = { item: 'Rebanho', qtd: 0 };
     let totalValorOrigem = 0;
+    let anoPecRecente = 2024;
+    let rankPecRecente = null;
     const itensPecRecente = [];
+    const pecPorAno = {};
 
     if (pecArr.length > 0) {
-        const anosPec = [...new Set(pecArr.map(p => parseInt(p.ano) || 0))].sort((a,b) => b - a);
-        const anoPecRecente = anosPec[0] || 2024;
-        const pecRecentes = pecArr.filter(p => (parseInt(p.ano) || 0) === anoPecRecente);
+        const anosPec = [...new Set(pecArr.map(p => parseInt(p.ano, 10) || 0))].sort((a, b) => b - a);
+        anoPecRecente = anosPec[0] || 2024;
 
+        pecArr.forEach(p => {
+            const ano = parseInt(p.ano, 10) || anoPecRecente;
+            const cat = String(p.categoria_agro || '');
+            const qtd = parseFloat(p.quantidade) || 0;
+            if (cat.includes('Rebanho')) {
+                if (!pecPorAno[ano]) pecPorAno[ano] = { qtd: 0, rank_pe: null };
+                pecPorAno[ano].qtd += qtd;
+                if (p.rank_pe && !pecPorAno[ano].rank_pe) pecPorAno[ano].rank_pe = p.rank_pe;
+            }
+        });
+
+        const pecRecentes = pecArr.filter(p => (parseInt(p.ano, 10) || 0) === anoPecRecente);
         pecRecentes.forEach(p => {
             const cat = String(p.categoria_agro || '');
             const qtd = parseFloat(p.quantidade) || 0;
@@ -5289,6 +5787,7 @@ function renderizarAgropecuariaCompleta(pamArr, lspaArr, pamAgri, ppmPecuaria, p
             if (cat.includes('Rebanho')) {
                 totalCabecas += qtd;
                 if (qtd > maiorRebanho.qtd) maiorRebanho = { item, qtd };
+                if (p.rank_pe && !rankPecRecente) rankPecRecente = p.rank_pe;
             } else if (cat.includes('Origem')) {
                 totalValorOrigem += val;
             }
@@ -5296,36 +5795,87 @@ function renderizarAgropecuariaCompleta(pamArr, lspaArr, pamAgri, ppmPecuaria, p
         });
 
         $('#ficha_kpi_ppm_rebanho_total').text(totalCabecas > 0 ? Math.round(totalCabecas).toLocaleString('pt-BR') : '0');
-        if (maiorRebanho.qtd > 0) {
-            $('#ficha_kpi_ppm_principal_rebanho').text(`${maiorRebanho.item}: ${Math.round(maiorRebanho.qtd).toLocaleString('pt-BR')}`);
-        } else {
-            $('#ficha_kpi_ppm_principal_rebanho').text('Pecuária');
-        }
+        $('#ficha_kpi_ppm_principal_rebanho').text(
+            maiorRebanho.qtd > 0 ? `${maiorRebanho.item}: ${Math.round(maiorRebanho.qtd).toLocaleString('pt-BR')}` : 'Pecuária'
+        );
         $('#ficha_kpi_ppm_valor_origem').text(totalValorOrigem > 0 ? `Origem: ${fmtMoeda(totalValorOrigem)}` : 'Origem: R$ 0');
     } else {
-        $('#ficha_kpi_ppm_rebanho_total').text('-');
+        $('#ficha_kpi_ppm_rebanho_total').text('0');
         $('#ficha_kpi_ppm_principal_rebanho').text('PPM');
-        $('#ficha_kpi_ppm_valor_origem').text('Origem: -');
+        $('#ficha_kpi_ppm_valor_origem').text('Origem: R$ 0');
     }
 
+    // Injeta série histórica do Rebanho na base da Ficha para atualizar o card Aurora e o Modal
+    const serieHistPec = Object.keys(pecPorAno)
+        .map(Number)
+        .sort((a, b) => a - b)
+        .map(ano => ({ ano, valor: pecPorAno[ano].qtd, rank_pe: pecPorAno[ano].rank_pe }));
+
+    if (!serieHistPec.length) {
+        serieHistPec.push({ ano: anoPecRecente, valor: totalCabecas, rank_pe: rankPecRecente });
+    }
+
+    window.injetarIndicadorExternoNasBasesFicha(
+        'ppm_rebanho_total',
+        'Efetivo Total dos Rebanhos (Cabeças)',
+        'absoluto',
+        'Cabeças',
+        serieHistPec,
+        munsRDLista.map(m => ({
+            municipio: m.municipio,
+            ibge6: m.ibge6,
+            ano: anoPecRecente,
+            valor: normMun(m.municipio) === munAtualNorm ? totalCabecas : 0,
+            rank_pe: normMun(m.municipio) === munAtualNorm ? rankPecRecente : null
+        })),
+        {
+            fonte: 'IBGE - Pesquisa da Pecuária Municipal (PPM)',
+            subdimensao: 'Agropecuária & Meio Rural',
+            interpretacao: 'Efetivo total dos rebanhos pecuários (bovinos, caprinos, ovinos, suínos, aves, etc.) no município.'
+        }
+    );
+    const subPecHtml = maiorRebanho.qtd > 0
+        ? `<div class="text-[10px] text-slate-500 font-semibold mt-1">${maiorRebanho.item}: ${Math.round(maiorRebanho.qtd).toLocaleString('pt-BR')} &bull; Origem: ${fmtMoeda(totalValorOrigem)}</div>`
+        : '';
+    window.configurarBotoesKPI('ppm_rebanho_total', 'ppm_rebanho_total', 'Efetivo Total dos Rebanhos (Cabeças)', 'socio', subPecHtml);
+    
     // 4. Processa dados de Aquicultura & Piscicultura (PPM)
     const aquiArr = ppmAqui || [];
     let totalAquiKg = 0;
     let totalAquiValor = 0;
+    let anoAquiRecente = 2024;
+    let rankAquiRecente = null;
     const itensAquiRecente = [];
+    const aquiPorAno = {};
 
     if (aquiArr.length > 0) {
-        const anosAqui = [...new Set(aquiArr.map(a => parseInt(a.ano) || 0))].sort((a,b) => b - a);
-        const anoAquiRecente = anosAqui[0] || 2024;
-        const aquiRecentes = aquiArr.filter(a => (parseInt(a.ano) || 0) === anoAquiRecente);
+        const anosAqui = [...new Set(aquiArr.map(a => parseInt(a.ano, 10) || 0))].sort((a, b) => b - a);
+        anoAquiRecente = anosAqui[0] || 2024;
 
+        aquiArr.forEach(a => {
+            const ano = parseInt(a.ano, 10) || anoAquiRecente;
+            const val = parseFloat(a.valor_producao_reais) || 0;
+            if (!aquiPorAno[ano]) aquiPorAno[ano] = { valor: 0, rank_pe: null };
+            aquiPorAno[ano].valor += val;
+            if (a.rank_pe && !aquiPorAno[ano].rank_pe) {
+                aquiPorAno[ano].rank_pe = a.rank_pe;
+            }
+        });
+
+        const aquiRecentes = aquiArr.filter(a => (parseInt(a.ano, 10) || 0) === anoAquiRecente);
         aquiRecentes.forEach(a => {
             const qtd = parseFloat(a.quantidade_produzida) || 0;
             const val = parseFloat(a.valor_producao_reais) || 0;
+            if (a.rank_pe && !rankAquiRecente) rankAquiRecente = a.rank_pe;
             totalAquiKg += qtd;
             totalAquiValor += val;
             if (qtd > 0 || val > 0) {
-                itensAquiRecente.push({ produto: a.produto_aquicultura || 'Produto', qtd, val, preco: parseFloat(a.preco_medio_kg) || (qtd > 0 ? val/qtd : 0) });
+                itensAquiRecente.push({
+                    produto: a.produto_aquicultura || 'Produto',
+                    qtd,
+                    val,
+                    preco: parseFloat(a.preco_medio_kg) || (qtd > 0 ? val / qtd : 0)
+                });
             }
         });
 
@@ -5339,14 +5889,66 @@ function renderizarAgropecuariaCompleta(pamArr, lspaArr, pamAgri, ppmPecuaria, p
         $('#ficha_kpi_aqui_preco').text('R$/kg: -');
     }
 
+    let serieAqui = window.extrairSerieIndicadorMun(window.dadosBrutosFicha, 'aqui_valor', demo);
+    if (!serieAqui.existe) {
+        const serieHistAqui = Object.keys(aquiPorAno)
+            .map(Number)
+            .sort((a, b) => a - b)
+            .map(ano => ({
+                ano,
+                valor: aquiPorAno[ano].valor,
+                rank_pe: aquiPorAno[ano].rank_pe
+            }));
+
+        if (!serieHistAqui.length) {
+            serieHistAqui.push({ ano: anoAquiRecente, valor: totalAquiValor, rank_pe: rankAquiRecente });
+        }
+
+        window.injetarIndicadorExternoNasBasesFicha(
+            'aqui_valor',
+            'Produção da Aquicultura (PPM)',
+            'moeda',
+            'R$',
+            serieHistAqui,
+            munsRDLista.map(m => ({
+                municipio: m.municipio,
+                ibge6: m.ibge6,
+                ano: anoAquiRecente,
+                valor: normMun(m.municipio) === munAtualNorm ? totalAquiValor : 0,
+                rank_pe: normMun(m.municipio) === munAtualNorm ? rankAquiRecente : null
+            })),
+            {
+                fonte: 'IBGE - Pesquisa da Pecuária Municipal (PPM)',
+                subdimensao: 'Agropecuária & Meio Rural',
+                interpretacao: 'Valor da produção de piscicultura, carcinicultura e demais espécies aquícolas em cativeiro.'
+            }
+        );
+    }
+    window.configurarBotoesKPI('aqui_valor', 'aqui_valor', 'Aquicultura & Piscicultura', 'socio');
+
     // 5. Processa dados de Crédito Rural (SICOR)
     const credArr = creditoRural || [];
+    let valCred = 0;
+    let opsCred = 0;
+    let anoCred = 2024;
+    let rankCred = null;
+    const serieHistCred = [];
+
     if (credArr.length > 0) {
-        const sortedCred = [...credArr].sort((a,b) => (parseInt(a.ano)||0) - (parseInt(b.ano)||0));
+        const sortedCred = [...credArr].sort((a, b) => (parseInt(a.ano, 10) || 0) - (parseInt(b.ano, 10) || 0));
+        sortedCred.forEach(c => {
+            serieHistCred.push({
+                ano: parseInt(c.ano, 10) || 2024,
+                valor: parseFloat(c.valor_total_financiado) || 0,
+                rank_pe: c.rank_pe || null
+            });
+        });
+
         const credRecente = sortedCred[sortedCred.length - 1];
-        const valCred = parseFloat(credRecente.valor_total_financiado) || 0;
-        const opsCred = parseInt(credRecente.qtd_operacoes) || 0;
-        const anoCred = credRecente.ano || 2024;
+        valCred = parseFloat(credRecente.valor_total_financiado) || 0;
+        opsCred = parseInt(credRecente.qtd_operacoes, 10) || 0;
+        anoCred = parseInt(credRecente.ano, 10) || 2024;
+        rankCred = credRecente.rank_pe || null;
 
         $('#ficha_kpi_credito_valor').text(fmtMoeda(valCred));
         $('#ficha_kpi_credito_ano').text(`SICOR ${anoCred}`);
@@ -5354,32 +5956,162 @@ function renderizarAgropecuariaCompleta(pamArr, lspaArr, pamAgri, ppmPecuaria, p
     } else {
         $('#ficha_kpi_credito_valor').text('R$ 0');
         $('#ficha_kpi_credito_ano').text('SICOR');
-        $('#ficha_kpi_credito_ops').text('Contratos: -');
+        $('#ficha_kpi_credito_ops').text('Contratos: 0');
+        serieHistCred.push({ ano: anoCred, valor: 0, rank_pe: null });
     }
 
-    // 6. Monitor de Estiagem / Quebra de Safra (LSPA)
-    const lspaTotal = (lspaArr || []).filter(l => l.produto === 'Total' && l.area_plantada !== null && l.area_plantada !== undefined && l.area_plantada !== '');
+    // Injeta série histórica do Crédito Rural (SICOR) para atualizar o card Aurora e o Modal
+    window.injetarIndicadorExternoNasBasesFicha(
+        'credito_valor',
+        'Crédito Rural Total - SICOR (R$)',
+        'moeda',
+        'R$',
+        serieHistCred,
+        munsRDLista.map(m => ({
+            municipio: m.municipio,
+            ibge6: m.ibge6,
+            ano: anoCred,
+            valor: normMun(m.municipio) === munAtualNorm ? valCred : 0,
+            rank_pe: normMun(m.municipio) === munAtualNorm ? rankCred : null
+        })),
+        {
+            fonte: 'Banco Central do Brasil - SICOR',
+            subdimensao: 'Agropecuária & Meio Rural',
+            interpretacao: 'Volume financeiro total contratado em operações de crédito rural (custeio, investimento e comercialização) no município.'
+        }
+    );
+    const subCredHtml = `<div class="text-[10px] text-slate-500 font-semibold mt-1">SICOR ${anoCred} &bull; Contratos: ${opsCred.toLocaleString('pt-BR')}</div>`;
+    window.configurarBotoesKPI('credito_valor', 'credito_valor', 'Crédito Rural Total - SICOR (R$)', 'socio', subCredHtml);
+
+    // 6. Monitor de Estiagem / Quebra de Safra (LSPA - Abrangência Estadual PE)
+    const lspaTotal = (lspaArr || [])
+        .filter(l => l.produto === 'Total' && l.area_plantada !== null && l.area_plantada !== undefined && l.area_plantada !== '')
+        .sort((a, b) => String(a.cod_periodo || '').localeCompare(String(b.cod_periodo || '')));
+
+    let taxaPerdaStr = '-';
+    let areaPerdidaStr = 'Sem registros recentes';
+    let periodoAnteriorStr = '-';
+    let periodoAtualStr = '-';
+
     if (lspaTotal.length) {
         const lspaUltimo = lspaTotal[lspaTotal.length - 1];
+        const lspaPenultimo = lspaTotal.length > 1 ? lspaTotal[lspaTotal.length - 2] : null;
         const taxaPerda = parseFloat(lspaUltimo.taxa_perda_pct) || 0;
         const areaPerdida = parseFloat(lspaUltimo.area_perdida_ha) || 0;
-        const mesAnoStr = lspaUltimo.mes_ano || 'Recente';
 
-        $('#ficha_kpi_agri_taxa_perda').text(`${taxaPerda.toFixed(1)}%`);
-        $('#ficha_kpi_agri_area_perdida_pe').html(`Perda PE: <strong>${Math.round(areaPerdida).toLocaleString('pt-BR')} ha</strong>`);
+        taxaPerdaStr = `${taxaPerda.toFixed(1)}%`;
+        areaPerdidaStr = `Perda Estadual: ${Math.round(areaPerdida).toLocaleString('pt-BR')} ha`;
+
+        const fmtMesAnoLspa = (item) => {
+            if (!item) return '-';
+            const cp = String(item.cod_periodo || '');
+            return cp.length === 6 ? `${cp.substring(4, 6)}/${cp.substring(0, 4)}` : (item.mes_ano || '-');
+        };
+        periodoAtualStr = fmtMesAnoLspa(lspaUltimo);
+        if (lspaPenultimo) {
+            const taxaAnt = parseFloat(lspaPenultimo.taxa_perda_pct) || 0;
+            periodoAnteriorStr = `${taxaAnt.toFixed(1)}% (${fmtMesAnoLspa(lspaPenultimo)})`;
+        }
+
+        $('#ficha_kpi_agri_taxa_perda').text(taxaPerdaStr);
+        $('#ficha_kpi_agri_area_perdida_pe').text(areaPerdidaStr);
 
         const $statusEstiagem = $('#ficha_kpi_agri_status_estiagem');
         if (taxaPerda > 30) {
-            $statusEstiagem.text('Estiagem Severa').removeClass('bg-emerald-50 text-emerald-700 bg-amber-50 text-amber-700').addClass('bg-rose-50 text-rose-700 border-rose-200');
+            $statusEstiagem.text('Estiagem Severa (PE)').removeClass('bg-emerald-50 text-emerald-700 bg-amber-50 text-amber-700').addClass('bg-rose-50 text-rose-700 border-rose-200');
         } else if (taxaPerda > 15) {
-            $statusEstiagem.text('Quebra Moderada').removeClass('bg-emerald-50 text-emerald-700 bg-rose-50 text-rose-700').addClass('bg-amber-50 text-amber-700 border-amber-200');
+            $statusEstiagem.text('Quebra Moderada (PE)').removeClass('bg-emerald-50 text-emerald-700 bg-rose-50 text-rose-700').addClass('bg-amber-50 text-amber-700 border-amber-200');
         } else {
-            $statusEstiagem.text('Safra Normal').removeClass('bg-rose-50 text-rose-700 bg-amber-50 text-amber-700').addClass('bg-emerald-50 text-emerald-700 border-emerald-200');
+            $statusEstiagem.text('Safra Normal (PE)').removeClass('bg-rose-50 text-rose-700 bg-amber-50 text-amber-700').addClass('bg-emerald-50 text-emerald-700 border-emerald-200');
         }
     } else {
         $('#ficha_kpi_agri_taxa_perda').text('-');
         $('#ficha_kpi_agri_area_perdida_pe').text('Sem registros recentes');
     }
+
+    // Registra o metadado para o botão "i"
+    const normLspa = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    window.dadosMetadadosMapa = window.dadosMetadadosMapa || {};
+    window.dadosMetadados = window.dadosMetadados || [];
+    const metaLspaObj = {
+        cd_indicador: 'agri_taxa_perda',
+        nm_indicador: 'Taxa de Quebra de Safra (LSPA - Pernambuco)',
+        nm_fantasia: 'Taxa de Quebra de Safra (LSPA - Pernambuco)',
+        natureza: 'percentual',
+        unidade: '%',
+        polaridade: 'negativa',
+        fonte: 'IBGE - Levantamento Sistemático da Produção Agrícola (LSPA - Nível Estadual PE)',
+        subdimensao: 'Agropecuária & Meio Rural',
+        referencia_analise: {
+            interpretacao: 'Percentual da área plantada perdida por estiagem ou fatores climáticos no Estado de Pernambuco (indicador exclusivamente estadual, sem desagregação municipal pelo IBGE).',
+            impacto_planejamento: 'Monitora o impacto conjuntural da seca na safra estadual de Pernambuco.',
+            direcao_desejavel: 'Quanto menor, menor a perda de área plantada no estado.'
+        }
+    };
+    window.dadosMetadadosMapa['agri_taxa_perda'] = metaLspaObj;
+    if (!window.dadosMetadados.some(m => normLspa(m.cd_indicador) === 'agri_taxa_perda')) {
+        window.dadosMetadados.push(metaLspaObj);
+    }
+
+    // Função que customiza o card Aurora: remove o botão de setinha (→) e insere o destaque de Dado Estadual
+    const customizarCardLspaEstadual = () => {
+        const elNum = document.getElementById('ficha_kpi_agri_taxa_perda');
+        let cardEl = elNum ? elNum.closest('.kpi-card-aurora, .kpi-modern-card') : null;
+
+        // Fallback: localiza o card pelo texto caso o ID tenha sido substituído pelo template Aurora
+        if (!cardEl) {
+            document.querySelectorAll('#aba_ficha .kpi-card-aurora, #aba_ficha .kpi-modern-card').forEach(c => {
+                if (c.textContent.includes('Taxa de Quebra de Safra')) cardEl = c;
+            });
+        }
+        if (!cardEl) return;
+
+        cardEl.dataset.auroraIgnorar = '1';
+        cardEl.classList.add('kpi-aurora-processado');
+        cardEl.style.border = '1.5px solid #93c5fd';
+        cardEl.style.borderLeft = '4px solid #1d4ed8';
+        cardEl.style.background = 'linear-gradient(180deg, #eff6ff 0%, #ffffff 42%)';
+
+        // 1. Remove o botão da seta (→) que abre o modal de gráficos comparativos, mantendo apenas o botão "i"
+        cardEl.querySelectorAll('button, a').forEach(btn => {
+            const onClick = btn.getAttribute('onclick') || '';
+            const hasArrow = btn.querySelector('.fa-arrow-right, .fa-up-right-from-square, .fa-expand, .fa-chart-line') || btn.textContent.trim() === '→';
+            if (!onClick.includes('abrirModalMetadado') && (hasArrow || onClick.includes('Modal'))) {
+                btn.remove();
+            }
+        });
+
+        // 2. Insere o selo "DADO ESTADUAL • PERNAMBUCO" logo abaixo do título do indicador
+        if (!cardEl.querySelector('.badge-dado-estadual-lspa')) {
+            const walker = document.createTreeWalker(cardEl, NodeFilter.SHOW_TEXT, null);
+            let node;
+            while ((node = walker.nextNode())) {
+                if (node.nodeValue && node.nodeValue.includes('Taxa de Quebra de Safra')) {
+                    const titleEl = node.parentElement;
+                    if (titleEl) {
+                        titleEl.insertAdjacentHTML('afterend', `
+                            <div class="badge-dado-estadual-lspa mt-1.5">
+                                <span class="badge bg-blue-600 text-white rounded-pill px-2.5 py-1 font-extrabold tracking-wide shadow-2xs" style="font-size: 0.65rem;">
+                                    <i class="fas fa-map me-1"></i>DADO ESTADUAL • PERNAMBUCO
+                                </span>
+                            </div>
+                        `);
+                    }
+                    break;
+                }
+            }
+        }
+
+        // 3. Atualiza o rodapé ("Período Anterior") com os dados estaduais do LSPA
+        const footerSpans = cardEl.querySelectorAll('.border-top span, .card-footer span, [class*="footer"] span');
+        if (footerSpans.length >= 2 && periodoAnteriorStr !== '-') {
+            footerSpans[footerSpans.length - 1].textContent = `${periodoAnteriorStr} • Ref: ${periodoAtualStr}`;
+        }
+    };
+
+    // Executa imediatamente e também após o garantirBotoesTodosKPIs() finalizar
+    customizarCardLspaEstadual();
+    setTimeout(customizarCardLspaEstadual, 150);
 
     // 7. Popula Container Detalhado de Pecuária (Tabela)
     const $ppmCont = $('#ficha_container_ppm_detalhe').empty();
@@ -5442,9 +6174,9 @@ function renderizarAgropecuariaCompleta(pamArr, lspaArr, pamAgri, ppmPecuaria, p
     let credHtml = '';
     if (credArr.length > 0) {
         credHtml += '<div><span class="text-slate-500 font-bold uppercase text-[10px] block mb-1">Histórico de Financiamento Rural (SICOR / Bacen)</span><div class="space-y-1.5">';
-        [...credArr].sort((a,b) => (parseInt(b.ano)||0) - (parseInt(a.ano)||0)).slice(0, 3).forEach(cr => {
+        [...credArr].sort((a, b) => (parseInt(b.ano, 10) || 0) - (parseInt(a.ano, 10) || 0)).slice(0, 3).forEach(cr => {
             const v = parseFloat(cr.valor_total_financiado) || 0;
-            const op = parseInt(cr.qtd_operacoes) || 0;
+            const op = parseInt(cr.qtd_operacoes, 10) || 0;
             credHtml += `
                 <div class="d-flex justify-content-between align-items-center bg-amber-50/50 border border-amber-100 p-2 rounded-xl text-xs">
                     <span class="font-bold text-amber-900">${cr.ano}</span>
@@ -5484,15 +6216,38 @@ window.alternarGraficoPim = function(modo) {
     renderizarGraficoPimIndustrial(cacheDadosPimFicha.pim);
 };
 
-function renderizarIndustriaCompleta(pimArr, vocInd, ind, nomeMun, demo) {
-    cacheDadosPimFicha = {
-        pim: pimArr || []
+async function renderizarIndustriaCompleta(pimArr, vocInd, ind, nomeMun, demo) {
+    // 0. Protege o card customizado da PIM-PF contra a conversão genérica do garantirBotoesTodosKPIs()
+    const protegerCardPim = () => {
+        const numEl = document.getElementById('ficha_kpi_pim_indice_pe');
+        if (!numEl) return;
+        const card = numEl.closest('.kpi-modern-card, .kpi-card-aurora');
+        if (card) {
+            card.dataset.auroraIgnorar = '1';
+            card.classList.add('kpi-aurora-processado');
+            // Caso o garantirBotoesTodosKPIs já tenha transformado o card anteriormente, restaura os spans internos
+            if (!document.getElementById('ficha_kpi_pim_mes_ref')) {
+                const body = card.querySelector('.card-body') || card;
+                body.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider">Índice de Produção Física (2022 = 100)</span>
+                        <span class="badge bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-pill text-[10px] font-bold px-2" id="ficha_kpi_pim_mes_ref">Mês Ref: -</span>
+                    </div>
+                    <div class="d-flex align-items-baseline gap-2 my-1">
+                        <i class="fas fa-industry text-indigo-600 text-lg"></i>
+                        <span class="text-2xl font-black text-slate-800" id="ficha_kpi_pim_indice_pe">-</span>
+                    </div>
+                    <div class="text-xs font-bold text-slate-600 mt-1" id="ficha_kpi_pim_var_interanual_pe">Var. Interanual: -</div>
+                `;
+            }
+        }
     };
+    protegerCardPim();
 
     // 1. Renderiza o bloco de CNAE da Indústria
     try {
         renderizarCardsCnaeSetor('ficha_container_cnae_industria', vocInd, ind, 'ind');
-    } catch(e) {
+    } catch (e) {
         console.error("[Ficha] Erro ao renderizar CNAE Indústria:", e);
     }
 
@@ -5505,33 +6260,101 @@ function renderizarIndustriaCompleta(pimArr, vocInd, ind, nomeMun, demo) {
             '#4f46e5',
             'fa-industry'
         );
-    } catch(e) {
+    } catch (e) {
         console.error("[Ficha] Erro ao renderizar KPIs Indústria:", e);
     }
 
-    // 3. Processa a referência estadual da PIM-PF (IBGE)
-    const pimDados = (pimArr || []).map(p => ({
-        ano: parseInt(p.ano) || 0,
-        mes_num: parseInt(p.mes_num) || 0,
-        mes_codigo: p.mes_codigo || '',
-        mes: p.mes || '',
-        data_referencia: p.data_referencia || '',
-        localidade_tipo: p.localidade_tipo || (p.uf === 'BR' ? 'Brasil' : 'Pernambuco'),
-        uf: p.uf || (p.localidade_tipo === 'Brasil' ? 'BR' : 'PE'),
-        var_interanual: parseFloat(p.var_interanual_pct) || null,
-        var_acumulada_ano: parseFloat(p.var_acumulada_ano_pct) || null,
-        var_acumulada_12m: parseFloat(p.var_acumulada_12m_pct) || null,
-        var_margem: parseFloat(p.var_margem_sazonal_pct) || null,
-        indice_com_ajuste: parseFloat(p.indice_com_ajuste_2022) || null,
-        indice_sem_ajuste: parseFloat(p.indice_sem_ajuste_2022) || null
-    })).sort((a,b) => String(a.data_referencia).localeCompare(String(b.data_referencia)));
+    // 3. Fallback: se pimArr vier vazio da API principal, carrega do JSON estático (com deduplicação de fetch)
+    let listaPim = Array.isArray(pimArr) ? pimArr : [];
+    if (listaPim.length === 0) {
+        if (Array.isArray(window.cachePimStatic) && window.cachePimStatic.length > 0) {
+            listaPim = window.cachePimStatic;
+        } else {
+            if (!window._promisePimStatic) {
+                const base = window.basePath || '';
+                const caminhos = [
+                    `${base}/data/json/pim_industrial.json`.replace(/\/+/g, '/'),
+                    `${base}/data/json/df_pim.json`.replace(/\/+/g, '/')
+                ];
+                window._promisePimStatic = (async () => {
+                    for (const url of caminhos) {
+                        try {
+                            const res = await fetch(url);
+                            if (res && res.ok) {
+                                const rawJson = await res.json();
+                                const arr = Array.isArray(rawJson)
+                                    ? rawJson
+                                    : (rawJson?.dados || rawJson?.pim_industrial || rawJson?.data || []);
+                                if (Array.isArray(arr) && arr.length > 0) {
+                                    window.cachePimStatic = arr;
+                                    return arr;
+                                }
+                            }
+                        } catch (e) {}
+                    }
+                    return [];
+                })();
+            }
+            listaPim = await window._promisePimStatic;
+        }
+    }
+
+    // Helpers seguros para extrair escalares vindos de R/Go (arrays, strings com vírgula ou null)
+    const extrairVal = (v) => Array.isArray(v) ? v[0] : v;
+    const parseNumPim = (v) => {
+        const raw = extrairVal(v);
+        if (raw === null || raw === undefined || raw === '' || raw === 'NA' || raw === 'n.d.') return null;
+        const n = parseFloat(String(raw).replace(',', '.'));
+        return isNaN(n) ? null : n;
+    };
+
+    const pimDados = (listaPim || []).map(p => {
+        const ufRaw = String(extrairVal(p.uf) || '').trim().toUpperCase();
+        const locRaw = String(extrairVal(p.localidade_tipo || p.localidade || p.territorio) || '').trim().toUpperCase();
+
+        let ufNorm = ufRaw;
+        if (!ufNorm || ufNorm === 'NA') {
+            if (locRaw.includes('BRASIL') || locRaw === 'BR') ufNorm = 'BR';
+            else ufNorm = 'PE';
+        } else if (ufNorm === 'PERNAMBUCO' || ufNorm === '26') {
+            ufNorm = 'PE';
+        } else if (ufNorm === 'BRASIL' || ufNorm === '1') {
+            ufNorm = 'BR';
+        }
+
+        return {
+            ano: parseInt(extrairVal(p.ano), 10) || 0,
+            mes_num: parseInt(extrairVal(p.mes_num || p.mes_referencia), 10) || 0,
+            mes_codigo: String(extrairVal(p.mes_codigo) || ''),
+            mes: String(extrairVal(p.mes) || ''),
+            data_referencia: String(extrairVal(p.data_referencia) || ''),
+            localidade_tipo: ufNorm === 'BR' ? 'Brasil' : 'Pernambuco',
+            uf: ufNorm,
+            var_interanual: parseNumPim(p.var_interanual_pct),
+            var_acumulada_ano: parseNumPim(p.var_acumulada_ano_pct),
+            var_acumulada_12m: parseNumPim(p.var_acumulada_12m_pct),
+            var_margem: parseNumPim(p.var_margem_sazonal_pct),
+            indice_com_ajuste: parseNumPim(p.indice_com_ajuste_2022 ?? p.indice_com_ajuste),
+            indice_sem_ajuste: parseNumPim(p.indice_sem_ajuste_2022 ?? p.indice_sem_ajuste)
+        };
+    }).sort((a, b) => {
+        if (a.data_referencia && b.data_referencia) {
+            return a.data_referencia.localeCompare(b.data_referencia);
+        }
+        return (a.ano * 100 + a.mes_num) - (b.ano * 100 + b.mes_num);
+    });
+
+    cacheDadosPimFicha = { pim: pimDados };
+
+    // Garante novamente que o card não foi alterado durante o await
+    protegerCardPim();
 
     const dadosPE = pimDados.filter(p => p.uf === 'PE');
     const dadosBR = pimDados.filter(p => p.uf === 'BR');
 
     if (dadosPE.length > 0) {
         const peRecente = dadosPE[dadosPE.length - 1];
-        const brRecente = dadosBR.find(b => b.data_referencia === peRecente.data_referencia) || dadosBR[dadosBR.length - 1];
+        const brRecente = dadosBR.find(b => b.data_referencia && b.data_referencia === peRecente.data_referencia) || dadosBR[dadosBR.length - 1];
 
         const fmtPct = (val) => {
             if (val === null || val === undefined || isNaN(val)) return '-';
@@ -5539,15 +6362,17 @@ function renderizarIndustriaCompleta(pimArr, vocInd, ind, nomeMun, demo) {
             return `${sinal}${val.toFixed(1)}%`;
         };
 
-        const indVal = peRecente.indice_com_ajuste || peRecente.indice_sem_ajuste;
-        $('#ficha_kpi_pim_indice_pe').text(indVal ? indVal.toFixed(1) : '-');
-        $('#ficha_kpi_pim_mes_ref').text(`Mês Ref: ${peRecente.mes || `${peRecente.mes_num}/${peRecente.ano}`}`);
+        const indVal = peRecente.indice_com_ajuste !== null ? peRecente.indice_com_ajuste : peRecente.indice_sem_ajuste;
+        const mesRefStr = peRecente.mes || (peRecente.mes_num && peRecente.ano ? `${String(peRecente.mes_num).padStart(2, '0')}/${peRecente.ano}` : '-');
+
+        $('#ficha_kpi_pim_indice_pe').text(indVal !== null ? indVal.toFixed(1) : '-');
+        $('#ficha_kpi_pim_mes_ref').text(`Mês Ref: ${mesRefStr}`);
         $('#ficha_kpi_pim_var_interanual_pe').text(`Var. Interanual: ${fmtPct(peRecente.var_interanual)}`);
         $('#ficha_kpi_pim_var_ano_pe').text(fmtPct(peRecente.var_acumulada_ano));
         $('#ficha_kpi_pim_var_12m_pe').text(fmtPct(peRecente.var_acumulada_12m));
 
-        const indBrVal = brRecente ? (brRecente.indice_com_ajuste || brRecente.indice_sem_ajuste) : null;
-        $('#ficha_kpi_pim_indice_br').text(indBrVal ? `Brasil: ${indBrVal.toFixed(1)}` : 'Brasil: -');
+        const indBrVal = brRecente ? (brRecente.indice_com_ajuste !== null ? brRecente.indice_com_ajuste : brRecente.indice_sem_ajuste) : null;
+        $('#ficha_kpi_pim_indice_br').text(indBrVal !== null ? `Brasil: ${indBrVal.toFixed(1)}` : 'Brasil: -');
     } else {
         $('#ficha_kpi_pim_indice_pe').text('-');
         $('#ficha_kpi_pim_mes_ref').text('Mês Ref: -');
@@ -5556,8 +6381,16 @@ function renderizarIndustriaCompleta(pimArr, vocInd, ind, nomeMun, demo) {
         $('#ficha_kpi_pim_var_12m_pe').text('-');
         $('#ficha_kpi_pim_indice_br').text('Brasil: -');
     }
-}
 
+    // 4. Renderiza o gráfico histórico PE x Brasil
+    try {
+        if (typeof renderizarGraficoPimIndustrial === 'function') {
+            renderizarGraficoPimIndustrial(pimDados);
+        }
+    } catch (e) {
+        console.error("[Ficha] Erro ao renderizar gráfico PIM-PF:", e);
+    }
+}
 function renderizarGraficoPimIndustrial(pimDados) {
     const dom = document.getElementById('ficha_chart_pim_industrial');
     if (!dom || typeof echarts === 'undefined') return;
@@ -6636,13 +7469,13 @@ window.renderizarResumoAguas = function () {
             // Fallback resiliente caso plano ou geojson não venham na resposta direta
             if (!data.plano) {
                 try {
-                    const rPlano = await fetch(`${window.basePath || ''}/data/compesa_plano_investimentos.json`.replace(/\/+/g, '/'));
+                    const rPlano = await fetch(`${window.basePath || ''}/data/json/compesa_plano_investimentos.json`.replace(/\/+/g, '/'));
                     if (rPlano.ok) data.plano = await rPlano.json();
                 } catch (e) {}
             }
             if (!data.geojson) {
                 try {
-                    const rGeo = await fetch(`${window.basePath || ''}/data/mapa_compesa_todas_camadas.geojson`.replace(/\/+/g, '/'));
+                    const rGeo = await fetch(`${window.basePath || ''}/data/geojson/mapa_compesa_todas_camadas.geojson`.replace(/\/+/g, '/'));
                     if (rGeo.ok) data.geojson = await rGeo.json();
                 } catch (e) {}
             }
@@ -6654,26 +7487,26 @@ window.renderizarResumoAguas = function () {
 
             if (!apacResGeo || !apacResGeo.features) {
                 try {
-                    const r = await fetch(`${window.basePath || ''}/data/apac_reservatorios.geojson`.replace(/\/+/g, '/'));
+                    const r = await fetch(`${window.basePath || ''}/data/geojson/apac_reservatorios.geojson`.replace(/\/+/g, '/'));
                     if (r.ok) apacResGeo = await r.json();
                 } catch (e) {}
             }
             if (!apacBaciasGeo || !apacBaciasGeo.features) {
                 try {
-                    const r = await fetch(`${window.basePath || ''}/data/apac_bacias_hidrograficas.geojson`.replace(/\/+/g, '/'));
+                    const r = await fetch(`${window.basePath || ''}/data/geojson/apac_bacias_hidrograficas.geojson`.replace(/\/+/g, '/'));
                     if (r.ok) apacBaciasGeo = await r.json();
                 } catch (e) {}
             }
             if (!apacResumo || !apacResumo.total_reservatorios) {
                 try {
-                    const r = await fetch(`${window.basePath || ''}/data/apac_resumo_estadual.json`.replace(/\/+/g, '/'));
+                    const r = await fetch(`${window.basePath || ''}/data/json/apac_resumo_estadual.json`.replace(/\/+/g, '/'));
                     if (r.ok) apacResumo = await r.json();
                 } catch (e) {}
             }
 
             if (!window.cacheApacReservatorios) {
                 try {
-                    const r = await fetch(`${window.basePath || ''}/data/apac_reservatorios.json`.replace(/\/+/g, '/'));
+                    const r = await fetch(`${window.basePath || ''}/data/json/apac_reservatorios.json`.replace(/\/+/g, '/'));
                     if (r.ok) window.cacheApacReservatorios = await r.json();
                 } catch (e) {}
             }
@@ -8378,400 +9211,21 @@ window.limparFiltroMunTabelaAguas = function () {
     }
 };
 
-
-/* ==========================================================================
-   MODAL DE SÉRIE HISTÓRICA E RANKING / COMPARATIVO REGIONAL (MUNICÍPIOS)
-   ========================================================================== */
-
-var chartModalFichaSerie = null;
-var chartModalFichaRanking = null;
-
-window.configurarBotoesKPI = function(elemBase, sigla, titulo, tipo) {
-    const $card = $(`#ficha_kpi_${elemBase}`).closest('.kpi-modern-card');
-    if (!$card.length) return;
-    const headerEl = $card.find('.kpi-modern-header');
-    if (!headerEl.length) return;
-
-    if (headerEl.find('.kpi-actions-container').length > 0) return;
-
-    let txtTitulo = titulo;
-    if (!txtTitulo) {
-        const clone = headerEl.clone();
-        clone.find('button, i').remove();
-        txtTitulo = clone.text().trim();
-    }
-    if (txtTitulo === 'DTP/RCL' || String(sigla).toLowerCase().includes('dtp')) {
-        txtTitulo = 'Pessoal';
-    }
-    const tituloEscaped = txtTitulo.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-    const siglaEscaped = String(sigla || elemBase || '').trim().replace(/'/g, "\\'");
-    const tipoEscaped = (tipo || 'socio').replace(/'/g, "\\'");
-
-    headerEl.addClass('d-flex justify-content-between align-items-start gap-1.5');
-    headerEl.html(`
-        <span class="kpi-header-title" title="${tituloEscaped}">${txtTitulo}</span>
-        <div class="kpi-actions-container d-flex gap-1 align-items-center flex-shrink-0 d-print-none">
-            <button type="button" class="btn btn-light bg-white border border-slate-200 shadow-2xs d-flex justify-content-center align-items-center" 
-                    onclick="event.stopPropagation(); window.abrirModalMetadado('${siglaEscaped}')" 
-                    style="width: 24px; height: 24px; border-radius: 6px; padding: 0; min-width: 24px;" title="Ver Metadados e Informações">
-                <i class="fas fa-info text-slate-400 hover:text-blue-600" style="font-size: 0.65rem;"></i>
-            </button>
-            <button type="button" class="btn btn-light bg-white border border-slate-200 shadow-2xs d-flex justify-content-center align-items-center" 
-                    onclick="event.stopPropagation(); window.abrirModalSerieHistoricaMun('${siglaEscaped}', '${tituloEscaped}', '${tipoEscaped}')" 
-                    style="width: 24px; height: 24px; border-radius: 6px; padding: 0; min-width: 24px;" title="Ver Série Histórica e Comparativo">
-                <i class="fas fa-arrow-right" style="color: #0C2856; font-size: 0.65rem;"></i>
-            </button>
-        </div>
-    `);
-};
-
-window.garantirBotoesTodosKPIs = function() {
-    // 1. Configurar os 8 KPIs da caracterização inicial
-    window.configurarBotoesKPI('pibpc', 'pibpc', 'PIB per Capita', 'socio');
-    window.configurarBotoesKPI('pib_pct', 'pib_pct', 'Participação PIB Estadual', 'socio');
-    window.configurarBotoesKPI('pib_1000', 'pib', 'PIB Total', 'socio');
-    window.configurarBotoesKPI('idhm', 'idhm', 'IDHM', 'socio');
-    window.configurarBotoesKPI('vab_agro', 'vab_agro', 'VAB Agropecuária', 'socio');
-    window.configurarBotoesKPI('vab_ind', 'vab_ind', 'VAB Indústria', 'socio');
-    window.configurarBotoesKPI('vab_serv', 'vab_serv', 'VAB Serviços', 'socio');
-    window.configurarBotoesKPI('vab_adm', 'vab_adm', 'VAB Adm Pública', 'socio');
-
-    // 2. Varrer todos os .kpi-modern-card que ainda não possuam botões de ação
-    $('#aba_ficha .kpi-modern-card').each(function() {
-        const $card = $(this);
-        if ($card.find('.kpi-actions-container').length > 0) return;
-
-        const numEl = $card.find('[id^="ficha_kpi_"]');
-        if (!numEl.length) return;
-
-        const idNum = numEl.attr('id') || '';
-        const elemBase = idNum.replace('ficha_kpi_', '');
-        const clone = $card.find('.kpi-modern-header').clone();
-        clone.find('button, i').remove();
-        let titulo = clone.text().trim();
-        if (titulo === 'DTP/RCL' || elemBase.includes('dtp')) titulo = 'Pessoal';
-
-        const tipo = elemBase.includes('fisc') ? 'fiscal' : 'socio';
-        window.configurarBotoesKPI(elemBase, elemBase, titulo, tipo);
-    });
-};
-
-window.abrirModalSerieHistoricaMun = async function (sigla, titulo, tipo) {
-    const mun = $('#ficha_f_municipio').val() || 'Município';
-    const siglaNorm = String(sigla || '').trim().toLowerCase();
-    let nomeExib = titulo || sigla;
-    if (nomeExib === 'DTP/RCL' || siglaNorm.includes('dtp')) nomeExib = 'Pessoal';
-
-    const modalTitle = document.getElementById('modal_ficha_kpi_titulo');
-    if (modalTitle) {
-        modalTitle.innerText = `${nomeExib} — Evolução Histórica e Comparativo (${mun})`;
-    }
-
-    const badgeTipo = document.getElementById('modal_ficha_kpi_badge_tipo');
-    if (badgeTipo) {
-        badgeTipo.innerText = tipo === 'fiscal' ? 'GESTÃO FISCAL' : 'INDICADOR MUNICIPAL';
-    }
-
-    const modalEl = document.getElementById('modal_ficha_kpi_serie');
-    if (!modalEl) {
-        console.error('[Ficha] Modal #modal_ficha_kpi_serie não encontrado no DOM!');
-        return;
-    }
-
-    let bsModal = null;
-    if (window.bootstrap && window.bootstrap.Modal) {
-        bsModal = window.bootstrap.Modal.getOrCreateInstance 
-            ? window.bootstrap.Modal.getOrCreateInstance(modalEl) 
-            : new window.bootstrap.Modal(modalEl);
-    } else if (typeof $(modalEl).modal === 'function') {
-        $(modalEl).modal('show');
-    }
-    if (bsModal) {
-        bsModal.show();
-    }
-
-    renderizarModalConteudoMun(siglaNorm, nomeExib, mun, tipo);
-    $(modalEl).one('shown.bs.modal', function () {
-        if (chartModalFichaSerie) chartModalFichaSerie.resize();
-        if (chartModalFichaRanking) chartModalFichaRanking.resize();
-    });
-};
-
-function renderizarModalConteudoMun(siglaNorm, nomeExib, mun, tipo) {
-    const normKey = (str) => String(str || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const siglaKey = normKey(siglaNorm);
-    const meta = (window.dadosMetadados || []).find(m => {
-        const cd = normKey(m.cd_indicador);
-        const nm = normKey(m.nm_indicador);
-        return cd === siglaKey || nm === siglaKey || (cd && siglaKey && (cd.includes(siglaKey) || siglaKey.includes(cd)));
-    });
-    const unidade = meta ? (meta.unidade || '') : '';
-    const natureza = meta ? (meta.natureza || '') : '';
-    const natNorm = normKey(natureza);
-    const isPct = unidade.includes('%') || nomeExib.includes('%') || natNorm.includes('percent') || natNorm.includes('taxa') || siglaNorm.includes('pct') || siglaNorm.includes('perc') || siglaNorm.includes('tx_') || siglaNorm.includes('dtp') || siglaNorm.includes('pessoal');
-    const isMoeda = unidade.includes('R$') || nomeExib.includes('R$') || natNorm.includes('moeda') || natNorm.includes('monetario') || siglaNorm.includes('pib') || siglaNorm.includes('val');
-    const isIndice = unidade.toLowerCase().includes('índice') || natNorm.includes('indice') || natNorm.includes('razao') || siglaNorm.includes('idhm') || siglaNorm.includes('ideb') || siglaNorm.includes('ivcad') || siglaNorm.includes('ql');
-
-    let anos = [];
-    let valores = [];
-    let serieMun = [];
-
-    if (tipo === 'fiscal' || siglaNorm.includes('dtp') || siglaNorm.includes('fisc') || siglaNorm.includes('pessoal')) {
-        const fiscais = window.dadosFiscaisMun || [];
-        const matches = fiscais.filter(f => {
-            const indNorm = normKey(f.indicador);
-            return indNorm === siglaKey || (siglaKey === 'pessoal' && (indNorm.includes('dtp') || indNorm.includes('pessoal')));
-        });
-        const porAno = {};
-        matches.forEach(m => {
-            const ex = Number(m.exercicio);
-            if (!isNaN(ex) && ex > 0) {
-                porAno[ex] = parseFloat(m.valor) || 0;
-            }
-        });
-        const anosOrd = Object.keys(porAno).map(Number).sort((a, b) => a - b);
-        anos = anosOrd.map(String);
-        valores = anosOrd.map(a => porAno[a]);
-    } else {
-        const indicadores = dadosBrutosFicha || [];
-        serieMun = indicadores.filter(i => {
-            const s = normKey(i.sigla_indicador);
-            return s === siglaKey || (meta && normKey(i.nm_indicador) === normKey(meta.nm_indicador));
-        });
-
-        serieMun.sort((a, b) => (Number(a.ano) || 0) - (Number(b.ano) || 0));
-        anos = serieMun.map(d => String(d.ano));
-        valores = serieMun.map(d => {
-            const valStr = String(d.indicador || '').replace(',', '.').replace('%', '').trim();
-            return parseFloat(valStr) || 0;
-        });
-    }
-
-    const indRD = cacheSociaisRD.indicadoresRD || [];
-    const rdNome = cacheSociaisRD.demografiaRD?.[0]?.regiao_de_desenvolvimento || '';
-    const anoMaisRecente = anos.length ? Math.max(...anos.map(Number)) : 0;
-    
-    let rankingArr = [];
-    if (indRD.length > 0 && anoMaisRecente > 0) {
-        const itensRD = indRD.filter(d => {
-            const s = normKey(d.sigla_indicador);
-            return (s === siglaKey || (meta && normKey(d.nm_indicador) === normKey(meta.nm_indicador))) && Number(d.ano) === anoMaisRecente;
-        });
-
-        rankingArr = itensRD.map(d => ({
-            municipio: d.nm_municipio || d.municipio,
-            valor: parseFloat(String(d.indicador || '').replace(',', '.').replace('%', '').trim()) || 0,
-            rank_pe: d.rank_pe || null
-        }));
-    }
-
-    if (rankingArr.length === 0 && valores.length > 0) {
-        rankingArr.push({
-            municipio: mun,
-            valor: valores[valores.length - 1],
-            rank_pe: serieMun.length ? serieMun[serieMun.length - 1].rank_pe : null
-        });
-    }
-
-    rankingArr.sort((a, b) => b.valor - a.valor);
-
-    renderStorytellingModalMun(nomeExib, mun, anos, valores, rankingArr, unidade, isPct, isMoeda, isIndice, meta);
-    renderGraficoLinhaModalMun(anos, valores, nomeExib, mun, isPct, isMoeda, isIndice);
-    renderGraficoBarrasModalMun(rankingArr, mun, nomeExib, rdNome, isPct, isMoeda, isIndice, anoMaisRecente);
-}
-
-function renderStorytellingModalMun(nomeExib, mun, anos, valores, rankingArr, unidade, isPct, isMoeda, isIndice, meta) {
-    const $story = $('#modal_ficha_kpi_storytelling');
-    if (!$story.length) return;
-
-    if (!valores.length) {
-        $story.html(`<div class="text-slate-500 italic">Série histórica em consolidação para este município.</div>`);
-        return;
-    }
-
-    const ultimoVal = valores[valores.length - 1];
-    const ultimoAno = anos[anos.length - 1];
-    
-    const formatarValor = (v) => {
-        if (isNaN(v)) return '-';
-        if (isPct) return v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%';
-        if (isMoeda) return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        if (isIndice) return v.toFixed(3);
-        return v.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
-    };
-
-    let textoVar = '';
-    if (valores.length >= 2) {
-        const penultimoVal = valores[valores.length - 2];
-        const penultimoAno = anos[anos.length - 2];
-        const varAbs = ultimoVal - penultimoVal;
-        const varPct = penultimoVal !== 0 ? (varAbs / Math.abs(penultimoVal)) * 100 : 0;
-        const sinal = varPct >= 0 ? '+' : '';
-        const cor = varPct >= 0 ? '#10B981' : '#EF4444';
-        textoVar = ` Em relação a <strong>${penultimoAno}</strong> (${formatarValor(penultimoVal)}), registrou variação de <strong style="color: ${cor};">${sinal}${varPct.toFixed(1)}%</strong>.`;
-    }
-
-    let textoRank = '';
-    const normTextMun = (s) => String(s || '').toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const munItem = rankingArr.find(r => normTextMun(r.municipio) === normTextMun(mun));
-    if (munItem && munItem.rank_pe) {
-        textoRank = ` No ranking estadual, <strong>${mun}</strong> posiciona-se no <strong>${munItem.rank_pe}º lugar</strong> entre os 184 municípios de Pernambuco.`;
-    }
-
-    let refTexto = '';
-    if (meta && meta.referencia_analise) {
-        const ref = typeof meta.referencia_analise === 'object' ? meta.referencia_analise : {};
-        if (ref.interpretacao) {
-            refTexto = `<div class="mt-2 text-xs text-slate-500 pt-2 border-t border-slate-100"><i class="fas fa-lightbulb text-amber-500 me-1"></i><strong>Interpretação Estratégica:</strong> ${ref.interpretacao}</div>`;
-        }
-    }
-
-    $story.html(`
-        <div class="d-flex align-items-center gap-2 mb-1">
-            <span class="badge bg-blue-100 text-blue-800 font-bold px-2.5 py-1 rounded-pill text-xs">DIAGNÓSTICO EXECUTIVO</span>
-            <span class="text-xs text-slate-500 font-semibold">${mun} &bull; Ano-base ${ultimoAno}</span>
-        </div>
-        <p class="mb-0 text-slate-700 leading-relaxed text-sm">
-            No ano mais recente disponível (<strong>${ultimoAno}</strong>), o indicador <strong>${nomeExib}</strong> de <strong>${mun}</strong> atingiu a marca de <strong>${formatarValor(ultimoVal)}</strong>.${textoVar}${textoRank}
-        </p>
-        ${refTexto}
-    `);
-}
-
-function renderGraficoLinhaModalMun(anos, valores, nomeExib, mun, isPct, isMoeda, isIndice) {
-    const dom = document.getElementById('modal_ficha_chart_serie');
-    if (!dom) return;
-
-    if (chartModalFichaSerie) chartModalFichaSerie.dispose();
-    chartModalFichaSerie = echarts.init(dom);
-
-    if (!anos.length) {
-        chartModalFichaSerie.clear();
-        return;
-    }
-
-    const formatarEixo = (val) => {
-        if (isPct) return val + '%';
-        if (isMoeda) {
-            if (val >= 1e6) return 'R$ ' + (val / 1e6).toFixed(1) + 'M';
-            if (val >= 1e3) return 'R$ ' + (val / 1e3).toFixed(0) + 'k';
-            return 'R$ ' + val;
-        }
-        return val;
-    };
-
-    chartModalFichaSerie.setOption({
-        tooltip: {
-            trigger: 'axis',
-            formatter: function (params) {
-                const item = params[0];
-                let v = Number(item.value);
-                let vFmt = isPct ? v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%' 
-                         : (isMoeda ? 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                         : (isIndice ? v.toFixed(3) : v.toLocaleString('pt-BR')));
-                return `<strong>${mun} (${item.name})</strong><br/>${nomeExib}: <strong>${vFmt}</strong>`;
-            }
-        },
-        grid: { left: '3%', right: '5%', bottom: '10%', top: '15%', containLabel: true },
-        xAxis: { type: 'category', data: anos, boundaryGap: false, axisLabel: { fontWeight: 'bold' } },
-        yAxis: { type: 'value', axisLabel: { formatter: formatarEixo } },
-        series: [{
-            name: nomeExib,
-            type: 'line',
-            data: valores,
-            smooth: true,
-            symbolSize: 8,
-            lineStyle: { width: 3.5, color: '#ff5a26' },
-            itemStyle: { color: '#ff5a26' },
-            areaStyle: {
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                    { offset: 0, color: 'rgba(12, 40, 86, 0.35)' },
-                    { offset: 1, color: 'rgba(12, 40, 86, 0.02)' }
-                ])
-            }
-        }]
-    });
-}
-
-function renderGraficoBarrasModalMun(rankingArr, munAlvo, nomeExib, rdNome, isPct, isMoeda, isIndice, ano) {
-    const dom = document.getElementById('modal_ficha_chart_ranking');
-    if (!dom) return;
-
-    if (chartModalFichaRanking) chartModalFichaRanking.dispose();
-    chartModalFichaRanking = echarts.init(dom);
-
-    const tituloEl = document.getElementById('modal_ficha_ranking_titulo');
-    if (tituloEl) {
-        tituloEl.innerHTML = `<i class="fas fa-chart-bar text-purple-600"></i> Comparativo Regional ${rdNome ? '— RD ' + rdNome : ''} ${ano ? '(' + ano + ')' : ''}`;
-    }
-
-    if (!rankingArr || rankingArr.length === 0) {
-        chartModalFichaRanking.clear();
-        return;
-    }
-
-    const normTextMun = (s) => String(s || '').toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const dadosReversos = [...rankingArr].reverse();
-    const categorias = dadosReversos.map(d => d.municipio);
-    const valores = dadosReversos.map(d => {
-        const isAlvo = normTextMun(d.municipio) === normTextMun(munAlvo);
-        const cor = isAlvo ? '#ff5a26' : '#94A3B8';
-        return {
-            value: d.valor,
-            itemStyle: {
-                color: cor,
-                borderRadius: [0, 4, 4, 0]
-            }
-        };
-    });
-
-    const formatarEixo = (val) => {
-        if (isPct) return val + '%';
-        if (isMoeda) {
-            if (val >= 1e6) return 'R$ ' + (val / 1e6).toFixed(1) + 'M';
-            if (val >= 1e3) return 'R$ ' + (val / 1e3).toFixed(0) + 'k';
-            return 'R$ ' + val;
-        }
-        return val;
-    };
-
-    chartModalFichaRanking.setOption({
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: { type: 'shadow' },
-            formatter: function (params) {
-                const item = params[0];
-                let v = Number(item.value);
-                let vFmt = isPct ? v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + '%' 
-                         : (isMoeda ? 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                         : (isIndice ? v.toFixed(3) : v.toLocaleString('pt-BR')));
-                return `<strong>${item.name}</strong><br/>${nomeExib}: <strong>${vFmt}</strong>`;
-            }
-        },
-        grid: { left: '3%', right: '8%', bottom: '5%', top: '5%', containLabel: true },
-        xAxis: { type: 'value', axisLabel: { formatter: formatarEixo } },
-        yAxis: { type: 'category', data: categorias, axisLabel: { fontSize: 11, fontWeight: 'bold' } },
-        series: [{
-            type: 'bar',
-            data: valores,
-            barMaxWidth: 24
-        }]
-    });
-}
-
-
-
 /* ==========================================================================
    ANÁLISES TEMÁTICAS - PAUTA 1: PERNAMBUCO SEM FOME (COZINHAS, MÃES & COFINANCIAMENTO)
    ========================================================================== */
 
 let cozinhasPorMunCache = null;
 
-window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
+window.atualizarKpisProgramasMunicipais = async function (nomeMun, codIbge) {
     if (!nomeMun) return;
     const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     const targetMun = norm(nomeMun);
     const targetIbge = String(codIbge || '').trim();
+    const listaGeral = window.dadosBrutosFicha || dadosBrutosFicha || [];
+
+    const munsRDSet = new Set((cacheSociaisRD.demografiaRD || []).map(d => norm(d.municipio)));
+    if (targetMun) munsRDSet.add(targetMun);
 
     const formataBi = (v) => {
         if (!v || v === 0) return "R$ 0";
@@ -8784,17 +9238,24 @@ window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
         try {
             const res = await fetch(`${window.basePath || ''}/${endpoint}`.replace(/\/+/g, '/'));
             if (res.ok) return await res.json();
-        } catch(e) {}
+        } catch (e) {}
         return null;
     };
 
-    // 1. ÁGUAS (COMPESA & APAC)
+    // 1. Verifica primeiro na base geral (usando as siglas oficiais da base principal)
+    let serieCozGeral      = window.extrairSerieIndicadorMun(listaGeral, 'total_cozinhas');
+    let serieCofinGeral    = window.extrairSerieIndicadorMun(listaGeral, 'cofinanciamento');
+    let serieAguaValGeral  = window.extrairSerieIndicadorMun(listaGeral, 'investimento_agua');
+    let serieAguaQtdGeral  = window.extrairSerieIndicadorMun(listaGeral, 'obras_agua');
+    let serieEstradasGeral = window.extrairSerieIndicadorMun(listaGeral, 'estradas');
+
+    // 2. Busca dados das APIs temáticas (para blocos COMPESA/APAC e fallback dos KPIs ausentes na base geral)
     if (!window.cacheResumoAguas) {
         window.cacheResumoAguas = await fetchJson('municipios/resumo/aguas');
     }
     let totAguaVal = 0, totAguaQtd = 0;
     if (window.cacheResumoAguas) {
-        if (window.cacheResumoAguas.municipios) {
+        if (Array.isArray(window.cacheResumoAguas.municipios)) {
             const filtrados = window.cacheResumoAguas.municipios.filter(m => norm(m.municipio) === targetMun);
             filtrados.forEach(f => {
                 totAguaVal += (Number(f.valor_rateado_m) || 0) * 1e6;
@@ -8802,11 +9263,10 @@ window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
             });
         }
 
-        // Buscar indicadores do Plano de Investimentos COMPESA por Município
         const plano = window.cacheResumoAguas.plano;
         let munCompesa = null;
 
-        if (plano && plano.mapa_municipios_camadas) {
+        if (plano && Array.isArray(plano.mapa_municipios_camadas)) {
             munCompesa = plano.mapa_municipios_camadas.find(m => {
                 const mIbge = String(m.ibge6 || m.codarea || '').trim();
                 const mNome = norm(m.municipio || '');
@@ -8814,7 +9274,7 @@ window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
                        (targetMun && mNome && mNome === targetMun);
             });
         }
-        if (!munCompesa && window.cacheResumoAguas.geojson && window.cacheResumoAguas.geojson.features) {
+        if (!munCompesa && window.cacheResumoAguas.geojson && Array.isArray(window.cacheResumoAguas.geojson.features)) {
             const feat = window.cacheResumoAguas.geojson.features.find(f => {
                 if (!f.geometry || !f.geometry.type.includes('Polygon')) return false;
                 const p = f.properties || {};
@@ -8827,7 +9287,6 @@ window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
         }
 
         if (munCompesa) {
-            // Badges Executivos da Ficha Municipal
             const bAtual = document.getElementById('ficha_compesa_badge_rodizio_atual');
             if (bAtual) {
                 const val = munCompesa['Rodízio atual'] || '-';
@@ -8859,10 +9318,9 @@ window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
                 bCatConc.innerText = `${cat} · ${conc}`;
             }
 
-            // Alerta de Déficit BNDES
             const contBndes = document.getElementById('ficha_compesa_container_bndes');
             const txtBndes = document.getElementById('ficha_compesa_txt_bndes');
-            const bndesItem = plano && plano.municipios_deficit_bndes 
+            const bndesItem = plano && plano.municipios_deficit_bndes
                 ? plano.municipios_deficit_bndes.find(b => norm(b['Município']) === targetMun)
                 : null;
 
@@ -8878,7 +9336,6 @@ window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
                 }
             }
 
-            // Intervenções do Portfólio COMPESA no Município
             const countProjs = document.getElementById('ficha_compesa_count_projetos');
             const listaProjs = document.getElementById('ficha_compesa_lista_projetos');
 
@@ -8946,20 +9403,18 @@ window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
         if (apacCont) {
             try {
                 if (!window.cacheApacReservatorios) {
-                    const r = await fetch(`${window.basePath || ''}/data/apac_reservatorios.json`.replace(/\/+/g, '/'));
+                    const r = await fetch(`${window.basePath || ''}/data/json/apac_reservatorios.json`.replace(/\/+/g, '/'));
                     if (r.ok) window.cacheApacReservatorios = await r.json();
                 }
                 if (!window.cacheApacMunicipioBacia) {
-                    const r = await fetch(`${window.basePath || ''}/data/apac_municipio_bacia.json`.replace(/\/+/g, '/'));
+                    const r = await fetch(`${window.basePath || ''}/data/json/apac_municipio_bacia.json`.replace(/\/+/g, '/'));
                     if (r.ok) window.cacheApacMunicipioBacia = await r.json();
                 }
                 if (!window.cacheApacBaciasResumo) {
-                    const r = await fetch(`${window.basePath || ''}/data/apac_bacias_resumo.json`.replace(/\/+/g, '/'));
+                    const r = await fetch(`${window.basePath || ''}/data/json/apac_bacias_resumo.json`.replace(/\/+/g, '/'));
                     if (r.ok) window.cacheApacBaciasResumo = await r.json();
                 }
-            } catch (e) {
-                console.warn("[APAC Ficha] Erro ao carregar dados:", e);
-            }
+            } catch (e) {}
 
             try {
                 const apacBadge = document.getElementById('ficha_apac_badge_status');
@@ -8970,7 +9425,6 @@ window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
                 const apacMunCount = document.getElementById('ficha_apac_mun_reservatorios_count');
                 const apacTxt = document.getElementById('ficha_apac_txt_detalhes');
 
-                // Identificar bacia do município
                 let baciaNome = null;
                 if (window.cacheApacMunicipioBacia) {
                     if (window.cacheApacMunicipioBacia[nomeMun]) {
@@ -8989,36 +9443,26 @@ window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
                     }
                 }
 
-                // Localizar dados da bacia
                 let baciaInfo = null;
                 if (baciaNome && window.cacheApacBaciasResumo && Array.isArray(window.cacheApacBaciasResumo)) {
                     const bNorm = norm(baciaNome);
                     baciaInfo = window.cacheApacBaciasResumo.find(b => norm(b.nome_bacia) === bNorm || norm(b.up || '').includes(bNorm));
                 }
 
-                if (apacBaciaNome) {
-                    apacBaciaNome.innerText = baciaNome ? `Bacia do ${baciaNome}` : 'Rede Hidrográfica Regional';
-                }
-                if (apacBaciaStatus) {
-                    apacBaciaStatus.innerText = baciaInfo ? `${baciaInfo.total_reservatorios} mananciais monitorados` : 'Monitoramento APAC';
-                }
+                if (apacBaciaNome) apacBaciaNome.innerText = baciaNome ? `Bacia do ${baciaNome}` : 'Rede Hidrográfica Regional';
+                if (apacBaciaStatus) apacBaciaStatus.innerText = baciaInfo ? `${baciaInfo.total_reservatorios} mananciais monitorados` : 'Monitoramento APAC';
 
                 if (apacBaciaAcumulacao) {
                     if (baciaInfo && baciaInfo.percentual_armazenado !== null && !isNaN(baciaInfo.percentual_armazenado)) {
                         apacBaciaAcumulacao.innerText = `${baciaInfo.percentual_armazenado.toFixed(1)}%`;
                         apacBaciaAcumulacao.style.color = baciaInfo.cor_bacia || '#0284c7';
                     } else {
-                        apacBaciaAcumulacao.innerText = '27,8%'; // média estadual de referência
+                        apacBaciaAcumulacao.innerText = '27,8%';
                         apacBaciaAcumulacao.style.color = '#f59e0b';
                     }
                 }
-                if (apacBaciaFaixa) {
-                    apacBaciaFaixa.innerText = baciaInfo ? (baciaInfo.status_bacia || 'Volume Operacional') : 'Média Geral PE (27,8%)';
-                }
-
-                if (apacMunCount) {
-                    apacMunCount.innerText = `${resMunList.length} manancial(is)`;
-                }
+                if (apacBaciaFaixa) apacBaciaFaixa.innerText = baciaInfo ? (baciaInfo.status_bacia || 'Volume Operacional') : 'Média Geral PE (27,8%)';
+                if (apacMunCount) apacMunCount.innerText = `${resMunList.length} manancial(is)`;
 
                 if (apacBadge) {
                     if (resMunList.length > 0) {
@@ -9042,28 +9486,21 @@ window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
                             htmlDesc += `• <b>${r.nome_reservatorio}</b>: Armazenando <b>${r.per_volume}%</b> (${r.volumeatual_m.toLocaleString('pt-BR')} de ${r.capacidade_m.toLocaleString('pt-BR')} Mi m³) — <span style="color:${r.faixa_cor};font-weight:bold;">${r.faixa_rotulo}</span>. Finalidade: ${r.usoprincipal}.<br/>`;
                         });
                     } else if (baciaInfo) {
-                        htmlDesc = `<b>Abastecimento e Recursos Hídricos Regionais:</b><br/>O município integra a <b>Bacia Hidrográfica do ${baciaNome}</b>, que opera com <b>${baciaInfo.percentual_armazenado !== null ? baciaInfo.percentual_armazenado.toFixed(1) + '%' : 'dados regionais'}</b> de sua capacidade acumulada (${baciaInfo.volume_total_m.toFixed(1)} de ${baciaInfo.capacidade_total_m.toFixed(1)} Mi m³). O atendimento municipal é suportado pelos sistemas integrados adutores e mananciais estratégicos monitorados pela APAC na bacia.`;
+                        htmlDesc = `<b>Abastecimento e Recursos Hídricos Regionais:</b><br/>O município integra a <b>Bacia Hidrográfica do ${baciaNome}</b>, que opera com <b>${baciaInfo.percentual_armazenado !== null ? baciaInfo.percentual_armazenado.toFixed(1) + '%' : 'dados regionais'}</b> de sua capacidade acumulada (${baciaInfo.volume_total_m.toFixed(1)} de ${baciaInfo.capacidade_total_m.toFixed(1)} Mi m³).`;
                     } else {
-                        htmlDesc = `<b>Monitoramento Hídrico Geral (APAC):</b><br/>Pernambuco acumula atualmente cerca de <b>27,8%</b> de sua capacidade máxima nos 99 reservatórios estratégicos monitorados pela APAC (911,7 Mi m³ outorgados), sob regimes diferenciados de operação e contingência do plano hídrico.`;
+                        htmlDesc = `<b>Monitoramento Hídrico Geral (APAC):</b><br/>Pernambuco acumula atualmente cerca de <b>27,8%</b> de sua capacidade máxima nos 99 reservatórios estratégicos monitorados pela APAC (911,7 Mi m³ outorgados).`;
                     }
                     apacTxt.innerHTML = htmlDesc;
                 }
-            } catch (errApacRender) {
-                console.error("[APAC Ficha] Erro ao renderizar blocos APAC:", errApacRender);
-                const apacBadge = document.getElementById('ficha_apac_badge_status');
-                if (apacBadge) {
-                    apacBadge.innerText = 'Rede Integrada APAC';
-                    apacBadge.setAttribute('style', 'background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-weight: 800;');
-                }
-            }
+            } catch (errApacRender) {}
         }
     }
 
-    // 2. COZINHAS & COFINANCIAMENTO
+    // 3. Cozinhas & Cofinanciamento (usa base alternativa para subtexto de cozinhas em funcionamento e fallback quando faltar na base principal)
+    let totCoz = 0, funcCoz = 0, totCofinVal = 0;
     if (!window.cacheResumoCozinhas) {
         window.cacheResumoCozinhas = await fetchJson('municipios/resumo/cozinhas');
     }
-    let totCoz = 0, funcCoz = 0, totCofinVal = 0;
     if (window.cacheResumoCozinhas) {
         const cozList = window.cacheResumoCozinhas.cozinhas || [];
         cozList.forEach(c => {
@@ -9086,34 +9523,144 @@ window.atualizarKpisProgramasMunicipais = async function(nomeMun, codIbge) {
         }
     }
 
-    // 3. ESTRADAS DE PE
-    if (!window.cacheResumoEstradas) {
-        window.cacheResumoEstradas = await fetchJson('municipios/resumo/estradas');
+    // Injeta Cozinhas apenas se NÃO existir na base principal
+    if (!serieCozGeral.existe && window.cacheResumoCozinhas && Array.isArray(window.cacheResumoCozinhas.cozinhas)) {
+        const cozRD = {};
+        window.cacheResumoCozinhas.cozinhas.forEach(c => {
+            const mNorm = norm(c.municipio);
+            if (munsRDSet.has(mNorm)) {
+                const mNome = String(c.municipio).trim();
+                cozRD[mNome] = (cozRD[mNome] || 0) + 1;
+            }
+        });
+        window.injetarIndicadorExternoNasBasesFicha(
+            'total_cozinhas', 'Cozinhas Comunitárias', 'absoluto', 'Unidades',
+            [{ ano: 2024, valor: totCoz }],
+            Object.entries(cozRD).map(([municipio, valor]) => ({ municipio, valor, ano: 2024 }))
+        );
+        serieCozGeral = window.extrairSerieIndicadorMun(window.dadosBrutosFicha, 'total_cozinhas');
     }
+
+    // Injeta Cofinanciamento apenas se NÃO existir na base principal
+    if (!serieCofinGeral.existe && window.cacheResumoCozinhas && Array.isArray(window.cacheResumoCozinhas.cofinanciamento_muns)) {
+        const cofinRD = window.cacheResumoCozinhas.cofinanciamento_muns
+            .filter(c => munsRDSet.has(norm(c.municipio)))
+            .map(c => ({ municipio: c.municipio, valor: Number(c.valor_validado) || Number(c.valor_pago) || 0, ano: 2024 }));
+        window.injetarIndicadorExternoNasBasesFicha(
+            'cofinanciamento', 'Cofinanciamento Social', 'moeda', 'R$',
+            [{ ano: 2024, valor: totCofinVal }],
+            cofinRD
+        );
+        serieCofinGeral = window.extrairSerieIndicadorMun(window.dadosBrutosFicha, 'cofinanciamento');
+    }
+
+    // 4. Fallback de Estradas apenas se não estiver na base principal
     let totEstradasQtd = 0;
-    if (window.cacheResumoEstradas && window.cacheResumoEstradas.obras) {
-        totEstradasQtd = window.cacheResumoEstradas.obras.filter(o => norm(o.municipio) === targetMun).length;
+    if (!serieEstradasGeral.existe) {
+        if (!window.cacheResumoEstradas) {
+            window.cacheResumoEstradas = await fetchJson('municipios/resumo/estradas');
+        }
+        if (window.cacheResumoEstradas && Array.isArray(window.cacheResumoEstradas.obras)) {
+            totEstradasQtd = window.cacheResumoEstradas.obras.filter(o => norm(o.municipio) === targetMun).length;
+            const estRD = {};
+            window.cacheResumoEstradas.obras.forEach(o => {
+                const mNorm = norm(o.municipio);
+                if (munsRDSet.has(mNorm)) {
+                    const mNome = String(o.municipio).trim();
+                    estRD[mNome] = (estRD[mNome] || 0) + 1;
+                }
+            });
+            window.injetarIndicadorExternoNasBasesFicha(
+                'estradas', 'Rodovias & Eixos Viários', 'absoluto', 'Obras',
+                [{ ano: 2024, valor: totEstradasQtd }],
+                Object.entries(estRD).map(([municipio, valor]) => ({ municipio, valor, ano: 2024 }))
+            );
+            serieEstradasGeral = window.extrairSerieIndicadorMun(window.dadosBrutosFicha, 'estradas');
+        }
     }
 
-    // A. VULNERABILIDADE SOCIAL
-    $('#ficha_kpi_vuln_cozinhas').text(totCoz > 0 ? totCoz.toLocaleString('pt-BR') : "-");
-    $('#ficha_ano_vuln_cozinhas').html(window.montarRodapeKPI('Unidades', '2024', null, 'cozinhas'));
-    $('#ficha_kpi_vuln_cofin').text(totCofinVal > 0 ? formataBi(totCofinVal) : "-");
-    $('#ficha_ano_vuln_cofin').html(window.montarRodapeKPI('Investimento', '2024', null, 'cofinanciamento'));
+    // 5. Fallback de Águas (Investimento e Obras) apenas se não estiver na base principal
+    if ((!serieAguaValGeral.existe || !serieAguaQtdGeral.existe) && window.cacheResumoAguas && Array.isArray(window.cacheResumoAguas.municipios)) {
+        const aguaValRD = {}, aguaQtdRD = {};
+        window.cacheResumoAguas.municipios.forEach(m => {
+            const mNorm = norm(m.municipio);
+            if (munsRDSet.has(mNorm)) {
+                const mNome = String(m.municipio).trim();
+                aguaValRD[mNome] = (aguaValRD[mNome] || 0) + ((Number(m.valor_rateado_m) || 0) * 1e6);
+                aguaQtdRD[mNome] = (aguaQtdRD[mNome] || 0) + 1;
+            }
+        });
+        if (!serieAguaValGeral.existe) {
+            window.injetarIndicadorExternoNasBasesFicha(
+                'investimento_agua', 'Investimento em Água', 'moeda', 'R$',
+                [{ ano: 2024, valor: totAguaVal }],
+                Object.entries(aguaValRD).map(([municipio, valor]) => ({ municipio, valor, ano: 2024 }))
+            );
+            serieAguaValGeral = window.extrairSerieIndicadorMun(window.dadosBrutosFicha, 'investimento_agua');
+        }
+        if (!serieAguaQtdGeral.existe) {
+            window.injetarIndicadorExternoNasBasesFicha(
+                'obras_agua', 'Obras de Água', 'absoluto', 'Obras',
+                [{ ano: 2024, valor: totAguaQtd }],
+                Object.entries(aguaQtdRD).map(([municipio, valor]) => ({ municipio, valor, ano: 2024 }))
+            );
+            serieAguaQtdGeral = window.extrairSerieIndicadorMun(window.dadosBrutosFicha, 'obras_agua');
+        }
+    }
 
-    // B. CONDIÇÕES HABITACIONAIS (ÁGUAS)
-    $('#ficha_kpi_hab_aguas_val').text(totAguaVal > 0 ? formataBi(totAguaVal) : "-");
-    $('#ficha_ano_hab_aguas_val').html(window.montarRodapeKPI('Investimento Compesa', '2024', null, 'investimento_agua'));
-    $('#ficha_kpi_hab_aguas_qtd').text(totAguaQtd > 0 ? totAguaQtd.toLocaleString('pt-BR') : "-");
-    $('#ficha_ano_hab_aguas_qtd').html(window.montarRodapeKPI('Intervenções Hídricas', '2024', null, 'obras_agua'));
+    // 6. Resolve cada série priorizando a base geral e usando o fallback só se faltar
+    const resolverSerie = (serieGeral, valFb, strFb, anoFb = '2024') => {
+        if (serieGeral && serieGeral.existe) return serieGeral;
+        return {
+            ...(serieGeral || {}),
+            existe: true,
+            valAtual: valFb,
+            strAtual: strFb,
+            strAtualFmt: strFb,
+            anoAtual: anoFb
+        };
+    };
 
-    // C. INICIATIVAS DE DESENVOLVIMENTO REGIONAL
-    $('#ficha_kpi_ini_aguas_val').text(totAguaVal > 0 ? formataBi(totAguaVal) : "-");
-    $('#ficha_kpi_ini_aguas_qtd').text(totAguaQtd > 0 ? totAguaQtd.toLocaleString('pt-BR') : "-");
-    $('#ficha_kpi_ini_cofin_val').text(totCofinVal > 0 ? formataBi(totCofinVal) : "-");
-    $('#ficha_kpi_ini_estradas_qtd').text(totEstradasQtd > 0 ? totEstradasQtd.toLocaleString('pt-BR') : "-");
-    $('#ficha_kpi_ini_cozinhas').text(totCoz > 0 ? totCoz.toLocaleString('pt-BR') : "0");
-    $('#ficha_kpi_ini_cozinhas_sub').text(totCoz > 0 ? `${funcCoz} em funcionamento` : 'Segurança Alimentar');
+    const sCoz      = resolverSerie(serieCozGeral, totCoz, totCoz > 0 ? totCoz.toLocaleString('pt-BR') : '0');
+    const sCofin    = resolverSerie(serieCofinGeral, totCofinVal, totCofinVal > 0 ? formataBi(totCofinVal) : 'R$ 0');
+    const sAguaVal  = resolverSerie(serieAguaValGeral, totAguaVal, totAguaVal > 0 ? formataBi(totAguaVal) : 'R$ 0');
+    const sAguaQtd  = resolverSerie(serieAguaQtdGeral, totAguaQtd, totAguaQtd > 0 ? totAguaQtd.toLocaleString('pt-BR') : '0');
+    const sEstradas = resolverSerie(serieEstradasGeral, totEstradasQtd, totEstradasQtd > 0 ? totEstradasQtd.toLocaleString('pt-BR') : '0');
+
+    if (sCofin.existe && sCofin.valAtual !== null) sCofin.strAtualFmt = formataBi(sCofin.valAtual);
+    if (sAguaVal.existe && sAguaVal.valAtual !== null) sAguaVal.strAtualFmt = formataBi(sAguaVal.valAtual);
+
+    const aplicarCardProg = (elemBase, sigla, titulo, serieObj, subtexto = '') => {
+        const el = document.getElementById(`ficha_kpi_${elemBase}`);
+        if (!el) return;
+        const tituloFmt = window.formatarTitleCaseKPI(titulo);
+        serieObj.nome = tituloFmt;
+        el.textContent = serieObj.strAtualFmt;
+
+        const cardEl = el.closest('.kpi-modern-card');
+        const headerDom = cardEl ? cardEl.querySelector('.kpi-modern-header') : null;
+        if (headerDom) {
+            headerDom.classList.remove('text-uppercase');
+            headerDom.style.textTransform = 'none';
+            headerDom.textContent = tituloFmt;
+        }
+
+        const extra = subtexto ? `<div class="text-[10px] text-slate-500 font-semibold mt-1">${subtexto}</div>` : '';
+        if (typeof window.aplicarEsteticaUFsNoCardStatico === 'function') {
+            window.aplicarEsteticaUFsNoCardStatico(elemBase, sigla, serieObj, {}, 'socio', extra);
+        }
+    };
+
+    const subCoz = totCoz > 0 ? `${funcCoz} em funcionamento` : '';
+    aplicarCardProg('vuln_cozinhas', 'total_cozinhas', 'Cozinhas Comunitárias', sCoz, subCoz);
+    aplicarCardProg('ini_cozinhas', 'total_cozinhas', 'Cozinhas Comunitárias', sCoz, subCoz);
+    aplicarCardProg('vuln_cofin', 'cofinanciamento', 'Cofinanciamento Social', sCofin);
+    aplicarCardProg('hab_aguas_val', 'investimento_agua', 'Investimento em Água', sAguaVal);
+    aplicarCardProg('hab_aguas_qtd', 'obras_agua', 'Obras de Água', sAguaQtd);
+    aplicarCardProg('ini_aguas_val', 'investimento_agua', 'Investimento em Água', sAguaVal);
+    aplicarCardProg('ini_aguas_qtd', 'obras_agua', 'Obras de Água', sAguaQtd);
+    aplicarCardProg('ini_cofin_val', 'cofinanciamento', 'Cofinanciamento Social', sCofin);
+    aplicarCardProg('ini_estradas_qtd', 'estradas', 'Rodovias & Eixos Viários', sEstradas);
 };
 
 window.atualizarKpiCozinhasMunicipio = function(nomeMun, codIbge) {
@@ -10630,7 +11177,7 @@ window.renderizarResumoEstradas = function () {
     if (spinner) spinner.classList.remove('d-none');
 
     const apiUrl = `${window.basePath || ''}/municipios/resumo/estradas`.replace(/\/+/g, '/');
-    const fallbackUrl = `${window.basePath || ''}/data/estradas_pe.json`.replace(/\/+/g, '/');
+    const fallbackUrl = `${window.basePath || ''}/data/json/estradas_pe.json`.replace(/\/+/g, '/');
 
     fetch(apiUrl)
         .then(res => {
@@ -14424,2068 +14971,6 @@ window.limparFiltroHabitacao = function () {
     }
 };
 
-/* ==========================================================================
-   RESUMOS TEMÁTICOS - PAUTA CRECHES: 60 MIL VAGAS EM CRECHES E PRÉ-ESCOLA
-   ========================================================================== */
-let mapCreches = null;
-let cacheCrechesData = null;
-let chartCrechesStatus = null;
-let chartCrechesPorMun = null;
-let dataTableCreches = null;
-window.visaoCrechesAtiva = 'todos';
-window.municipioCrechesFiltro = null;
-window.municipioFixoCreches = null;
-
-window.desafixarMunicipioCreches = function() {
-    window.municipioFixoCreches = null;
-    atualizarHoverBoxCreches(null, null, true);
-};
-
-function atualizarHoverBoxCreches(tipo, props, forcar = false) {
-    if (window.municipioFixoCreches && !forcar) return;
-
-    const boxDefault = document.getElementById('creches_box_content_default');
-    const boxActive = document.getElementById('creches_box_content_active');
-    if (!boxActive || !boxDefault) return;
-
-    if (!tipo || !props) {
-        boxActive.classList.add('d-none');
-        boxActive.classList.remove('d-flex');
-        boxDefault.classList.remove('d-none');
-        return;
-    }
-
-    boxDefault.classList.add('d-none');
-    boxActive.classList.remove('d-none');
-    boxActive.classList.add('d-flex');
-
-    const fmtMoeda = (v) => {
-        const n = Number(v) || 0;
-        if (n >= 1e6) return `R$ ${(n / 1e6).toFixed(2).replace('.', ',')} Mi`;
-        return `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    };
-
-    const isFixo = Boolean(window.municipioFixoCreches);
-
-    if (tipo === 'municipio') {
-        const nomeMun = props.name || props.municipio || 'Município';
-        boxActive.innerHTML = `
-            <div class="h-100 d-flex flex-column justify-content-between">
-                <div>
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="badge ${isFixo ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-rose-100 text-rose-800 border border-rose-300'} font-bold px-2 py-1 text-xs rounded-pill">
-                            <i class="fas ${isFixo ? 'fa-thumbtack text-amber-600' : 'fa-school text-rose-600'} me-1"></i> ${isFixo ? 'MUNICÍPIO FIXADO' : 'MUNICÍPIO'}
-                        </span>
-                        ${isFixo ? `
-                            <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill py-0 px-2 text-[10px] font-bold" onclick="window.desafixarMunicipioCreches()">
-                                <i class="fas fa-xmark me-1"></i>Desafixar
-                            </button>
-                        ` : '<span class="text-xs text-slate-400 font-semibold">Clique para fixar</span>'}
-                    </div>
-                    <h4 class="font-black text-slate-800 text-base mb-1">${nomeMun}</h4>
-                    <hr class="my-2 border-slate-200">
-                    <div class="space-y-2 mt-3 text-xs">
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Total de Creches:</span>
-                            <strong class="text-slate-800 font-black">${(props.creches_total || 0).toLocaleString('pt-BR')}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Em Execução:</span>
-                            <strong class="text-amber-600 font-black">${(props.creches_execucao || 0).toLocaleString('pt-BR')}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Concluídas:</span>
-                            <strong class="text-emerald-700 font-black">${(props.creches_concluidas || 0).toLocaleString('pt-BR')}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Investimento Total:</span>
-                            <strong class="text-rose-700 font-black">${fmtMoeda(props.creches_investimento)}</strong>
-                        </div>
-                    </div>
-                </div>
-                <div class="pt-3 border-t border-slate-200/80 text-center">
-                    <span class="text-[11px] text-slate-400 italic">Clique para filtrar a tabela por este município</span>
-                </div>
-            </div>
-        `;
-    } else if (tipo === 'creche') {
-        boxActive.innerHTML = `
-            <div class="h-100 d-flex flex-column justify-content-between">
-                <div>
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="badge bg-rose-100 text-rose-800 border border-rose-300 font-bold px-2 py-1 text-xs rounded-pill">CANTEIRO DE CRECHE</span>
-                        <span class="text-xs text-slate-400 font-semibold">${props.municipio}</span>
-                    </div>
-                    <h4 class="font-black text-slate-800 text-base mb-1">${props.iniciativa}</h4>
-                    <div class="text-xs text-slate-500 mb-2">${props.produto || ''}</div>
-                    <hr class="my-2 border-slate-200">
-                    <div class="space-y-2 mt-3 text-xs">
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Status:</span>
-                            <strong class="text-slate-800 font-bold">${props.status}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Avanço Físico:</span>
-                            <strong class="text-amber-600 font-black">${(props.exec_fisica || 0).toFixed(1)}%</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Investimento:</span>
-                            <strong class="text-rose-700 font-black">${fmtMoeda(props.valor)}</strong>
-                        </div>
-                        ${props.empresa ? `
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Contratada:</span>
-                            <span class="text-slate-700 text-truncate font-semibold" style="max-width: 140px;" title="${props.empresa}">${props.empresa}</span>
-                        </div>` : ''}
-                    </div>
-                </div>
-                <div class="pt-3 border-t border-slate-200/80 text-center">
-                    <span class="text-[11px] text-slate-400 italic">Passe o cursor sobre outros canteiros</span>
-                </div>
-            </div>
-        `;
-    }
-}
-
-window.renderizarResumoCreches = function() {
-    const container = document.getElementById('resumo_creches_map');
-    if (!container) return;
-
-    if (cacheCrechesData) {
-        setTimeout(() => {
-            if (mapCreches && typeof mapCreches.resize === 'function') mapCreches.resize();
-            if (chartCrechesStatus && typeof chartCrechesStatus.resize === 'function') chartCrechesStatus.resize();
-            if (chartCrechesPorMun && typeof chartCrechesPorMun.resize === 'function') chartCrechesPorMun.resize();
-            if (dataTableCreches && typeof dataTableCreches.columns.adjust === 'function') dataTableCreches.columns.adjust();
-        }, 120);
-        return;
-    }
-
-    $('#resumo_creches_spinner').removeClass('d-none');
-
-    const obterDadosBase = () => {
-        if (window.cacheResumoObras && window.cacheResumoObras.obras) {
-            return Promise.resolve(window.cacheResumoObras);
-        }
-        const apiUrl = `${window.basePath || ''}/municipios/resumo/obras`.replace(/\/+/g, '/');
-        return fetch(apiUrl).then(r => r.json());
-    };
-
-    obterDadosBase()
-        .then(data => {
-            $('#resumo_creches_spinner').addClass('d-none');
-
-            const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-
-            // FILTRO DE CRECHES: iniciativa_estrategica contendo 60 MIL VAGAS / CRECHES
-            const todasObras = data.obras || [];
-            const crechesObras = todasObras.filter(o => {
-                const ini = norm(o.iniciativa_estrategica || o.iniciativa_resumida || '');
-                const prod = norm(o.produto || '');
-                return ini.includes('60 mil') || ini.includes('creche') || prod.includes('creche') || prod.includes('pre-escola');
-            });
-
-            // Estrutura de KPIs de Creches
-            let totalCreches = crechesObras.length;
-            let emExecucao = 0;
-            let concluidas = 0;
-            let investTotal = 0;
-            const munsSet = new Set();
-            const munsMap = {};
-
-            crechesObras.forEach(o => {
-                const m = norm(o.municipio);
-                if (m) munsSet.add(m);
-
-                const inv = Number(o.valor_total) || 0;
-                investTotal += inv;
-
-                const stNorm = String(o.status || '').toLowerCase();
-                let statusGrupo = 'Em Execução';
-                if (stNorm.includes('conclu') || stNorm.includes('finaliz') || stNorm.includes('entreg')) {
-                    concluidas++;
-                    statusGrupo = 'Concluída';
-                } else if (stNorm.includes('execu') || stNorm.includes('andamento')) {
-                    emExecucao++;
-                    statusGrupo = 'Em Execução';
-                }
-
-                if (m) {
-                    if (!munsMap[m]) munsMap[m] = { total: 0, execucao: 0, concluidas: 0, inv: 0 };
-                    munsMap[m].total++;
-                    munsMap[m].inv += inv;
-                    if (statusGrupo === 'Concluída') munsMap[m].concluidas++;
-                    else if (statusGrupo === 'Em Execução') munsMap[m].execucao++;
-                }
-            });
-
-            const fmtMoedaBiMi = (val) => {
-                if (!val || val === 0) return "R$ 0";
-                if (val >= 1e9) return `R$ ${(val / 1e9).toFixed(2).replace('.', ',')} Bi`;
-                if (val >= 1e6) return `R$ ${(val / 1e6).toFixed(1).replace('.', ',')} Mi`;
-                return `R$ ${val.toLocaleString('pt-BR')}`;
-            };
-
-            // Atualiza KPIs no DOM
-            $('#creches_kpi_total').text(totalCreches.toLocaleString('pt-BR'));
-            $('#creches_kpi_execucao').text(emExecucao.toLocaleString('pt-BR'));
-            $('#creches_kpi_concluidas').text(concluidas.toLocaleString('pt-BR'));
-            $('#creches_kpi_investimento').text(fmtMoedaBiMi(investTotal));
-            $('#creches_kpi_municipios').text(munsSet.size.toLocaleString('pt-BR'));
-
-            $('#creches_box_stat_muns').text(munsSet.size.toLocaleString('pt-BR'));
-            $('#creches_box_stat_ativas').text(emExecucao.toLocaleString('pt-BR'));
-            $('#creches_box_stat_concluidas').text(concluidas.toLocaleString('pt-BR'));
-            $('#creches_box_stat_investimento').text(fmtMoedaBiMi(investTotal));
-
-            // GeoJSON enriquecido
-            let geoMun = data.geojson;
-            if (typeof geoMun === 'string') {
-                try { geoMun = JSON.parse(geoMun); } catch(e) {}
-            }
-
-            const munCentroids = {};
-            if (geoMun && geoMun.features) {
-                geoMun.features.forEach(f => {
-                    const nomeMun = norm(f.properties.name || f.properties.NM_MUN || f.properties.municipio);
-                    try {
-                        let flatCoords = [];
-                        const collect = (c) => {
-                            if (typeof c[0] === 'number') flatCoords.push(c);
-                            else c.forEach(collect);
-                        };
-                        collect(f.geometry.coordinates);
-                        if (flatCoords.length > 0) {
-                            const sum = flatCoords.reduce((acc, curr) => [acc[0] + curr[0], acc[1] + curr[1]], [0, 0]);
-                            munCentroids[nomeMun] = [sum[0] / flatCoords.length, sum[1] / flatCoords.length];
-                        }
-                    } catch(e) {}
-                });
-
-                geoMun.features.forEach(f => {
-                    const props = f.properties || {};
-                    const kMun = norm(props.name || props.NM_MUN || props.municipio);
-                    const info = munsMap[kMun] || { total: 0, execucao: 0, concluidas: 0, inv: 0 };
-                    props.creches_total = info.total;
-                    props.creches_execucao = info.execucao;
-                    props.creches_concluidas = info.concluidas;
-                    props.creches_investimento = info.inv;
-                });
-            }
-
-            // Features pontuais de creches
-            const featuresCreches = [];
-            crechesObras.forEach((o, idx) => {
-                const m = norm(o.municipio);
-                let lat = Number(o.latitude);
-                let lng = Number(o.longitude);
-
-                if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
-                    if (m && munCentroids[m]) {
-                        const jitterX = ((idx % 7) - 3) * 0.008;
-                        const jitterY = (((idx * 3) % 7) - 3) * 0.008;
-                        lng = munCentroids[m][0] + jitterX;
-                        lat = munCentroids[m][1] + jitterY;
-                    }
-                }
-
-                if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-                    const exec = Number(o.percent_execucao_fisica) || Number(o.percent_execucao) || 0;
-                    featuresCreches.push({
-                        type: 'Feature',
-                        geometry: { type: 'Point', coordinates: [lng, lat] },
-                        properties: {
-                            iniciativa: o.iniciativa_estrategica || o.iniciativa_resumida || o.produto || 'Creche',
-                            produto: o.produto || '',
-                            municipio: o.municipio || '',
-                            status: o.status || 'Em Execução',
-                            empresa: o.empresa || '',
-                            valor: Number(o.valor_total) || 0,
-                            exec_fisica: exec <= 1.0 && exec > 0 ? exec * 100 : exec
-                        }
-                    });
-                }
-            });
-
-            cacheCrechesData = {
-                obras: crechesObras,
-                geoMun: geoMun,
-                geoCreches: { type: 'FeatureCollection', features: featuresCreches }
-            };
-
-            // Inicialização do Mapa
-            if (mapCreches) {
-                try { mapCreches.remove(); } catch(e) {}
-            }
-
-            mapCreches = new maplibregl.Map({
-                container: 'resumo_creches_map',
-                style: window.obterEstiloBaseMapa(),
-                center: [-37.8, -8.3],
-                zoom: 7,
-                preserveDrawingBuffer: true
-            });
-
-            mapCreches.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-
-            mapCreches.on('load', () => {
-                mapCreches.resize();
-
-                try {
-                    const bounds = new maplibregl.LngLatBounds();
-                    featuresCreches.forEach(f => bounds.extend(f.geometry.coordinates));
-                    if (!bounds.isEmpty()) {
-                        mapCreches.fitBounds(bounds, { padding: 40, maxZoom: 12, duration: 800 });
-                    }
-                } catch(e) {}
-
-                if (geoMun && geoMun.features) {
-                    mapCreches.addSource('creches_mun_source', { type: 'geojson', data: geoMun });
-
-                    mapCreches.addLayer({
-                        id: 'creches_muns_fill',
-                        type: 'fill',
-                        source: 'creches_mun_source',
-                        paint: {
-                            'fill-color': '#f8fafc',
-                            'fill-opacity': window.visaoCrechesAtiva === 'todos' ? 0.08 : 0.75
-                        }
-                    });
-
-                    mapCreches.addLayer({
-                        id: 'creches_muns_line',
-                        type: 'line',
-                        source: 'creches_mun_source',
-                        paint: { 'line-color': '#94a3b8', 'line-width': 0.8, 'line-opacity': 0.5 }
-                    });
-
-                    mapCreches.addLayer({
-                        id: 'creches_muns_hover',
-                        type: 'line',
-                        source: 'creches_mun_source',
-                        paint: { 'line-color': '#e11d48', 'line-width': 2.4 },
-                        filter: ['==', 'name', '']
-                    });
-                }
-
-                mapCreches.addSource('creches_points_source', {
-                    type: 'geojson',
-                    data: cacheCrechesData.geoCreches,
-                    cluster: true,
-                    clusterMaxZoom: 10,
-                    clusterRadius: 35
-                });
-
-                mapCreches.addLayer({
-                    id: 'creches_clusters',
-                    type: 'circle',
-                    source: 'creches_points_source',
-                    filter: ['has', 'point_count'],
-                    layout: { 'visibility': window.visaoCrechesAtiva === 'todos' ? 'visible' : 'none' },
-                    paint: {
-                        'circle-color': '#f43f5e',
-                        'circle-radius': ['step', ['get', 'point_count'], 16, 5, 20, 15, 26],
-                        'circle-stroke-width': 2,
-                        'circle-stroke-color': '#ffffff',
-                        'circle-opacity': 0.85
-                    }
-                });
-
-                mapCreches.addLayer({
-                    id: 'creches_cluster_count',
-                    type: 'symbol',
-                    source: 'creches_points_source',
-                    filter: ['has', 'point_count'],
-                    layout: {
-                        'visibility': window.visaoCrechesAtiva === 'todos' ? 'visible' : 'none',
-                        'text-field': '{point_count_abbreviated}',
-                        'text-size': 12
-                    },
-                    paint: { 'text-color': '#ffffff' }
-                });
-
-                mapCreches.addLayer({
-                    id: 'creches_points',
-                    type: 'circle',
-                    source: 'creches_points_source',
-                    filter: ['!', ['has', 'point_count']],
-                    layout: { 'visibility': window.visaoCrechesAtiva === 'todos' ? 'visible' : 'none' },
-                    paint: {
-                        'circle-color': [
-                            'case',
-                            ['in', 'conclu', ['downcase', ['get', 'status']]], '#10b981',
-                            ['in', 'entreg', ['downcase', ['get', 'status']]], '#10b981',
-                            ['in', 'execu', ['downcase', ['get', 'status']]], '#f59e0b',
-                            ['in', 'andamento', ['downcase', ['get', 'status']]], '#f59e0b',
-                            '#f43f5e'
-                        ],
-                        'circle-radius': 7,
-                        'circle-stroke-width': 1.5,
-                        'circle-stroke-color': '#ffffff'
-                    }
-                });
-
-                mapCreches.on('click', 'creches_clusters', (e) => {
-                    const clFeatures = mapCreches.queryRenderedFeatures(e.point, { layers: ['creches_clusters'] });
-                    if (!clFeatures.length) return;
-                    const clusterId = clFeatures[0].properties.cluster_id;
-                    mapCreches.getSource('creches_points_source').getClusterExpansionZoom(clusterId, (err, zoom) => {
-                        if (err) return;
-                        mapCreches.easeTo({ center: clFeatures[0].geometry.coordinates, zoom: zoom });
-                    });
-                });
-
-                mapCreches.on('mousemove', 'creches_muns_fill', (e) => {
-                    if (!e.features.length) return;
-                    mapCreches.getCanvas().style.cursor = 'pointer';
-                    const props = e.features[0].properties;
-                    mapCreches.setFilter('creches_muns_hover', ['==', 'name', props.name || '']);
-                    atualizarHoverBoxCreches('municipio', props, false);
-                });
-
-                mapCreches.on('mousemove', 'creches_points', (e) => {
-                    if (!e.features.length) return;
-                    mapCreches.getCanvas().style.cursor = 'pointer';
-                    const props = e.features[0].properties;
-                    atualizarHoverBoxCreches('creche', props, false);
-                });
-
-                mapCreches.on('mouseleave', 'creches_muns_fill', () => {
-                    mapCreches.getCanvas().style.cursor = '';
-                    mapCreches.setFilter('creches_muns_hover', ['==', 'name', '']);
-                    if (!window.municipioFixoCreches) atualizarHoverBoxCreches(null, null, false);
-                });
-
-                mapCreches.on('mouseleave', 'creches_points', () => {
-                    if (!window.municipioFixoCreches) atualizarHoverBoxCreches(null, null, false);
-                });
-
-                mapCreches.on('click', 'creches_muns_fill', (e) => {
-                    if (!e.features.length) return;
-                    const props = e.features[0].properties;
-                    const nomeMun = props.name || props.NM_MUN || props.municipio;
-                    if (window.municipioFixoCreches === nomeMun) {
-                        window.desafixarMunicipioCreches();
-                    } else {
-                        window.municipioFixoCreches = nomeMun;
-                        atualizarHoverBoxCreches('municipio', props, true);
-                    }
-                    if (nomeMun) window.filtrarTabelaPorMunicipioCreches(nomeMun);
-                });
-
-                window.alternarVisaoCreches(window.visaoCrechesAtiva || 'todos', document.getElementById('btn_visao_creches_todos'));
-            });
-
-            // Gráficos e Tabela
-            renderizarGraficosCreches(crechesObras);
-            renderizarTabelaCreches(crechesObras);
-        })
-        .catch(err => {
-            console.error('[Resumo Creches] Erro:', err);
-            $('#resumo_creches_spinner').addClass('d-none');
-        });
-};
-
-window.alternarVisaoCreches = function (visao, btn) {
-    window.visaoCrechesAtiva = visao;
-
-    $('#btn_visao_creches_todos, #btn_visao_creches_andamento, #btn_visao_creches_pontos')
-        .removeClass('btn-primary shadow-sm')
-        .addClass('btn-light text-slate-600');
-    if (btn) $(btn).removeClass('btn-light text-slate-600').addClass('btn-primary shadow-sm');
-
-    $('#legenda_creches_cluster, #legenda_creches_andamento, #legenda_creches_pontos').addClass('d-none');
-
-    if (!mapCreches || !mapCreches.getLayer('creches_muns_fill')) return;
-
-    if (visao === 'todos') {
-        $('#legenda_creches_cluster').removeClass('d-none');
-        mapCreches.setLayoutProperty('creches_clusters', 'visibility', 'visible');
-        mapCreches.setLayoutProperty('creches_cluster_count', 'visibility', 'visible');
-        mapCreches.setLayoutProperty('creches_points', 'visibility', 'visible');
-        mapCreches.setPaintProperty('creches_muns_fill', 'fill-color', '#f8fafc');
-        mapCreches.setPaintProperty('creches_muns_fill', 'fill-opacity', 0.15);
-        $('#creches_camada_label').text("Exibindo: Localização e Clusters de Creches");
-    } else if (visao === 'andamento') {
-        $('#legenda_creches_andamento').removeClass('d-none');
-        mapCreches.setLayoutProperty('creches_clusters', 'visibility', 'none');
-        mapCreches.setLayoutProperty('creches_cluster_count', 'visibility', 'none');
-        mapCreches.setLayoutProperty('creches_points', 'visibility', 'none');
-        mapCreches.setPaintProperty('creches_muns_fill', 'fill-opacity', 0.82);
-        mapCreches.setPaintProperty('creches_muns_fill', 'fill-color', [
-            'step',
-            ['get', 'creches_execucao'],
-            '#fff1f2',
-            1, '#fda4af',
-            2, '#f43f5e',
-            5, '#9f1239'
-        ]);
-        $('#creches_camada_label').text("Exibindo: Municípios por Volume de Creches em Execução");
-    } else if (visao === 'pontos') {
-        $('#legenda_creches_pontos').removeClass('d-none');
-        mapCreches.setLayoutProperty('creches_clusters', 'visibility', 'none');
-        mapCreches.setLayoutProperty('creches_cluster_count', 'visibility', 'none');
-        mapCreches.setLayoutProperty('creches_points', 'visibility', 'none');
-        mapCreches.setPaintProperty('creches_muns_fill', 'fill-opacity', 0.82);
-        mapCreches.setPaintProperty('creches_muns_fill', 'fill-color', [
-            'step',
-            ['get', 'creches_total'],
-            '#fff1f2',
-            1, '#fecdd3',
-            3, '#f43f5e',
-            6, '#881337'
-        ]);
-        $('#creches_camada_label').text("Exibindo: Total de Creches Pactuadas por Município");
-    }
-};
-
-function renderizarGraficosCreches(crechesObras) {
-    if (typeof echarts === 'undefined') return;
-
-    // 1. Donut de Status
-    const elStatus = document.getElementById('chart_creches_status');
-    if (elStatus) {
-        if (chartCrechesStatus) chartCrechesStatus.dispose();
-        chartCrechesStatus = echarts.init(elStatus);
-
-        const statusMap = { 'Em Execução': 0, 'Concluída': 0, 'Em Planejamento / Outros': 0 };
-        crechesObras.forEach(o => {
-            const s = String(o.status || '').toLowerCase();
-            if (s.includes('conclu') || s.includes('finaliz') || s.includes('entreg')) statusMap['Concluída']++;
-            else if (s.includes('execu') || s.includes('andamento')) statusMap['Em Execução']++;
-            else statusMap['Em Planejamento / Outros']++;
-        });
-
-        const statusData = [
-            { value: statusMap['Concluída'], name: 'Concluída / Entregue', itemStyle: { color: '#10b981' } },
-            { value: statusMap['Em Execução'], name: 'Em Execução', itemStyle: { color: '#f59e0b' } },
-            { value: statusMap['Em Planejamento / Outros'], name: 'Planejamento / Outros', itemStyle: { color: '#3b82f6' } }
-        ].filter(item => item.value > 0);
-
-        const total = statusData.reduce((acc, curr) => acc + curr.value, 0);
-
-        chartCrechesStatus.setOption({
-            tooltip: {
-                trigger: 'item',
-                formatter: (p) => `<strong>${p.name}</strong><br/>Creches: <b>${p.value}</b> (${total > 0 ? ((p.value/total)*100).toFixed(1) : 0}%)`
-            },
-            legend: { orient: 'horizontal', bottom: '0%', left: 'center', textStyle: { fontSize: 11, color: '#475569', fontWeight: 600 } },
-            series: [{
-                name: 'Status das Creches',
-                type: 'pie',
-                radius: ['45%', '72%'],
-                center: ['50%', '45%'],
-                itemStyle: { borderRadius: 6, borderColor: '#ffffff', borderWidth: 2 },
-                data: statusData
-            }]
-        });
-    }
-
-    // 2. Top 20 Municípios
-    const elMun = document.getElementById('chart_creches_por_mun');
-    if (elMun) {
-        if (chartCrechesPorMun) chartCrechesPorMun.dispose();
-        chartCrechesPorMun = echarts.init(elMun);
-
-        const munTotals = {};
-        crechesObras.forEach(o => {
-            const m = String(o.municipio || '').trim();
-            if (!m || m === '-' || m === 'NA') return;
-            if (!munTotals[m]) munTotals[m] = { nome: m, qtd: 0, inv: 0 };
-            munTotals[m].qtd++;
-            munTotals[m].inv += (Number(o.valor_total) || 0);
-        });
-
-        const top20 = Object.values(munTotals).sort((a, b) => b.qtd - a.qtd).slice(0, 20).reverse();
-
-        chartCrechesPorMun.setOption({
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: { type: 'shadow' },
-                formatter: (params) => {
-                    const item = top20.find(t => t.nome === params[0].name);
-                    const invFmt = item ? (item.inv >= 1e6 ? `R$ ${(item.inv / 1e6).toFixed(1)} Mi` : `R$ ${item.inv.toLocaleString('pt-BR')}`) : '-';
-                    return `<strong>${params[0].name}</strong><br/>Creches: <b>${params[0].value}</b><br/>Investimento Total: <b>${invFmt}</b>`;
-                }
-            },
-            grid: { top: '5%', left: '3%', right: '6%', bottom: '8%', containLabel: true },
-            xAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: '#f1f5f9' } } },
-            yAxis: { type: 'category', data: top20.map(t => t.nome), axisLabel: { color: '#334155', fontSize: 11, fontWeight: 500 } },
-            series: [{
-                name: 'Qtd. de Creches',
-                type: 'bar',
-                data: top20.map(t => t.qtd),
-                itemStyle: {
-                    borderRadius: [0, 6, 6, 0],
-                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                        { offset: 0, color: '#fda4af' },
-                        { offset: 1, color: '#e11d48' }
-                    ])
-                },
-                label: { show: true, position: 'right', fontWeight: 'bold', fontSize: 10, color: '#881337' }
-            }]
-        });
-    }
-}
-
-function renderizarTabelaCreches(crechesObras) {
-    const elTable = document.getElementById('resumo_creches_tabela');
-    if (!elTable || typeof $.fn.DataTable === 'undefined') return;
-
-    if ($.fn.DataTable.isDataTable('#resumo_creches_tabela')) {
-        $('#resumo_creches_tabela').DataTable().destroy();
-        $('#resumo_creches_tabela').empty();
-    }
-
-    dataTableCreches = $('#resumo_creches_tabela').DataTable({
-        data: crechesObras,
-        deferRender: true,
-        scrollX: true,
-        pageLength: 10,
-        lengthMenu: [10, 25, 50, 100],
-        language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
-        order: [[5, 'desc']], // Ordenar por investimento
-        columns: [
-            {
-                title: "Município",
-                data: "municipio",
-                className: "align-middle",
-                width: "140px",
-                render: d => `<span class="badge bg-blue-50 text-blue-700 border border-blue-200 fw-bold px-2 py-1 rounded-pill cursor-pointer" onclick="window.filtrarTabelaPorMunicipioCreches('${d || ''}')">${d || 'Estadual'}</span>`
-            },
-            {
-                title: "Unidade / Empreendimento",
-                data: "produto",
-                className: "align-middle",
-                width: "280px",
-                render: (d, t, r) => {
-                    const titulo = d || r.iniciativa_estrategica || 'Creche e Pré-Escola';
-                    const sub = r.empresa ? `<div class="text-xs text-slate-400 mt-0.5">Contratada: ${r.empresa}</div>` : '';
-                    return `<div class="fw-bold text-slate-800 text-sm leading-tight">${titulo}</div>${sub}`;
-                }
-            },
-            {
-                title: "Contrato",
-                data: "numero_do_contrato",
-                className: "align-middle text-center",
-                width: "110px",
-                render: d => `<span class="badge bg-slate-100 text-slate-700 font-mono border">${d && d !== '-' ? d : 'N/I'}</span>`
-            },
-            {
-                title: "Status",
-                data: "status",
-                className: "align-middle",
-                width: "140px",
-                render: d => {
-                    const s = String(d || '').trim();
-                    let badgeClass = 'bg-slate-100 text-slate-700 border';
-                    if (s.toLowerCase().includes('conclu') || s.toLowerCase().includes('entreg')) badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
-                    else if (s.toLowerCase().includes('execu') || s.toLowerCase().includes('andamento')) badgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
-                    else if (s.toLowerCase().includes('licita') || s.toLowerCase().includes('planej')) badgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
-                    return `<span class="badge ${badgeClass} rounded-pill px-2.5 py-1 text-xs font-bold">${s || '-'}</span>`;
-                }
-            },
-            {
-                title: "Execução (%)",
-                data: "percent_execucao_fisica",
-                className: "align-middle",
-                width: "120px",
-                render: (d, t, r) => {
-                    let num = Number(d) || Number(r.percent_execucao) || 0;
-                    if (num <= 1 && num > 0) num = Math.round(num * 100);
-                    else num = Math.round(num);
-                    if (t !== 'display') return num;
-                    const barColor = num >= 100 ? 'bg-emerald-500' : (num >= 50 ? 'bg-sky-500' : 'bg-amber-500');
-                    return `
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="progress flex-grow-1" style="height: 6px;">
-                                <div class="progress-bar ${barColor}" style="width: ${Math.min(num, 100)}%;"></div>
-                            </div>
-                            <span class="text-xs fw-bold text-slate-700">${num}%</span>
-                        </div>
-                    `;
-                }
-            },
-            {
-                title: "Investimento (R$)",
-                data: "valor_total",
-                className: "align-middle text-end fw-bold text-slate-800",
-                width: "140px",
-                render: (d, t) => {
-                    const num = Number(d) || 0;
-                    if (t !== 'display') return num;
-                    return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                }
-            }
-        ]
-    });
-}
-
-window.filtrarTabelaPorMunicipioCreches = function (nomeMun) {
-    if (!nomeMun) return;
-    window.municipioCrechesFiltro = nomeMun;
-    $('#creches_filtro_ativo_badge').text(`Município: ${nomeMun}`);
-    $('#creches_filtro_ativo_badge_container').removeClass('d-none').addClass('d-flex');
-
-    if (dataTableCreches) {
-        dataTableCreches.column(0).search(`^${nomeMun}$`, true, false).draw();
-    }
-    const el = document.getElementById('creches_filtro_ativo_badge_container');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-};
-
-window.limparFiltroCreches = function () {
-    window.municipioCrechesFiltro = null;
-    $('#creches_filtro_ativo_badge_container').removeClass('d-flex').addClass('d-none');
-    $('#creches_filtro_ativo_badge').text('Filtro Ativo');
-
-    if (dataTableCreches) {
-        dataTableCreches.column(0).search('').draw();
-    }
-    if (mapCreches && mapCreches.getLayer('creches_muns_hover')) {
-        mapCreches.setFilter('creches_muns_hover', ['==', 'name', '']);
-    }
-};
-
-window.addEventListener('resize', () => {
-    if (mapCreches && typeof mapCreches.resize === 'function') mapCreches.resize();
-    if (chartCrechesStatus && typeof chartCrechesStatus.resize === 'function') chartCrechesStatus.resize();
-    if (chartCrechesPorMun && typeof chartCrechesPorMun.resize === 'function') chartCrechesPorMun.resize();
-    if (dataTableCreches && typeof dataTableCreches.columns.adjust === 'function') dataTableCreches.columns.adjust();
-});
-
-
-/* ==========================================================================
-   RESUMOS TEMÁTICOS - PAUTA EDUCAÇÃO: TRANSPORTE ESCOLAR (ÔNIBUS E VANS)
-   ========================================================================== */
-let mapEducacao = null;
-let cacheEducacaoData = null;
-let chartEducacaoComposicao = null;
-let chartEducacaoPorMun = null;
-let dataTableEducacao = null;
-window.visaoEducacaoAtiva = 'total';
-window.municipioFixoEducacao = null;
-
-window.desafixarMunicipioEducacao = function() {
-    window.municipioFixoEducacao = null;
-    atualizarHoverBoxEducacao(null, null, true);
-};
-
-function atualizarHoverBoxEducacao(tipo, props, forcar = false) {
-    if (window.municipioFixoEducacao && !forcar) return;
-
-    const boxDefault = document.getElementById('educacao_box_content_default');
-    const boxActive = document.getElementById('educacao_box_content_active');
-    if (!boxActive || !boxDefault) return;
-
-    if (!tipo || !props) {
-        boxActive.classList.add('d-none');
-        boxActive.classList.remove('d-flex');
-        boxDefault.classList.remove('d-none');
-        return;
-    }
-
-    boxDefault.classList.add('d-none');
-    boxActive.classList.remove('d-none');
-    boxActive.classList.add('d-flex');
-
-    const fmtMoeda = (v) => {
-        const n = Number(v) || 0;
-        if (n >= 1e6) return `R$ ${(n / 1e6).toFixed(2).replace('.', ',')} Mi`;
-        return `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    };
-
-    const isFixo = Boolean(window.municipioFixoEducacao);
-    const nomeMun = props.municipio || props.name || props.NM_MUN || 'Município';
-    const totalVeiculos = (Number(props.transp_onibus) || 0) + (Number(props.transp_vans) || 0);
-
-    boxActive.innerHTML = `
-        <div class="h-100 d-flex flex-column justify-content-between">
-            <div>
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="badge ${isFixo ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-200 text-slate-700'} font-bold px-2 py-1 text-xs rounded-pill">
-                        <i class="fas ${isFixo ? 'fa-thumbtack text-amber-600' : 'fa-bus text-amber-600'} me-1"></i> ${isFixo ? 'MUNICÍPIO FIXADO' : (props.regiao_de_desenvolvimento || 'Pernambuco')}
-                    </span>
-                    ${isFixo ? `
-                        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill py-0 px-2 text-[10px] font-bold" onclick="window.desafixarMunicipioEducacao()">
-                            <i class="fas fa-xmark me-1"></i>Desafixar
-                        </button>
-                    ` : '<span class="text-xs text-slate-400 font-semibold">Clique para fixar</span>'}
-                </div>
-                <h4 class="font-black text-slate-800 text-base mb-1">${nomeMun}</h4>
-                <div class="text-xs text-slate-500 mb-2">${props.produto || (totalVeiculos + ' veículos entregues')}</div>
-                <hr class="my-2 border-slate-200">
-                <div class="space-y-2 mt-3 text-xs">
-                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                        <span class="text-slate-500 font-bold">Total de Veículos:</span>
-                        <strong class="text-amber-700 font-black">${totalVeiculos.toLocaleString('pt-BR')}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                        <span class="text-slate-500 font-bold">Ônibus Escolares:</span>
-                        <strong class="text-yellow-700 font-black">${(Number(props.transp_onibus) || 0).toLocaleString('pt-BR')}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                        <span class="text-slate-500 font-bold">Vans Escolares:</span>
-                        <strong class="text-sky-700 font-black">${(Number(props.transp_vans) || 0).toLocaleString('pt-BR')}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                        <span class="text-slate-500 font-bold">Investimento na Frota:</span>
-                        <strong class="text-emerald-700 font-black">${fmtMoeda(props.transp_valor)}</strong>
-                    </div>
-                </div>
-            </div>
-            <div class="pt-3 border-t border-slate-200/80 text-center">
-                <span class="text-[11px] text-slate-400 italic">Clique para filtrar a tabela por este município</span>
-            </div>
-        </div>
-    `;
-}
-
-window.renderizarResumoEducacao = function() {
-    const container = document.getElementById('resumo_educacao_map');
-    if (!container) return;
-
-    if (cacheEducacaoData) {
-        setTimeout(() => {
-            if (mapEducacao && typeof mapEducacao.resize === 'function') mapEducacao.resize();
-            if (chartEducacaoComposicao && typeof chartEducacaoComposicao.resize === 'function') chartEducacaoComposicao.resize();
-            if (chartEducacaoPorMun && typeof chartEducacaoPorMun.resize === 'function') chartEducacaoPorMun.resize();
-            if (dataTableEducacao && typeof dataTableEducacao.columns.adjust === 'function') dataTableEducacao.columns.adjust();
-        }, 120);
-        return;
-    }
-
-    $('#resumo_educacao_spinner').removeClass('d-none');
-
-    // Busca da API consolidada de cozinhas ou do json direto
-    const apiUrl = `${window.basePath || ''}/municipios/resumo/cozinhas`.replace(/\/+/g, '/');
-    const fallbackUrl = `${window.basePath || ''}/data/json/df_transporte.json`.replace(/\/+/g, '/');
-
-    fetch(apiUrl)
-        .then(res => res.json())
-        .then(async data => {
-            let transporte = data.transporte || [];
-            let geoMun = data.geojson_municipios;
-
-            // Fallback caso a rota principal não contenha transporte
-            if (!transporte.length) {
-                try {
-                    const r2 = await fetch(fallbackUrl);
-                    if (r2.ok) transporte = await r2.json();
-                } catch(e) {}
-            }
-
-            if (typeof geoMun === 'string') {
-                try { geoMun = JSON.parse(geoMun); } catch(e) {}
-            }
-
-            $('#resumo_educacao_spinner').addClass('d-none');
-
-            const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-
-            let totOnibus = 0, totVans = 0, totInvest = 0;
-            const munsMap = {};
-            const munsIbgeMap = {};
-
-            transporte.forEach(t => {
-                const onibus = Number(t.qtd_onibus) || 0;
-                const vans = Number(t.qtd_vans) || 0;
-                
-                let vFloat = 0;
-                if (typeof t.valor_total === 'number') {
-                    vFloat = t.valor_total;
-                } else if (typeof t.valor_total === 'string') {
-                    vFloat = parseFloat(t.valor_total.replace(',', '.')) || 0;
-                }
-
-                totOnibus += onibus;
-                totVans += vans;
-                totInvest += vFloat;
-
-                const kMun = norm(t.municipio);
-                const rawIbge = t.ibge7 ? String(t.ibge7).trim() : (t.cod_ibge ? String(t.cod_ibge).trim() : '');
-                const ibge6 = rawIbge.length >= 6 ? rawIbge.substring(0, 6) : '';
-
-                const obj = {
-                    municipio: t.municipio,
-                    onibus: onibus,
-                    vans: vans,
-                    total: onibus + vans,
-                    valor: vFloat,
-                    produto: t.produto || `${onibus + vans} veículos`,
-                    rd: t.regiao_de_desenvolvimento || ''
-                };
-
-                if (kMun) munsMap[kMun] = obj;
-                if (rawIbge) munsIbgeMap[rawIbge] = obj;
-                if (ibge6) munsIbgeMap[ibge6] = obj;
-            });
-
-            const totFrota = totOnibus + totVans;
-
-            const fmtMoedaBiMi = (val) => {
-                if (!val || val === 0) return "R$ 0";
-                if (val >= 1e9) return `R$ ${(val / 1e9).toFixed(2).replace('.', ',')} Bi`;
-                if (val >= 1e6) return `R$ ${(val / 1e6).toFixed(1).replace('.', ',')} Mi`;
-                return `R$ ${val.toLocaleString('pt-BR')}`;
-            };
-
-            // Atualiza KPIs
-            $('#transp_kpi_total').text(totFrota.toLocaleString('pt-BR'));
-            $('#transp_kpi_onibus').text(totOnibus.toLocaleString('pt-BR'));
-            $('#transp_kpi_vans').text(totVans.toLocaleString('pt-BR'));
-            $('#transp_kpi_investimento').text(fmtMoedaBiMi(totInvest));
-            $('#transp_kpi_municipios').text(Object.keys(munsMap).length.toLocaleString('pt-BR'));
-
-            $('#educacao_box_stat_onibus').text(totOnibus.toLocaleString('pt-BR'));
-            $('#educacao_box_stat_vans').text(totVans.toLocaleString('pt-BR'));
-            $('#educacao_box_stat_investimento').text(fmtMoedaBiMi(totInvest));
-
-            // Enriquecer GeoJSON
-            if (geoMun && geoMun.features) {
-                geoMun.features.forEach(f => {
-                    const props = f.properties || {};
-                    const kMun = norm(props.municipio || props.name || props.NM_MUN);
-                    const rawCod = String(props.ibge7 || props.cod_ibge || props.codarea || props.ibge6 || '').trim();
-                    const kIbge6 = rawCod.length >= 6 ? rawCod.substring(0, 6) : '';
-
-                    const info = munsIbgeMap[rawCod] || munsIbgeMap[kIbge6] || munsMap[kMun] || { onibus: 0, vans: 0, total: 0, valor: 0 };
-                    props.transp_onibus = info.onibus;
-                    props.transp_vans = info.vans;
-                    props.transp_total = info.total;
-                    props.transp_valor = info.valor;
-                    props.municipio = info.municipio || props.municipio || props.name;
-                    props.produto = info.produto || '';
-                });
-            }
-
-            cacheEducacaoData = {
-                transporte: transporte,
-                geoMun: geoMun
-            };
-
-            // Inicialização do Mapa MapLibre
-            if (mapEducacao) {
-                try { mapEducacao.remove(); } catch(e) {}
-            }
-
-            mapEducacao = new maplibregl.Map({
-                container: 'resumo_educacao_map',
-                style: window.obterEstiloBaseMapa(),
-                center: [-37.8, -8.3],
-                zoom: 7,
-                preserveDrawingBuffer: true
-            });
-
-            mapEducacao.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-
-            mapEducacao.on('load', () => {
-                mapEducacao.resize();
-
-                if (geoMun && geoMun.features) {
-                    try {
-                        const bounds = new maplibregl.LngLatBounds();
-                        geoMun.features.forEach(feature => {
-                            const geom = feature.geometry;
-                            if (!geom) return;
-                            const expand = (c) => {
-                                if (typeof c[0] === 'number') bounds.extend(c);
-                                else c.forEach(expand);
-                            };
-                            expand(geom.coordinates);
-                        });
-                        if (!bounds.isEmpty()) {
-                            mapEducacao.fitBounds(bounds, { padding: 30, animate: false });
-                        }
-                    } catch (e) {}
-
-                    mapEducacao.addSource('educacao_mun_source', { type: 'geojson', data: geoMun });
-
-                    mapEducacao.addLayer({
-                        id: 'educacao_muns_fill',
-                        type: 'fill',
-                        source: 'educacao_mun_source',
-                        paint: {
-                            'fill-color': [
-                                'step',
-                                ['get', 'transp_total'],
-                                '#fef3c7',
-                                5, '#f59e0b',
-                                10, '#d97706',
-                                20, '#78350f'
-                            ],
-                            'fill-opacity': 0.85
-                        }
-                    });
-
-                    mapEducacao.addLayer({
-                        id: 'educacao_muns_line',
-                        type: 'line',
-                        source: 'educacao_mun_source',
-                        paint: { 'line-color': '#ffffff', 'line-width': 0.8 }
-                    });
-
-                    mapEducacao.addLayer({
-                        id: 'educacao_muns_hover',
-                        type: 'line',
-                        source: 'educacao_mun_source',
-                        paint: { 'line-color': '#0f172a', 'line-width': 2.4 },
-                        filter: ['==', 'municipio', '']
-                    });
-
-                    mapEducacao.on('mousemove', 'educacao_muns_fill', (e) => {
-                        if (!e.features.length) return;
-                        mapEducacao.getCanvas().style.cursor = 'pointer';
-                        const props = e.features[0].properties;
-                        mapEducacao.setFilter('educacao_muns_hover', ['==', 'municipio', props.municipio || '']);
-                        atualizarHoverBoxEducacao('municipio', props, false);
-                    });
-
-                    mapEducacao.on('mouseleave', 'educacao_muns_fill', () => {
-                        mapEducacao.getCanvas().style.cursor = '';
-                        mapEducacao.setFilter('educacao_muns_hover', ['==', 'municipio', '']);
-                        if (!window.municipioFixoEducacao) atualizarHoverBoxEducacao(null, null, false);
-                    });
-
-                    mapEducacao.on('click', 'educacao_muns_fill', (e) => {
-                        if (!e.features.length) return;
-                        const props = e.features[0].properties;
-                        const nomeMun = props.municipio;
-                        if (window.municipioFixoEducacao === nomeMun) {
-                            window.desafixarMunicipioEducacao();
-                        } else {
-                            window.municipioFixoEducacao = nomeMun;
-                            atualizarHoverBoxEducacao('municipio', props, true);
-                        }
-                        if (nomeMun) window.filtrarTabelaPorMunicipioEducacao(nomeMun);
-                    });
-                }
-            });
-
-            // Gráficos e Tabela
-            renderizarGraficosEducacao(transporte, totOnibus, totVans);
-            renderizarTabelaEducacao(transporte);
-        })
-        .catch(err => {
-            console.error('[Resumo Educação] Erro:', err);
-            $('#resumo_educacao_spinner').addClass('d-none');
-        });
-};
-
-window.alternarVisaoEducacao = function (visao, btn) {
-    window.visaoEducacaoAtiva = visao;
-
-    $('#btn_visao_transp_total, #btn_visao_transp_onibus, #btn_visao_transp_vans')
-        .removeClass('btn-primary shadow-sm')
-        .addClass('btn-light text-slate-600');
-    if (btn) $(btn).removeClass('btn-light text-slate-600').addClass('btn-primary shadow-sm');
-
-    $('#legenda_transp_total, #legenda_transp_onibus, #legenda_transp_vans').addClass('d-none');
-
-    if (!mapEducacao || !mapEducacao.getLayer('educacao_muns_fill')) return;
-
-    if (visao === 'total') {
-        $('#legenda_transp_total').removeClass('d-none');
-        mapEducacao.setPaintProperty('educacao_muns_fill', 'fill-color', [
-            'step',
-            ['get', 'transp_total'],
-            '#fef3c7',
-            5, '#f59e0b',
-            10, '#d97706',
-            20, '#78350f'
-        ]);
-        $('#educacao_camada_label').text("Exibindo: Total de Veículos Entregues (Ônibus + Vans)");
-    } else if (visao === 'onibus') {
-        $('#legenda_transp_onibus').removeClass('d-none');
-        mapEducacao.setPaintProperty('educacao_muns_fill', 'fill-color', [
-            'step',
-            ['get', 'transp_onibus'],
-            '#fef9c3',
-            5, '#eab308',
-            10, '#ca8a04',
-            15, '#713f12'
-        ]);
-        $('#educacao_camada_label').text("Exibindo: Apenas Ônibus Escolares Entregues");
-    } else if (visao === 'vans') {
-        $('#legenda_transp_vans').removeClass('d-none');
-        mapEducacao.setPaintProperty('educacao_muns_fill', 'fill-color', [
-            'step',
-            ['get', 'transp_vans'],
-            '#f0f9ff',
-            1, '#38bdf8',
-            2, '#0284c7',
-            4, '#0c4a6e'
-        ]);
-        $('#educacao_camada_label').text("Exibindo: Apenas Vans Escolares Entregues");
-    }
-};
-
-function renderizarGraficosEducacao(transporte, totOnibus, totVans) {
-    if (typeof echarts === 'undefined') return;
-
-    // 1. Donut de Composição
-    const elComp = document.getElementById('chart_educacao_composicao');
-    if (elComp) {
-        if (chartEducacaoComposicao) chartEducacaoComposicao.dispose();
-        chartEducacaoComposicao = echarts.init(elComp);
-
-        const dataComp = [
-            { value: totOnibus, name: 'Ônibus Escolares', itemStyle: { color: '#eab308' } },
-            { value: totVans, name: 'Vans Escolares', itemStyle: { color: '#0284c7' } }
-        ];
-
-        const total = totOnibus + totVans;
-
-        chartEducacaoComposicao.setOption({
-            tooltip: {
-                trigger: 'item',
-                formatter: (p) => `<strong>${p.name}</strong><br/>Veículos: <b>${p.value}</b> (${total > 0 ? ((p.value/total)*100).toFixed(1) : 0}%)`
-            },
-            legend: { orient: 'horizontal', bottom: '0%', left: 'center', textStyle: { fontSize: 11, color: '#475569', fontWeight: 600 } },
-            series: [{
-                name: 'Composição da Frota',
-                type: 'pie',
-                radius: ['45%', '72%'],
-                center: ['50%', '45%'],
-                itemStyle: { borderRadius: 6, borderColor: '#ffffff', borderWidth: 2 },
-                data: dataComp
-            }]
-        });
-    }
-
-    // 2. Top 20 Municípios
-    const elMun = document.getElementById('chart_educacao_por_mun');
-    if (elMun) {
-        if (chartEducacaoPorMun) chartEducacaoPorMun.dispose();
-        chartEducacaoPorMun = echarts.init(elMun);
-
-        const top20 = transporte
-            .map(t => ({
-                nome: t.municipio,
-                onibus: Number(t.qtd_onibus) || 0,
-                vans: Number(t.qtd_vans) || 0,
-                total: (Number(t.qtd_onibus) || 0) + (Number(t.qtd_vans) || 0)
-            }))
-            .sort((a, b) => b.total - a.total)
-            .slice(0, 20)
-            .reverse();
-
-        chartEducacaoPorMun.setOption({
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: { type: 'shadow' },
-                formatter: (params) => {
-                    let out = `<strong>${params[0].name}</strong><br/>`;
-                    params.forEach(p => {
-                        out += `${p.marker} ${p.seriesName}: <b>${p.value}</b><br/>`;
-                    });
-                    return out;
-                }
-            },
-            legend: { orient: 'horizontal', bottom: '0%', left: 'center', textStyle: { fontSize: 11, color: '#475569', fontWeight: 600 } },
-            grid: { top: '5%', left: '3%', right: '6%', bottom: '10%', containLabel: true },
-            xAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: '#f1f5f9' } } },
-            yAxis: { type: 'category', data: top20.map(t => t.nome), axisLabel: { color: '#334155', fontSize: 11, fontWeight: 500 } },
-            series: [
-                {
-                    name: 'Ônibus',
-                    type: 'bar',
-                    stack: 'frota',
-                    data: top20.map(t => t.onibus),
-                    itemStyle: { color: '#eab308' }
-                },
-                {
-                    name: 'Vans',
-                    type: 'bar',
-                    stack: 'frota',
-                    data: top20.map(t => t.vans),
-                    itemStyle: { color: '#0284c7' }
-                }
-            ]
-        });
-    }
-}
-
-function renderizarTabelaEducacao(transporte) {
-    const elTable = document.getElementById('resumo_educacao_tabela');
-    if (!elTable || typeof $.fn.DataTable === 'undefined') return;
-
-    if ($.fn.DataTable.isDataTable('#resumo_educacao_tabela')) {
-        $('#resumo_educacao_tabela').DataTable().destroy();
-        $('#resumo_educacao_tabela').empty();
-    }
-
-    dataTableEducacao = $('#resumo_educacao_tabela').DataTable({
-        data: transporte,
-        deferRender: true,
-        scrollX: true,
-        pageLength: 10,
-        lengthMenu: [10, 25, 50, 100],
-        language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
-        order: [[4, 'desc']], // Ordenar por total de veículos
-        columns: [
-            {
-                title: "Município",
-                data: "municipio",
-                className: "align-middle",
-                width: "160px",
-                render: d => `<span class="badge bg-blue-50 text-blue-700 border border-blue-200 fw-bold px-2 py-1 rounded-pill cursor-pointer" onclick="window.filtrarTabelaPorMunicipioEducacao('${d || ''}')">${d || 'Estadual'}</span>`
-            },
-            {
-                title: "Região (RD)",
-                data: "regiao_de_desenvolvimento",
-                className: "align-middle text-center",
-                width: "140px",
-                render: d => `<span class="badge bg-slate-100 text-slate-700 border text-xs">${d || '-'}</span>`
-            },
-            {
-                title: "Ônibus",
-                data: "qtd_onibus",
-                className: "align-middle text-center fw-bold",
-                width: "90px",
-                render: (d, t) => {
-                    const n = Number(d) || 0;
-                    if (t !== 'display') return n;
-                    return n > 0 ? `<span class="badge bg-yellow-50 text-yellow-800 border border-yellow-300 font-black px-2.5 py-1 text-xs rounded-pill">${n}</span>` : `<span class="text-slate-300">-</span>`;
-                }
-            },
-            {
-                title: "Vans",
-                data: "qtd_vans",
-                className: "align-middle text-center fw-bold",
-                width: "90px",
-                render: (d, t) => {
-                    const n = Number(d) || 0;
-                    if (t !== 'display') return n;
-                    return n > 0 ? `<span class="badge bg-sky-50 text-sky-800 border border-sky-300 font-black px-2.5 py-1 text-xs rounded-pill">${n}</span>` : `<span class="text-slate-300">-</span>`;
-                }
-            },
-            {
-                title: "Total de Veículos",
-                data: null,
-                className: "align-middle text-center fw-black",
-                width: "120px",
-                render: (d, t, r) => {
-                    const total = (Number(r.qtd_onibus) || 0) + (Number(r.qtd_vans) || 0);
-                    if (t !== 'display') return total;
-                    return `<span class="badge bg-amber-100 text-amber-900 border border-amber-300 font-black px-3 py-1 text-xs rounded-pill">${total} veículos</span>`;
-                }
-            },
-            {
-                title: "Status",
-                data: "status",
-                className: "align-middle",
-                width: "120px",
-                render: d => `<span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-pill px-2.5 py-1 text-xs font-bold">${d || 'CONCLUÍDA'}</span>`
-            },
-            {
-                title: "Investimento (R$)",
-                data: "valor_total",
-                className: "align-middle text-end fw-bold text-slate-800",
-                width: "150px",
-                render: (d, t) => {
-                    let num = 0;
-                    if (typeof d === 'number') num = d;
-                    else if (typeof d === 'string') num = parseFloat(d.replace(',', '.')) || 0;
-                    if (t !== 'display') return num;
-                    return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                }
-            }
-        ]
-    });
-}
-window.filtrarTabelaPorMunicipioEducacao = function(nomeMun) {
-    if (!nomeMun) return;
-    $('#educacao_filtro_ativo_badge').text(`Município: ${nomeMun}`);
-    $('#educacao_filtro_ativo_badge_container').removeClass('d-none').addClass('d-flex');
-
-    if (dataTableEducacao) {
-        dataTableEducacao.column(0).search(`^${nomeMun}$`, true, false).draw();
-    }
-    const el = document.getElementById('educacao_filtro_ativo_badge_container');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-};
-
-window.limparFiltroEducacao = function() {
-    $('#educacao_filtro_ativo_badge_container').removeClass('d-flex').addClass('d-none');
-    $('#educacao_filtro_ativo_badge').text('Filtro Ativo');
-
-    if (dataTableEducacao) {
-        dataTableEducacao.column(0).search('').draw();
-    }
-    if (mapEducacao && mapEducacao.getLayer('educacao_muns_hover')) {
-        mapEducacao.setFilter('educacao_muns_hover', ['==', 'municipio', '']);
-    }
-};
-
-window.addEventListener('resize', () => {
-    if (mapEducacao && typeof mapEducacao.resize === 'function') mapEducacao.resize();
-    if (chartEducacaoComposicao && typeof chartEducacaoComposicao.resize === 'function') chartEducacaoComposicao.resize();
-    if (chartEducacaoPorMun && typeof chartEducacaoPorMun.resize === 'function') chartEducacaoPorMun.resize();
-    if (dataTableEducacao && typeof dataTableEducacao.columns.adjust === 'function') dataTableEducacao.columns.adjust();
-});
-
-/* ==========================================================================
-   RESUMOS TEMÁTICOS - EFICIÊNCIA ENERGÉTICA E SUSTENTABILIDADE (ILUMINA PE)
-   ========================================================================== */
-let mapIluminacao = null;
-let cacheIluminacaoData = null;
-let chartIluminacaoStatus = null;
-let chartIluminacaoPorMun = null;
-let dataTableIluminacao = null;
-window.visaoIluminacaoAtiva = 'todos';
-window.municipioFixoIluminacao = null;
-
-window.desafixarMunicipioIluminacao = function() {
-    window.municipioFixoIluminacao = null;
-    atualizarHoverBoxIluminacao(null, null, true);
-};
-
-function atualizarHoverBoxIluminacao(tipo, props, forcar = false) {
-    if (window.municipioFixoIluminacao && !forcar) return;
-
-    const boxDefault = document.getElementById('iluminacao_box_content_default');
-    const boxActive = document.getElementById('iluminacao_box_content_active');
-    if (!boxActive || !boxDefault) return;
-
-    if (!tipo || !props) {
-        boxActive.classList.add('d-none');
-        boxActive.classList.remove('d-flex');
-        boxDefault.classList.remove('d-none');
-        return;
-    }
-
-    boxDefault.classList.add('d-none');
-    boxActive.classList.remove('d-none');
-    boxActive.classList.add('d-flex');
-
-    const fmtMoeda = (v) => {
-        const n = Number(v) || 0;
-        if (n >= 1e6) return `R$ ${(n / 1e6).toFixed(2).replace('.', ',')} Mi`;
-        return `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    };
-
-    const isFixo = Boolean(window.municipioFixoIluminacao);
-
-    if (tipo === 'municipio') {
-        const nomeMun = props.municipio || props.name || props.NM_MUN || 'Município';
-        const pExec = Number(props.ilumina_pontos_exec) || 0;
-        const pPrev = Number(props.ilumina_pontos_prev) || 0;
-        const tx = pPrev > 0 ? ((pExec / pPrev) * 100).toFixed(1) : (pExec > 0 ? '100.0' : '0.0');
-
-        boxActive.innerHTML = `
-            <div class="h-100 d-flex flex-column justify-content-between">
-                <div>
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="badge ${isFixo ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'} font-bold px-2 py-1 text-xs rounded-pill">
-                            <i class="fas ${isFixo ? 'fa-thumbtack text-amber-600' : 'fa-lightbulb text-emerald-600'} me-1"></i> ${isFixo ? 'MUNICÍPIO FIXADO' : (props.rd || 'Pernambuco')}
-                        </span>
-                        ${isFixo ? `
-                            <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill py-0 px-2 text-[10px] font-bold" onclick="window.desafixarMunicipioIluminacao()">
-                                <i class="fas fa-xmark me-1"></i>Desafixar
-                            </button>
-                        ` : '<span class="text-xs text-slate-400 font-semibold">Clique para fixar</span>'}
-                    </div>
-                    <h4 class="font-black text-slate-800 text-base mb-1">${nomeMun}</h4>
-                    <div class="text-xs text-slate-500 mb-2">${props.contratos_count || 1} intervenção(ões) do Ilumina PE</div>
-                    <hr class="my-2 border-slate-200">
-                    <div class="space-y-2 mt-3 text-xs">
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Pontos Executados:</span>
-                            <strong class="text-emerald-700 font-black">${pExec.toLocaleString('pt-BR')}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Pontos Previstos:</span>
-                            <strong class="text-slate-700 font-bold">${pPrev.toLocaleString('pt-BR')}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Avanço Físico:</span>
-                            <strong class="text-teal-700 font-black">${tx}%</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Investimento Total:</span>
-                            <strong class="text-blue-700 font-black">${fmtMoeda(props.ilumina_valor_total)}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Recurso Pago:</span>
-                            <strong class="text-emerald-700 font-black">${fmtMoeda(props.ilumina_valor_pago)}</strong>
-                        </div>
-                    </div>
-                </div>
-                <div class="pt-3 border-t border-slate-200/80 text-center">
-                    <span class="text-[11px] text-slate-400 italic">Clique para filtrar a tabela por este município</span>
-                </div>
-            </div>
-        `;
-    } else if (tipo === 'ponto') {
-        boxActive.innerHTML = `
-            <div class="h-100 d-flex flex-column justify-content-between">
-                <div>
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-2 py-1 text-xs rounded-pill">CANTEIRO ILUMINA PE</span>
-                        <span class="text-xs text-slate-400 font-semibold">${props.municipio}</span>
-                    </div>
-                    <h4 class="font-black text-slate-800 text-base mb-1">${props.produto || 'Modernização LED'}</h4>
-                    <div class="text-xs text-slate-500 mb-2">Contrato: <b>${props.no_contrato || '-'}</b> ${props.grupo_ilumina ? `(${props.grupo_ilumina})` : ''}</div>
-                    <hr class="my-2 border-slate-200">
-                    <div class="space-y-2 mt-3 text-xs">
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Status:</span>
-                            <strong class="text-slate-800 font-bold">${props.status}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Pontos Executados:</span>
-                            <strong class="text-emerald-700 font-black">${(Number(props.indicador) || 0).toLocaleString('pt-BR')}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Pontos Previstos:</span>
-                            <strong class="text-slate-700 font-bold">${(Number(props.indicador_secundario) || 0).toLocaleString('pt-BR')}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Investimento:</span>
-                            <strong class="text-blue-700 font-black">${fmtMoeda(props.valor_total)}</strong>
-                        </div>
-                        ${props.empresa_contratada ? `
-                        <div class="d-flex justify-content-between p-2 rounded-lg bg-white border border-slate-200">
-                            <span class="text-slate-500 font-bold">Contratada:</span>
-                            <span class="text-slate-700 text-truncate font-semibold" style="max-width: 140px;" title="${props.empresa_contratada}">${props.empresa_contratada}</span>
-                        </div>` : ''}
-                    </div>
-                </div>
-                <div class="pt-3 border-t border-slate-200/80 text-center">
-                    <span class="text-[11px] text-slate-400 italic">Passe o cursor sobre outros pontos</span>
-                </div>
-            </div>
-        `;
-    }
-}
-
-window.renderizarResumoIluminacao = function() {
-    const container = document.getElementById('resumo_iluminacao_map');
-    if (!container) return;
-
-    if (cacheIluminacaoData) {
-        setTimeout(() => {
-            if (mapIluminacao && typeof mapIluminacao.resize === 'function') mapIluminacao.resize();
-            if (chartIluminacaoStatus && typeof chartIluminacaoStatus.resize === 'function') chartIluminacaoStatus.resize();
-            if (chartIluminacaoPorMun && typeof chartIluminacaoPorMun.resize === 'function') chartIluminacaoPorMun.resize();
-            if (dataTableIluminacao && typeof dataTableIluminacao.columns.adjust === 'function') dataTableIluminacao.columns.adjust();
-        }, 120);
-        return;
-    }
-
-    $('#resumo_iluminacao_spinner').removeClass('d-none');
-
-    const apiUrl = `${window.basePath || ''}/municipios/resumo/cozinhas`.replace(/\/+/g, '/');
-    const fallbackUrl = `${window.basePath || ''}/data/json/df_iluminacao.json`.replace(/\/+/g, '/');
-
-    fetch(apiUrl)
-        .then(res => res.json())
-        .then(async data => {
-            let iluminacao = data.iluminacao || [];
-            let geoMun = data.geojson_municipios;
-
-            if (!iluminacao.length) {
-                try {
-                    const r2 = await fetch(fallbackUrl);
-                    if (r2.ok) iluminacao = await r2.json();
-                } catch(e) {}
-            }
-
-            if (typeof geoMun === 'string') {
-                try { geoMun = JSON.parse(geoMun); } catch(e) {}
-            }
-
-            $('#resumo_iluminacao_spinner').addClass('d-none');
-
-            const norm = (s) => String(s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-
-            let totPontosExec = 0, totPontosPrev = 0, totInvest = 0, totPago = 0;
-            const munsMap = {};
-            const munsIbgeMap = {};
-
-            iluminacao.forEach(item => {
-                const pExec = Number(item.indicador) || 0;
-                const pPrev = Number(item.indicador_secundario) || 0;
-                const vTot = parseFloat(String(item.valor_total || '0').replace(',', '.')) || 0;
-                const vPag = parseFloat(String(item.valor_pago || '0').replace(',', '.')) || 0;
-
-                totPontosExec += pExec;
-                totPontosPrev += pPrev;
-                totInvest += vTot;
-                totPago += vPag;
-
-                const kMun = norm(item.municipio);
-                const rawIbge = item.ibge7 ? String(item.ibge7).trim() : '';
-                const ibge6 = rawIbge.length >= 6 ? rawIbge.substring(0, 6) : '';
-
-                if (!munsMap[kMun]) {
-                    munsMap[kMun] = { municipio: item.municipio, rd: item.rd, pontos_exec: 0, pontos_prev: 0, valor_total: 0, valor_pago: 0, contratos: 0 };
-                }
-                munsMap[kMun].pontos_exec += pExec;
-                munsMap[kMun].pontos_prev += pPrev;
-                munsMap[kMun].valor_total += vTot;
-                munsMap[kMun].valor_pago += vPag;
-                munsMap[kMun].contratos++;
-
-                if (rawIbge) munsIbgeMap[rawIbge] = munsMap[kMun];
-                if (ibge6) munsIbgeMap[ibge6] = munsMap[kMun];
-            });
-
-            const taxaGlobal = totPontosPrev > 0 ? ((totPontosExec / totPontosPrev) * 100).toFixed(1) : '100.0';
-
-            const fmtMoedaBiMi = (val) => {
-                if (!val || val === 0) return "R$ 0";
-                if (val >= 1e9) return `R$ ${(val / 1e9).toFixed(2).replace('.', ',')} Bi`;
-                if (val >= 1e6) return `R$ ${(val / 1e6).toFixed(1).replace('.', ',')} Mi`;
-                return `R$ ${val.toLocaleString('pt-BR')}`;
-            };
-
-            // Atualiza KPIs
-            $('#ilumina_kpi_pontos_exec').text(totPontosExec.toLocaleString('pt-BR'));
-            $('#ilumina_kpi_pontos_prev').text(totPontosPrev.toLocaleString('pt-BR'));
-            $('#ilumina_kpi_taxa_exec').text(`${taxaGlobal}%`);
-            $('#ilumina_kpi_investimento').text(fmtMoedaBiMi(totInvest));
-            $('#ilumina_kpi_pago_sub').text(`Pago: ${fmtMoedaBiMi(totPago)}`);
-            $('#ilumina_kpi_municipios').text(Object.keys(munsMap).length.toLocaleString('pt-BR'));
-
-            $('#ilumina_box_stat_muns').text(Object.keys(munsMap).length.toLocaleString('pt-BR'));
-            $('#ilumina_box_stat_exec').text(totPontosExec.toLocaleString('pt-BR'));
-            $('#ilumina_box_stat_prev').text(totPontosPrev.toLocaleString('pt-BR'));
-            $('#ilumina_box_stat_investimento').text(fmtMoedaBiMi(totInvest));
-
-            // Centróides para dispersão se lat/long faltarem
-            const munCentroids = {};
-            if (geoMun && geoMun.features) {
-                geoMun.features.forEach(f => {
-                    const nomeMun = norm(f.properties.name || f.properties.NM_MUN || f.properties.municipio);
-                    try {
-                        let flatCoords = [];
-                        const collect = (c) => {
-                            if (typeof c[0] === 'number') flatCoords.push(c);
-                            else c.forEach(collect);
-                        };
-                        collect(f.geometry.coordinates);
-                        if (flatCoords.length > 0) {
-                            const sum = flatCoords.reduce((acc, curr) => [acc[0] + curr[0], acc[1] + curr[1]], [0, 0]);
-                            munCentroids[nomeMun] = [sum[0] / flatCoords.length, sum[1] / flatCoords.length];
-                        }
-                    } catch(e) {}
-                });
-
-                // Enriquecimento dos municípios
-                geoMun.features.forEach(f => {
-                    const props = f.properties || {};
-                    const kMun = norm(props.municipio || props.name || props.NM_MUN);
-                    const rawCod = String(props.ibge7 || props.cod_ibge || props.codarea || props.ibge6 || '').trim();
-                    const kIbge6 = rawCod.length >= 6 ? rawCod.substring(0, 6) : '';
-
-                    const info = munsIbgeMap[rawCod] || munsIbgeMap[kIbge6] || munsMap[kMun] || { pontos_exec: 0, pontos_prev: 0, valor_total: 0, valor_pago: 0, contratos: 0 };
-                    props.ilumina_pontos_exec = info.pontos_exec;
-                    props.ilumina_pontos_prev = info.pontos_prev;
-                    props.ilumina_valor_total = info.valor_total;
-                    props.ilumina_valor_pago = info.valor_pago;
-                    props.contratos_count = info.contratos;
-                    props.municipio = info.municipio || props.municipio || props.name;
-                    props.rd = info.rd || props.regiao_de_desenvolvimento || '';
-                });
-            }
-
-            // Features pontuais georreferenciadas
-            const featuresIlumina = [];
-            iluminacao.forEach((item, idx) => {
-                const m = norm(item.municipio);
-                let lat = parseFloat(item.latitude);
-                let lng = parseFloat(item.longitude);
-
-                if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
-                    if (m && munCentroids[m]) {
-                        const jitterX = ((idx % 7) - 3) * 0.008;
-                        const jitterY = (((idx * 3) % 7) - 3) * 0.008;
-                        lng = munCentroids[m][0] + jitterX;
-                        lat = munCentroids[m][1] + jitterY;
-                    }
-                }
-
-                if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-                    featuresIlumina.push({
-                        type: 'Feature',
-                        geometry: { type: 'Point', coordinates: [lng, lat] },
-                        properties: {
-                            no_contrato: item.no_contrato || '',
-                            produto: item.produto || 'Modernização LED',
-                            status: item.status || 'CONCLUÍDA',
-                            indicador: Number(item.indicador) || 0,
-                            indicador_secundario: Number(item.indicador_secundario) || 0,
-                            valor_total: parseFloat(String(item.valor_total || '0').replace(',', '.')) || 0,
-                            valor_pago: parseFloat(String(item.valor_pago || '0').replace(',', '.')) || 0,
-                            empresa_contratada: item.empresa_contratada || '',
-                            municipio: item.municipio || '',
-                            grupo_ilumina: item.grupo_ilumina || ''
-                        }
-                    });
-                }
-            });
-
-            cacheIluminacaoData = {
-                iluminacao: iluminacao,
-                geoMun: geoMun,
-                geoPontos: { type: 'FeatureCollection', features: featuresIlumina }
-            };
-
-            // Inicialização do Mapa
-            if (mapIluminacao) {
-                try { mapIluminacao.remove(); } catch(e) {}
-            }
-
-            mapIluminacao = new maplibregl.Map({
-                container: 'resumo_iluminacao_map',
-                style: window.obterEstiloBaseMapa(),
-                center: [-37.8, -8.3],
-                zoom: 7,
-                preserveDrawingBuffer: true
-            });
-
-            mapIluminacao.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-
-            mapIluminacao.on('load', () => {
-                mapIluminacao.resize();
-
-                try {
-                    const bounds = new maplibregl.LngLatBounds();
-                    featuresIlumina.forEach(f => bounds.extend(f.geometry.coordinates));
-                    if (!bounds.isEmpty()) {
-                        mapIluminacao.fitBounds(bounds, { padding: 40, maxZoom: 12, duration: 800 });
-                    }
-                } catch(e) {}
-
-                if (geoMun && geoMun.features) {
-                    mapIluminacao.addSource('ilumina_mun_source', { type: 'geojson', data: geoMun });
-
-                    mapIluminacao.addLayer({
-                        id: 'ilumina_muns_fill',
-                        type: 'fill',
-                        source: 'ilumina_mun_source',
-                        paint: {
-                            'fill-color': '#f8fafc',
-                            'fill-opacity': window.visaoIluminacaoAtiva === 'todos' ? 0.08 : 0.75
-                        }
-                    });
-
-                    mapIluminacao.addLayer({
-                        id: 'ilumina_muns_line',
-                        type: 'line',
-                        source: 'ilumina_mun_source',
-                        paint: { 'line-color': '#94a3b8', 'line-width': 0.8, 'line-opacity': 0.5 }
-                    });
-
-                    mapIluminacao.addLayer({
-                        id: 'ilumina_muns_hover',
-                        type: 'line',
-                        source: 'ilumina_mun_source',
-                        paint: { 'line-color': '#059669', 'line-width': 2.4 },
-                        filter: ['==', 'municipio', '']
-                    });
-                }
-
-                mapIluminacao.addSource('ilumina_points_source', {
-                    type: 'geojson',
-                    data: cacheIluminacaoData.geoPontos,
-                    cluster: true,
-                    clusterMaxZoom: 10,
-                    clusterRadius: 35
-                });
-
-                mapIluminacao.addLayer({
-                    id: 'ilumina_clusters',
-                    type: 'circle',
-                    source: 'ilumina_points_source',
-                    filter: ['has', 'point_count'],
-                    layout: { 'visibility': window.visaoIluminacaoAtiva === 'todos' ? 'visible' : 'none' },
-                    paint: {
-                        'circle-color': '#10b981',
-                        'circle-radius': ['step', ['get', 'point_count'], 16, 5, 20, 15, 26],
-                        'circle-stroke-width': 2,
-                        'circle-stroke-color': '#ffffff',
-                        'circle-opacity': 0.85
-                    }
-                });
-
-                mapIluminacao.addLayer({
-                    id: 'ilumina_cluster_count',
-                    type: 'symbol',
-                    source: 'ilumina_points_source',
-                    filter: ['has', 'point_count'],
-                    layout: {
-                        'visibility': window.visaoIluminacaoAtiva === 'todos' ? 'visible' : 'none',
-                        'text-field': '{point_count_abbreviated}',
-                        'text-size': 12
-                    },
-                    paint: { 'text-color': '#ffffff' }
-                });
-
-                mapIluminacao.addLayer({
-                    id: 'ilumina_points',
-                    type: 'circle',
-                    source: 'ilumina_points_source',
-                    filter: ['!', ['has', 'point_count']],
-                    layout: { 'visibility': window.visaoIluminacaoAtiva === 'todos' ? 'visible' : 'none' },
-                    paint: {
-                        'circle-color': [
-                            'case',
-                            ['in', 'conclu', ['downcase', ['get', 'status']]], '#10b981',
-                            ['in', 'entreg', ['downcase', ['get', 'status']]], '#10b981',
-                            ['in', 'execu', ['downcase', ['get', 'status']]], '#f59e0b',
-                            ['in', 'andamento', ['downcase', ['get', 'status']]], '#f59e0b',
-                            '#3b82f6'
-                        ],
-                        'circle-radius': 7,
-                        'circle-stroke-width': 1.5,
-                        'circle-stroke-color': '#ffffff'
-                    }
-                });
-
-                mapIluminacao.on('click', 'ilumina_clusters', (e) => {
-                    const clFeatures = mapIluminacao.queryRenderedFeatures(e.point, { layers: ['ilumina_clusters'] });
-                    if (!clFeatures.length) return;
-                    const clusterId = clFeatures[0].properties.cluster_id;
-                    mapIluminacao.getSource('ilumina_points_source').getClusterExpansionZoom(clusterId, (err, zoom) => {
-                        if (err) return;
-                        mapIluminacao.easeTo({ center: clFeatures[0].geometry.coordinates, zoom: zoom });
-                    });
-                });
-
-                mapIluminacao.on('mousemove', 'ilumina_muns_fill', (e) => {
-                    if (!e.features.length) return;
-                    mapIluminacao.getCanvas().style.cursor = 'pointer';
-                    const props = e.features[0].properties;
-                    mapIluminacao.setFilter('ilumina_muns_hover', ['==', 'municipio', props.municipio || '']);
-                    atualizarHoverBoxIluminacao('municipio', props, false);
-                });
-
-                mapIluminacao.on('mousemove', 'ilumina_points', (e) => {
-                    if (!e.features.length) return;
-                    mapIluminacao.getCanvas().style.cursor = 'pointer';
-                    const props = e.features[0].properties;
-                    atualizarHoverBoxIluminacao('ponto', props, false);
-                });
-
-                mapIluminacao.on('mouseleave', 'ilumina_muns_fill', () => {
-                    mapIluminacao.getCanvas().style.cursor = '';
-                    mapIluminacao.setFilter('ilumina_muns_hover', ['==', 'municipio', '']);
-                    if (!window.municipioFixoIluminacao) atualizarHoverBoxIluminacao(null, null, false);
-                });
-
-                mapIluminacao.on('mouseleave', 'ilumina_points', () => {
-                    if (!window.municipioFixoIluminacao) atualizarHoverBoxIluminacao(null, null, false);
-                });
-
-                mapIluminacao.on('click', 'ilumina_muns_fill', (e) => {
-                    if (!e.features.length) return;
-                    const props = e.features[0].properties;
-                    const nomeMun = props.municipio;
-                    if (window.municipioFixoIluminacao === nomeMun) {
-                        window.desafixarMunicipioIluminacao();
-                    } else {
-                        window.municipioFixoIluminacao = nomeMun;
-                        atualizarHoverBoxIluminacao('municipio', props, true);
-                    }
-                    if (nomeMun) window.filtrarTabelaPorMunicipioIluminacao(nomeMun);
-                });
-
-                window.alternarVisaoIluminacao(window.visaoIluminacaoAtiva || 'todos', document.getElementById('btn_visao_ilumina_todos'));
-            });
-
-            // Gráficos e Tabela
-            renderizarGraficosIluminacao(iluminacao);
-            renderizarTabelaIluminacao(iluminacao);
-        })
-        .catch(err => {
-            console.error('[Resumo Iluminação] Erro:', err);
-            $('#resumo_iluminacao_spinner').addClass('d-none');
-        });
-};
-
-window.alternarVisaoIluminacao = function (visao, btn) {
-    window.visaoIluminacaoAtiva = visao;
-
-    $('#btn_visao_ilumina_todos, #btn_visao_ilumina_pontos_exec, #btn_visao_ilumina_investimento')
-        .removeClass('btn-primary shadow-sm')
-        .addClass('btn-light text-slate-600');
-    if (btn) $(btn).removeClass('btn-light text-slate-600').addClass('btn-primary shadow-sm');
-
-    $('#legenda_ilumina_cluster, #legenda_ilumina_pontos_exec, #legenda_ilumina_investimento').addClass('d-none');
-
-    if (!mapIluminacao || !mapIluminacao.getLayer('ilumina_muns_fill')) return;
-
-    if (visao === 'todos') {
-        $('#legenda_ilumina_cluster').removeClass('d-none');
-        mapIluminacao.setLayoutProperty('ilumina_clusters', 'visibility', 'visible');
-        mapIluminacao.setLayoutProperty('ilumina_cluster_count', 'visibility', 'visible');
-        mapIluminacao.setLayoutProperty('ilumina_points', 'visibility', 'visible');
-        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-color', '#f8fafc');
-        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-opacity', 0.15);
-        $('#iluminacao_camada_label').text("Exibindo: Localização e Clusters de Contratos de Iluminação");
-    } else if (visao === 'pontos_exec') {
-        $('#legenda_ilumina_pontos_exec').removeClass('d-none');
-        mapIluminacao.setLayoutProperty('ilumina_clusters', 'visibility', 'none');
-        mapIluminacao.setLayoutProperty('ilumina_cluster_count', 'visibility', 'none');
-        mapIluminacao.setLayoutProperty('ilumina_points', 'visibility', 'none');
-        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-opacity', 0.82);
-        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-color', [
-            'step',
-            ['get', 'ilumina_pontos_exec'],
-            '#f0fdf4',
-            1, '#86efac',
-            300, '#22c55e',
-            800, '#15803d'
-        ]);
-        $('#iluminacao_camada_label').text("Exibindo: Municípios por Quantidade de Pontos LED Instalados");
-    } else if (visao === 'investimento') {
-        $('#legenda_ilumina_investimento').removeClass('d-none');
-        mapIluminacao.setLayoutProperty('ilumina_clusters', 'visibility', 'none');
-        mapIluminacao.setLayoutProperty('ilumina_cluster_count', 'visibility', 'none');
-        mapIluminacao.setLayoutProperty('ilumina_points', 'visibility', 'none');
-        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-opacity', 0.82);
-        mapIluminacao.setPaintProperty('ilumina_muns_fill', 'fill-color', [
-            'step',
-            ['get', 'ilumina_valor_total'],
-            '#eff6ff',
-            1, '#93c5fd',
-            300000, '#3b82f6',
-            700000, '#1d4ed8'
-        ]);
-        $('#iluminacao_camada_label').text("Exibindo: Volume Financeiro Contratado no Ilumina PE (R$)");
-    }
-};
-
-function renderizarGraficosIluminacao(iluminacao) {
-    if (typeof echarts === 'undefined') return;
-
-    // 1. Donut de Status das Etapas
-    const elStatus = document.getElementById('chart_iluminacao_status');
-    if (elStatus) {
-        if (chartIluminacaoStatus) chartIluminacaoStatus.dispose();
-        chartIluminacaoStatus = echarts.init(elStatus);
-
-        const statusMap = { 'Concluída': 0, 'Em Execução': 0, 'Em Planejamento': 0 };
-        iluminacao.forEach(item => {
-            const s = String(item.status || '').toLowerCase();
-            if (s.includes('conclu') || s.includes('finaliz') || s.includes('entreg')) statusMap['Concluída']++;
-            else if (s.includes('execu') || s.includes('andamento')) statusMap['Em Execução']++;
-            else statusMap['Em Planejamento']++;
-        });
-
-        const statusData = [
-            { value: statusMap['Concluída'], name: 'Concluída', itemStyle: { color: '#10b981' } },
-            { value: statusMap['Em Execução'], name: 'Em Execução', itemStyle: { color: '#f59e0b' } },
-            { value: statusMap['Em Planejamento'], name: 'Em Planejamento', itemStyle: { color: '#3b82f6' } }
-        ].filter(item => item.value > 0);
-
-        const total = statusData.reduce((acc, curr) => acc + curr.value, 0);
-
-        chartIluminacaoStatus.setOption({
-            tooltip: {
-                trigger: 'item',
-                formatter: (p) => `<strong>${p.name}</strong><br/>Etapas: <b>${p.value}</b> (${total > 0 ? ((p.value/total)*100).toFixed(1) : 0}%)`
-            },
-            legend: { orient: 'horizontal', bottom: '0%', left: 'center', textStyle: { fontSize: 11, color: '#475569', fontWeight: 600 } },
-            series: [{
-                name: 'Status das Etapas',
-                type: 'pie',
-                radius: ['45%', '72%'],
-                center: ['50%', '45%'],
-                itemStyle: { borderRadius: 6, borderColor: '#ffffff', borderWidth: 2 },
-                data: statusData
-            }]
-        });
-    }
-
-    // 2. Top 20 Municípios por Pontos LED Executados
-    const elMun = document.getElementById('chart_iluminacao_por_mun');
-    if (elMun) {
-        if (chartIluminacaoPorMun) chartIluminacaoPorMun.dispose();
-        chartIluminacaoPorMun = echarts.init(elMun);
-
-        const munTotals = {};
-        iluminacao.forEach(item => {
-            const m = String(item.municipio || '').trim();
-            if (!m || m === '-' || m === 'NA') return;
-            if (!munTotals[m]) munTotals[m] = { nome: m, exec: 0, prev: 0, inv: 0 };
-            munTotals[m].exec += Number(item.indicador) || 0;
-            munTotals[m].prev += Number(item.indicador_secundario) || 0;
-            munTotals[m].inv += (parseFloat(String(item.valor_total || '0').replace(',', '.')) || 0);
-        });
-
-        const top20 = Object.values(munTotals).sort((a, b) => b.exec - a.exec).slice(0, 20).reverse();
-
-        chartIluminacaoPorMun.setOption({
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: { type: 'shadow' },
-                formatter: (params) => {
-                    const item = top20.find(t => t.nome === params[0].name);
-                    const invFmt = item ? (item.inv >= 1e6 ? `R$ ${(item.inv / 1e6).toFixed(1)} Mi` : `R$ ${item.inv.toLocaleString('pt-BR')}`) : '-';
-                    return `<strong>${params[0].name}</strong><br/>Pontos Executados: <b>${params[0].value.toLocaleString('pt-BR')}</b><br/>Meta Prevista: <b>${(item ? item.prev : 0).toLocaleString('pt-BR')}</b><br/>Investimento Total: <b>${invFmt}</b>`;
-                }
-            },
-            grid: { top: '5%', left: '3%', right: '6%', bottom: '8%', containLabel: true },
-            xAxis: { type: 'value', splitLine: { lineStyle: { color: '#f1f5f9' } } },
-            yAxis: { type: 'category', data: top20.map(t => t.nome), axisLabel: { color: '#334155', fontSize: 11, fontWeight: 500 } },
-            series: [{
-                name: 'Pontos LED Executados',
-                type: 'bar',
-                data: top20.map(t => t.exec),
-                itemStyle: {
-                    borderRadius: [0, 6, 6, 0],
-                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                        { offset: 0, color: '#6ee7b7' },
-                        { offset: 1, color: '#059669' }
-                    ])
-                },
-                label: { show: true, position: 'right', fontWeight: 'bold', fontSize: 10, color: '#065f46' }
-            }]
-        });
-    }
-}
-
-function renderizarTabelaIluminacao(iluminacao) {
-    const elTable = document.getElementById('resumo_iluminacao_tabela');
-    if (!elTable || typeof $.fn.DataTable === 'undefined') return;
-
-    if ($.fn.DataTable.isDataTable('#resumo_iluminacao_tabela')) {
-        $('#resumo_iluminacao_tabela').DataTable().destroy();
-        $('#resumo_iluminacao_tabela').empty();
-    }
-
-    dataTableIluminacao = $('#resumo_iluminacao_tabela').DataTable({
-        data: iluminacao,
-        deferRender: true,
-        scrollX: true,
-        pageLength: 10,
-        lengthMenu: [10, 25, 50, 100],
-        language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
-        order: [[7, 'desc']], // Ordenar por investimento
-        columns: [
-            {
-                title: "Município",
-                data: "municipio",
-                className: "align-middle",
-                width: "140px",
-                render: d => `<span class="badge bg-blue-50 text-blue-700 border border-blue-200 fw-bold px-2 py-1 rounded-pill cursor-pointer" onclick="window.filtrarTabelaPorMunicipioIluminacao('${d || ''}')">${d || 'Estadual'}</span>`
-            },
-            {
-                title: "Etapa / Intervenção",
-                data: "produto",
-                className: "align-middle",
-                width: "260px",
-                render: (d, t, r) => {
-                    const titulo = d || r.iniciativa_estrategica || 'Modernização Ilumina PE';
-                    const sub = r.empresa_contratada ? `<div class="text-xs text-slate-400 mt-0.5">${r.empresa_contratada}</div>` : '';
-                    return `<div class="fw-bold text-slate-800 text-sm leading-tight">${titulo}</div>${sub}`;
-                }
-            },
-            {
-                title: "Contrato",
-                data: "no_contrato",
-                className: "align-middle text-center",
-                width: "100px",
-                render: (d, t, r) => `<span class="badge bg-slate-100 text-slate-700 font-mono border">${d || '-'}</span>`
-            },
-            {
-                title: "Pontos Exec.",
-                data: "indicador",
-                className: "align-middle text-center fw-bold",
-                width: "100px",
-                render: (d, t) => {
-                    const num = Number(d) || 0;
-                    if (t !== 'display') return num;
-                    return `<span class="badge bg-emerald-50 text-emerald-800 border border-emerald-300 font-black px-2.5 py-1 text-xs rounded-pill">${num.toLocaleString('pt-BR')}</span>`;
-                }
-            },
-            {
-                title: "Pontos Prev.",
-                data: "indicador_secundario",
-                className: "align-middle text-center fw-bold",
-                width: "100px",
-                render: (d, t) => {
-                    const num = Number(d) || 0;
-                    if (t !== 'display') return num;
-                    return `<span class="badge bg-slate-100 text-slate-700 border font-bold px-2.5 py-1 text-xs rounded-pill">${num.toLocaleString('pt-BR')}</span>`;
-                }
-            },
-            {
-                title: "Status",
-                data: "status",
-                className: "align-middle",
-                width: "130px",
-                render: d => {
-                    const s = String(d || '').trim();
-                    let badgeClass = 'bg-slate-100 text-slate-700 border';
-                    if (s.toLowerCase().includes('conclu') || s.toLowerCase().includes('entreg')) badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
-                    else if (s.toLowerCase().includes('execu') || s.toLowerCase().includes('andamento')) badgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
-                    else if (s.toLowerCase().includes('planej')) badgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
-                    return `<span class="badge ${badgeClass} rounded-pill px-2.5 py-1 text-xs font-bold">${s || '-'}</span>`;
-                }
-            },
-            {
-                title: "Avanço Físico",
-                data: null,
-                className: "align-middle",
-                width: "120px",
-                render: (d, t, r) => {
-                    const pExec = Number(r.indicador) || 0;
-                    const pPrev = Number(r.indicador_secundario) || 0;
-                    const num = pPrev > 0 ? Math.min(Math.round((pExec / pPrev) * 100), 100) : (pExec > 0 ? 100 : 0);
-                    if (t !== 'display') return num;
-                    const barColor = num >= 100 ? 'bg-emerald-500' : (num >= 50 ? 'bg-teal-500' : 'bg-amber-500');
-                    return `
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="progress flex-grow-1" style="height: 6px;">
-                                <div class="progress-bar ${barColor}" style="width: ${num}%;"></div>
-                            </div>
-                            <span class="text-xs fw-bold text-slate-700">${num}%</span>
-                        </div>
-                    `;
-                }
-            },
-            {
-                title: "Investimento (R$)",
-                data: "valor_total",
-                className: "align-middle text-end fw-bold text-slate-800",
-                width: "140px",
-                render: (d, t) => {
-                    const num = parseFloat(String(d || '0').replace(',', '.')) || 0;
-                    if (t !== 'display') return num;
-                    return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                }
-            }
-        ]
-    });
-}
-window.filtrarTabelaPorMunicipioIluminacao = function (nomeMun) {
-    if (!nomeMun) return;
-    $('#iluminacao_filtro_ativo_badge').text(`Município: ${nomeMun}`);
-    $('#iluminacao_filtro_ativo_badge_container').removeClass('d-none').addClass('d-flex');
-
-    if (dataTableIluminacao) {
-        dataTableIluminacao.column(0).search(`^${nomeMun}$`, true, false).draw();
-    }
-    const el = document.getElementById('iluminacao_filtro_ativo_badge_container');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-};
-
-window.limparFiltroIluminacao = function () {
-    $('#iluminacao_filtro_ativo_badge_container').removeClass('d-flex').addClass('d-none');
-    $('#iluminacao_filtro_ativo_badge').text('Filtro Ativo');
-
-    if (dataTableIluminacao) {
-        dataTableIluminacao.column(0).search('').draw();
-    }
-    if (mapIluminacao && mapIluminacao.getLayer('ilumina_muns_hover')) {
-        mapIluminacao.setFilter('ilumina_muns_hover', ['==', 'municipio', '']);
-    }
-};
 
 window.addEventListener('resize', () => {
     if (mapIluminacao && typeof mapIluminacao.resize === 'function') mapIluminacao.resize();
@@ -16504,6 +14989,5 @@ window.addEventListener('resize', () => {
         });
     }
 });
-
 
 

@@ -86,6 +86,31 @@ func normalizarRegistroPcp(rawObj map[string]interface{}) (string, map[string]st
 	return ibge6, rowStr
 }
 
+// GetArquivoDataJSON serve arquivos JSON estáticos de data/json com busca em múltiplos diretórios
+func GetArquivoDataJSON(c *gin.Context) {
+	arquivo := filepath.Base(c.Param("arquivo")) // filepath.Base bloqueia path traversal (../)
+	if !strings.HasSuffix(strings.ToLower(arquivo), ".json") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Apenas arquivos .json são permitidos"})
+		return
+	}
+
+	caminhos := []string{
+		filepath.Join("data", "json", arquivo),
+		filepath.Join("www", "data", "json", arquivo),
+		filepath.Join("etl", "data", "json", arquivo),
+		filepath.Join("..", "data", "json", arquivo),
+	}
+
+	for _, p := range caminhos {
+		if raw, err := os.ReadFile(p); err == nil && len(raw) > 0 {
+			c.Data(http.StatusOK, "application/json; charset=utf-8", raw)
+			return
+		}
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{"error": "Arquivo JSON não encontrado", "arquivo": arquivo})
+}
+
 // carregarPcpJSON lê df_pcp.json para a RAM indexado por ibge6_clean
 func carregarPcpJSON() (map[string][]map[string]string, error) {
 	cachePcpMutex.RLock()
@@ -647,7 +672,7 @@ func PostFichaData(c *gin.Context) {
 
 	// 9. Data de Atualização via arquivo JSON / RDS / Parquet
 	txtAtualizacao := "Atualizado em: -"
-	for _, pPath := range []string{CaminhoPcpJSON, "data/df_pcp.json", "data/df_pcp.rds", "data/parquet/df_pcp.parquet", "data/parquet/df_indicadores.parquet"} {
+	for _, pPath := range []string{CaminhoPcpJSON, "data/json/df_pcp.json", "data/df_pcp.rds", "data/parquet/df_pcp.parquet", "data/parquet/df_indicadores.parquet"} {
 		if info, err := os.Stat(pPath); err == nil {
 			loc, errLoc := time.LoadLocation("America/Recife")
 			tMod := info.ModTime()

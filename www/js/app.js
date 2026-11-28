@@ -128,6 +128,11 @@ function normalizarAba(str) {
   return String(str).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+// COLOQUE NO TOPO DO app.js (LINHA 1)
+window.normalizarAba = window.normalizarAba || function (str) {
+  return String(str || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
 window.mudarAbaAurora = function(nomeAba, elemento) {
   const norm = normalizarAba(nomeAba);
   console.log("[Navegação] Mudando para aba:", nomeAba, "-> normalizado:", norm);
@@ -739,5 +744,104 @@ window.togglePainelExecutivoProgramas = function() {
     $cont.slideDown(200);
     $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
     $txt.text('Recolher Painel');
+  }
+};
+
+/* ==========================================================================
+   ABA METADADOS (DICIONÁRIO DE INDICADORES)
+   ========================================================================== */
+window.dtMetadados = window.dtMetadados || null;
+
+window.renderizarAbaMetadados = async function () {
+  if (!window.dadosMetadados || !Array.isArray(window.dadosMetadados) || window.dadosMetadados.length === 0) {
+    try {
+      const resMeta = await window.fetchSeguro(`${window.basePath || ''}/api/ficha/metadados`.replace(/\/+/g, '/'));
+      if (resMeta && resMeta.ok) {
+        const j = await resMeta.json();
+        window.dadosMetadados = j.indicadores_dicionario || (Array.isArray(j) ? j : []);
+      }
+    } catch (e) {
+      console.warn("Erro ao buscar metadados para a aba:", e);
+    }
+  }
+  if (!window.dadosMetadados || !Array.isArray(window.dadosMetadados)) {
+    window.dadosMetadados = [];
+  }
+
+  if (document.getElementById('metadados_contador_badge')) {
+    document.getElementById('metadados_contador_badge').innerText = `${window.dadosMetadados.length} Indicadores Cadastrados`;
+  }
+
+  if ($.fn.DataTable.isDataTable('#tabela_metadados') && dtMetadados) {
+    dtMetadados.clear().rows.add(window.dadosMetadados).draw(false);
+  } else {
+    dtMetadados = $('#tabela_metadados').DataTable({
+      data: window.dadosMetadados,
+      language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json" },
+      pageLength: 15,
+      order: [[0, 'asc'], [1, 'asc']],
+      columns: [
+        {
+          title: "Subdimensão",
+          data: "subdimensao",
+          className: "align-middle",
+          defaultContent: "-",
+          render: d => `<span class="badge rounded-pill bg-slate-100 text-slate-700 font-bold px-2.5 py-1 text-xs uppercase tracking-wide border border-slate-200">${d || '-'}</span>`
+        },
+        {
+          title: "Indicador",
+          data: "nm_indicador",
+          className: "align-middle",
+          defaultContent: "-",
+          render: (d, t, r) => `
+            <div class="fw-bold cursor-pointer d-flex align-items-center gap-2 group" onclick="window.abrirModalMetadado('${r.cd_indicador}')">
+              <span class="text-slate-900 group-hover:text-[#ff5a26] transition-colors font-bold">${d || '-'}</span>
+              <i class="fas fa-arrow-up-right-from-square text-[11px] text-slate-400 group-hover:text-[#ff5a26] transition-colors"></i>
+            </div>`
+        },
+        {
+          title: "Sigla",
+          data: "cd_indicador",
+          className: "align-middle",
+          defaultContent: "-",
+          render: d => `<span class="badge rounded-md bg-orange-50 text-[#c2410c] border border-orange-200 font-mono text-xs px-2 py-0.5">${d || '-'}</span>`
+        },
+        {
+          title: "Natureza",
+          data: "natureza",
+          className: "align-middle",
+          defaultContent: "-",
+          render: d => {
+            const norm = String(d || '').toLowerCase();
+            let bg = 'bg-slate-100 text-slate-700 border-slate-200';
+            if (norm.includes('percentual') || norm.includes('taxa')) bg = 'bg-blue-50 text-blue-700 border-blue-200';
+            else if (norm.includes('moeda') || norm.includes('brl') || norm.includes('usd')) bg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            else if (norm.includes('indice')) bg = 'bg-purple-50 text-purple-700 border-purple-200';
+            else if (norm.includes('absoluto')) bg = 'bg-amber-50 text-amber-700 border-amber-200';
+            return `<span class="badge rounded-pill ${bg} border px-2.5 py-1 text-xs font-semibold">${d || '-'}</span>`;
+          }
+        },
+        {
+          title: "Fonte",
+          data: "fonte",
+          className: "align-middle text-xs",
+          defaultContent: "-",
+          render: (d, t, r) => {
+            const txt = d || '-';
+            if (r.hiperlink) {
+              return `<a href="${r.hiperlink}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-semibold" title="Abrir fonte oficial">${txt} <i class="fas fa-external-link-alt text-[10px] ms-0.5"></i></a>`;
+            }
+            return `<span class="text-slate-600 font-medium">${txt}</span>`;
+          }
+        },
+        {
+          title: "Limiar / Corte",
+          data: "referencia_analise.limiar_corte",
+          className: "align-middle text-sm",
+          defaultContent: "-",
+          render: d => `<span class="text-xs text-slate-600 font-medium">${d || '<span class="text-slate-400 italic">Não especificado</span>'}</span>`
+        }
+      ]
+    });
   }
 };
