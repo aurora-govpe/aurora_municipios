@@ -219,10 +219,10 @@ func GetCozinhasResumo(c *gin.Context) {
 		var iluminaItems []ItemIluminacao
 		rawIlumina, errIlumina := readFileFromPaths(
 			"data/json/df_iluminacao.json",
-			"data/df_iluminacao.json",
-			"app_aurora_municipios/data/json/df_iluminacao.json",
-			"C:/dados/aurora/json/df_iluminacao.json",
-			"C:/dados/aurora/df_iluminacao.json",
+		//	"data/df_iluminacao.json",
+		//	"app_aurora_municipios/data/json/df_iluminacao.json",
+		//	"C:/dados/aurora/json/df_iluminacao.json",
+		//	"C:/dados/aurora/df_iluminacao.json",
 		)
 		if errIlumina == nil && len(rawIlumina) > 0 {
 			if err := json.Unmarshal(rawIlumina, &iluminaItems); err == nil {
@@ -260,9 +260,9 @@ func GetCozinhasResumo(c *gin.Context) {
 
 		// 1. Carrega cozinhas
 		rawCozinhas, err := readFileFromPaths(
-			"data/df_cozinhas.json",
-			"app_aurora_municipios/data/df_cozinhas.json",
-			"C:/dados/aurora/df_cozinhas.json",
+			"data/json/df_cozinhas.json",
+		//	"app_aurora_municipios/data/df_cozinhas.json",
+		//	"C:/dados/aurora/df_cozinhas.json",
 		)
 		if err != nil {
 			log.Printf("⚠️ Erro ao carregar df_cozinhas.json: %v", err)
@@ -304,9 +304,9 @@ func GetCozinhasResumo(c *gin.Context) {
 		// 2. Carrega Mães de Pernambuco
 		var maes []MaeItem
 		rawMaes, errMaes := readFileFromPaths(
-			"data/df_maes.json",
-			"app_aurora_municipios/data/df_maes.json",
-			"C:/dados/aurora/df_maes.json",
+			"data/json/df_maes.json",
+			//"app_aurora_municipios/data/df_maes.json",
+			//"C:/dados/aurora/df_maes.json",
 		)
 		kpisMaes := MaesKPIs{}
 		if errMaes == nil {
@@ -327,9 +327,9 @@ func GetCozinhasResumo(c *gin.Context) {
 		// 3. Carrega Cofinanciamento da Assistência Social
 		var rawCofinList []RawCofinItem
 		rawCofin, errCofin := readFileFromPaths(
-			"data/ppcof_co_financiamento.json",
-			"app_aurora_municipios/data/ppcof_co_financiamento.json",
-			"C:/dados/aurora/ppcof_co_financiamento.json",
+			"data/json/ppcof_co_financiamento.json",
+		//	"app_aurora_municipios/data/ppcof_co_financiamento.json",
+		//	"C:/dados/aurora/ppcof_co_financiamento.json",
 		)
 		kpisCofin := CofinanciamentoKPIs{}
 		var cofinAnos []CofinanciamentoAno
@@ -404,10 +404,10 @@ func GetCozinhasResumo(c *gin.Context) {
 		var transporteItems []ItemTransporteEscolar
 		rawTransp, errTransp := readFileFromPaths(
 			"data/json/df_transporte.json",
-			"data/df_transporte.json",
-			"app_aurora_municipios/data/json/df_transporte.json",
-			"C:/dados/aurora/json/df_transporte.json",
-			"C:/dados/aurora/df_transporte.json",
+			//"data/df_transporte.json",
+		//	"app_aurora_municipios/data/json/df_transporte.json",
+		//	"C:/dados/aurora/json/df_transporte.json",
+		//	"C:/dados/aurora/df_transporte.json",
 		)
 		if errTransp == nil && len(rawTransp) > 0 {
 			if err := json.Unmarshal(rawTransp, &transporteItems); err == nil {
@@ -446,9 +446,9 @@ func GetCozinhasResumo(c *gin.Context) {
 		}
 
 		rawIVCADBytes, errIVCAD := readFileFromPaths(
-			"data/df_ivcad_pe.json",
-			"app_aurora_municipios/data/df_ivcad_pe.json",
-			"C:/dados/aurora/df_ivcad_pe.json",
+			"data/json/df_ivcad_pe.json",
+			//"app_aurora_municipios/data/df_ivcad_pe.json",
+			//"C:/dados/aurora/df_ivcad_pe.json",
 		)
 
 		if errIVCAD == nil {
@@ -578,9 +578,9 @@ func GetCozinhasResumo(c *gin.Context) {
 		var rawGeo json.RawMessage
 		rawGeoBytes, errGeo := readFileFromPaths(
 			"data/geojson/pernambuco_municipios.geojson",
-			"geojson/pernambuco_municipios.geojson",
-			"app_aurora_municipios/data/geojson/pernambuco_municipios.geojson",
-			"C:/dados/aurora/geojson/pernambuco_municipios.geojson",
+			//"geojson/pernambuco_municipios.geojson",
+		//	"app_aurora_municipios/data/geojson/pernambuco_municipios.geojson",
+		//	"C:/dados/aurora/geojson/pernambuco_municipios.geojson",
 		)
 		if errGeo == nil {
 			rawGeo = json.RawMessage(rawGeoBytes)
@@ -594,10 +594,10 @@ func GetCozinhasResumo(c *gin.Context) {
 		var pcpItems []ItemPCP
 		rawPCP, errPCP := readFileFromPaths(
 			"data/json/df_pcp.json",
-			"data/df_pcp.json",
-			"app_aurora_municipios/data/json/df_pcp.json",
-			"C:/dados/aurora/json/df_pcp.json",
-			"C:/dados/aurora/df_pcp.json",
+			//"data/df_pcp.json",
+			//"app_aurora_municipios/data/json/df_pcp.json",
+			//"C:/dados/aurora/json/df_pcp.json",
+			//"C:/dados/aurora/df_pcp.json",
 		)
 		
 		pcpByMun := make(map[string]struct{

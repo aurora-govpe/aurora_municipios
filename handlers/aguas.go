@@ -33,14 +33,7 @@ func GetAguasResumo(c *gin.Context) {
 
 		// 1. GeoJSON unificado com todas as camadas e sobreposições
 		rawGeo, err := readFileFromPaths(
-			"www/data/mapa_compesa_todas_camadas.geojson",
-			"data/mapa_compesa_todas_camadas.geojson",
 			"data/geojson/mapa_compesa_todas_camadas.geojson",
-			"C:/dados/aurora/geojson/mapa_compesa_todas_camadas.geojson",
-			"app_aurora_municipios/data/mapa_compesa_todas_camadas.geojson",
-			"data/compesa/mapa_compesa_todas_camadas.geojson",
-			"data/mapa_compesa_consolidado.geojson",
-			"app_aurora_municipios/data/mapa_compesa_consolidado.geojson",
 		)
 		if err != nil {
 			log.Printf("⚠️ Erro ao carregar mapa_compesa_todas_camadas.geojson: %v", err)
@@ -50,10 +43,7 @@ func GetAguasResumo(c *gin.Context) {
 
 		// 1.1 Plano de Investimentos Consolidado (Tabelas tipadas do COMPESA)
 		rawPlano, errPlano := readFileFromPaths(
-			"www/data/compesa_plano_investimentos.json",
-			"data/compesa_plano_investimentos.json",
-			"C:/dados/aurora/compesa_plano_investimentos.json",
-			"app_aurora_municipios/data/compesa_plano_investimentos.json",
+			"data/json/compesa_plano_investimentos.json",
 		)
 		if errPlano != nil {
 			log.Printf("⚠️ Aviso: compesa_plano_investimentos.json não encontrado: %v", errPlano)
@@ -64,10 +54,7 @@ func GetAguasResumo(c *gin.Context) {
 
 		// 2. Projetos limpos
 		rawProjetos, err := readFileFromPaths(
-			"data/compesa_projetos_clean.json",
-			"app_aurora_municipios/data/compesa_projetos_clean.json",
-			"data/compesa/compesa_projetos_clean.json",
-			"C:/dados/aurora/compesa_projetos_clean.json",
+			"data/json/compesa_projetos_clean.json",
 		)
 		if err != nil {
 			log.Printf("⚠️ Erro ao carregar compesa_projetos_clean.json: %v", err)
@@ -77,10 +64,7 @@ func GetAguasResumo(c *gin.Context) {
 
 		// 3. Desembolso plurianual
 		rawDesembolso, err := readFileFromPaths(
-			"data/compesa_desembolso_rel.json",
-			"app_aurora_municipios/data/compesa_desembolso_rel.json",
-			"data/compesa/compesa_desembolso_rel.json",
-			"C:/dados/aurora/compesa_desembolso_rel.json",
+			"data/json/compesa_desembolso_rel.json",
 		)
 		if err != nil {
 			log.Printf("⚠️ Erro ao carregar compesa_desembolso_rel.json: %v", err)
@@ -90,10 +74,7 @@ func GetAguasResumo(c *gin.Context) {
 
 		// 4. Rateio por município
 		rawMuns, err := readFileFromPaths(
-			"data/compesa_municipios_rel.json",
-			"app_aurora_municipios/data/compesa_municipios_rel.json",
-			"data/compesa/compesa_municipios_rel.json",
-			"C:/dados/aurora/compesa_municipios_rel.json",
+			"data/json/compesa_municipios_rel.json",
 		)
 		if err != nil {
 			log.Printf("⚠️ Erro ao carregar compesa_municipios_rel.json: %v", err)
@@ -103,9 +84,7 @@ func GetAguasResumo(c *gin.Context) {
 
 		// 5. Adutoras de Pernambuco (Infraestrutura Hídrica Linear)
 		rawAdutoras, errAdutoras := readFileFromPaths(
-			"data/adutoras_pernambuco.geojson",
-			"app_aurora_municipios/data/adutoras_pernambuco.geojson",
-			"C:/dados/dados brutos/aurora/compesa/adutoras_pernambuco.geojson",
+			"data/geojson/adutoras_pernambuco.geojson",
 		)
 		if errAdutoras != nil {
 			log.Printf("⚠️ Aviso: adutoras_pernambuco.geojson não encontrado: %v", errAdutoras)
@@ -114,11 +93,9 @@ func GetAguasResumo(c *gin.Context) {
 			log.Printf("✅ [Águas de PE] adutoras_pernambuco.geojson carregado (%d bytes).", len(rawAdutoras))
 		}
 
-		// 6. APAC: Reservatórios / Mananciais Monitorados
+		// 6. APAC: Reservatórios / Mananciais Monitorados (GeoJSON)
 		rawApacRes, errApacRes := readFileFromPaths(
-			"www/data/apac_reservatorios.geojson",
-			"data/apac_reservatorios.geojson",
-			"app_aurora_municipios/data/apac_reservatorios.geojson",
+			"data/geojson/apac_reservatorios.geojson",
 		)
 		if errApacRes != nil {
 			log.Printf("⚠️ Aviso: apac_reservatorios.geojson não encontrado: %v", errApacRes)
@@ -127,11 +104,20 @@ func GetAguasResumo(c *gin.Context) {
 			log.Printf("✅ [APAC] apac_reservatorios.geojson carregado (%d bytes).", len(rawApacRes))
 		}
 
+		// 6.1 APAC: Reservatórios / Mananciais Monitorados (JSON tabular)
+		rawApacResJSON, errApacResJSON := readFileFromPaths(
+			"data/json/apac_reservatorios.json",
+		)
+		if errApacResJSON != nil {
+			log.Printf("⚠️ Aviso: apac_reservatorios.json não encontrado: %v", errApacResJSON)
+			rawApacResJSON = []byte(`[]`)
+		} else {
+			log.Printf("✅ [APAC] apac_reservatorios.json carregado (%d bytes).", len(rawApacResJSON))
+		}
+
 		// 7. APAC: Bacias Hidrográficas (29 UPs)
 		rawApacBacias, errApacBacias := readFileFromPaths(
-			"www/data/apac_bacias_hidrograficas.geojson",
-			"data/apac_bacias_hidrograficas.geojson",
-			"app_aurora_municipios/data/apac_bacias_hidrograficas.geojson",
+			"data/geojson/apac_bacias_hidrograficas.geojson",
 		)
 		if errApacBacias != nil {
 			log.Printf("⚠️ Aviso: apac_bacias_hidrograficas.geojson não encontrado: %v", errApacBacias)
@@ -142,9 +128,7 @@ func GetAguasResumo(c *gin.Context) {
 
 		// 8. APAC: Resumo Geral e Indicadores
 		rawApacResumo, errApacResumo := readFileFromPaths(
-			"www/data/apac_resumo_estadual.json",
-			"data/apac_resumo_estadual.json",
-			"app_aurora_municipios/data/apac_resumo_estadual.json",
+			"data/json/apac_resumo_estadual.json",
 		)
 		if errApacResumo != nil {
 			log.Printf("⚠️ Aviso: apac_resumo_estadual.json não encontrado: %v", errApacResumo)
@@ -154,15 +138,16 @@ func GetAguasResumo(c *gin.Context) {
 		}
 
 		resp := map[string]json.RawMessage{
-			"geojson":            json.RawMessage(rawGeo),
-			"plano":              json.RawMessage(rawPlano),
-			"projetos":           json.RawMessage(rawProjetos),
-			"desembolso":         json.RawMessage(rawDesembolso),
-			"municipios":         json.RawMessage(rawMuns),
-			"adutoras":           json.RawMessage(rawAdutoras),
-			"apac_reservatorios": json.RawMessage(rawApacRes),
-			"apac_bacias":        json.RawMessage(rawApacBacias),
-			"apac_resumo":        json.RawMessage(rawApacResumo),
+			"geojson":                 json.RawMessage(rawGeo),
+			"plano":                   json.RawMessage(rawPlano),
+			"projetos":                json.RawMessage(rawProjetos),
+			"desembolso":              json.RawMessage(rawDesembolso),
+			"municipios":              json.RawMessage(rawMuns),
+			"adutoras":                json.RawMessage(rawAdutoras),
+			"apac_reservatorios":      json.RawMessage(rawApacRes),
+			"apac_reservatorios_json": json.RawMessage(rawApacResJSON),
+			"apac_bacias":             json.RawMessage(rawApacBacias),
+			"apac_resumo":             json.RawMessage(rawApacResumo),
 		}
 
 		aguasPayload, aguasErr = json.Marshal(resp)

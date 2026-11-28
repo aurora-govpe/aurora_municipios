@@ -167,9 +167,9 @@ func InitData() error {
 
 	// Carrega dados fiscais de base_painel.json diretamente na memória RAM
 	var errBasePainel error
-	BasePainelJSON, errBasePainel = os.ReadFile("data/base_painel.json")
+	BasePainelJSON, errBasePainel = os.ReadFile("data/json/base_painel.json")
 	if errBasePainel != nil {
-		log.Printf("⚠️ Aviso: Falha ao carregar data/base_painel.json: %v", errBasePainel)
+		log.Printf("⚠️ Aviso: Falha ao carregar data/json/base_painel.json: %v", errBasePainel)
 		BasePainelJSON = []byte("{}")
 	} else {
 		log.Printf("✅ data/base_painel.json carregado em RAM (%d bytes).", len(BasePainelJSON))
@@ -265,7 +265,7 @@ func InitData() error {
 
 	// Pré-carregar Diagnóstico de Desenvolvimento Regional
 	log.Println("⚡ Carregando Diagnóstico de Desenvolvimento Regional...")
-	diagPath := "data/diagnostico_desenvolvimento_regional.json"
+	diagPath := "data/json/diagnostico_desenvolvimento_regional.json"
 	diagData, err := os.ReadFile(diagPath)
 	if err == nil {
 		var dj struct {
